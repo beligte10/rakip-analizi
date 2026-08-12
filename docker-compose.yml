@@ -1,0 +1,27 @@
+services:
+  app:
+    build: .
+    environment:
+      - KT_USERNAME=${KT_USERNAME}
+      - KT_PASSWORD=${KT_PASSWORD}
+      - HOST=0.0.0.0
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    # Dışarıya port açmıyor — sadece Caddy servisi, Docker'ın iç ağı
+    # üzerinden 7860'a erişebiliyor.
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

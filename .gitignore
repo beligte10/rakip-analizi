@@ -1,0 +1,43 @@
+# Sır/kişisel veri içerir — asla commit etme
+start.sh
+.env
+.env.*
+data/.session_secret
+data/users.json
+
+# Veri (2026-08-12) — hepsi sunucuda kalıcı bir bind-mount olarak yaşar,
+# git'e hiç girmez. Neden: git-push-to-deploy kurulumunda sunucudaki
+# `git pull`, tracked bir data/ dosyasını (örn. computed.json) eski git
+# kopyasıyla sessizce üzerine yazıp canlı veriyi geri alabilir. Tek doğru
+# kaynak sunucunun diski — ilk kurulumda data/ ayrıca (rsync/scp ile) taşınır.
+data/
+
+# Eski/kullanılmayan veri kaynağı — güncel pipeline data/raw/ kullanıyor
+datatable_1.xlsx
+Rakip Analizi Güncel BDR'ler/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+.coverage
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+.claude/settings.local.json
+
+# Eski taslak (noktasız kaydedilmiş, hiç aktif olmadı) — kullanışlı kısımları
+# bu dosyaya taşındı, kendileri repoya girmiyor
+/gitignore
+/gitattributes
+
+# Geçici
+/tmp/
+/_zip_extract/

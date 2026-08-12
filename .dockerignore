@@ -1,0 +1,23 @@
+# Sır/kişisel veri — image'a ASLA gömülmemeli (bkz. .gitignore, aynı liste)
+data/users.json
+data/.session_secret
+start.sh
+.env
+.env.*
+
+# Yedekler — büyük, image'a gerek yok
+data/raw_backup_*/
+data/computed_backup_*.json
+data/veriler_backup_*.parquet
+data/computed_datatable_kaynakli_yedek.json
+
+# Geliştirme ortamı / VCS / OS artıkları
+.git/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+.vscode/
+.claude/
+docs/

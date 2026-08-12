@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KT Cockpit — Admin</title>
+<style>
+:root {
+  --bg: #f8f9fa;
+  --panel: #ffffff;
+  --border: #e1e4e8;
+  --text: #1f2933;
+  --muted: #6b7280;
+  --primary: #1e40af;
+  --primary-hover: #1e3a8a;
+  --kt-green: #016B4E;
+  --kt-green-dark: #014a37;
+  --success: #047857;
+  --success-bg: #d1fae5;
+  --warning: #d97706;
+  --warning-bg: #fef3c7;
+  --error: #b91c1c;
+  --error-bg: #fee2e2;
+  --info-bg: #dbeafe;
+  --hover: #f3f4f6;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+header {
+  background: linear-gradient(135deg, var(--kt-green), var(--kt-green-dark));
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+header h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+header .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+header .nav-links a {
+  color: rgba(255,255,255,0.9);
+  text-decoration: none;
+  margin-left: 16px;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.3);
+  transition: background 0.15s;
+}
+header .nav-links a:hover { background: rgba(255,255,255,0.24); }
+
+.container {
+  max-width: 1280px;
+  margin: 24px auto;
+  padding: 0 24px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.panel h2 {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.panel h2 .icon { font-size: 20px; }
+
+/* Summary cards */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.summary-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 16px;
+}
+.summary-card .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.summary-card .value { font-size: 22px; font-weight: 600; margin-top: 4px; }
+.summary-card.highlight { background: var(--info-bg); border-color: #93c5fd; }
+.summary-card.success { background: var(--success-bg); border-color: #6ee7b7; }
+.summary-card.warning { background: var(--warning-bg); border-color: #fcd34d; }
+
+/* Coverage matrix */
+.coverage-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: white;
+}
+.coverage-table {
+  border-collapse: collapse;
+  font-size: 11px;
+  width: 100%;
+}
+.coverage-table th, .coverage-table td {
+  border: 1px solid var(--border);
+  padding: 4px 6px;
+  text-align: center;
+  white-space: nowrap;
+}
+.coverage-table th {
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  font-weight: 600;
+  z-index: 1;
+}
+.coverage-table th.bank-name {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  background: var(--bg);
+  z-index: 2;
+  min-width: 140px;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.coverage-table td.bank-name {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  background: white;
+  font-weight: 500;
+  z-index: 1;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.coverage-cell {
+  width: 18px;
+  height: 18px;
+}
+.coverage-cell.filled { background: #10b981; }
+.coverage-cell.missing { background: #fee2e2; }
+.coverage-cell.latest-filled { background: #047857; box-shadow: inset 0 0 0 1px #064e3b; }
+.coverage-cell.latest-missing { background: #ef4444; box-shadow: inset 0 0 0 1px #991b1b; }
+
+/* Latest quarter callout */
+.latest-callout {
+  background: var(--info-bg);
+  border-left: 4px solid var(--primary);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: 4px;
+}
+.latest-callout strong { color: var(--primary); }
+.missing-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.missing-chip {
+  background: white;
+  border: 1px solid #fca5a5;
+  color: var(--error);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+/* Upload area */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  background: var(--bg);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--primary);
+  background: var(--info-bg);
+}
+.upload-zone .icon { font-size: 40px; margin-bottom: 8px; }
+.upload-zone p { margin: 4px 0; }
+.upload-zone .small { font-size: 12px; color: var(--muted); }
+.upload-zone input[type=file] { display: none; }
+
+/* Buttons */
+button, .btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button:hover, .btn:hover { background: var(--primary-hover); }
+button:disabled { background: #9ca3af; cursor: not-allowed; }
+button.secondary {
+  background: white;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+button.secondary:hover { background: var(--hover); }
+
+/* Progress */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #3b82f6);
+  transition: width 0.3s;
+}
+.progress-stages {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.progress-stages .stage.active { color: var(--primary); font-weight: 600; }
+.progress-stages .stage.done { color: var(--success); }
+
+/* Result */
+.result-panel {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 6px;
+}
+.result-panel.success { background: var(--success-bg); border: 1px solid #6ee7b7; }
+.result-panel.error { background: var(--error-bg); border: 1px solid #fca5a5; }
+.result-panel h3 { margin: 0 0 12px; font-size: 14px; }
+.spot-check-table {
+  background: white;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 13px;
+}
+.spot-check-table th, .spot-check-table td {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.spot-check-table th { background: var(--bg); font-weight: 600; }
+.spot-check-table td.value { text-align: right; font-family: monospace; }
+
+/* History */
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.history-table th {
+  text-align: left;
+  background: var(--bg);
+  padding: 8px 12px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+.history-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.history-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.history-status.ok { background: var(--success-bg); color: var(--success); }
+.history-status.error { background: var(--error-bg); color: var(--error); }
+
+.loading { text-align: center; padding: 40px; color: var(--muted); }
+.empty { text-align: center; padding: 30px; color: var(--muted); font-style: italic; }
+
+/* Sekmeler (2026-08-12) — admin panel açılır/kapanır sekmeli yapı */
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  padding: 10px 16px;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 0;
+}
+.tab-btn:hover { color: var(--text); background: var(--hover); }
+.tab-btn.active { color: var(--kt-green); border-bottom-color: var(--kt-green); font-weight: 600; }
+.tab-badge {
+  background: var(--error);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 10px;
+  line-height: 1.5;
+}
+.tab-panel[hidden] { display: none; }
+
+/* Üyelik filtre çubuğu */
+.user-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.seg-group { display: flex; gap: 4px; background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 3px; }
+.seg-btn {
+  background: none;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.seg-btn:hover { color: var(--text); }
+.seg-btn.active { background: var(--panel); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.08); font-weight: 600; }
+.user-search-input {
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 13px;
+  min-width: 220px;
+  flex: 1;
+  max-width: 320px;
+}
+.user-search-input:focus { outline: none; border-color: var(--kt-green); }
+
+.tooltip { position: relative; cursor: help; }
+.tooltip:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.85);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 10;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏦 KT Cockpit — Admin Paneli</h1>
+  <div class="nav-links">
+    <img src="data:image/png;base64,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" alt="STRATEJİ" style="height:20px;width:auto;display:block;margin-right:8px;vertical-align:middle;">
+    <a href="/">← Cockpit'e Dön</a>
+    <a href="#" onclick="window.location.reload();return false;">↻ Yenile</a>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" data-tab="durum" onclick="switchTab('durum')">📊 Veri Durumu</button>
+    <button class="tab-btn" data-tab="yukleme" onclick="switchTab('yukleme')">📤 Veri Yükleme</button>
+    <button class="tab-btn" data-tab="uyelik" onclick="switchTab('uyelik')">👥 Üyelik Başvuruları<span class="tab-badge" id="pending-badge" style="display:none"></span></button>
+    <button class="tab-btn" data-tab="gruplar" onclick="switchTab('gruplar')">🏷️ Banka Grupları</button>
+    <button class="tab-btn" data-tab="gecmis" onclick="switchTab('gecmis')">📜 Yükleme Geçmişi</button>
+  </div>
+
+  <!-- VERİ DURUMU -->
+  <div class="tab-panel" data-tab-panel="durum">
+  <div class="panel">
+    <h2><span class="icon">📊</span> Veri Durumu</h2>
+    <div id="coverage-content">
+      <div class="loading">Yükleniyor…</div>
+    </div>
+  </div>
+  </div>
+
+  <!-- VERİ YÜKLEME -->
+  <div class="tab-panel" data-tab-panel="yukleme" hidden>
+  <!-- YENİ DOSYA YÜKLEME -->
+  <div class="panel">
+    <h2><span class="icon">📤</span> Yeni Dosya Yükleme</h2>
+    <p style="color:var(--muted);margin:0 0 12px;font-size:13px">
+      Beklenen format: <code style="background:var(--hover);padding:2px 6px;border-radius:3px">Banka Adı - DD.MM.YYYY.xlsx</code>
+      &nbsp;(örn. <code style="background:var(--hover);padding:2px 6px;border-radius:3px">Kuveyt Türk - 30.09.2025.xlsx</code>)
+    </p>
+
+    <div class="upload-zone" id="dropZone">
+      <input type="file" id="fileInput" accept=".xlsx" multiple />
+      <div class="icon">📁</div>
+      <p><strong>Dosyaları buraya sürükle</strong> veya tıkla</p>
+      <p class="small">Bir veya birden fazla xlsx (1-27 banka tek seferde) — her dosyanın bankası ve çeyreği adından otomatik tespit edilir</p>
+    </div>
+
+    <div id="upload-progress" style="display:none">
+      <div class="progress-stages">
+        <span class="stage" id="stage-upload">1. Yükleme</span>
+        <span class="stage" id="stage-parquet">2. Parquet</span>
+        <span class="stage" id="stage-pipeline">3. Pipeline</span>
+        <span class="stage" id="stage-save">4. Kaydet</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <p style="text-align:center;font-size:13px;color:var(--muted)" id="progress-status">Hazırlanıyor…</p>
+    </div>
+
+    <div id="upload-result"></div>
+  </div>
+
+  <!-- ZIP UPLOAD - BULK REPLACE -->
+  <div class="panel">
+    <h2><span class="icon">📦</span> ZIP Yükle — Tüm Raw Veriyi Yenile</h2>
+    <p style="color:var(--muted);margin:0 0 12px;font-size:13px">
+      Tek seferde <strong>tüm raw veriyi</strong> yenilemek için ZIP yükle. ZIP'in içindeki xlsx dosyaları doğrudan okunur — Bloomberg/FactSet eklentileri olmadan extract edilen xlsx'lerin <code style="background:var(--hover);padding:2px 6px;border-radius:3px">#NAME?</code> sorununu bypass eder.
+    </p>
+    <p style="color:var(--muted);margin:0 0 12px;font-size:12px">
+      Beklenen ZIP yapısı: <code style="background:var(--hover);padding:2px 6px;border-radius:3px">Veriler/Banka Adı/Banka Adı - DD.MM.YYYY.xlsx</code>
+      (üstteki <code>Veriler/</code> wrapper opsiyonel)
+    </p>
+    <p style="color:var(--warning);margin:0 0 16px;font-size:13px">
+      ⏱️ <strong>Süre: 5-15 dakika</strong> (ZIP boyutuna göre). Mevcut <code style="background:var(--hover);padding:2px 4px;border-radius:3px">/data/raw/</code> içeriği <strong>tamamen silinir</strong> ve ZIP'tekiyle değiştirilir. Tarayıcı sekmesini kapatma.
+    </p>
+
+    <div class="upload-zone" id="zipDropZone">
+      <input type="file" id="zipFileInput" accept=".zip" />
+      <div class="icon">📦</div>
+      <p><strong>ZIP dosyasını buraya sürükle</strong> veya tıkla</p>
+      <p class="small">Tüm 27 banka × 48 dönem tek ZIP içinde olabilir (~150 MB)</p>
+    </div>
+
+    <div id="zip-progress" style="display:none;margin-top:16px">
+      <div class="progress-bar">
+        <div class="progress-fill" id="zip-fill" style="width:0%;background:linear-gradient(90deg,#7c3aed,#a855f7)"></div>
+      </div>
+      <p style="text-align:center;font-size:13px;color:var(--muted)" id="zip-status">Hazırlanıyor…</p>
+    </div>
+
+    <div id="zip-result"></div>
+  </div>
+
+  <!-- TÜM VERİDEN YENİDEN HESAPLA -->
+  <div class="panel">
+    <h2><span class="icon">🔄</span> Tüm Veriden Yeniden Hesapla</h2>
+    <p style="color:var(--muted);margin:0 0 12px;font-size:13px">
+      <code style="background:var(--hover);padding:2px 6px;border-radius:3px">/data/raw/</code> altındaki tüm xlsx dosyalarını tarayıp parquet'i baştan üretir, ardından tüm measure'ları yeniden hesaplar. <strong>Pipeline'da bug fix yapıldıktan sonra</strong> kullanın. (Yeni veri yüklemek için <strong>📦 ZIP Yükle</strong> bölümünü kullanın.)
+    </p>
+    <p style="color:var(--warning);margin:0 0 16px;font-size:13px">
+      ⏱️ <strong>Süre: 5-10 dakika.</strong> İşlem sırasında uygulama yavaş cevap verebilir. Tarayıcı sekmesini kapatma.
+    </p>
+
+    <button id="rebuildBtn" class="secondary" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;font-weight:600;padding:10px 20px">
+      🔄 Tüm Veriden Yeniden Hesapla
+    </button>
+
+    <div id="rebuild-progress" style="display:none;margin-top:16px">
+      <div class="progress-bar">
+        <div class="progress-fill" id="rebuild-fill" style="width:0%;background:linear-gradient(90deg,#d97706,#f59e0b)"></div>
+      </div>
+      <p style="text-align:center;font-size:13px;color:var(--muted)" id="rebuild-status">Hazırlanıyor…</p>
+    </div>
+
+    <div id="rebuild-result"></div>
+  </div>
+  </div>
+
+  <!-- ÜYELİK BAŞVURULARI -->
+  <div class="tab-panel" data-tab-panel="uyelik" hidden>
+  <div class="panel">
+    <h2><span class="icon">👥</span> Üyelik Başvuruları</h2>
+    <p style="margin:0 0 12px;font-size:13px;color:var(--muted)">
+      Dashboard'u görüntülemek isteyenler <a href="/signup" target="_blank">/signup</a> üzerinden başvurur.
+      Onaylanana kadar giriş yapamazlar. Onaylı bir üyeye "Admin Yap" ile TAM admin panel yetkisi
+      (upload/rebuild/ZIP/üyelik onayı/grup düzenleme) verebilirsin — aksi halde sadece dashboard görüntülerler.
+    </p>
+    <div id="users-content">
+      <div class="loading">Yükleniyor…</div>
+    </div>
+  </div>
+  </div>
+
+  <!-- BANKA GRUPLARI -->
+  <div class="tab-panel" data-tab-panel="gruplar" hidden>
+  <div class="panel">
+    <h2><span class="icon">🏷️</span> Banka Grupları</h2>
+    <p style="margin:0 0 12px;font-size:13px;color:var(--muted)">
+      "Rakip Bankalar" gibi grupların üyeliğini düzenle veya yeni özel bir grup oluştur.
+      Değişiklik TÜM kullanıcıların dashboard'unda aynı şekilde görünür (kişiye özel değildir).
+      Kaydettikten sonra grup toplamlarının yeniden hesaplanması birkaç saniye sürer.
+    </p>
+    <div id="groups-content">
+      <div class="loading">Yükleniyor…</div>
+    </div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+      <h3 style="margin:0 0 10px;font-size:14px">Yeni Grup Oluştur</h3>
+      <input type="text" id="new-group-name" placeholder="Grup adı (ör. Büyük Ölçekli Bankalar)"
+        style="width:100%;max-width:360px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;margin-bottom:10px">
+      <div id="new-group-banks" style="margin-bottom:10px"></div>
+      <button onclick="createGroup()" style="padding:8px 16px;border-radius:6px;border:1px solid var(--primary);background:var(--info-bg);color:var(--primary);cursor:pointer;font-size:13px;font-weight:500">+ Grup Oluştur</button>
+      <div id="new-group-result" style="margin-top:10px"></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- YÜKLEME GEÇMİŞİ -->
+  <div class="tab-panel" data-tab-panel="gecmis" hidden>
+  <div class="panel">
+    <h2><span class="icon">📜</span> Yükleme Geçmişi</h2>
+    <div id="history-content">
+      <div class="loading">Yükleniyor…</div>
+    </div>
+  </div>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+const $ = (id) => document.getElementById(id);
+const fmt = {
+  number: (n) => n == null ? '—' : new Intl.NumberFormat('tr-TR').format(Math.round(n)),
+  pct: (n) => n == null ? '—' : (n * 100).toFixed(1) + '%',
+  date: (s) => {
+    if (!s) return '—';
+    const d = new Date(s);
+    return d.toLocaleDateString('tr-TR', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  },
+  bytes: (b) => {
+    if (b == null) return '—';
+    if (b < 1024) return b + ' B';
+    if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+    return (b/1024/1024).toFixed(2) + ' MB';
+  },
+  quarter: (s) => {
+    if (!s) return '—';
+    const [y, m] = s.split('-');
+    const q = m === '03' ? 1 : m === '06' ? 2 : m === '09' ? 3 : 4;
+    return `${y}-Q${q}`;
+  }
+};
+
+// ============================================================
+// SEKMELER (2026-08-12)
+// ============================================================
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(el => {
+    el.hidden = el.getAttribute('data-tab-panel') !== name;
+  });
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-tab') === name);
+  });
+}
+
+// ============================================================
+// COVERAGE
+// ============================================================
+async function loadCoverage() {
+  const target = $('coverage-content');
+  try {
+    const r = await fetch('/api/admin/coverage');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    renderCoverage(data, target);
+  } catch (err) {
+    target.innerHTML = `<div class="result-panel error">Coverage yüklenemedi: ${err.message}</div>`;
+  }
+}
+
+function renderCoverage(data, target) {
+  const s = data.summary;
+  const lastUpdated = fmt.date(data.last_updated);
+
+  // Son çeyrek doluluk: kart rengi için
+  const latestCardCls = s.banks_with_latest === s.total_banks ? 'success' :
+    (s.banks_with_latest === 0 ? '' : 'warning');
+
+  let html = `
+    <div class="summary-grid">
+      <div class="summary-card highlight">
+        <div class="label">Son Çeyrek</div>
+        <div class="value">${fmt.quarter(s.latest_quarter)}</div>
+      </div>
+      <div class="summary-card ${latestCardCls}">
+        <div class="label">Son Çeyreği Olan Banka</div>
+        <div class="value">${s.banks_with_latest} / ${s.total_banks}</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Son Güncelleme</div>
+        <div class="value" style="font-size:13px">${lastUpdated}</div>
+      </div>
+    </div>
+  `;
+
+  // Son çeyrek için banka listesi: yüklenmiş = filled, eksik = beyaz
+  if (s.latest_quarter) {
+    const allBanks = data.banks;
+    const matrix = data.matrix;
+    const missing = s.banks_missing_latest || [];
+    const remaining = missing.length;
+
+    if (remaining === 0) {
+      html += `
+        <div class="latest-callout" style="background:var(--success-bg);border-left-color:var(--success)">
+          <strong style="color:var(--success)">✓ ${fmt.quarter(s.latest_quarter)} verisi tüm 27 banka için yüklendi</strong>
+        </div>
+      `;
+    } else {
+      html += `
+        <div class="latest-callout">
+          <strong>📥 ${fmt.quarter(s.latest_quarter)} — ${remaining} banka verisi henüz yüklenmedi:</strong>
+          <div class="missing-list">
+            ${allBanks.map(b => {
+              const has = matrix[b]?.[s.latest_quarter];
+              return has
+                ? `<span class="missing-chip" style="background:#dcfce7;border-color:#86efac;color:#166534">${b}</span>`
+                : `<span class="missing-chip" style="border-color:#fcd34d;color:#92400e">${b}</span>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // Coverage matrix
+  const quarters = data.quarters;
+  const banks = data.banks;
+  const latest = s.latest_quarter;
+
+  // Show last 16 quarters (4 years) by default
+  const displayQuarters = quarters.slice(-16);
+
+  html += `
+    <details>
+      <summary style="cursor:pointer;font-weight:500;margin-bottom:10px">
+        Detaylı Banka × Çeyrek Matrisi (son 4 yıl) — tıkla aç/kapat
+      </summary>
+      <div class="coverage-wrap">
+        <table class="coverage-table">
+          <thead>
+            <tr>
+              <th class="bank-name">Banka</th>
+              ${displayQuarters.map(q => `<th>${fmt.quarter(q)}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+  `;
+  for (const banka of banks) {
+    html += `<tr><td class="bank-name" title="${banka}">${banka}</td>`;
+    for (const q of displayQuarters) {
+      const filled = data.matrix[banka][q];
+      const isLatest = q === latest;
+      let cls;
+      if (filled && isLatest) cls = 'latest-filled';
+      else if (!filled && isLatest) cls = 'latest-missing';
+      else if (filled) cls = 'filled';
+      else cls = 'missing';
+      const tip = `${banka} × ${fmt.quarter(q)}: ${filled ? 'var' : 'yok'}`;
+      html += `<td class="coverage-cell ${cls}" title="${tip}"></td>`;
+    }
+    html += `</tr>`;
+  }
+  html += `</tbody></table></div>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px">
+      <span style="display:inline-block;width:14px;height:14px;background:#10b981;vertical-align:middle"></span> Veri var
+      &nbsp;<span style="display:inline-block;width:14px;height:14px;background:#fee2e2;vertical-align:middle"></span> Eksik
+      &nbsp;<span style="display:inline-block;width:14px;height:14px;background:#047857;vertical-align:middle"></span> Son çeyrek (var)
+      &nbsp;<span style="display:inline-block;width:14px;height:14px;background:#ef4444;vertical-align:middle"></span> Son çeyrek (eksik)
+    </p>
+    </details>
+  `;
+
+  target.innerHTML = html;
+}
+
+// ============================================================
+// UPLOAD
+// ============================================================
+const dropZone = $('dropZone');
+const fileInput = $('fileInput');
+
+dropZone.onclick = () => fileInput.click();
+fileInput.onchange = (e) => {
+  if (e.target.files.length) handleUpload(Array.from(e.target.files));
+};
+
+dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
+dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+dropZone.ondrop = (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) handleUpload(Array.from(e.dataTransfer.files));
+};
+
+async function handleUpload(files) {
+  // Validate: hepsi xlsx olmalı
+  const invalid = files.filter(f => !f.name.toLowerCase().endsWith('.xlsx'));
+  if (invalid.length) {
+    alert(`Sadece .xlsx dosyaları kabul edilir.\nGeçersiz: ${invalid.map(f => f.name).join(', ')}`);
+    return;
+  }
+
+  // Çok dosya varsa onay sor
+  if (files.length > 1) {
+    const totalMB = (files.reduce((s, f) => s + f.size, 0) / 1024 / 1024).toFixed(1);
+    const fileList = files.slice(0, 5).map(f => `  • ${f.name}`).join('\n');
+    const more = files.length > 5 ? `\n  ... ve ${files.length - 5} dosya daha` : '';
+    const confirmed = confirm(
+      `${files.length} dosya yüklenecek (toplam ${totalMB} MB):\n\n${fileList}${more}\n\nDevam etmek istiyor musunuz?`
+    );
+    if (!confirmed) {
+      fileInput.value = '';
+      return;
+    }
+  }
+
+  // UI prep
+  $('upload-progress').style.display = 'block';
+  $('upload-result').innerHTML = '';
+  setStage('upload', 'active');
+  const totalSize = files.reduce((s, f) => s + f.size, 0);
+  const label = files.length === 1
+    ? `${files[0].name} yükleniyor (${fmt.bytes(totalSize)})…`
+    : `${files.length} dosya yükleniyor (${fmt.bytes(totalSize)})…`;
+  setProgress(10, label);
+
+  const fd = new FormData();
+  for (const f of files) {
+    fd.append('files', f);
+  }
+
+  try {
+    setProgress(30, 'Sunucuya gönderiliyor…');
+    setStage('upload', 'done');
+    setStage('parquet', 'active');
+
+    const r = await fetch('/admin/upload', { method: 'POST', body: fd });
+
+    setProgress(60, 'Parquet merge + pipeline çalışıyor…');
+    setStage('parquet', 'done');
+    setStage('pipeline', 'active');
+
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ detail: 'Bilinmeyen hata' }));
+      throw new Error(err.detail || `HTTP ${r.status}`);
+    }
+
+    setProgress(85, 'Sonuçlar kaydediliyor…');
+    setStage('pipeline', 'done');
+    setStage('save', 'active');
+
+    const data = await r.json();
+    setProgress(100, 'Tamamlandı!');
+    setStage('save', 'done');
+
+    showSuccess(data);
+    setTimeout(() => loadCoverage(), 500);
+    setTimeout(() => loadHistory(), 500);
+  } catch (err) {
+    setProgress(0, '');
+    showError(err.message);
+  } finally {
+    fileInput.value = '';
+  }
+}
+
+function setProgress(pct, status) {
+  $('progress-fill').style.width = pct + '%';
+  $('progress-status').textContent = status;
+}
+
+function setStage(name, state) {
+  const el = $('stage-' + name);
+  if (!el) return;
+  el.classList.remove('active', 'done');
+  if (state) el.classList.add(state);
+}
+
+function showSuccess(data) {
+  // Backend'in gerçek yanıt şekli: {files_processed, files_skipped,
+  // banks_affected: [...], measures_computed, banks_in_pipeline, spot_check}.
+  // (Önceden burada olmayan data.results/data.dates_affected alanları
+  // okunuyordu — "undefined dönem" gibi kırık metin üretiyordu; 2026-08-11
+  // düzeltildi.)
+  const banks = data.banks_affected || [];
+  const headerText = banks.length === 1
+    ? `<strong>${banks[0]}</strong> bankası için veri işlendi.`
+    : `<strong>${data.files_processed}</strong> dosya işlendi (${banks.length} banka: ${banks.join(', ')}).`;
+
+  let spotCheckTable = '';
+  if (data.spot_check) {
+    const rows = Object.entries(data.spot_check).map(([k, v]) => `<tr>
+        <td>${k}</td>
+        <td class="value">${v != null ? fmt.number(v) : '—'}</td>
+      </tr>`).join('');
+    spotCheckTable = `
+      <h4 style="margin:16px 0 8px;font-size:13px">Spot Check (${banks[0] || ''}):</h4>
+      <table class="spot-check-table">
+        <thead><tr><th>Measure</th><th style="text-align:right">Değer</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }
+
+  // Atlanan dosyalar (adı geçersiz VEYA veri kalitesi kontrolünden geçemedi
+  // — bkz. pipeline.ingest.check_data_quality, 2026-08-11) — önceden bu
+  // bilgi backend'den geliyordu ama panelde HİÇ gösterilmiyordu.
+  let skippedBlock = '';
+  const skipped = data.files_skipped || [];
+  if (skipped.length > 0) {
+    const rows = skipped.map(s => `<li><strong>${s.filename}</strong> — ${s.sebep}</li>`).join('');
+    skippedBlock = `
+      <div class="result-panel error" style="margin-top:12px">
+        <h3>⚠️ ${skipped.length} dosya atlandı</h3>
+        <ul style="margin:8px 0 0;padding-left:20px">${rows}</ul>
+      </div>
+    `;
+  }
+
+  $('upload-result').innerHTML = `
+    <div class="result-panel success">
+      <h3>✅ Yükleme başarılı</h3>
+      <p>${headerText}</p>
+      <div class="summary-grid" style="margin-top:12px">
+        <div class="summary-card">
+          <div class="label">İşlenen Dosya</div>
+          <div class="value" style="font-size:18px">${data.files_processed}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Hesaplanan Measure</div>
+          <div class="value" style="font-size:18px">${data.measures_computed}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Pipeline'daki Banka</div>
+          <div class="value" style="font-size:18px">${data.banks_in_pipeline}</div>
+        </div>
+      </div>
+      ${spotCheckTable}
+      <p style="margin:12px 0 0;font-size:12px;color:var(--muted)">
+        Cockpit'te güncel veriyi görmek için <a href="/" target="_blank">ana sayfaya</a> gidin ve hard refresh yapın (Ctrl+Shift+R).
+      </p>
+    </div>
+    ${skippedBlock}
+  `;
+}
+
+function showError(msg) {
+  $('upload-result').innerHTML = `
+    <div class="result-panel error">
+      <h3>❌ Yükleme başarısız</h3>
+      <pre style="white-space:pre-wrap;margin:0;font-size:12px;color:var(--error)">${msg}</pre>
+    </div>
+  `;
+}
+
+// ============================================================
+// ZIP UPLOAD — Tüm raw veriyi tek seferde yenile
+// ============================================================
+const zipDropZone = $('zipDropZone');
+const zipFileInput = $('zipFileInput');
+
+zipDropZone.onclick = () => zipFileInput.click();
+zipFileInput.onchange = (e) => { if (e.target.files[0]) handleZipUpload(e.target.files[0]); };
+
+zipDropZone.ondragover = (e) => { e.preventDefault(); zipDropZone.classList.add('dragover'); };
+zipDropZone.ondragleave = () => zipDropZone.classList.remove('dragover');
+zipDropZone.ondrop = (e) => {
+  e.preventDefault();
+  zipDropZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) handleZipUpload(e.dataTransfer.files[0]);
+};
+
+async function handleZipUpload(file) {
+  if (!file.name.toLowerCase().endsWith('.zip')) {
+    alert('Sadece .zip dosyaları kabul edilir');
+    return;
+  }
+
+  const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+  const confirmed = confirm(
+    `ZIP yükleme başlatılacak.\n\n` +
+    `• Dosya: ${file.name} (${sizeMB} MB)\n` +
+    `• Mevcut /data/raw/ içeriği TAMAMEN SİLİNECEK\n` +
+    `• Pipeline yeniden çalışacak (5-15 dakika)\n` +
+    `• İşlem geri alınamaz\n\n` +
+    `Devam etmek istiyor musunuz?`
+  );
+  if (!confirmed) {
+    zipFileInput.value = '';
+    return;
+  }
+
+  $('zip-progress').style.display = 'block';
+  $('zip-result').innerHTML = '';
+  $('zip-fill').style.width = '5%';
+  $('zip-status').textContent = `${file.name} (${sizeMB} MB) yükleniyor...`;
+
+  // Progress simülasyonu — gerçek işlem uzun, kullanıcıya hareket göster
+  let pct = 5;
+  const intervalId = setInterval(() => {
+    pct = Math.min(90, pct + 3);
+    $('zip-fill').style.width = pct + '%';
+    if (pct < 25) $('zip-status').textContent = 'ZIP sunucuya yükleniyor...';
+    else if (pct < 45) $('zip-status').textContent = 'ZIP açılıyor, dosyalar /data/raw/\'a yerleştiriliyor...';
+    else if (pct < 70) $('zip-status').textContent = 'Parquet rebuild ediliyor...';
+    else $('zip-status').textContent = 'Pipeline çalışıyor (compute_all)...';
+  }, 5000);
+
+  const fd = new FormData();
+  fd.append('file', file);
+
+  try {
+    const r = await fetch('/admin/upload-zip', { method: 'POST', body: fd });
+
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ detail: 'Bilinmeyen hata' }));
+      throw new Error(err.detail || `HTTP ${r.status}`);
+    }
+
+    const data = await r.json();
+    clearInterval(intervalId);
+    $('zip-fill').style.width = '100%';
+    $('zip-status').textContent = 'Tamamlandı!';
+
+    showZipSuccess(data);
+    setTimeout(() => loadCoverage(), 500);
+    setTimeout(() => loadHistory(), 500);
+  } catch (err) {
+    clearInterval(intervalId);
+    $('zip-fill').style.width = '0%';
+    $('zip-status').textContent = '';
+    showZipError(err.message);
+  } finally {
+    zipFileInput.value = '';
+  }
+}
+
+function showZipSuccess(data) {
+  const sc = data.spot_check || {};
+  const rows = Object.entries(sc).map(([key, val]) =>
+    `<tr><td>${key}</td><td class="value">${fmt.number(val)}</td></tr>`
+  ).join('');
+
+  const startedAt = new Date(data.started);
+  const completedAt = new Date(data.completed);
+  const elapsedSec = Math.round((completedAt - startedAt) / 1000);
+
+  $('zip-result').innerHTML = `
+    <div class="result-panel success">
+      <h3>✅ ZIP yükleme başarılı</h3>
+      <div class="summary-grid" style="margin-top:12px">
+        <div class="summary-card">
+          <div class="label">İşlenen Banka</div>
+          <div class="value" style="font-size:18px">${data.banks_processed}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">İşlenen Dosya</div>
+          <div class="value" style="font-size:18px">${data.files_processed}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">ZIP Boyutu</div>
+          <div class="value" style="font-size:18px">${fmt.bytes(data.zip_size)}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Süre</div>
+          <div class="value" style="font-size:18px">${elapsedSec}s</div>
+        </div>
+      </div>
+      ${rows ? `
+      <h4 style="margin:16px 0 8px;font-size:13px">Spot Check (Kuveyt Türk, son çeyrek):</h4>
+      <table class="spot-check-table">
+        <thead><tr><th>Measure</th><th style="text-align:right">Değer (TL)</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      ` : ''}
+      <p style="margin:12px 0 0;font-size:12px;color:var(--muted)">
+        Cockpit'te güncel veriyi görmek için <a href="/" target="_blank">ana sayfaya</a> gidin ve hard refresh yapın (Ctrl+Shift+R).
+      </p>
+    </div>
+  `;
+}
+
+function showZipError(msg) {
+  $('zip-result').innerHTML = `
+    <div class="result-panel error">
+      <h3>❌ ZIP yükleme başarısız</h3>
+      <pre style="white-space:pre-wrap;margin:0;font-size:12px;color:var(--error)">${msg}</pre>
+    </div>
+  `;
+}
+
+// ============================================================
+// REBUILD — Tüm veriden yeniden hesaplama
+// ============================================================
+$('rebuildBtn').onclick = async () => {
+  const confirmed = confirm(
+    'Tüm /data/raw/ verisi taranacak ve computed.json sıfırdan üretilecek.\n\n' +
+    '• Süre: ~5-10 dakika\n' +
+    '• Mevcut computed.json üzerine yazılacak\n' +
+    '• İşlem geri alınamaz\n\n' +
+    'Devam etmek istiyor musunuz?'
+  );
+  if (!confirmed) return;
+
+  const btn = $('rebuildBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ İşleniyor...';
+
+  $('rebuild-progress').style.display = 'block';
+  $('rebuild-result').innerHTML = '';
+  $('rebuild-fill').style.width = '15%';
+  $('rebuild-status').textContent = 'Raw klasörü taranıyor, parquet rebuild ediliyor...';
+
+  // Her 5 saniyede bir progress'i artırarak ilerleme hissi yarat
+  let pct = 15;
+  const intervalId = setInterval(() => {
+    pct = Math.min(85, pct + 5);
+    $('rebuild-fill').style.width = pct + '%';
+    if (pct < 40) $('rebuild-status').textContent = 'Parquet rebuild ediliyor...';
+    else if (pct < 70) $('rebuild-status').textContent = 'Pipeline çalışıyor (compute_all)...';
+    else $('rebuild-status').textContent = 'Sonuçlar kaydediliyor...';
+  }, 5000);
+
+  try {
+    const r = await fetch('/admin/rebuild', { method: 'POST' });
+
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ detail: 'Bilinmeyen hata' }));
+      throw new Error(err.detail || `HTTP ${r.status}`);
+    }
+
+    const data = await r.json();
+    clearInterval(intervalId);
+    $('rebuild-fill').style.width = '100%';
+    $('rebuild-status').textContent = 'Tamamlandı!';
+
+    showRebuildSuccess(data);
+    setTimeout(() => loadCoverage(), 500);
+    setTimeout(() => loadHistory(), 500);
+  } catch (err) {
+    clearInterval(intervalId);
+    $('rebuild-fill').style.width = '0%';
+    $('rebuild-status').textContent = '';
+    showRebuildError(err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔄 Tüm Veriden Yeniden Hesapla';
+  }
+};
+
+function showRebuildSuccess(data) {
+  const sc = data.spot_check || {};
+  const rows = Object.entries(sc).map(([key, val]) =>
+    `<tr><td>${key}</td><td class="value">${fmt.number(val)}</td></tr>`
+  ).join('');
+
+  const startedAt = new Date(data.started);
+  const completedAt = new Date(data.completed);
+  const elapsedSec = Math.round((completedAt - startedAt) / 1000);
+
+  $('rebuild-result').innerHTML = `
+    <div class="result-panel success">
+      <h3>✅ Rebuild başarılı</h3>
+      <div class="summary-grid" style="margin-top:12px">
+        <div class="summary-card">
+          <div class="label">İşlenen Banka</div>
+          <div class="value" style="font-size:18px">${data.banks_processed}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">İşlenen Dosya</div>
+          <div class="value" style="font-size:18px">${data.files_processed}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Hesaplanan Measure</div>
+          <div class="value" style="font-size:18px">${data.measures_computed}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Süre</div>
+          <div class="value" style="font-size:18px">${elapsedSec}s</div>
+        </div>
+      </div>
+      ${rows ? `
+      <h4 style="margin:16px 0 8px;font-size:13px">Spot Check (Kuveyt Türk, son çeyrek):</h4>
+      <table class="spot-check-table">
+        <thead><tr><th>Measure</th><th style="text-align:right">Değer (TL)</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      ` : ''}
+      <p style="margin:12px 0 0;font-size:12px;color:var(--muted)">
+        Cockpit'te güncel veriyi görmek için <a href="/" target="_blank">ana sayfaya</a> gidin ve hard refresh yapın (Ctrl+Shift+R).
+      </p>
+    </div>
+  `;
+}
+
+function showRebuildError(msg) {
+  $('rebuild-result').innerHTML = `
+    <div class="result-panel error">
+      <h3>❌ Rebuild başarısız</h3>
+      <pre style="white-space:pre-wrap;margin:0;font-size:12px;color:var(--error)">${msg}</pre>
+    </div>
+  `;
+}
+
+// ============================================================
+// ÜYELİK BAŞVURULARI
+// ============================================================
+// Kullanıcı adı/e-posta signup formundan gelir (tamamen kullanıcı
+// kontrolünde) — innerHTML'e yazmadan önce MUTLAKA escape et (bkz.
+// 2026-08-11 XSS bug'ı: admin.html'de daha önce dosya adı escape
+// edilmeden render ediliyordu, aynı hatayı burada tekrarlama).
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s == null ? '' : String(s);
+  return div.innerHTML;
+}
+
+let _usersCache = [];               // son yüklenen tüm başvurular (filtrelenmemiş)
+let _userFilters = { status: 'all', q: '' };  // 2026-08-12 filtreleme state'i
+
+async function loadUsers() {
+  const target = $('users-content');
+  try {
+    const r = await fetch('/api/admin/users');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    _usersCache = data.users || [];
+    renderUsersPanel();
+  } catch (err) {
+    target.innerHTML = `<div class="result-panel error">Üyelik listesi yüklenemedi: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function renderUsersPanel() {
+  const target = $('users-content');
+  updatePendingBadge();
+  if (_usersCache.length === 0) {
+    target.innerHTML = `<div class="empty">Henüz başvuru yok.</div>`;
+    return;
+  }
+  const counts = { all: _usersCache.length, pending: 0, approved: 0, rejected: 0 };
+  for (const u of _usersCache) counts[u.status] = (counts[u.status] || 0) + 1;
+  const segs = [
+    ['all', 'Tümü'], ['pending', '⏳ Bekleyen'], ['approved', '✓ Onaylı'], ['rejected', '✗ Reddedilen'],
+  ];
+  const segHtml = segs.map(([key, label]) =>
+    `<button class="seg-btn${_userFilters.status === key ? ' active' : ''}" onclick="setUserStatusFilter('${key}')">${label} (${counts[key] || 0})</button>`
+  ).join('');
+  target.innerHTML = `
+    <div class="user-filter-bar">
+      <div class="seg-group">${segHtml}</div>
+      <input type="text" class="user-search-input" id="user-search-input" placeholder="İsim veya e-posta ara…" value="${escapeHtml(_userFilters.q)}" oninput="setUserSearchFilter(this.value)">
+    </div>
+    <div id="users-table-area"></div>
+  `;
+  renderUsersTable();
+}
+
+function setUserStatusFilter(status) {
+  _userFilters.status = status;
+  renderUsersPanel();
+  // Filtre değişince arama kutusundaki odak kaybolur — bu makul, kısa metin zaten kalıyor.
+}
+
+function setUserSearchFilter(value) {
+  _userFilters.q = value;
+  renderUsersTable();
+}
+
+function updatePendingBadge() {
+  const badge = $('pending-badge');
+  const pending = _usersCache.filter(u => u.status === 'pending').length;
+  if (pending > 0) {
+    badge.textContent = pending;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function renderUsersTable() {
+  const area = $('users-table-area');
+  if (!area) return;
+  const q = _userFilters.q.trim().toLowerCase();
+  const users = _usersCache.filter(u => {
+    if (_userFilters.status !== 'all' && u.status !== _userFilters.status) return false;
+    if (q && !u.name.toLowerCase().includes(q) && !u.email.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  if (users.length === 0) {
+    area.innerHTML = `<div class="empty">Bu filtreye uyan başvuru yok.</div>`;
+    return;
+  }
+  const statusInfo = {
+    pending: { label: '⏳ Onay bekliyor', cls: 'error' },
+    approved: { label: '✓ Onaylı', cls: 'ok' },
+    rejected: { label: '✗ Reddedildi', cls: 'error' },
+  };
+  let html = `<table class="history-table"><thead><tr>
+    <th>Başvuru Tarihi</th><th>Ad Soyad</th><th>E-posta</th><th>Durum</th><th>Rol</th><th></th>
+  </tr></thead><tbody>`;
+  for (const u of users) {
+    const info = statusInfo[u.status] || { label: u.status, cls: '' };
+    let actions = '';
+    if (u.status === 'pending') {
+      actions = `<button onclick="setUserStatus(${u.id}, 'approve')" style="padding:4px 10px;border-radius:5px;border:1px solid var(--success);background:var(--success-bg);color:var(--success);cursor:pointer;font-size:12px;margin-right:6px">Onayla</button>
+        <button onclick="setUserStatus(${u.id}, 'reject')" style="padding:4px 10px;border-radius:5px;border:1px solid var(--error);background:var(--error-bg);color:var(--error);cursor:pointer;font-size:12px">Reddet</button>`;
+    } else if (u.status === 'approved') {
+      actions = `<button onclick="setUserStatus(${u.id}, 'reject')" style="padding:4px 10px;border-radius:5px;border:1px solid var(--error);background:var(--error-bg);color:var(--error);cursor:pointer;font-size:12px">Erişimi Kaldır</button>`;
+    } else {
+      actions = `<button onclick="setUserStatus(${u.id}, 'approve')" style="padding:4px 10px;border-radius:5px;border:1px solid var(--success);background:var(--success-bg);color:var(--success);cursor:pointer;font-size:12px">Onayla</button>`;
+    }
+    // Rol değiştirme — SADECE onaylı kullanıcılar için anlamlı (2026-08-12).
+    // admin rolü Basic Auth hesabıyla EŞ DEĞER tam yetki verir (upload/
+    // rebuild/ZIP/üyelik onayı/grup düzenleme) — bkz. app.py::require_admin_access.
+    let roleCell, roleAction = '';
+    if (u.status === 'approved') {
+      const isAdmin = u.role === 'admin';
+      roleCell = isAdmin
+        ? `<span class="history-status ok">👑 Admin</span>`
+        : `<span class="history-status" style="background:var(--bg);color:var(--muted)">Üye</span>`;
+      roleAction = isAdmin
+        ? `<button onclick="setUserRole(${u.id}, 'member')" style="padding:4px 10px;border-radius:5px;border:1px solid var(--warning);background:var(--warning-bg);color:var(--warning);cursor:pointer;font-size:12px;margin-left:6px">Admin Yetkisini Kaldır</button>`
+        : `<button onclick="setUserRole(${u.id}, 'admin')" style="padding:4px 10px;border-radius:5px;border:1px solid var(--primary);background:var(--info-bg);color:var(--primary);cursor:pointer;font-size:12px;margin-left:6px">Admin Yap</button>`;
+    } else {
+      roleCell = `<span style="color:var(--muted);font-size:12px">—</span>`;
+    }
+    html += `<tr>
+      <td>${fmt.date(u.created_at)}</td>
+      <td>${escapeHtml(u.name)}</td>
+      <td>${escapeHtml(u.email)}</td>
+      <td><span class="history-status ${info.cls}">${info.label}</span></td>
+      <td>${roleCell}</td>
+      <td>${actions}${roleAction}</td>
+    </tr>`;
+  }
+  html += `</tbody></table>`;
+  area.innerHTML = html;
+}
+
+async function setUserStatus(userId, action) {
+  try {
+    const r = await fetch(`/api/admin/users/${userId}/${action}`, { method: 'POST' });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${r.status}`);
+    }
+    loadUsers();
+  } catch (err) {
+    alert('İşlem başarısız: ' + err.message);
+  }
+}
+
+async function setUserRole(userId, role) {
+  const msg = role === 'admin'
+    ? 'Bu kullanıcıya TAM admin panel yetkisi (upload/rebuild/ZIP/üyelik onayı/grup düzenleme) verilecek. Onaylıyor musunuz?'
+    : 'Bu kullanıcının admin yetkisi kaldırılacak, sadece dashboard görüntüleme yetkisi kalacak. Onaylıyor musunuz?';
+  if (!confirm(msg)) return;
+  try {
+    const r = await fetch(`/api/admin/users/${userId}/role`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role }),
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${r.status}`);
+    }
+    loadUsers();
+  } catch (err) {
+    alert('İşlem başarısız: ' + err.message);
+  }
+}
+
+// ============================================================
+// BANKA GRUPLARI (2026-08-12)
+// ============================================================
+let _groupsCache = null;   // son yüklenen {order, members, colors, all_banks, protected}
+let _editingGroup = null;  // şu an düzenleme modunda olan grup adı (null = hiçbiri)
+
+async function loadGroups() {
+  const target = $('groups-content');
+  try {
+    const r = await fetch('/api/admin/groups');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    _groupsCache = await r.json();
+    renderGroups();
+    renderNewGroupBanks();
+  } catch (err) {
+    target.innerHTML = `<div class="result-panel error">Gruplar yüklenemedi: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function renderGroups() {
+  const target = $('groups-content');
+  const g = _groupsCache;
+  if (!g || !g.order.length) {
+    target.innerHTML = `<div class="empty">Henüz grup yok.</div>`;
+    return;
+  }
+  let html = '';
+  for (const name of g.order) {
+    const members = g.members[name] || [];
+    const isProtected = (g.protected || []).includes(name);
+    const color = g.colors[name] || '#64748b';
+    if (_editingGroup === name) {
+      // Düzenleme modu: checkbox listesi
+      const checks = g.all_banks.map(b => {
+        const checked = members.includes(b) ? 'checked' : '';
+        const safeId = `grpchk_${name.replace(/[^a-zA-Z0-9]/g, '_')}_${b.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        return `<label style="display:inline-flex;align-items:center;gap:5px;margin:3px 10px 3px 0;font-size:12.5px;font-weight:normal;cursor:pointer">
+          <input type="checkbox" id="${safeId}" value="${escapeHtml(b)}" ${checked} style="cursor:pointer">
+          ${escapeHtml(b)}
+        </label>`;
+      }).join('');
+      html += `
+        <div class="panel" style="margin:0 0 12px;border-color:var(--primary)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span style="width:10px;height:10px;border-radius:50%;background:${color};display:inline-block"></span>
+            <strong style="font-size:14px">${escapeHtml(name)}</strong>
+            <span style="font-size:12px;color:var(--muted)">(düzenleniyor)</span>
+          </div>
+          <div style="max-height:220px;overflow-y:auto;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--bg)">
+            ${checks}
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button onclick="saveGroup('${escapeHtml(name).replace(/'/g, "\\'")}')" style="padding:7px 14px;border-radius:6px;border:1px solid var(--success);background:var(--success-bg);color:var(--success);cursor:pointer;font-size:12.5px;font-weight:500">Kaydet</button>
+            <button onclick="cancelEditGroup()" style="padding:7px 14px;border-radius:6px;border:1px solid var(--border);background:var(--panel);color:var(--text);cursor:pointer;font-size:12.5px">İptal</button>
+          </div>
+          <div id="group-edit-result" style="margin-top:10px"></div>
+        </div>`;
+    } else {
+      // Görüntüleme modu: chip listesi + Düzenle/Sil
+      const chips = members.map(b =>
+        `<span style="display:inline-block;padding:3px 9px;margin:2px;border-radius:5px;background:var(--bg);border:1px solid var(--border);font-size:12px">${escapeHtml(b)}</span>`
+      ).join('');
+      const deleteBtn = isProtected ? '' :
+        `<button onclick="deleteGroup('${escapeHtml(name).replace(/'/g, "\\'")}')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--error);background:var(--error-bg);color:var(--error);cursor:pointer;font-size:12px;margin-left:6px">Sil</button>`;
+      html += `
+        <div style="padding:12px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="width:10px;height:10px;border-radius:50%;background:${color};display:inline-block"></span>
+              <strong style="font-size:13.5px">${escapeHtml(name)}</strong>
+              <span style="font-size:12px;color:var(--muted)">(${members.length} banka)</span>
+              ${isProtected ? '<span style="font-size:11px;color:var(--muted);font-style:italic">temel grup</span>' : ''}
+            </div>
+            <div>
+              <button onclick="editGroup('${escapeHtml(name).replace(/'/g, "\\'")}')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--primary);background:var(--info-bg);color:var(--primary);cursor:pointer;font-size:12px">Düzenle</button>
+              ${deleteBtn}
+            </div>
+          </div>
+          <div style="margin-top:6px">${chips}</div>
+        </div>`;
+    }
+  }
+  target.innerHTML = html;
+}
+
+function editGroup(name) {
+  _editingGroup = name;
+  renderGroups();
+}
+
+function cancelEditGroup() {
+  _editingGroup = null;
+  renderGroups();
+}
+
+async function saveGroup(name) {
+  const g = _groupsCache;
+  const selected = g.all_banks.filter(b => {
+    const safeId = `grpchk_${name.replace(/[^a-zA-Z0-9]/g, '_')}_${b.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    const el = document.getElementById(safeId);
+    return el && el.checked;
+  });
+  const resultEl = $('group-edit-result');
+  if (selected.length === 0) {
+    resultEl.innerHTML = `<div class="result-panel error">Grup en az 1 banka içermeli.</div>`;
+    return;
+  }
+  try {
+    const r = await fetch(`/api/admin/groups/${encodeURIComponent(name)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ members: selected }),
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${r.status}`);
+    }
+    _editingGroup = null;
+    await loadGroups();
+  } catch (err) {
+    resultEl.innerHTML = `<div class="result-panel error">Kaydedilemedi: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+async function deleteGroup(name) {
+  if (!confirm(`"${name}" grubunu silmek istediğine emin misin? Bu işlem geri alınamaz.`)) return;
+  try {
+    const r = await fetch(`/api/admin/groups/${encodeURIComponent(name)}`, { method: 'DELETE' });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${r.status}`);
+    }
+    await loadGroups();
+  } catch (err) {
+    alert('Silinemedi: ' + err.message);
+  }
+}
+
+function renderNewGroupBanks() {
+  const target = $('new-group-banks');
+  const g = _groupsCache;
+  if (!g) return;
+  target.innerHTML = g.all_banks.map(b => {
+    const safeId = `newgrpchk_${b.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    return `<label style="display:inline-flex;align-items:center;gap:5px;margin:3px 10px 3px 0;font-size:12.5px;font-weight:normal;cursor:pointer">
+      <input type="checkbox" id="${safeId}" value="${escapeHtml(b)}" style="cursor:pointer">
+      ${escapeHtml(b)}
+    </label>`;
+  }).join('');
+}
+
+async function createGroup() {
+  const g = _groupsCache;
+  const name = $('new-group-name').value.trim();
+  const resultEl = $('new-group-result');
+  if (!name) {
+    resultEl.innerHTML = `<div class="result-panel error">Grup adı boş olamaz.</div>`;
+    return;
+  }
+  const selected = g.all_banks.filter(b => {
+    const safeId = `newgrpchk_${b.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    const el = document.getElementById(safeId);
+    return el && el.checked;
+  });
+  if (selected.length === 0) {
+    resultEl.innerHTML = `<div class="result-panel error">En az 1 banka seç.</div>`;
+    return;
+  }
+  try {
+    const r = await fetch('/api/admin/groups', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, members: selected }),
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${r.status}`);
+    }
+    $('new-group-name').value = '';
+    resultEl.innerHTML = `<div class="result-panel success" style="padding:10px 14px"><strong>✓ Grup oluşturuldu.</strong></div>`;
+    await loadGroups();
+  } catch (err) {
+    resultEl.innerHTML = `<div class="result-panel error">Oluşturulamadı: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+// ============================================================
+// HISTORY
+// ============================================================
+async function loadHistory() {
+  const target = $('history-content');
+  try {
+    const r = await fetch('/api/admin/history');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    renderHistory(data, target);
+  } catch (err) {
+    target.innerHTML = `<div class="result-panel error">Geçmiş yüklenemedi: ${err.message}</div>`;
+  }
+}
+
+function renderHistory(data, target) {
+  const uploads = data.uploads || [];
+  if (uploads.length === 0) {
+    target.innerHTML = `<div class="empty">Henüz yükleme yapılmamış. Yukarıdan ilk dosyanızı yükleyin.</div>`;
+    return;
+  }
+  let html = `<table class="history-table"><thead><tr>
+    <th>Tarih</th><th>Kullanıcı</th><th>Dosya</th><th>Banka</th><th>Çeyrek</th><th>Boyut</th><th>Durum</th>
+  </tr></thead><tbody>`;
+  for (const u of uploads) {
+    const statusCls = u.status === 'ok' ? 'ok' : 'error';
+    const statusText = u.status === 'ok' ? '✓ Başarılı' : '✗ Hata';
+    html += `<tr>
+      <td>${fmt.date(u.timestamp)}</td>
+      <td>${u.user || '—'}</td>
+      <td title="${u.filename || ''}" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.filename || '—'}</td>
+      <td>${u.banka || '—'}</td>
+      <td>${u.tarih ? fmt.quarter(u.tarih.substring(0, 7)) : '—'}</td>
+      <td>${fmt.bytes(u.file_size)}</td>
+      <td><span class="history-status ${statusCls}" ${u.error ? `title="${u.error}"` : ''}>${statusText}</span></td>
+    </tr>`;
+  }
+  html += `</tbody></table>`;
+  target.innerHTML = html;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadCoverage();
+loadUsers();
+loadGroups();
+loadHistory();
+</script>
+
+</body>
+</html>

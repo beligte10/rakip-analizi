@@ -1,0 +1,6 @@
+# Domain netleşince buradaki placeholder'ı gerçek adla değiştir.
+# Caddy, Let's Encrypt sertifikasını bu adım tamamlanınca otomatik alır —
+# elle sertifika/HTTPS ayarı gerekmiyor.
+kokpit.senin-domainin.com {
+    reverse_proxy app:7860
+}
