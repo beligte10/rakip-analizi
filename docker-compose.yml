@@ -4,6 +4,8 @@ services:
     environment:
       - KT_USERNAME=${KT_USERNAME}
       - KT_PASSWORD=${KT_PASSWORD}
+      - KT_ULTRA_ADMIN_EMAIL=${KT_ULTRA_ADMIN_EMAIL:-faruk@admin.local}
+      - KT_PRODUCTION=true          # https_only çerez + /docs kapalı (denetim #4/#6)
       - HOST=0.0.0.0
     volumes:
       - ./data:/app/data

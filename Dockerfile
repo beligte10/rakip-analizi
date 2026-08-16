@@ -49,5 +49,21 @@ EXPOSE 7860
 # override edilmeli). PORT dışında sır olmayan tek env burada kalıyor.
 ENV PORT=7860
 
+# Non-root kullanıcı (2026-08-15 denetimi #8). /app kullanıcıya devredilir,
+# /app/data mount noktası önceden oluşturulup sahiplendirilir (named volume
+# bunu devralır). NOT: bind-mount ile kullanılıyorsa (docker-compose
+# ./data:/app/data), HOST'taki data/ klasörü bu UID (10001) tarafından
+# yazılabilir olmalı — aksi halde startup /app/data'ya yazamaz. /healthz
+# 'data_dir_writable' alanı bunu teşhis eder.
+RUN useradd -m -u 10001 appuser \
+    && mkdir -p /app/data \
+    && chown -R appuser:appuser /app
+USER appuser
+
+# Konteyner sağlığı (2026-08-15 denetimi #14) — /healthz'e curl yerine python
+# (slim image'da curl yok). Coolify/compose çöken konteyneri böyle fark eder.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:7860/healthz', timeout=4).status==200 else 1)"
+
 # Uvicorn ile çalıştır
 CMD ["python", "app.py"]

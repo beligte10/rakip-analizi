@@ -96,6 +96,13 @@ PASSWORD = os.environ.get('KT_PASSWORD', 'faruk123')
 # özellik pasiftir (kimse gizlenmez).
 ULTRA_ADMIN_EMAIL = os.environ.get('KT_ULTRA_ADMIN_EMAIL', '').strip().lower()
 
+# Production bayrağı (2026-08-15 denetimi #4/#6). Canlıda start.sh/Coolify env'de
+# KT_PRODUCTION=true set edilir. Etkileri:
+#  - Oturum çerezi Secure olur (https_only) — TLS proxy arkasında tarayıcı↔proxy
+#    HTTPS olduğundan doğru; lokal HTTP dev'de False kalmalı (yoksa çerez gitmez).
+#  - /docs, /redoc, /openapi.json kapatılır (API şeması sızıntısını önler).
+KT_PRODUCTION = os.environ.get('KT_PRODUCTION', '').strip().lower() in ('1', 'true', 'yes', 'on')
+
 # auto_error=False: credentials verilmemişse (kullanıcı Basic Auth yerine
 # session ile geliyorsa) 401 fırlatmadan None döner — require_admin_access
 # bu durumda session/rol kontrolüne geçer (bkz. aşağı).
@@ -310,18 +317,22 @@ app = FastAPI(
     title='KT Stratejik Kokpit',
     description='Kuveyt Türk rekabet analizi dashboard',
     version='3.0.0',
+    # Production'da API şeması/dokümanı kapatılır (denetim #6 — sızıntı önlemi).
+    docs_url=None if KT_PRODUCTION else '/docs',
+    redoc_url=None if KT_PRODUCTION else '/redoc',
+    openapi_url=None if KT_PRODUCTION else '/openapi.json',
 )
 
 # Üyelik oturumları için imzalı çerez tabanlı session (2026-08-12).
-# https_only=False: sunucu şu an sadece HTTP üzerinde çalışıyor (bkz.
-# memory: guvenlik-sunucu-erisimi.md) — HTTPS'e geçilirse True yapılmalı.
+# https_only: production'da True (TLS proxy arkasında Secure çerez), lokal HTTP
+# dev'de False (denetim #4). KT_PRODUCTION env'iyle kontrol edilir.
 app.add_middleware(
     SessionMiddleware,
     secret_key=_get_or_create_session_secret(),
     session_cookie='kt_session',
     max_age=14 * 24 * 60 * 60,  # 14 gün
     same_site='lax',
-    https_only=False,
+    https_only=KT_PRODUCTION,
 )
 
 
