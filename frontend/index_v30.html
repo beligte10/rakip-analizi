@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8" />
-<title>KT Stratejik Kokpit</title>
+<title>KT Rakip Analizi</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -1968,7 +1968,7 @@
         h('div', { className: 'topbar-center-brand' },
           h('img', { src: KT_GRI_LOGO, alt: 'Kuveyt Türk' }),
           h('div', { className: 'center-divider' }),
-          h('div', { className: 'center-text' }, 'Stratejik Kokpit')
+          h('div', { className: 'center-text' }, 'Rakip Analizi')
         ),
         h('div', { className: 'topbar-toolbar' },
           h('a', {
@@ -4093,7 +4093,7 @@
       XLSX.utils.book_append_sheet(wb, ws, 'Veri');
       // Metadata sheet
       var metaAoa = [
-        ['Rapor', 'KT Stratejik Kokpit — Veri Export'],
+        ['Rapor', 'KT Rakip Analizi — Veri Export'],
         ['Oluşturulma', new Date().toLocaleString('tr-TR')],
         ['Tarih aralığı', dateStart + ' → ' + dateEnd],
         [(table.entityMode === 'banks' ? 'Banka sayısı' : 'Grup sayısı'), selectedEntityNames.length],
