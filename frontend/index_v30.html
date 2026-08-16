@@ -2281,12 +2281,18 @@
     var tarih = props.tarih;
     var top20Set = getFixedTop20(tarih);
     var metricLabel = growthMetricLabel(measure); // 'YtD' veya 'YoY'
+    // Şube&Personel büyüklük ölçüleri (Şube/Personel Sayısı): banka büyümeleri
+    // % yerine MİKTARSAL (adet) — kullanıcı isteği (2026-08-15). Bu modda oran
+    // yok, dolayısıyla log-uzayı anomali tespiti de devre dışı.
+    var miktar = isMiktarDelta(measure);
+    var birimEtiket = miktar ? (measure.birim === 'adet' ? 'adet' : 'TL') : '%';
 
     var bars = top20Set.filter(function(banka) {
       return bankShownForMeasure(measure.id, banka, tarih);  // şubesiz banka + şube ölçüsü → gösterme
     }).map(function(banka) {
       var coverage = DATA.meta.bank_coverage[banka] || 0;
-      var growth = growthMetric(measure, banka, tarih);
+      var growth = miktar ? growthMiktar(measure, banka, tarih)
+                          : growthMetric(measure, banka, tarih);
       var baz = growthBase(measure, banka, tarih);
       return { banka: banka, growth: growth, coverage: coverage, baz: baz };
     });
@@ -2343,7 +2349,7 @@
 
     bars = bars.map(function(b){
       var isAnomalous = false;
-      if (b.growth != null) {
+      if (!miktar && b.growth != null) {  // miktar modunda anomali tespiti yok (mutlak adet, oran değil)
         if (!bazGecerli(b)) {
           isAnomalous = true;                       // baz ≤ 0 → oran anlamsız
         } else if (Math.abs(b.growth) > HARD_CEILING) {
@@ -2377,7 +2383,7 @@
 
     var cleanBars = bars.filter(function(b){ return b.growth != null && !b.isAnomalous; });
     if (cleanBars.length === 0) return h('div', { className: 'panel' },
-      h('div', { className: 'panel-header' }, 'İlk ' + bars.length + ' Banka ' + metricLabel + ' Büyüme (%)'),
+      h('div', { className: 'panel-header' }, 'İlk ' + bars.length + ' Banka ' + metricLabel + ' Büyüme (' + birimEtiket + ')'),
       h('div', { className: 'empty-state' }, 'Veri yok')
     );
 
@@ -2398,7 +2404,7 @@
 
     return h('div', { className: 'panel' },
       h('div', { className: 'panel-header' },
-        'İlk ' + bars.length + ' Banka ' + metricLabel + ' Büyüme (%)'),
+        'İlk ' + bars.length + ' Banka ' + metricLabel + ' Büyüme (' + birimEtiket + ')'),
       h('div', { className: 'ytd-panel-body' },
         h('div', { className: 'ytd-chart-container' },
           // Satır 1: değer etiketleri
@@ -2426,13 +2432,15 @@
                 key: b.banka,
                 className: cls,
                 title: b.growth == null ? b.banka + ': veri yok'
-                  : b.banka + ': ' + fmtPctPlain(b.growth, 1) +
+                  : b.banka + ': ' + (miktar ? fmtMiktarDelta(b.growth, measure) : fmtPctPlain(b.growth, 1)) +
                     (b.isAnomalous
                       ? ' — yapısal kırılma / düşük baz nedeniyle diğerleriyle ' +
                         'kıyaslanabilir değil, grafik ölçeğine dahil edilmedi'
                       : '')
               },
-                b.growth == null ? '—' : fmtGrowthCompact(b.growth)
+                b.growth == null ? '—'
+                  : miktar ? ((b.growth > 0 ? '+' : '') + Math.round(b.growth).toLocaleString('tr-TR'))
+                  : fmtGrowthCompact(b.growth)
               );
             })
           ),
