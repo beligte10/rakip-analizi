@@ -205,6 +205,30 @@ def set_status(path: Path, user_id: int, status: str, approved_by: str) -> bool:
     return False
 
 
+def change_password(path: Path, user_id: int, current_password: str,
+                    new_password: str) -> tuple[bool, str]:
+    """Kullanıcı kendi şifresini değiştirir (2026-08-15). Mevcut şifre
+    doğrulanır, yeni şifre uzunluk kontrolünden geçer, bcrypt ile yeniden
+    hash'lenir. Başarılıysa (True, ''), değilse (False, sebep).
+
+    NOT: Env-senkron admin hesapları (…@admin.local) upsert_admin_account
+    tarafından her başlangıçta KT_PASSWORD'e sıfırlandığından, onların
+    şifresi bu yolla kalıcı değiştirilemez — çağıran katman (app.py) bu
+    hesapları ayrıca engeller."""
+    if len(new_password or '') < MIN_PASSWORD_LEN:
+        return False, f'Yeni şifre en az {MIN_PASSWORD_LEN} karakter olmalı'
+    with _users_file_lock:
+        data = _load(path)
+        user = next((u for u in data['users'] if u['id'] == user_id), None)
+        if not user:
+            return False, 'Kullanıcı bulunamadı'
+        if not verify_password(current_password, user['password_hash']):
+            return False, 'Mevcut şifre hatalı'
+        user['password_hash'] = hash_password(new_password)
+        _save(path, data)
+    return True, ''
+
+
 def set_role(path: Path, user_id: int, role: str) -> bool:
     """role: 'member' | 'admin'. Admin rolü, tüm admin panel yetkilerini
     (upload/rebuild/ZIP/üyelik onayı/grup düzenleme) verir — bkz.

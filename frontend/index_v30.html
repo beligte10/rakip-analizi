@@ -101,6 +101,38 @@
     letter-spacing: 0.2px; color: rgba(255,255,255,0.85); white-space: nowrap;
   }
 
+  /* -------- Şifre değiştirme modal'ı -------- */
+  .pw-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+  }
+  .pw-modal {
+    background: #fff; color: #1a2b3c; width: 340px; max-width: 92vw;
+    border-radius: 12px; padding: 22px 22px 18px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+  body.dark .pw-modal { background: #16232f; color: #e2e8f0; }
+  .pw-modal-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; color: var(--kt-green); }
+  body.dark .pw-modal-title { color: #7EBAA5; }
+  .pw-modal-sub { font-size: 11.5px; color: #64748b; margin-bottom: 10px; }
+  .pw-label { display: block; font-size: 11.5px; font-weight: 600; margin: 10px 0 4px; color: #64748b; }
+  .pw-input {
+    width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 7px;
+    border: 1px solid #cbd5e1; font-size: 13px; background: #fff; color: #1a2b3c;
+  }
+  body.dark .pw-input { background: #0f1a24; border-color: #2a3b4d; color: #e2e8f0; }
+  .pw-input:focus { outline: none; border-color: var(--kt-green); }
+  .pw-msg { margin-top: 12px; font-size: 12.5px; padding: 8px 10px; border-radius: 7px; }
+  .pw-msg.err { background: rgba(229,138,138,0.18); color: #a84a4a; }
+  .pw-msg.ok  { background: rgba(63,184,168,0.18); color: #1a7a6b; }
+  body.dark .pw-msg.ok { color: #4fd1b8; }
+  .pw-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  .pw-btn { padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+  .pw-btn.ghost { background: transparent; border: 1px solid #cbd5e1; color: #64748b; }
+  body.dark .pw-btn.ghost { border-color: #2a3b4d; color: #94a3b8; }
+  .pw-btn.primary { background: var(--kt-green); color: #fff; }
+  .pw-btn.primary:disabled { opacity: 0.6; cursor: default; }
+
   /* -------- Tarih seçici satırı (yıl + çeyrek ayrı buton grupları) -------- */
   .date-selector-bar {
     background: var(--kt-green-dark);
@@ -1837,7 +1869,65 @@
     );
   }
 
+  // Şifre değiştirme modal'ı — giriş yapmış kullanıcı kendi şifresini değiştirir.
+  // Env-senkron admin hesapları (…@admin.local) için sunucu 400 döner; mesaj
+  // kullanıcıyı start.sh'a yönlendirir.
+  function PasswordModal(props) {
+    var curState = useState(''); var newState = useState(''); var confState = useState('');
+    var msgState = useState(null);   // null | { type:'err'|'ok', text }
+    var busyState = useState(false);
+    function submit() {
+      var cur = curState[0], nw = newState[0], cf = confState[0];
+      if (!cur || !nw) { msgState[1]({ type:'err', text:'Tüm alanları doldurun' }); return; }
+      if (nw.length < 8) { msgState[1]({ type:'err', text:'Yeni şifre en az 8 karakter olmalı' }); return; }
+      if (nw !== cf) { msgState[1]({ type:'err', text:'Yeni şifreler eşleşmiyor' }); return; }
+      busyState[1](true); msgState[1](null);
+      fetch('/api/change-password', {
+        method:'POST', credentials:'same-origin',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ current_password: cur, new_password: nw })
+      }).then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
+        .then(function(res){
+          busyState[1](false);
+          if (res.ok) {
+            msgState[1]({ type:'ok', text: (res.j && res.j.message) || 'Şifreniz güncellendi.' });
+            curState[1](''); newState[1](''); confState[1]('');
+          } else {
+            msgState[1]({ type:'err', text: (res.j && res.j.detail) || 'Bir hata oluştu' });
+          }
+        })
+        .catch(function(){ busyState[1](false); msgState[1]({ type:'err', text:'Sunucuya ulaşılamadı' }); });
+    }
+    var msg = msgState[0];
+    return h('div', {
+      className: 'pw-modal-overlay',
+      onClick: function(e){ if (e.target.className === 'pw-modal-overlay') props.onClose(); }
+    },
+      h('div', { className: 'pw-modal' },
+        h('div', { className: 'pw-modal-title' }, 'Şifre Değiştir'),
+        h('div', { className: 'pw-modal-sub' }, 'En az 8 karakterli yeni bir şifre belirleyin.'),
+        h('label', { className: 'pw-label' }, 'Mevcut Şifre'),
+        h('input', { className: 'pw-input', type: 'password', value: curState[0],
+          onInput: function(e){ curState[1](e.target.value); } }),
+        h('label', { className: 'pw-label' }, 'Yeni Şifre'),
+        h('input', { className: 'pw-input', type: 'password', value: newState[0],
+          onInput: function(e){ newState[1](e.target.value); } }),
+        h('label', { className: 'pw-label' }, 'Yeni Şifre (Tekrar)'),
+        h('input', { className: 'pw-input', type: 'password', value: confState[0],
+          onInput: function(e){ confState[1](e.target.value); },
+          onKeyDown: function(e){ if (e.key === 'Enter') submit(); } }),
+        msg && h('div', { className: 'pw-msg ' + (msg.type === 'ok' ? 'ok' : 'err') }, msg.text),
+        h('div', { className: 'pw-modal-actions' },
+          h('button', { className: 'pw-btn ghost', onClick: props.onClose }, 'Kapat'),
+          h('button', { className: 'pw-btn primary', disabled: busyState[0], onClick: submit },
+            busyState[0] ? '...' : 'Güncelle')
+        )
+      )
+    );
+  }
+
   function TopBar(props) {
+    var pwOpenState = useState(false);
     var measure = DATA.catalog.filter(function(m){ return m.id === props.activeMeasure; })[0];
     var compMeta = props.mode === 'composition' && props.activeComposition
       ? DATA.meta.compositions[props.activeComposition]
@@ -1884,6 +1974,11 @@
           }, h('span', { className: 'btn-icon' }, props.theme === 'light' ? '🌙' : '☀️'), h('span', { className: 'btn-label' }, 'Tema')),
           h('button', {
             className: 'topbar-icon-btn',
+            onClick: function(){ pwOpenState[1](true); },
+            title: 'Şifre değiştir'
+          }, h('span', { className: 'btn-icon' }, '🔑'), h('span', { className: 'btn-label' }, 'Şifre')),
+          h('button', {
+            className: 'topbar-icon-btn',
             onClick: function(){
               fetch('/api/logout', { method: 'POST', credentials: 'same-origin' })
                 .finally(function(){ window.location.href = '/login'; });
@@ -1895,7 +1990,8 @@
           )
         )
       ),
-      h(DateSelectorBar, { tarih: props.tarih, setTarih: props.setTarih })
+      h(DateSelectorBar, { tarih: props.tarih, setTarih: props.setTarih }),
+      pwOpenState[0] && h(PasswordModal, { onClose: function(){ pwOpenState[1](false); } })
     );
   }
 

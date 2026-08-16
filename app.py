@@ -83,6 +83,13 @@ SESSION_SECRET_PATH = DATA_DIR / '.session_secret'
 USERNAME = os.environ.get('KT_USERNAME', 'faruk')
 PASSWORD = os.environ.get('KT_PASSWORD', 'faruk123')
 
+# Ultra admin (2026-08-15): TEK bir hesaba özel, en üst düzey admin. Sıradan
+# adminler bu hesabı üye listesinde GÖREMEZ ve üzerinde işlem yapamaz. Kimlik
+# env değişkeninden gelir (start.sh::KT_ULTRA_ADMIN_EMAIL) — admin panelinden
+# görülemez/değiştirilemez, kimse UI'dan kendine ultra rolü veremez. Boşsa
+# özellik pasiftir (kimse gizlenmez).
+ULTRA_ADMIN_EMAIL = os.environ.get('KT_ULTRA_ADMIN_EMAIL', '').strip().lower()
+
 # auto_error=False: credentials verilmemişse (kullanıcı Basic Auth yerine
 # session ile geliyorsa) 401 fırlatmadan None döner — require_admin_access
 # bu durumda session/rol kontrolüne geçer (bkz. aşağı).
@@ -140,6 +147,33 @@ def require_member(request: Request) -> dict:
         request.session.clear()
         raise HTTPException(status_code=401, detail='Oturum geçersiz — tekrar giriş yapın')
     return user
+
+
+def is_ultra_admin(identity: Optional[str]) -> bool:
+    """require_admin_access'in döndürdüğü kimlik (Basic Auth username ya da
+    session email) ultra admin mi? (2026-08-15)
+
+    - Basic Auth kök hesabı (USERNAME) HER ZAMAN ultra sayılır: sunucunun kök
+      kimliğidir ve varsayılan ultra hesap (f'{USERNAME}@admin.local') ondan
+      türer — kendi hesabını kendinden gizlemek anlamsız olurdu.
+    - Ayrıca KT_ULTRA_ADMIN_EMAIL ile eşleşen session hesabı ultra'dır.
+    ULTRA_ADMIN_EMAIL boşsa yalnızca Basic Auth kökü ultra olur."""
+    if not identity:
+        return False
+    ident = identity.strip().lower()
+    if ident == USERNAME.strip().lower():
+        return True
+    return bool(ULTRA_ADMIN_EMAIL) and ident == ULTRA_ADMIN_EMAIL
+
+
+def _assert_can_target_user(user_id: int, requester_identity: str) -> None:
+    """Sıradan admin, ultra hesabı HEDEF ALAMAZ (onay/red/rol). Gizli olduğu
+    için varlığını sızdırmamak adına 404 döndürülür — 403 değil."""
+    if not ULTRA_ADMIN_EMAIL or is_ultra_admin(requester_identity):
+        return
+    target = users_mod.get_user_by_id(DATA_USERS, user_id)
+    if target and target.get('email', '').strip().lower() == ULTRA_ADMIN_EMAIL:
+        raise HTTPException(status_code=404, detail='Kullanıcı bulunamadı')
 
 # Frontend
 HTML_USER = FRONTEND_DIR / 'index_v30.html'
@@ -333,6 +367,32 @@ def api_me(user: dict = Depends(require_member)):
     return {'name': user['name'], 'email': user['email'], 'role': user.get('role', 'member')}
 
 
+class ChangePasswordPayload(BaseModel):
+    current_password: str
+    new_password: str
+
+
+@app.post('/api/change-password')
+def api_change_password(payload: ChangePasswordPayload,
+                        user: dict = Depends(require_member)):
+    """Giriş yapmış kullanıcı kendi şifresini değiştirir (2026-08-15).
+    Env-senkron admin hesapları (…@admin.local) hariç: onların şifresi
+    start.sh (KT_PASSWORD) tarafından her başlangıçta sıfırlandığından UI'dan
+    kalıcı değiştirilemez — kullanıcı start.sh'a yönlendirilir."""
+    email = user.get('email', '').strip().lower()
+    if email.endswith('@admin.local'):
+        raise HTTPException(
+            status_code=400,
+            detail='Bu hesabın şifresi sunucu yapılandırmasından (start.sh → KT_PASSWORD) yönetilir.',
+        )
+    ok, err = users_mod.change_password(
+        DATA_USERS, user['id'], payload.current_password, payload.new_password
+    )
+    if not ok:
+        raise HTTPException(status_code=400, detail=err)
+    return {'status': 'ok', 'message': 'Şifreniz güncellendi.'}
+
+
 # ============================================================
 # Veri okuma endpoint'leri — SADECE onaylı üyeler (2026-08-12'den önce
 # auth'suzdu, bkz. memory: guvenlik-sunucu-erisimi.md madde 2)
@@ -490,14 +550,20 @@ def admin_coverage(_: str = Depends(require_admin_access)):
 # Admin: upload geçmişi
 # ============================================================
 @app.get('/api/admin/users')
-def admin_list_users(_: str = Depends(require_admin_access)):
-    """Tüm üyelik başvuruları (pending/approved/rejected) — sadece admin görür."""
+def admin_list_users(admin_id: str = Depends(require_admin_access)):
+    """Tüm üyelik başvuruları (pending/approved/rejected) — sadece admin görür.
+    Ultra admin hesabı (2026-08-15) SIRADAN adminlerden gizlenir; yalnızca
+    ultra admin kendini ve herkesi görür."""
     users = users_mod.list_users(DATA_USERS)
+    if ULTRA_ADMIN_EMAIL and not is_ultra_admin(admin_id):
+        users = [u for u in users
+                 if u.get('email', '').strip().lower() != ULTRA_ADMIN_EMAIL]
     return {'users': list(reversed(users))}  # en yeni başvuru başta
 
 
 @app.post('/api/admin/users/{user_id}/approve')
 def admin_approve_user(user_id: int, admin_user: str = Depends(require_admin_access)):
+    _assert_can_target_user(user_id, admin_user)  # sıradan admin ultra'ya dokunamaz
     ok = users_mod.set_status(DATA_USERS, user_id, 'approved', admin_user)
     if not ok:
         raise HTTPException(status_code=404, detail='Kullanıcı bulunamadı')
@@ -506,6 +572,7 @@ def admin_approve_user(user_id: int, admin_user: str = Depends(require_admin_acc
 
 @app.post('/api/admin/users/{user_id}/reject')
 def admin_reject_user(user_id: int, admin_user: str = Depends(require_admin_access)):
+    _assert_can_target_user(user_id, admin_user)  # sıradan admin ultra'ya dokunamaz
     ok = users_mod.set_status(DATA_USERS, user_id, 'rejected', admin_user)
     if not ok:
         raise HTTPException(status_code=404, detail='Kullanıcı bulunamadı')
@@ -523,6 +590,7 @@ def admin_set_user_role(user_id: int, payload: RolePayload, admin_user: str = De
     kullanıcı, Basic Auth hesabıyla EŞ DEĞER tam admin panel yetkisi kazanır
     (bkz. require_admin_access docstring'i) — kısmi/sınırlı yetki YOK.
     """
+    _assert_can_target_user(user_id, admin_user)  # sıradan admin ultra'nın rolüne dokunamaz
     ok = users_mod.set_role(DATA_USERS, user_id, payload.role)
     if not ok:
         raise HTTPException(status_code=400, detail='Geçersiz kullanıcı veya rol')
