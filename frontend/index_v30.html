@@ -251,6 +251,42 @@
   .control-select.cat { min-width: 150px; max-width: 200px; }
   .control-select.subcat { min-width: 140px; max-width: 200px; }
 
+  /* -------- Measure arama (tüm kategorilerde ölçü ara) -------- */
+  .measure-search-wrap { position: relative; display: inline-flex; align-items: center; }
+  .measure-search-input {
+    background: #fff; color: #1a2635; border: 1px solid #d4dde3;
+    padding: 7px 10px 7px 30px; border-radius: 6px;
+    font-size: 13px; font-weight: 500; outline: none;
+    width: 180px; transition: width .18s ease, border-color .15s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.3-4.3'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: left 9px center;
+  }
+  .measure-search-input:focus { border-color: #559D87; width: 230px; }
+  .measure-search-input::placeholder { color: #94a3b8; }
+  body.dark .measure-search-input { background-color: #1a2635; color: #e8eef1; border-color: #2a3b4d; }
+
+  .measure-search-results {
+    position: absolute; top: calc(100% + 5px); left: 0; z-index: 60;
+    min-width: 340px; max-width: 460px; max-height: 360px; overflow-y: auto;
+    background: #fff; border: 1px solid #d4dde3; border-radius: 8px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.16); padding: 4px;
+  }
+  body.dark .measure-search-results {
+    background: #16222e; border-color: #2a3b4d; box-shadow: 0 8px 28px rgba(0,0,0,0.45);
+  }
+  .measure-search-item {
+    padding: 7px 10px; border-radius: 6px; cursor: pointer;
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .measure-search-item:hover, .measure-search-item.active { background: #eef6f3; }
+  body.dark .measure-search-item:hover, body.dark .measure-search-item.active { background: #1f382e; }
+  .measure-search-item.disabled { opacity: 0.5; cursor: default; }
+  .measure-search-item .m-name { font-size: 13px; font-weight: 600; color: #1a2635; }
+  body.dark .measure-search-item .m-name { color: #e8eef1; }
+  .measure-search-item .m-cat { font-size: 10.5px; color: #64748b; }
+  body.dark .measure-search-item .m-cat { color: #94a3b8; }
+  .measure-search-empty { padding: 10px 12px; font-size: 12.5px; color: #94a3b8; }
+
   /* -------- Layout (no sidebar now) -------- */
   .main-panel {
     padding: 10px 14px;
@@ -2017,9 +2053,30 @@
   // CONTROL BAR: Mode toggle + 3 cascade dropdowns
   // ===============================================================
   function ControlBar(props) {
+    // Measure arama durumu (2026-08-17) — tüm kategorilerde ölçü adına göre ara,
+    // seçince aktif ölçü değişir (kategori/alt-kategori ondan türediği için
+    // dropdown'lar da otomatik güncellenir).
+    var searchState = useState('');
+    var query = searchState[0], setQuery = searchState[1];
+    var focusState = useState(false);
+    var focused = focusState[0], setFocused = focusState[1];
+
     // Measure'lar üzerinden kategori/alt-kategori hiyerarşisini kur
     var available = {};
     DATA.meta.available_measures.forEach(function(m){ available[m] = true; });
+
+    function normTr(s) { return (s || '').toLocaleLowerCase('tr'); }
+    var q = normTr(query.trim());
+    var searchResults = q.length >= 1
+      ? DATA.catalog.filter(function(m){ return normTr(m.ad).indexOf(q) >= 0; }).slice(0, 40)
+      : [];
+
+    function pickMeasure(m) {
+      if (!available[m.id]) return;
+      props.setActiveMeasure(m.id);
+      setQuery('');
+      setFocused(false);
+    }
 
     // Hiyerarşi
     var hierarchy = useMemo(function() {
@@ -2107,6 +2164,42 @@
             )
           )
         : h(React.Fragment || 'div', null,
+            h('div', { className: 'measure-search-wrap' },
+              h('input', {
+                className: 'measure-search-input',
+                type: 'text',
+                placeholder: 'Ölçü ara…',
+                value: query,
+                onInput: function(e){ setQuery(e.target.value); },
+                onFocus: function(){ setFocused(true); },
+                // blur'da hemen kapatma — item tıklaması kaydolsun (150ms gecikme)
+                onBlur: function(){ setTimeout(function(){ setFocused(false); }, 150); },
+                onKeyDown: function(e){
+                  if (e.key === 'Enter' && searchResults.length) { pickMeasure(searchResults[0]); }
+                  else if (e.key === 'Escape') { setQuery(''); setFocused(false); e.target.blur(); }
+                }
+              }),
+              focused && q.length >= 1 && h('div', { className: 'measure-search-results' },
+                searchResults.length === 0
+                  ? h('div', { className: 'measure-search-empty' }, '"' + query.trim() + '" için ölçü bulunamadı')
+                  : searchResults.map(function(m){
+                      var isAvail = !!available[m.id];
+                      return h('div', {
+                        key: m.id,
+                        className: 'measure-search-item'
+                          + (m.id === props.activeMeasure ? ' active' : '')
+                          + (isAvail ? '' : ' disabled'),
+                        // onMouseDown: input blur'undan ÖNCE tetiklenir (seçim kaybolmasın)
+                        onMouseDown: function(e){ e.preventDefault(); pickMeasure(m); }
+                      },
+                        h('div', { className: 'm-name' }, m.ad + (isAvail ? '' : ' — veri yok')),
+                        h('div', { className: 'm-cat' },
+                          m.kategori + (m.alt_kategori ? ' › ' + m.alt_kategori : '')
+                          + '  ·  ' + (m.tip === 'rasyo' ? birimLabel(m) : '#'))
+                      );
+                    })
+              )
+            ),
             h('div', { className: 'control-label' }, 'Kategori'),
             h('select', {
               className: 'control-select cat',
