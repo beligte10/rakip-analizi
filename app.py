@@ -75,6 +75,7 @@ DATA_DIR = Path(os.environ.get('DATA_DIR', APP_ROOT / 'data')).resolve()
 DATA_RAW = DATA_DIR / 'raw'
 DATA_PARQUET = DATA_DIR / 'veriler.parquet'
 DATA_COMPUTED = DATA_DIR / 'computed.json'
+DATA_BACKUPS = DATA_DIR / 'backups'   # rebuild/upload öncesi computed.json yedekleri (denetim #10)
 DATA_CATALOG = DATA_DIR / 'catalog.json'
 # Config kaynağı (git-tracked, repo kökünde — data/ volume'unun DIŞINDA, deploy'da
 # gölgelenmez). Ölçü/kompozisyon/banka tanımları buradan gelir; startup'ta canlı
@@ -213,6 +214,53 @@ def heavy_op_guard(user: str = Depends(require_admin_access)):
         yield user
     finally:
         _heavy_op_lock.release()
+
+
+def _backup_computed(keep: int = 5) -> None:
+    """Mevcut computed.json'u zaman damgalı yedekler, son `keep` taneyi tutar
+    (2026-08-15 denetimi #10). Rebuild/upload YENİ (yanlış olabilecek) veriyi
+    yazmadan ÖNCE çağrılır — _assert_nonempty_result yalnız BOŞu yakalar;
+    yanlış-ama-dolu bir rebuild eski iyi veriyi geri dönülmez şekilde silerdi."""
+    if not DATA_COMPUTED.exists():
+        return
+    try:
+        DATA_BACKUPS.mkdir(parents=True, exist_ok=True)
+        ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+        shutil.copy2(DATA_COMPUTED, DATA_BACKUPS / f'computed_{ts}.json')
+        eski = sorted(DATA_BACKUPS.glob('computed_*.json'))
+        for f in eski[:-keep]:
+            f.unlink(missing_ok=True)
+    except OSError as e:
+        print(f"[backup] computed.json yedeklenemedi (yok sayılıyor): {e}")
+
+
+# Login brute-force koruması (2026-08-15 denetimi #5) — e-posta bazlı basit
+# sliding-window rate limit. Bir e-posta için son _LOGIN_WINDOW sn içinde
+# _LOGIN_MAX'ı aşan BAŞARISIZ deneme → 429. Başarılı girişte sayaç sıfırlanır.
+# In-memory (tek process — bkz. uvicorn.run tek-worker notu); restart'ta sıfırlanır.
+_LOGIN_MAX = 5
+_LOGIN_WINDOW = 300  # 5 dakika
+_login_attempts: dict = {}
+_login_lock = threading.Lock()
+
+
+def _login_allowed(key: str) -> bool:
+    now = datetime.now().timestamp()
+    with _login_lock:
+        arr = [t for t in _login_attempts.get(key, []) if now - t < _LOGIN_WINDOW]
+        _login_attempts[key] = arr
+        return len(arr) < _LOGIN_MAX
+
+
+def _login_record_fail(key: str) -> None:
+    now = datetime.now().timestamp()
+    with _login_lock:
+        _login_attempts.setdefault(key, []).append(now)
+
+
+def _login_reset(key: str) -> None:
+    with _login_lock:
+        _login_attempts.pop(key, None)
 
 # Frontend
 HTML_USER = FRONTEND_DIR / 'index_v30.html'
@@ -425,9 +473,18 @@ def api_signup(payload: SignupPayload):
 
 @app.post('/api/login')
 def api_login(payload: LoginPayload, request: Request):
+    # Brute-force koruması (denetim #5): e-posta bazlı rate limit.
+    key = (payload.email or '').strip().lower()
+    if not _login_allowed(key):
+        raise HTTPException(
+            status_code=429,
+            detail='Çok fazla başarısız giriş denemesi. Lütfen birkaç dakika sonra tekrar deneyin.',
+        )
     user, err = users_mod.authenticate(DATA_USERS, payload.email, payload.password)
     if not user:
+        _login_record_fail(key)
         raise HTTPException(status_code=401, detail=err)
+    _login_reset(key)  # başarılı giriş → sayaç sıfırla
     request.session['user_id'] = user['id']
     return {'status': 'ok', 'name': user['name']}
 
@@ -1016,6 +1073,8 @@ def admin_upload(
     if not files:
         raise HTTPException(status_code=400, detail='Dosya gönderilmedi')
 
+    _backup_computed()  # yeni veri yazılmadan mevcut computed.json'u yedekle (denetim #10)
+
     # Lazy import — pipeline modülleri ağır
     from pipeline.ingest import (
         parse_filename, validate_filename, check_data_quality,
@@ -1244,6 +1303,8 @@ def admin_upload_zip(
 
     if not file.filename.lower().endswith('.zip'):
         raise HTTPException(status_code=400, detail='Sadece .zip kabul edilir')
+
+    _backup_computed()  # yeni veri yazılmadan mevcut computed.json'u yedekle (denetim #10)
 
     # Catalog yükle
     if not DATA_CATALOG.exists():
@@ -1480,6 +1541,8 @@ def admin_rebuild(user: str = Depends(heavy_op_guard)):
     """
     started = datetime.now().isoformat()
 
+    _backup_computed()  # yeni veri yazılmadan mevcut computed.json'u yedekle (denetim #10)
+
     # Catalog yükle
     if not DATA_CATALOG.exists():
         raise HTTPException(status_code=500, detail='catalog.json yok')
@@ -1657,4 +1720,12 @@ if __name__ == '__main__':
     # Docker dışı bir ortamda (yerel geliştirme, bu makine) HOST'u ASLA elle
     # 0.0.0.0 yapma.
     host = os.environ.get('HOST', '127.0.0.1')
-    uvicorn.run('app:app', host=host, port=port, reload=False)
+    # KRİTİK (denetim #12): TEK WORKER şart — `workers` verilmiyor (varsayılan 1).
+    # users.json kilidi (users.py::_users_file_lock), ağır-işlem kilidi
+    # (_heavy_op_lock) ve login rate-limit (_login_attempts) hepsi IN-PROCESS
+    # (threading) yapılardır. gunicorn/uvicorn --workers>1 ya da birden çok
+    # konteyner replikası ile bu koruma katmanları BOZULUR: iki worker aynı
+    # users.json'a yazıp veri kaybettirir, rebuild kilidi paralel rebuild'i
+    # durduramaz. Çoklu-worker gerekirse önce bunlar process-arası (fcntl.flock
+    # + paylaşımlı sayaç, ör. Redis) yapılmalı. Deploy'da da tek replika tut.
+    uvicorn.run('app:app', host=host, port=port, reload=False, workers=1)
