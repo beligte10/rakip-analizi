@@ -48,6 +48,7 @@ import io
 import json
 import shutil
 import secrets
+import threading
 import traceback
 import multiprocessing
 from datetime import datetime
@@ -174,6 +175,32 @@ def _assert_can_target_user(user_id: int, requester_identity: str) -> None:
     target = users_mod.get_user_by_id(DATA_USERS, user_id)
     if target and target.get('email', '').strip().lower() == ULTRA_ADMIN_EMAIL:
         raise HTTPException(status_code=404, detail='Kullanıcı bulunamadı')
+
+
+# Ağır işlem (upload/rebuild) serileştirme kilidi (2026-08-15). Bu 3 endpoint
+# CPU-ağır (compute_all/rebuild_parquet, dakikalarca) ve artık `async def`
+# DEĞİL, `def` — FastAPI bunları threadpool'da çalıştırır, böylece event
+# loop'u BLOKE ETMEZ (eskiden `async def` içindeki senkron iş tüm sunucuyu
+# donduruyordu). threadpool'da paralel çalışabildikleri için de bu kilit
+# şart: iki ağır işlem aynı anda parquet/computed.json'a yazarsa yarışıp
+# bozar. Kilit tek işleme izin verir, ikincisi 409 alır. (asyncio.Lock DEĞİL
+# threading.Lock — çünkü artık sync/threadpool bağlamındayız.)
+_heavy_op_lock = threading.Lock()
+
+
+def heavy_op_guard(user: str = Depends(require_admin_access)):
+    """Önce admin auth (yalnız yetkili istek kilidi kapabilir), sonra ağır-işlem
+    kilidini bloklamadan al. Doluysa 409. yield sonrası finally kilidi bırakır
+    (endpoint hata verse bile)."""
+    if not _heavy_op_lock.acquire(blocking=False):
+        raise HTTPException(
+            status_code=409,
+            detail='Başka bir ağır işlem (yükleme/rebuild) sürüyor. Bitmesini bekleyip tekrar deneyin.',
+        )
+    try:
+        yield user
+    finally:
+        _heavy_op_lock.release()
 
 # Frontend
 HTML_USER = FRONTEND_DIR / 'index_v30.html'
@@ -899,9 +926,9 @@ def _rebuild_dynamic_meta(meta: dict, bank_data: dict, catalog: dict) -> dict:
 # Admin: upload endpoint
 # ============================================================
 @app.post('/admin/upload')
-async def admin_upload(
+def admin_upload(
     files: List[UploadFile] = File(...),
-    user: str = Depends(require_admin_access),
+    user: str = Depends(heavy_op_guard),
 ):
     """
     Bir veya birden fazla xlsx yükle, pipeline'ı BİR KEZ çalıştır, computed.json'u güncelle.
@@ -968,20 +995,20 @@ async def admin_upload(
     for file in files:
         if not file.filename.lower().endswith('.xlsx'):
             skipped.append({'filename': file.filename, 'sebep': 'Sadece .xlsx kabul edilir'})
-            await file.close()
+            file.file.close()
             continue
         ok, err = validate_filename(file.filename, valid_banks)
         if not ok:
             skipped.append({'filename': file.filename, 'sebep': err})
-            await file.close()
+            file.file.close()
             continue
 
         # İçeriği belleğe oku — hem kalite kontrolü hem diske yazma bunun
         # üzerinden yapılır (stream'i iki kere tüketmemek için).
         try:
-            content = await file.read()
+            content = file.file.read()
         finally:
-            await file.close()
+            file.file.close()
 
         # İçerik kalite kontrolü (2026-08-11 eklendi): Bloomberg/FactSet
         # eklentisi olmadan export edilen dosyalarda Tutar hücreleri
@@ -1138,9 +1165,9 @@ async def admin_upload(
 # Admin: ZIP upload — bulk replace raw + auto rebuild (Faz 3.6)
 # ============================================================
 @app.post('/admin/upload-zip')
-async def admin_upload_zip(
+def admin_upload_zip(
     file: UploadFile = File(...),
-    user: str = Depends(require_admin_access),
+    user: str = Depends(heavy_op_guard),
 ):
     """
     ZIP yükle, içindeki tüm xlsx'leri data/raw/'a yerleştir, pipeline çalıştır.
@@ -1184,7 +1211,7 @@ async def admin_upload_zip(
             shutil.copyfileobj(file.file, tmpf)
             tmp_zip_path = Path(tmpf.name)
         finally:
-            await file.close()
+            file.file.close()
 
     zip_size = tmp_zip_path.stat().st_size
 
@@ -1391,7 +1418,7 @@ async def admin_upload_zip(
 # Admin: rebuild — tüm raw'dan baştan hesapla (Faz 3.5)
 # ============================================================
 @app.post('/admin/rebuild')
-async def admin_rebuild(user: str = Depends(require_admin_access)):
+def admin_rebuild(user: str = Depends(heavy_op_guard)):
     """
     data/raw/ altındaki tüm xlsx'leri tarayıp parquet'i baştan üret,
     compute_all ile tüm computed.json'u yeniden hesapla.

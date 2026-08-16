@@ -29,8 +29,15 @@ COPY app.py .
 COPY users.py .
 COPY pipeline/ pipeline/
 COPY frontend/ frontend/
-COPY data/ data/
 COPY scripts/ scripts/
+
+# NOT (2026-08-15): `data/` KASITLI OLARAK image'a kopyalanmıyor.
+# - Deploy'da data/ kalıcı bir volume'dan bağlanır (bind-mount image içeriğini
+#   zaten tamamen gölgeler → COPY işe yaramazdı).
+# - COPY data/ image'ı onlarca MB şişirir ve eski bir veri snapshot'ı taşırdı.
+# - Sırlar (users.json, .session_secret) .dockerignore'da; onlar hiç girmiyor.
+# İlk kurulumda data/ içeriği (catalog.json, veriler.parquet, computed.json,
+# users.json, .session_secret ...) sunucudaki volume'a rsync/scp ile taşınır.
 
 EXPOSE 7860
 
