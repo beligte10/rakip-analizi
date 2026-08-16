@@ -29,6 +29,7 @@ from .measures import (
     m_konut_kredileri, m_tasit_kredileri, m_ihtiyac_kredileri,
     m_bireysel_kredi_kartlari, m_tuketici_kredileri, m_tuzel_krediler,
     m_grup_1_krediler, m_grup_2_krediler, m_toplam_kaynak,
+    m_vadeli_mevduat, m_toplam_fonlama,
     _grup2_kategori, _aktiften_silinen, _menkul_kiymetler,
     toplam_krediler_net_leasing, tuketici_kredileri_kk_haric,
     _diger_aktifler_kompozit,
@@ -37,6 +38,8 @@ from .measures import (
     _faiz_getirili_aktif_detay,
     _faiz_maliyetli_pasif_detay,
     _yp_net_genel_pozisyon,
+    _kredi_riski, _piyasa_riski, _operasyonel_risk,
+    _LIKIDITE_ACIGI_KALEM, _birikimli_vadeli_mevduat,
 )
 
 
@@ -124,7 +127,8 @@ def _nd_yp_aktifler_pasifler(ctx, b, t):
 
 
 def _nd_grup1_toplam(ctx, b, t):
-    return m_grup_1_krediler(ctx, b, t), krediler(ctx, b, t)
+    # 2026-08-14: payda Toplam Brüt Krediler (banka m_grup_1_krediler_toplam ile hizalı)
+    return m_grup_1_krediler(ctx, b, t), _brut_krediler(ctx, b, t)
 
 
 def _nd_grup2_toplam(ctx, b, t):
@@ -170,7 +174,7 @@ def _nd_tasit_tuketici(ctx, b, t):
 
 
 def _nd_ihtiyac_toplam(ctx, b, t):
-    return m_ihtiyac_kredileri(ctx, b, t), krediler(ctx, b, t)
+    return m_ihtiyac_kredileri(ctx, b, t), _brut_krediler(ctx, b, t)
 
 
 def _nd_konut_tp_pasifler(ctx, b, t):
@@ -179,15 +183,15 @@ def _nd_konut_tp_pasifler(ctx, b, t):
 
 
 def _nd_bkk_toplam(ctx, b, t):
-    return m_bireysel_kredi_kartlari(ctx, b, t), krediler(ctx, b, t)
+    return m_bireysel_kredi_kartlari(ctx, b, t), _brut_krediler(ctx, b, t)
 
 
 def _nd_tuketici_toplam(ctx, b, t):
-    return m_tuketici_kredileri(ctx, b, t), krediler(ctx, b, t)
+    return m_tuketici_kredileri(ctx, b, t), _brut_krediler(ctx, b, t)
 
 
 def _nd_tuzel_toplam(ctx, b, t):
-    return m_tuzel_krediler(ctx, b, t), krediler(ctx, b, t)
+    return m_tuzel_krediler(ctx, b, t), _brut_krediler(ctx, b, t)
 
 
 def _nd_dis_ticaret(ctx, b, t):
@@ -195,16 +199,17 @@ def _nd_dis_ticaret(ctx, b, t):
     for kategori in ['İhracat Kredileri', 'İthalat Kredileri']:
         toplam += ctx.grup12(b, t, f'{kategori},  Standart Nitelikli Krediler, Toplam')
         toplam += _grup2_kategori(ctx, b, t, kategori)
-    return toplam, krediler(ctx, b, t)
+    return toplam, _brut_krediler(ctx, b, t)
 
 
 def _nd_mali_kesim(ctx, b, t):
     mk = ctx.grup12(b, t, 'Mali Kesime Verilen Krediler,  Standart Nitelikli Krediler, Toplam')
-    return mk, krediler(ctx, b, t)
+    return mk, _brut_krediler(ctx, b, t)
 
 
 def _nd_tp_krediler_toplam(ctx, b, t):
-    return krediler(ctx, b, t, 'TP'), krediler(ctx, b, t)
+    # 2026-08-14: TP Brüt Krediler / Toplam Brüt Krediler (banka ile hizalı)
+    return _brut_krediler(ctx, b, t, 'TP'), _brut_krediler(ctx, b, t)
 
 
 # --- Pasif basit ---
@@ -373,23 +378,25 @@ def _nd_kred_altindisi_mev(ctx, b, t):
 
 
 def _nd_kred_kaynak(ctx, b, t):
-    return krediler(ctx, b, t), m_toplam_kaynak(ctx, b, t)
+    # 2026-08-14: pay Toplam Brüt Krediler (banka m_krediler_toplam_kaynak ile hizalı)
+    return _brut_krediler(ctx, b, t), m_toplam_kaynak(ctx, b, t)
 
 
 def _nd_tp_kred_kaynak(ctx, b, t):
+    # 2026-08-15: 'Kaynak' tanımı m_toplam_kaynak ile hizalandı (Para Piyasalarına
+    # Borçlar çıkarıldı) — banka m_tp_krediler_tp_kaynak ile tutarlı (2026-08-12 fix).
     pay = krediler(ctx, b, t, 'TP')
     den = (ctx.bilanco(b, t, 'Mevduat', 'TP')
          + ctx.bilanco(b, t, 'Alınan Krediler', 'TP')
-         + ctx.bilanco(b, t, 'Para Piyasalarına Borçlar', 'TP')
          + ctx.bilanco(b, t, 'İhraç Edilen Menkul Kıymetler (Net)', 'TP'))
     return pay, den
 
 
 def _nd_yp_kred_altindisi(ctx, b, t):
+    # 2026-08-15: Para Piyasalarına Borçlar çıkarıldı (banka m_yp_krediler_yp_altindisi_kaynak ile hizalı)
     pay = krediler(ctx, b, t, 'YP')
     yp_kaynak = (ctx.bilanco(b, t, 'Mevduat', 'YP')
                + ctx.bilanco(b, t, 'Alınan Krediler', 'YP')
-               + ctx.bilanco(b, t, 'Para Piyasalarına Borçlar', 'YP')
                + ctx.bilanco(b, t, 'İhraç Edilen Menkul Kıymetler (Net)', 'YP'))
     return pay, yp_kaynak - ctx.kiymetli_maden(b, t)
 
@@ -404,9 +411,9 @@ def _nd_tp_mevduat_altindisi(ctx, b, t):
 
 
 def _nd_tp_kaynak(ctx, b, t):
+    # 2026-08-15: Para Piyasalarına Borçlar çıkarıldı (banka m_tp_kaynak_toplam_kaynak ile hizalı)
     tp_kaynak = (ctx.bilanco(b, t, 'Mevduat', 'TP')
                + ctx.bilanco(b, t, 'Alınan Krediler', 'TP')
-               + ctx.bilanco(b, t, 'Para Piyasalarına Borçlar', 'TP')
                + ctx.bilanco(b, t, 'İhraç Edilen Menkul Kıymetler (Net)', 'TP'))
     return tp_kaynak, m_toplam_kaynak(ctx, b, t)
 
@@ -440,6 +447,79 @@ def _nd_serbest_sermaye(ctx, b, t):
              - ctx.bilanco(b, t, 'Maddi Duran Varlıklar (Net)')
              - ctx.bilanco(b, t, 'Maddi Olmayan Duran Varlıklar (Net)'))
     return serbest, ctx.bilanco(b, t, 'Toplam Aktifler')
+
+
+# --- 2026-08-14 measures.docx yeni 20 rasyo — grup ağırlıklı agregasyon ---
+def _nd_kredi_riski_toplam_risk(ctx, b, t):
+    return _kredi_riski(ctx, b, t), _piyasa_riski(ctx, b, t) + _operasyonel_risk(ctx, b, t) + _kredi_riski(ctx, b, t)
+
+
+def _nd_piyasa_riski_toplam_risk(ctx, b, t):
+    return _piyasa_riski(ctx, b, t), _piyasa_riski(ctx, b, t) + _operasyonel_risk(ctx, b, t) + _kredi_riski(ctx, b, t)
+
+
+def _nd_operasyonel_risk_toplam_risk(ctx, b, t):
+    return _operasyonel_risk(ctx, b, t), _piyasa_riski(ctx, b, t) + _operasyonel_risk(ctx, b, t) + _kredi_riski(ctx, b, t)
+
+
+def _nd_brut_krediler_ta(ctx, b, t):
+    return _brut_krediler(ctx, b, t), ctx.bilanco(b, t, 'Toplam Aktifler')
+
+
+def _nd_bankalar_ta(ctx, b, t):
+    return ctx.bilanco(b, t, 'Bankalar'), ctx.bilanco(b, t, 'Toplam Aktifler')
+
+
+def _nd_nakit_degerler_ta(ctx, b, t):
+    return ctx.bilanco(b, t, 'Nakit Değerler Ve Merkez Bankası'), ctx.bilanco(b, t, 'Toplam Aktifler')
+
+
+def _nd_yp_krediler_toplam(ctx, b, t):
+    return _brut_krediler(ctx, b, t, 'YP'), _brut_krediler(ctx, b, t)
+
+
+def _nd_birikimli_vadeli(ctx, b, t):
+    return _birikimli_vadeli_mevduat(ctx, b, t), m_vadeli_mevduat(ctx, b, t)
+
+
+def _nd_resmi_kurumlar_mev(ctx, b, t):
+    return ctx.resmi_kurumlar(b, t), ctx.bilanco(b, t, 'Mevduat')
+
+
+def _nd_toplam_fonlama_mp(ctx, b, t):
+    return m_toplam_fonlama(ctx, b, t), _faiz_maliyetli_pasif_detay(ctx, b, t)
+
+
+def _nd_tuzel_mevduat_mev(ctx, b, t):
+    return ctx.tuzel_mevduat(b, t), ctx.bilanco(b, t, 'Mevduat')
+
+
+def _nd_alinan_krediler_toplam_pasifler(ctx, b, t):
+    return ctx.bilanco(b, t, 'Alınan Krediler'), ctx.bilanco(b, t, 'Toplam Pasifler')
+
+
+# Likidite Açığı vade dilimleri (7) — num = kalan_vade kalem, den = Toplam Aktifler.
+def _make_nd_likidite(kalem):
+    def fn(ctx, b, t):
+        return ctx.kalan_vade(b, t, kalem), ctx.bilanco(b, t, 'Toplam Aktifler')
+    return fn
+
+
+# Vadeli mevduat vade dilimleri (4) — num = mvy dilim, den = Vadeli Mevduat.
+# NOT: mvy tablosu (konvansiyonel) — katılım bankalarında num=0 (banka seviyesiyle
+# aynı sınır; _LIKIDITE_ACIGI_KALEM notuna paralel).
+_VADELI_DILIM_KALEM = {
+    'vadeli_1ay_toplam_vadeli': 'Toplam, 1 Aya Kadar',
+    'vadeli_1_3ay_toplam_vadeli': 'Toplam, 1-3 Ay',
+    'vadeli_3_6ay_toplam_vadeli': 'Toplam, 3-6 Ay',
+    'vadeli_6_12ay_toplam_vadeli': 'Toplam, 6 Ay-1 Yıl',
+}
+
+
+def _make_nd_vadeli(kalem):
+    def fn(ctx, b, t):
+        return ctx.mvy(b, t, kalem), m_vadeli_mevduat(ctx, b, t)
+    return fn
 
 
 # Map: measure_id → (num, den) fonksiyonu
@@ -520,6 +600,21 @@ RATIO_NUM_DEN: Dict[str, NumDenFn] = {
     'ppborclari_pasifler': _nd_ppb,
     'maliyetli_pasifler_toplam_pasifler': _nd_maliyetli_pasif,
     'serbest_sermaye_ta': _nd_serbest_sermaye,
+    # 2026-08-14 measures.docx yeni 20 rasyo
+    'kredi_riski_toplam_risk': _nd_kredi_riski_toplam_risk,
+    'piyasa_riski_toplam_risk': _nd_piyasa_riski_toplam_risk,
+    'operasyonel_risk_toplam_risk': _nd_operasyonel_risk_toplam_risk,
+    'brut_krediler_ta': _nd_brut_krediler_ta,
+    'bankalar_toplam_aktifler': _nd_bankalar_ta,
+    'nakit_degerler_ta': _nd_nakit_degerler_ta,
+    'yp_krediler_toplam_krediler': _nd_yp_krediler_toplam,
+    'birikimli_vadeli_mevduat_toplam_vadeli': _nd_birikimli_vadeli,
+    'resmi_kurumlar_mevduat_toplam_mevduat': _nd_resmi_kurumlar_mev,
+    'toplam_fonlama_faiz_maliyetli_pasif': _nd_toplam_fonlama_mp,
+    'tuzel_mevduat_toplam_mevduat': _nd_tuzel_mevduat_mev,
+    'alinan_krediler_toplam_pasifler': _nd_alinan_krediler_toplam_pasifler,
+    **{mid: _make_nd_likidite(kalem) for mid, kalem in _LIKIDITE_ACIGI_KALEM.items()},
+    **{mid: _make_nd_vadeli(kalem) for mid, kalem in _VADELI_DILIM_KALEM.items()},
 }
 
 
@@ -528,6 +623,7 @@ RATIO_NUM_DEN: Dict[str, NumDenFn] = {
 RATIO_SCALE: Dict[str, float] = {
     'faiz_getirili_maliyetli': 1.0,  # birim='kat' → 2,05 kat
     'faiz_getirili_ozkaynak': 1.0,   # birim='kat' → 10,2 kat
+    'toplam_fonlama_faiz_maliyetli_pasif': 1.0,  # birim='kat'
 }
 
 
@@ -637,26 +733,38 @@ def _agg_per_unit(ctx, mid, members, tarih, first_date_map=None):
     active = _active_members(members, tarih, first_date_map)
     num_sum, den_sum = 0.0, 0.0
     for b in active:
+        # Bölücü önce: 0 şube/personel olan üye (ör. dijital banka — Enpara,
+        # TOM Bank, Hayat Finans 0 şube) bu "başına" metriğinden TAMAMEN
+        # dışlanır (hem pay hem paydadan düşer). 2026-08-15 fix: eskiden
+        # `not d → return None` idi, yani gruba tek bir 0-şubeli üye girdiği
+        # anda TÜM grup boş dönüyordu (Katılım Bankaları 2022'den sonra,
+        # Mevduat Bankaları kesintili). Şubesiz banka "şube başına" istatistiğe
+        # dahil değildir — grubu boşaltmamalı.
+        if divisor_id == 'sube_sayisi':
+            d = ctx.sube(b, tarih, 'Şube Sayısı')
+        else:  # personel_sayisi
+            d = ctx.sube(b, tarih, 'Personel Sayısı')
+        if not d:
+            continue
+
         if value_id == 'krediler':
             n = krediler(ctx, b, tarih)
         elif value_id == 'mevduat':
             n = ctx.bilanco(b, tarih, 'Mevduat')
         elif value_id == 'net_donem_kari':
-            n = ctx.gelir(b, tarih, 'Net Dönem Karı / Zararı')
+            # 2026-08-15: akım → TTM ile yıllıklandır (banka m_*_basina_net_kar ile hizalı,
+            # ara çeyreklerde YtD sawtooth'unu önler)
+            n = ttm_flow(ctx, b, tarih, lambda bb, tt: ctx.gelir(bb, tt, 'Net Dönem Karı / Zararı'))
         elif value_id == 'personel_sayisi':
             n = ctx.sube(b, tarih, 'Personel Sayısı')
         elif value_id == 'personel_giderleri':
-            n = ctx.gelir(b, tarih, 'Personel Giderleri (-)')
+            # 2026-08-15: akım → TTM (banka m_personel_basina_personel_gideri ile hizalı)
+            n = ttm_flow(ctx, b, tarih, lambda bb, tt: ctx.gelir(bb, tt, 'Personel Giderleri (-)'))
         else:
             n = None
 
-        if divisor_id == 'sube_sayisi':
-            d = ctx.sube(b, tarih, 'Şube Sayısı')
-        else:  # personel_sayisi
-            d = ctx.sube(b, tarih, 'Personel Sayısı')
-
-        if n is None or not d:
-            return None
+        if n is None:
+            continue  # numerator verisi eksik üye — grubu boşaltmadan atla
         num_sum += n
         den_sum += d
     if den_sum == 0:

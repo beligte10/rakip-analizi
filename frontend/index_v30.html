@@ -27,10 +27,26 @@
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 24px; color: #fff;
   }
-  .topbar-left { display: flex; align-items: center; gap: 20px; }
-  .topbar-date { font-size: 20px; font-weight: 600; letter-spacing: 0.3px; }
-  .topbar-measure { font-size: 20px; font-weight: 500; color: #fff; }
-  .topbar-divider { width: 2px; height: 24px; background: #2a4358; }
+  /* Sol blok (tarih + ölçüt adı) ortadaki absolute-konumlu logo bloğuna
+     GİRMEMELİ. max-width ile sol içerik logonun sol kenarından önce biter;
+     uzun ölçüt adları JS'te metin uzunluğuna göre küçültülür (font-size
+     inline) ve gerekirse 2 satıra sarılır (aşağıdaki -webkit-line-clamp). */
+  .topbar-left {
+    display: flex; align-items: center; gap: 20px;
+    min-width: 0; max-width: calc(50% - 160px);
+  }
+  .topbar-date { font-size: 20px; font-weight: 600; letter-spacing: 0.3px; flex: none; }
+  .topbar-measure {
+    font-size: 20px; font-weight: 500; color: #fff;
+    min-width: 0; line-height: 1.15;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+  .topbar-divider { width: 2px; height: 24px; background: #2a4358; flex: none; }
+  /* Orta logo gizlendiğinde (dar ekran) sol blok daha fazla yer kullanabilir. */
+  @media (max-width: 980px) {
+    .topbar-left { max-width: calc(100% - 210px); }
+  }
   .topbar-brand {
     display: flex; align-items: center; gap: 8px;
     font-size: 15px; font-weight: 600;
@@ -1285,9 +1301,9 @@
     var y = parseInt(parts[0]) - 1;
     return y + '-' + parts[1] + '-' + parts[2];
   }
-  function threeYearsAgoTarih(t) {
+  function twoYearsAgoTarih(t) {
     var parts = t.split('-');
-    return (parseInt(parts[0]) - 3) + '-' + parts[1] + '-' + parts[2];
+    return (parseInt(parts[0]) - 2) + '-' + parts[1] + '-' + parts[2];
   }
   function tarihLabel(t) {
     var AY = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
@@ -1314,6 +1330,27 @@
     return obj ? obj.value : null;
   }
 
+  // Şube-bazlı ölçüler: şubesi olmayan (dijital) bankalar bu ölçülerde
+  // LİSTEDE/GRAFİKTE HİÇ gösterilmez (Enpara, TOM Bank, Hayat Finans — 0 şube;
+  // "şube başına" bir metrik onlar için anlamsız, "–"/0 satırı olarak da kalmaz).
+  // Personel-bazlı ölçüler ETKİLENMEZ (bu bankaların personeli var).
+  var SUBE_MEASURES = {
+    'sube_sayisi': true,
+    'sube_basina_krediler': true,
+    'sube_basina_mevduat': true,
+    'sube_basina_net_kar': true,
+    'sube_basina_personel': true
+  };
+  function bankHasBranches(banka, tarih) {
+    var s = bankVal('sube_sayisi', banka, tarih);
+    return s != null && s > 0;
+  }
+  // Bir ölçü + banka + tarih listede gösterilecek mi? (şubesiz banka + şube ölçüsü → hayır)
+  function bankShownForMeasure(mid, banka, tarih) {
+    if (SUBE_MEASURES[mid] && !bankHasBranches(banka, tarih)) return false;
+    return true;
+  }
+
   // SABİT TOP-20 seti — o tarihin Toplam Aktifler sıralamasına göre
   function getFixedTop20(tarih) {
     return (DATA.meta.top20_by_date && DATA.meta.top20_by_date[tarih]) || [];
@@ -1325,6 +1362,7 @@
     var rows = [];
     for (var i = 0; i < allBanks.length; i++) {
       var b = allBanks[i];
+      if (!bankShownForMeasure(mid, b, tarih)) continue;  // şubesiz banka + şube ölçüsü
       var v = bankVal(mid, b, tarih);
       if (v != null) rows.push({ banka: b, value: v });
     }
@@ -1356,6 +1394,7 @@
     var rows = [];
     for (var i = 0; i < top20Set.length; i++) {
       var b = top20Set[i];
+      if (!bankShownForMeasure(mid, b, tarih)) continue;  // şubesiz banka + şube ölçüsü
       var v = bankVal(mid, b, tarih);
       rows.push({ banka: b, value: v });
     }
@@ -1515,11 +1554,16 @@
     return 'Değer';
   }
 
-  function cagr3y(mid, banka, tarih) {
+  // "Rakip Bankalar Yıllık Snapshot" panelindeki 3 dönemle (t-2y, t-1y, t)
+  // tutarlı: t-2 ile t arasında 2 yıl (2 bileşik adım) var, yani
+  // t = (t-2) * x^2 → x = sqrt(t / (t-2)) → CAGR = x - 1 (2026-08-12 düzeltmesi;
+  // önceden t-3 yılın değeriyle üs 1/3 kullanılıyordu — panelde gösterilen
+  // aralıkla (t-2..t) uyuşmuyordu).
+  function cagr2y(mid, banka, tarih) {
     var cur = bankVal(mid, banka, tarih);
-    var three = bankVal(mid, banka, threeYearsAgoTarih(tarih));
-    if (cur == null || three == null || three <= 0) return null;
-    return (Math.pow(cur / three, 1/3) - 1) * 100;
+    var two = bankVal(mid, banka, twoYearsAgoTarih(tarih));
+    if (cur == null || two == null || two <= 0) return null;
+    return (Math.pow(cur / two, 1/2) - 1) * 100;
   }
 
   function ratioQoQBps(mid, banka, tarih) {
@@ -1553,6 +1597,41 @@
     return isPctBirim(measure) ? fmtBps(v) : fmtPctPlain(v, 1);
   }
   function qoqDeltaEsik(measure) { return isPctBirim(measure) ? 0.5 : 0.05; }
+
+  // Şube & Personel kategorisi: çeyreklik değişim YÜZDE/BPS değil, MİKTARSAL
+  // (mutlak fark) gösterilir — kullanıcı isteği (2026-08-15). Örn. Şube Sayısı
+  // +2 (adet), Personel Sayısı +150, Şube Başına Krediler +45 mn TL.
+  function isMiktarDelta(measure) {
+    return !!(measure && measure.kategori === 'Şube & Personel');
+  }
+  function miktarDelta(measure, isim, tarih, isGroup) {
+    var cur  = isGroup ? groupVal(measure.id, isim, tarih)
+                       : bankVal(measure.id, isim, tarih);
+    var prev = isGroup ? groupVal(measure.id, isim, qoqTarih(tarih))
+                       : bankVal(measure.id, isim, qoqTarih(tarih));
+    if (cur == null || prev == null) return null;
+    return cur - prev;  // mutlak fark, ölçünün kendi biriminde
+  }
+  function fmtMiktarDelta(v, measure) {
+    if (v == null) return '—';
+    var pre = v > 0 ? '+' : '';  // negatifin '-'i fmtBinTL/fmtNum'dan gelir
+    if (measure && measure.birim === 'bin_TL') return pre + fmtBinTL(v);
+    // adet: sayım (büyüklük) tam sayı; oran (Şube Başına Personel) 1 ondalık
+    var dec = (measure && measure.tip === 'buyukluk') ? 0 : 1;
+    return pre + fmtNum(v, dec);
+  }
+  function miktarDeltaEsik(measure) {
+    return (measure && measure.birim === 'bin_TL') ? 1 : 0.5;
+  }
+  // Bir satır için gösterilecek çeyreklik delta değeri — kategori/tipe göre
+  // kaynağı seçer: Şube&Personel → miktarsal fark; diğer rasyolar → bps/%;
+  // Bilanço büyüklükleri → pazar payı bps.
+  function rowQoQDelta(measure, banka, tarih) {
+    if (isMiktarDelta(measure)) return miktarDelta(measure, banka, tarih, false);
+    return (measure.tip === 'rasyo')
+      ? measureQoQDelta(measure, banka, tarih, false)
+      : msDeltaBps(measure.id, banka, tarih);
+  }
 
   // YEŞİL TONU SADECE KT'YE AYRILMIŞ. Diğer bankalar farklı renk paletinden.
   var BANK_COLORS = {
@@ -1764,12 +1843,19 @@
       ? DATA.meta.compositions[props.activeComposition]
       : null;
     var titleText = compMeta ? compMeta.ad : (measure ? measure.ad : '—');
+    // Ölçüt adı uzunluğuna göre yazı boyutunu küçült — uzun adlar (ör. "Donuk
+    // Alacaklar Dönemiçi Tahsilat / Ortalama Krediler") ortadaki logo bloğuyla
+    // çakışmadan sığsın. max-width sınırı + bu küçültme + 2-satır sarma birlikte.
+    var titleLen = (titleText || '').length;
+    var titleFont = titleLen > 46 ? '13px'
+                  : titleLen > 36 ? '15px'
+                  : titleLen > 26 ? '17px' : '20px';
     return h(React.Fragment || 'div', null,
       h('div', { className: 'topbar' },
         h('div', { className: 'topbar-left' },
           h('div', { className: 'topbar-date' }, tarihLabel(props.tarih)),
           h('div', { className: 'topbar-divider' }),
-          h('div', { className: 'topbar-measure' }, titleText)
+          h('div', { className: 'topbar-measure', style: { fontSize: titleFont } }, titleText)
         ),
         h('div', { className: 'topbar-center-brand' },
           h('img', { src: KT_GRI_LOGO, alt: 'Kuveyt Türk' }),
@@ -1943,12 +2029,13 @@
   // BANK RANKING — sabit 20 banka seti
   // ===============================================================
   // Pazar payı / çeyreklik delta sütunu gösterilsin mi?
-  // - Tüm rasyolarda: evet (çeyreklik bps değişimi)
+  // - Tüm rasyolarda: evet (çeyreklik bps/% değişimi)
   // - Bilanço büyüklüklerinde: evet (pazar payı değişimi bps)
-  // - Gelir Tablosu / Şube&Personel büyüklüklerinde: hayır
+  // - Şube&Personel büyüklüklerinde (Şube/Personel Sayısı): evet (MİKTARSAL değişim)
+  // - Gelir Tablosu büyüklüklerinde: hayır
   function showDeltaColumn(measure) {
     if (measure.tip === 'rasyo') return true;
-    return measure.kategori === 'Bilanço';
+    return measure.kategori === 'Bilanço' || measure.kategori === 'Şube & Personel';
   }
 
   function BankRanking(props) {
@@ -1982,9 +2069,7 @@
 
     var deltaVals = hasDelta ? sortedTop20.map(function(row) {
       if (row.value == null) return null;
-      return isRasyo
-        ? measureQoQDelta(measure, row.banka, tarih, false)
-        : msDeltaBps(measure.id, row.banka, tarih);
+      return rowQoQDelta(measure, row.banka, tarih);
     }).filter(function(d){ return d != null; }) : [];
     var deltaMaxAbs = deltaVals.length > 0
       ? Math.max.apply(null, deltaVals.map(Math.abs))
@@ -2001,9 +2086,11 @@
                                : ('İlk 20 Banka Büyüklükleri (' + buyuklukLabel(measure) + ')')),
         h('div', null, 'Değer'),
         hasDelta && h('div', null,
-          isRasyo
-            ? (isPctBirim(measure) ? 'Çeyreklik Değişim (Bps)' : 'Çeyreklik Değişim (%)')
-            : 'Pazar Payı Değişimi (Bps)')
+          isMiktarDelta(measure)
+            ? ('Çeyreklik Değişim (' + (measure.birim === 'bin_TL' ? 'TL' : 'adet') + ')')
+            : isRasyo
+              ? (isPctBirim(measure) ? 'Çeyreklik Değişim (Bps)' : 'Çeyreklik Değişim (%)')
+              : 'Pazar Payı Değişimi (Bps)')
       ),
       sortedTop20.map(function(row) {
         var isKT = row.banka === KT_NAME;
@@ -2018,13 +2105,12 @@
           widthPct = (row.value / maxVal) * 100 * barScaleFactor;
         }
         var delta = (hasDelta && row.value != null)
-          ? (isRasyo
-              ? measureQoQDelta(measure, row.banka, tarih, false)
-              : msDeltaBps(measure.id, row.banka, tarih))
+          ? rowQoQDelta(measure, row.banka, tarih)
           : null;
         // Sort_direction = 'asc' → düşmek iyi → eksiler yeşil, artılar kırmızı (renk ters)
         var sortAscBR = measure.sort_direction === 'asc';
-        var deltaEsik = isRasyo ? qoqDeltaEsik(measure) : 0.5;
+        var deltaEsik = isMiktarDelta(measure) ? miktarDeltaEsik(measure)
+                      : isRasyo ? qoqDeltaEsik(measure) : 0.5;
         var deltaCls = delta == null || Math.abs(delta) < deltaEsik ? 'zero'
                      : delta > 0 ? (sortAscBR ? 'neg' : 'pos')
                      : (sortAscBR ? 'pos' : 'neg');
@@ -2058,7 +2144,8 @@
             }),
             h('div', { className: 'bank-delta-text ' + deltaCls },
               delta == null ? '—'
-                : (isRasyo ? fmtQoQDelta(delta, measure) : fmtBps(delta))
+                : isMiktarDelta(measure) ? fmtMiktarDelta(delta, measure)
+                : isRasyo ? fmtQoQDelta(delta, measure) : fmtBps(delta)
             )
           )
         );
@@ -2081,7 +2168,9 @@
     var top20Set = getFixedTop20(tarih);
     var metricLabel = growthMetricLabel(measure); // 'YtD' veya 'YoY'
 
-    var bars = top20Set.map(function(banka) {
+    var bars = top20Set.filter(function(banka) {
+      return bankShownForMeasure(measure.id, banka, tarih);  // şubesiz banka + şube ölçüsü → gösterme
+    }).map(function(banka) {
       var coverage = DATA.meta.bank_coverage[banka] || 0;
       var growth = growthMetric(measure, banka, tarih);
       var baz = growthBase(measure, banka, tarih);
@@ -2443,7 +2532,7 @@
 
           var color = bankColor(b);       // bar dolgusu — marka rengine sadık kalır
           var textColor = bankTextColor(b); // CAGR metni — karanlık modda kontrast-güvenli
-          var cagr = cagr3y(measure.id, b, tarih);
+          var cagr = cagr2y(measure.id, b, tarih);
 
           var bars = values.map(function(v, i) {
             var x = sidePad + i * (barW + gap);
@@ -3237,7 +3326,8 @@
       return fmtNum(v, 0);
     }
 
-    var allBanks = DATA.meta.banks.map(function(b){ return b.banka_adi; });
+    var allBanks = DATA.meta.banks.map(function(b){ return b.banka_adi; })
+      .filter(function(b){ return bankShownForMeasure(measure.id, b, props.tarih); });  // şube ölçüsünde şubesiz banka listelenmez
     var allGroups = DATA.meta.group_order;
 
     return h('div', { className: 'trend-wrap' },

@@ -47,6 +47,7 @@ class LookupContext:
             ('sermaye', df['Tablo Adı'] == 'Finansal Varlık ve Borçların Gerçeğe Uygun Değerlerine İlişkin Bilgiler'),
             ('tcmb', df['Tablo Adı'] == 'Nakit Değerler ve TCMB’ye İlişkin Bilgiler'),
             ('ozkaynak_detay', df['Tablo Adı'] == 'Özkaynak Kalemlerine İlişkin Bilgiler'),
+            ('kalan_vade', df['Tablo Adı'] == 'Aktif ve Pasif Kalemlerin Kalan Vadelerine Göre Gösterimi'),
         ]:
             self._idx[table_key] = self._index(df[mask])
 
@@ -146,6 +147,12 @@ class LookupContext:
         veride düz 'O' ve 'ı'sız yazılı ('Özkaynaklar' DEĞİL) — birebir kopyalanmalı.
         Bilanço 'Özkaynaklar' kaleminden FARKLI (regülasyon toplam özkaynağı)."""
         return self._lookup('ozkaynak_detay', banka, tarih, kalem, pb)
+
+    def kalan_vade(self, banka, tarih, kalem, pb='Toplam'):
+        """'Aktif ve Pasif Kalemlerin Kalan Vadelerine Göre Gösterimi' tablosu
+        (Likidite Açığı, Nakit Değerler vb. vade dilimleri). NOT: ham veride
+        'Likidite' 'Likitide' olarak yazılı — kalem adları birebir kopyalanmalı."""
+        return self._lookup('kalan_vade', banka, tarih, kalem, pb)
 
     # Banka tipi farkındalı yardımcılar
     def vadesiz_mevduat(self, banka, tarih):

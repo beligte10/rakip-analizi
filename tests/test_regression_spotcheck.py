@@ -41,7 +41,9 @@ GOLDEN = {
 # BASELINE_PASSTHROUGH: ham BDDK verisinden hesaplanamayan, önceki
 # computed.json'dan devralınması gereken ölçütler. rebuild sırasında bunlar
 # base_data olarak verilmezse sessizce kaybolur (bkz. 2026-08-09 bug).
-EXPECTED_MEASURE_COUNT = 127
+# 2026-08-14: measures.docx tam DAX taraması ile 127→160 (33 yeni ölçü:
+# RAV, Toplam Risk, Likidite Açığı×7, vade dilimleri vb.). Bilinçli artış.
+EXPECTED_MEASURE_COUNT = 160
 EXPECTED_BANK_COUNT = 27
 
 
@@ -54,7 +56,7 @@ def computed():
 
 
 def test_measure_count_kayip_yok(computed):
-    """127 measure'ın tamamı mevcut mu — BASELINE_PASSTHROUGH kaybı gibi bir
+    """160 measure'ın tamamı mevcut mu — BASELINE_PASSTHROUGH kaybı gibi bir
     regresyon olursa bu sayı sessizce düşer (bkz. 2026-08-09 bug)."""
     assert len(computed['bank_data']) == EXPECTED_MEASURE_COUNT
 

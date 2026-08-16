@@ -317,7 +317,10 @@ def m_npl_rasyosu_satis_terkin_oncesi(ctx, b, t):
 
 
 def m_grup_1_krediler_toplam(ctx, b, t):
-    return safe_ratio(m_grup_1_krediler(ctx, b, t), krediler(ctx, b, t))
+    """2026-08-14: payda measures.docx DAX'ıyla hizalandı — 'Grup 1 Krediler /
+    Toplam Brüt Krediler' (önceden 'Krediler Ve Alacaklar (Toplam)' tek satırı
+    kullanılıyordu, Faktoring/Kiralama/Donuk/Takipteki hariçti)."""
+    return safe_ratio(m_grup_1_krediler(ctx, b, t), _brut_krediler(ctx, b, t))
 
 
 def m_grup_2_krediler_toplam(ctx, b, t):
@@ -346,19 +349,23 @@ def m_tasit_tuketici(ctx, b, t):
 
 
 def m_tuketici_toplam(ctx, b, t):
-    return safe_ratio(m_tuketici_kredileri(ctx, b, t), krediler(ctx, b, t))
+    """2026-08-14: payda DAX'a göre Toplam Brüt Krediler (bkz. m_grup_1_krediler_toplam notu)."""
+    return safe_ratio(m_tuketici_kredileri(ctx, b, t), _brut_krediler(ctx, b, t))
 
 
 def m_tuzel_toplam(ctx, b, t):
-    return safe_ratio(m_tuzel_krediler(ctx, b, t), krediler(ctx, b, t))
+    """2026-08-14: payda DAX'a göre Toplam Brüt Krediler."""
+    return safe_ratio(m_tuzel_krediler(ctx, b, t), _brut_krediler(ctx, b, t))
 
 
 def m_ihtiyac_toplam(ctx, b, t):
-    return safe_ratio(m_ihtiyac_kredileri(ctx, b, t), krediler(ctx, b, t))
+    """2026-08-14: payda DAX'a göre Toplam Brüt Krediler."""
+    return safe_ratio(m_ihtiyac_kredileri(ctx, b, t), _brut_krediler(ctx, b, t))
 
 
 def m_bkk_toplam(ctx, b, t):
-    return safe_ratio(m_bireysel_kredi_kartlari(ctx, b, t), krediler(ctx, b, t))
+    """2026-08-14: payda DAX'a göre Toplam Brüt Krediler."""
+    return safe_ratio(m_bireysel_kredi_kartlari(ctx, b, t), _brut_krediler(ctx, b, t))
 
 
 def m_konut_tp_pasifler(ctx, b, t):
@@ -371,7 +378,13 @@ def m_tp_aktifler_ta(ctx, b, t):
 
 
 def m_tp_krediler_toplam(ctx, b, t):
-    return safe_ratio(krediler(ctx, b, t, 'TP'), krediler(ctx, b, t))
+    """2026-08-14: DAX'a göre 'TP Brüt Krediler / Toplam Brüt Krediler'."""
+    return safe_ratio(_brut_krediler(ctx, b, t, 'TP'), _brut_krediler(ctx, b, t))
+
+
+def m_yp_krediler_toplam(ctx, b, t):
+    """PBI [YP Krediler/ Toplam Krediler] = [YP Brüt Krediler]/[Toplam Brüt Krediler]."""
+    return safe_ratio(_brut_krediler(ctx, b, t, 'YP'), _brut_krediler(ctx, b, t))
 
 
 def m_yp_aktifler_toplam_pasifler(ctx, b, t):
@@ -405,16 +418,18 @@ def m_npl_karsilama_orani(ctx, b, t):
 
 
 def m_mali_kesim_toplam(ctx, b, t):
+    """2026-08-14: payda DAX'a göre Toplam Brüt Krediler."""
     mk = ctx.grup12(b, t, 'Mali Kesime Verilen Krediler,  Standart Nitelikli Krediler, Toplam')
-    return safe_ratio(mk, krediler(ctx, b, t))
+    return safe_ratio(mk, _brut_krediler(ctx, b, t))
 
 
 def m_dis_ticaret_toplam(ctx, b, t):
+    """2026-08-14: payda DAX'a göre Toplam Brüt Krediler."""
     toplam = 0.0
     for kategori in ['İhracat Kredileri', 'İthalat Kredileri']:
         toplam += ctx.grup12(b, t, f'{kategori},  Standart Nitelikli Krediler, Toplam')
         toplam += _grup2_kategori(ctx, b, t, kategori)
-    return safe_ratio(toplam, krediler(ctx, b, t))
+    return safe_ratio(toplam, _brut_krediler(ctx, b, t))
 
 
 # ============================================================
@@ -662,11 +677,23 @@ def m_faiz_getirili_ozkaynak(ctx, b, t):
 # RASYOLAR — Şube/Personel
 # ============================================================
 
-def _per_fn(ctx, b, t, num_fn, denom_kalem):
+def _per_fn(ctx, b, t, num_fn, denom_kalem, annualize=False):
+    """Pay büyüklüğü (num_fn) / şube ya da personel sayısı / 1000 (bin TL).
+    annualize (2026-08-15): akım (flow) büyüklükleri için TTM ile yıllıklandır.
+    BDDK gelir tablosu YtD (yıl başından kümülatif) olduğundan, ara çeyreklerde
+    ham değer 3/6/9 aylık kısmi kalır — bu da net kar / personel gideri başına
+    ölçülerini yıl sonuna göre yapay küçük gösteriyordu (testere-dişi trend).
+    ttm_flow ile son 12 aya çevrilir. Stok büyüklüklerinde (krediler, mevduat)
+    anlık değer doğru olduğundan annualize=False (varsayılan)."""
     n = m_personel_sayisi(ctx, b, t) if denom_kalem == 'personel' else m_sube_sayisi(ctx, b, t)
     if not n:
         return None
-    num = num_fn(ctx, b, t)
+    if annualize:
+        num = ttm_flow(ctx, b, t, lambda bb, tt: num_fn(ctx, bb, tt))
+    else:
+        num = num_fn(ctx, b, t)
+    if num is None:
+        return None
     return num / n / 1000
 
 
@@ -679,11 +706,13 @@ def m_personel_basina_mevduat(ctx, b, t):
 
 
 def m_personel_basina_net_kar(ctx, b, t):
-    return _per_fn(ctx, b, t, lambda c, x, y: c.gelir(x, y, 'Net Dönem Karı / Zararı'), 'personel')
+    """2026-08-15: TTM ile yıllıklandırıldı (akım — bkz. _per_fn notu)."""
+    return _per_fn(ctx, b, t, lambda c, x, y: c.gelir(x, y, 'Net Dönem Karı / Zararı'), 'personel', annualize=True)
 
 
 def m_personel_basina_personel_gideri(ctx, b, t):
-    return _per_fn(ctx, b, t, lambda c, x, y: c.gelir(x, y, 'Personel Giderleri (-)'), 'personel')
+    """2026-08-15: TTM ile yıllıklandırıldı (akım — bkz. _per_fn notu)."""
+    return _per_fn(ctx, b, t, lambda c, x, y: c.gelir(x, y, 'Personel Giderleri (-)'), 'personel', annualize=True)
 
 
 def m_sube_basina_krediler(ctx, b, t):
@@ -695,7 +724,8 @@ def m_sube_basina_mevduat(ctx, b, t):
 
 
 def m_sube_basina_net_kar(ctx, b, t):
-    return _per_fn(ctx, b, t, lambda c, x, y: c.gelir(x, y, 'Net Dönem Karı / Zararı'), 'sube')
+    """2026-08-15: TTM ile yıllıklandırıldı (akım — bkz. _per_fn notu)."""
+    return _per_fn(ctx, b, t, lambda c, x, y: c.gelir(x, y, 'Net Dönem Karı / Zararı'), 'sube', annualize=True)
 
 
 def m_sube_basina_personel(ctx, b, t):
@@ -717,9 +747,14 @@ def m_resmi_kurumlar_mevduat(ctx, b, t):  return ctx.resmi_kurumlar(b, t)
 
 
 def m_toplam_kaynak(ctx, b, t):
+    """PBI [Toplam Kaynak] = Mevduat + Alınan Krediler + İhraç Edilen Menkul
+    Kıymetler (Net) — 2026-08-12 düzeltmesi: 'Para Piyasalarına Borçlar'
+    yanlışlıkla eklenmişti (measures.docx DAX'ıyla karşılaştırıldığında
+    bulundu; KT'de ~%6,9 fazla gösteriyordu). PBI'de Para Piyasalarına
+    Borçlar 'Toplam Fonlama' adlı AYRI bir (bizde implement edilmemiş)
+    ölçünün bileşeni — 'Toplam Kaynak'ın değil."""
     return (ctx.bilanco(b, t, 'Mevduat')
           + ctx.bilanco(b, t, 'Alınan Krediler')
-          + ctx.bilanco(b, t, 'Para Piyasalarına Borçlar')
           + ctx.bilanco(b, t, 'İhraç Edilen Menkul Kıymetler (Net)'))
 
 
@@ -742,17 +777,20 @@ _NPL_TAHSILAT_ITEMS = [
 ]
 
 
-def _brut_krediler(ctx, b, t):
+def _brut_krediler(ctx, b, t, pb='Toplam'):
     """PBI [Toplam Brüt Krediler] = Krediler Ve Alacaklar + Faktoring Alacakları
     + Kiralama İşlemlerinden Alacaklar + Donuk Alacaklar + Takipteki Krediler
     (hepsi Bilanço, Para Birimi='Toplam'). NPL dahil = brüt. Not: kalem adı
-    'Krediler Ve Alacaklar' (parantezsiz), '(Toplam)' suffix'li olan DEĞİL."""
+    'Krediler Ve Alacaklar' (parantezsiz), '(Toplam)' suffix'li olan DEĞİL.
+    pb parametresi (2026-08-14): TP/YP Brüt Krediler rasyoları için eklendi —
+    PBI DAX 'X Krediler/Toplam Krediler' ailesinde payda hep Toplam Brüt
+    Krediler'dir (bkz. m_*_toplam fonksiyonları)."""
     return (
-        ctx.bilanco(b, t, 'Krediler Ve Alacaklar')
-        + ctx.bilanco(b, t, 'Faktoring Alacakları')
-        + ctx.bilanco(b, t, 'Kiralama İşlemlerinden Alacaklar')
-        + ctx.bilanco(b, t, 'Donuk Alacaklar')
-        + ctx.bilanco(b, t, 'Takipteki Krediler')
+        ctx.bilanco(b, t, 'Krediler Ve Alacaklar', pb)
+        + ctx.bilanco(b, t, 'Faktoring Alacakları', pb)
+        + ctx.bilanco(b, t, 'Kiralama İşlemlerinden Alacaklar', pb)
+        + ctx.bilanco(b, t, 'Donuk Alacaklar', pb)
+        + ctx.bilanco(b, t, 'Takipteki Krediler', pb)
     )
 
 
@@ -778,8 +816,16 @@ def m_alinan_krediler_iemk_toplam_kaynak(ctx, b, t):
 
 
 def m_tp_alinan_toplam_alinan(ctx, b, t):
-    return safe_ratio(ctx.bilanco(b, t, 'Alınan Krediler', 'TP'),
-                      ctx.bilanco(b, t, 'Alınan Krediler'))
+    """TP Alınan Krediler ve İ.E.M.K / Toplam Alınan Krediler ve İ.E.M.K.
+    2026-08-12 düzeltmesi: İhraç Edilen Menkul Kıymetler (Net) hem pay hem
+    paydada eksikti (ölçünün kendi adı 'İ.E.M.K' dese de kod sadece Alınan
+    Krediler'i kullanıyordu) — İhraç Edilen MK'sı olan bankalarda (Akbank,
+    İş Bankası vb.) birkaç kat yanlış sonuç veriyordu."""
+    pay = (ctx.bilanco(b, t, 'Alınan Krediler', 'TP')
+         + ctx.bilanco(b, t, 'İhraç Edilen Menkul Kıymetler (Net)', 'TP'))
+    payda = (ctx.bilanco(b, t, 'Alınan Krediler')
+           + ctx.bilanco(b, t, 'İhraç Edilen Menkul Kıymetler (Net)'))
+    return safe_ratio(pay, payda)
 
 
 def m_tuzel_krediler_tuzel_mevduat(ctx, b, t):
@@ -792,23 +838,29 @@ def m_krediler_altindisi_mevduat(ctx, b, t):
 
 
 def m_krediler_toplam_kaynak(ctx, b, t):
-    return safe_ratio(krediler(ctx, b, t), m_toplam_kaynak(ctx, b, t))
+    """2026-08-14: pay DAX'a göre Toplam Brüt Krediler ('Krediler/Toplam Kaynak
+    = [Toplam Brüt Krediler]/[Toplam Kaynak]')."""
+    return safe_ratio(_brut_krediler(ctx, b, t), m_toplam_kaynak(ctx, b, t))
 
 
 def m_tp_krediler_tp_kaynak(ctx, b, t):
+    """2026-08-12: 'Kaynak' tanımı m_toplam_kaynak ile tutarlı hale getirildi
+    (Para Piyasalarına Borçlar çıkarıldı) — DAX bu TP kırılımını ayrıca
+    vermiyor ama 'Toplam Kaynak' ile aynı bileşenleri kullanması beklenir,
+    aksi halde TP/Toplam oranı tutarsız iki farklı tanımı karşılaştırırdı."""
     pay = krediler(ctx, b, t, 'TP')
     den = (ctx.bilanco(b, t, 'Mevduat', 'TP')
          + ctx.bilanco(b, t, 'Alınan Krediler', 'TP')
-         + ctx.bilanco(b, t, 'Para Piyasalarına Borçlar', 'TP')
          + ctx.bilanco(b, t, 'İhraç Edilen Menkul Kıymetler (Net)', 'TP'))
     return safe_ratio(pay, den)
 
 
 def m_yp_krediler_yp_altindisi_kaynak(ctx, b, t):
+    """2026-08-12: 'Kaynak' tanımı m_toplam_kaynak ile tutarlı hale getirildi
+    (Para Piyasalarına Borçlar çıkarıldı) — bkz. m_tp_krediler_tp_kaynak notu."""
     pay = krediler(ctx, b, t, 'YP')
     yp_kaynak = (ctx.bilanco(b, t, 'Mevduat', 'YP')
                + ctx.bilanco(b, t, 'Alınan Krediler', 'YP')
-               + ctx.bilanco(b, t, 'Para Piyasalarına Borçlar', 'YP')
                + ctx.bilanco(b, t, 'İhraç Edilen Menkul Kıymetler (Net)', 'YP'))
     altindisi = yp_kaynak - ctx.kiymetli_maden(b, t)
     return safe_ratio(pay, altindisi)
@@ -824,9 +876,10 @@ def m_tp_mevduat_altindisi_mevduat(ctx, b, t):
 
 
 def m_tp_kaynak_toplam_kaynak(ctx, b, t):
+    """2026-08-12: 'Kaynak' tanımı m_toplam_kaynak ile tutarlı hale getirildi
+    (Para Piyasalarına Borçlar çıkarıldı) — bkz. m_tp_krediler_tp_kaynak notu."""
     tp_kaynak = (ctx.bilanco(b, t, 'Mevduat', 'TP')
                + ctx.bilanco(b, t, 'Alınan Krediler', 'TP')
-               + ctx.bilanco(b, t, 'Para Piyasalarına Borçlar', 'TP')
                + ctx.bilanco(b, t, 'İhraç Edilen Menkul Kıymetler (Net)', 'TP'))
     return safe_ratio(tp_kaynak, m_toplam_kaynak(ctx, b, t))
 
@@ -900,6 +953,211 @@ def m_serbest_sermaye_ta(ctx, b, t):
 # tp_spread / yp_spread placeholder
 def m_tp_spread(ctx, b, t): return None
 def m_yp_spread(ctx, b, t): return None
+
+
+# ============================================================
+# YENİ MEASURE'LAR (2026-08-14 — measures.docx tam DAX taraması)
+# ============================================================
+
+def m_toplam_brut_krediler(ctx, b, t):
+    return _brut_krediler(ctx, b, t)
+
+
+def m_toplam_canli_krediler(ctx, b, t):
+    """PBI [Toplam Canlı Krediler] = Krediler Ve Alacaklar + Faktoring
+    Alacakları + Kiralama İşlemlerinden Alacaklar (Donuk/Takipteki HARİÇ —
+    Toplam Brüt Krediler'den NPL'siz hali)."""
+    return (
+        ctx.bilanco(b, t, 'Krediler Ve Alacaklar')
+        + ctx.bilanco(b, t, 'Faktoring Alacakları')
+        + ctx.bilanco(b, t, 'Kiralama İşlemlerinden Alacaklar')
+    )
+
+
+def m_toplam_fonlama(ctx, b, t):
+    """PBI [Toplam Fonlama] = Mevduat + Alınan Krediler + Para Piyasalarına
+    Borçlar + İhraç Edilen Menkul Kıymetler (Net). NOT: [Toplam Kaynak]'tan
+    FARKLI — Toplam Kaynak'ta Para Piyasalarına Borçlar YOK (bkz. m_toplam_kaynak
+    notu, 2026-08-12 düzeltmesi); Toplam Fonlama PBI'de ayrı bir ölçü ve
+    Para Piyasalarına Borçlar'ı İÇERİR."""
+    return (
+        ctx.bilanco(b, t, 'Mevduat')
+        + ctx.bilanco(b, t, 'Alınan Krediler')
+        + ctx.bilanco(b, t, 'Para Piyasalarına Borçlar')
+        + ctx.bilanco(b, t, 'İhraç Edilen Menkul Kıymetler (Net)')
+    )
+
+
+def m_toplam_kredi_kartlari(ctx, b, t):
+    """PBI [Toplam Kredi Kartları] (measures.docx DAX'ı birebir): 3 terimin
+    2.si ve 3.sü AYNI kalemi kullanıyor ('Bireysel Kredi Kartları - TP, Toplam'
+    iki kez toplanıyor) — YP bireysel kredi kartları formülde hiç yok. Bu,
+    PBI kaynağındaki görünür bir kopyala-yapıştır hatası (muhtemelen 3. terim
+    '...- YP, Toplam' olmalıydı) ama kullanıcının verdiği DAX'a birebir
+    sadık kalındı. YP'de bireysel kredi kartı bakiyesi olan bankalarda bu
+    ölçü onu içermeyecek ve TP'yi 2 kez sayacak şekilde PBI ile aynı davranır."""
+    return (
+        ctx.grup12(b, t, 'Kredi Kartları,  Standart Nitelikli Krediler, Toplam')
+        + ctx.tk_detay(b, t, 'Bireysel Kredi Kartları - TP, Toplam')
+        + ctx.tk_detay(b, t, 'Bireysel Kredi Kartları - TP, Toplam')
+    )
+
+
+def m_toplam_mevduat_km_haric(ctx, b, t):
+    """PBI [Toplam Mevduat (KM Hariç)] = [Toplam Mevduat] - [KM Mevduatı]."""
+    return ctx.bilanco(b, t, 'Mevduat') - ctx.kiymetli_maden(b, t)
+
+
+def m_toplam_ozkaynaklar_regulasyon(ctx, b, t):
+    """PBI [Toplam Özkaynaklar (Ana Sermaye+ Katkı Sermaye)] = regülasyon
+    özkaynağı ('Özkaynak Kalemlerine İlişkin Bilgiler' tablosu, 'Toplam
+    Ozkaynaklar' kalemi) — Bilanço'daki 'Özkaynaklar'dan FARKLI. Zaten
+    m_yp_net_pozisyon_ozkaynak içinde payda olarak kullanılıyordu; burada
+    kendi başına büyüklük olarak da açığa çıkarıldı."""
+    return ctx.ozkaynak_detay(b, t, 'Toplam Ozkaynaklar')
+
+
+def m_toplam_pasifler(ctx, b, t):
+    return ctx.bilanco(b, t, 'Toplam Pasifler')
+
+
+def m_toplam_pasifler_ozkaynak_haric(ctx, b, t):
+    """PBI [Toplam Pasifler (Özkaynak Hariç)] = Toplam Pasifler - Özkaynaklar."""
+    return ctx.bilanco(b, t, 'Toplam Pasifler') - ctx.bilanco(b, t, 'Özkaynaklar')
+
+
+def m_rav(ctx, b, t):
+    """PBI [Toplam Risk Ağırlıklı Varlıklar (RAV)] DAX'ı (measures.docx'te
+    2 kez birebir aynı verilmiş) yalnızca 'Kredi Riskine Esas Tutar: Toplam'ı
+    kullanıyor — isim 'Toplam RAV' dese de formül sadece kredi riski bileşeni
+    (Piyasa/Operasyonel dahil değil). DAX'a birebir sadık kalındı; [Toplam
+    Risk] (Kredi+Piyasa+Operasyonel toplamı, m_toplam_risk_tabani) PBI'de
+    AYRI ve farklı bir ölçü."""
+    return ctx.sermaye(b, t, 'Kredi Riskine Esas Tutar: Toplam')
+
+
+def _kredi_riski(ctx, b, t):
+    return ctx.sermaye(b, t, 'Kredi Riskine Esas Tutar: Toplam')
+
+
+def _piyasa_riski(ctx, b, t):
+    return ctx.tcmb(b, t, 'Sermaye Std. Oranı, Piyasa Riskine Esas Tutar (Pret)')
+
+
+def _operasyonel_risk(ctx, b, t):
+    return ctx.tcmb(b, t, 'Sermaye Std. Oranı, Operasyonel Riske Esas Tutar (Oret)')
+
+
+def m_toplam_risk_tabani(ctx, b, t):
+    """PBI [Toplam Risk] = [Kredi Riski]+[Piyasa Riski]+[Operasyonel Risk].
+    Kredi Riski = sermaye tablosu 'Kredi Riskine Esas Tutar: Toplam'; Piyasa/
+    Operasyonel Risk = tcmb tablosundaki 'Sermaye Std. Oranı, ... Riskine
+    Esas Tutar (Pret/Oret)' kalemleri (SYR'nin paydasıyla aynı kalemler —
+    ham veride 'Sermaye Yeterliliği, Özkaynaklar / (Kredi + Piyasa +
+    Operasyonel Riske Esas Tutar)' kalemiyle doğrulandı)."""
+    return _kredi_riski(ctx, b, t) + _piyasa_riski(ctx, b, t) + _operasyonel_risk(ctx, b, t)
+
+
+def m_kredi_riski_toplam_risk(ctx, b, t):
+    return safe_ratio(_kredi_riski(ctx, b, t), m_toplam_risk_tabani(ctx, b, t))
+
+
+def m_piyasa_riski_toplam_risk(ctx, b, t):
+    return safe_ratio(_piyasa_riski(ctx, b, t), m_toplam_risk_tabani(ctx, b, t))
+
+
+def m_operasyonel_risk_toplam_risk(ctx, b, t):
+    return safe_ratio(_operasyonel_risk(ctx, b, t), m_toplam_risk_tabani(ctx, b, t))
+
+
+def m_brut_krediler_ta(ctx, b, t):
+    """PBI [Brüt Krediler/ Toplam Aktifler] = [Toplam Brüt Krediler]/[Toplam
+    Aktifler] — mevcut 'krediler_ta' (net Krediler/TA) ölçüsünden FARKLI,
+    PBI'de ayrı bir isimle var."""
+    return safe_ratio(_brut_krediler(ctx, b, t), ctx.bilanco(b, t, 'Toplam Aktifler'))
+
+
+def m_alinan_krediler_toplam_pasifler(ctx, b, t):
+    return safe_ratio(ctx.bilanco(b, t, 'Alınan Krediler'), ctx.bilanco(b, t, 'Toplam Pasifler'))
+
+
+def m_bankalar_toplam_aktifler(ctx, b, t):
+    return safe_ratio(ctx.bilanco(b, t, 'Bankalar'), ctx.bilanco(b, t, 'Toplam Aktifler'))
+
+
+def _birikimli_vadeli_mevduat(ctx, b, t):
+    if ctx.bank_turu.get(b) == 'Katılım':
+        return ctx.tfv(b, t, 'Toplam  Birikimli Katılma Hesabı')
+    return ctx.mvy(b, t, 'Toplam, Birikimli')
+
+
+def m_birikimli_vadeli_mevduat_toplam_vadeli(ctx, b, t):
+    return safe_ratio(_birikimli_vadeli_mevduat(ctx, b, t), m_vadeli_mevduat(ctx, b, t))
+
+
+def m_resmi_kurumlar_mevduat_toplam_mevduat(ctx, b, t):
+    return safe_ratio(ctx.resmi_kurumlar(b, t), ctx.bilanco(b, t, 'Mevduat'))
+
+
+def m_toplam_fonlama_faiz_maliyetli_pasif(ctx, b, t):
+    """PBI [Toplam Fonlama/ Faiz (Kar Payı) Maliyetli Pasifler] — 'kat'
+    gösterimi (diğer benzer büyüklük-oranlı ölçüler gibi, örn.
+    faiz_getirili_maliyetli), %100'e ölçeklenmiyor."""
+    return safe_ratio(m_toplam_fonlama(ctx, b, t), _faiz_maliyetli_pasif_detay(ctx, b, t), scale=1.0)
+
+
+def m_tuzel_mevduat_toplam_mevduat(ctx, b, t):
+    return safe_ratio(ctx.tuzel_mevduat(b, t), ctx.bilanco(b, t, 'Mevduat'))
+
+
+def m_nakit_degerler_ta(ctx, b, t):
+    return safe_ratio(ctx.bilanco(b, t, 'Nakit Değerler Ve Merkez Bankası'),
+                      ctx.bilanco(b, t, 'Toplam Aktifler'))
+
+
+def m_vadeli_1ay_toplam_vadeli(ctx, b, t):
+    """PBI [1 Aya Kadar Vadeli Mevduat/ Toplam Vadeli Mevduat]. NOT: Katılım
+    bankalarında vade dilim sınırları (1/3/6/9 ay) konvansiyonel bankalarla
+    (1/1-3/3-6/6-12 ay) örtüşmüyor — bu 4 ölçü ailesi yalnızca mvy tablosunu
+    kullanır, Katılım bankalarında 0 döner (branching yapılmadı)."""
+    return safe_ratio(ctx.mvy(b, t, 'Toplam, 1 Aya Kadar'), m_vadeli_mevduat(ctx, b, t))
+
+
+def m_vadeli_1_3ay_toplam_vadeli(ctx, b, t):
+    return safe_ratio(ctx.mvy(b, t, 'Toplam, 1-3 Ay'), m_vadeli_mevduat(ctx, b, t))
+
+
+def m_vadeli_3_6ay_toplam_vadeli(ctx, b, t):
+    return safe_ratio(ctx.mvy(b, t, 'Toplam, 3-6 Ay'), m_vadeli_mevduat(ctx, b, t))
+
+
+def m_vadeli_6_12ay_toplam_vadeli(ctx, b, t):
+    return safe_ratio(ctx.mvy(b, t, 'Toplam, 6 Ay-1 Yıl'), m_vadeli_mevduat(ctx, b, t))
+
+
+def m_yp_krediler_toplam_krediler(ctx, b, t):
+    """PBI [YP Krediler/ Toplam Krediler] = [YP Brüt Krediler]/[Toplam Brüt
+    Krediler] — mevcut 'yp_krediler_yp_altindisi_kaynak' ölçüsünden FARKLI
+    (o, YP kaynak tabanına göre)."""
+    return safe_ratio(_brut_krediler(ctx, b, t, 'YP'), _brut_krediler(ctx, b, t))
+
+
+# --- Likidite Açığı, kalan vadeye göre / Toplam Aktifler (7 dilim) ---
+_LIKIDITE_ACIGI_KALEM = {
+    'likidite_acigi_vadesiz_ta': 'Kalan Vadelerine Göre, Likitide Açığı, Vadesiz',
+    'likidite_acigi_1ay_ta': 'Kalan Vadelerine Göre, Likitide Açığı, 1 Aya Kadar',
+    'likidite_acigi_1_3ay_ta': 'Kalan Vadelerine Göre, Likitide Açığı, 1-3 Ay',
+    'likidite_acigi_3_12ay_ta': 'Kalan Vadelerine Göre, Likitide Açığı, 3-12 Ay',
+    'likidite_acigi_1_5yil_ta': 'Kalan Vadelerine Göre, Likitide Açığı, 1-5 Yıl',
+    'likidite_acigi_5yil_uzeri_ta': 'Kalan Vadelerine Göre, Likitide Açığı, 5 Yıl Ve Üzeri',
+    'likidite_acigi_dagitilamayan_ta': 'Kalan Vadelerine Göre, Likitide Açığı, Dağıtılamayan',
+}
+
+
+def _make_likidite_acigi_fn(kalem):
+    def fn(ctx, b, t):
+        return safe_ratio(ctx.kalan_vade(b, t, kalem), ctx.bilanco(b, t, 'Toplam Aktifler'))
+    return fn
 
 
 # ============================================================
@@ -1043,6 +1301,35 @@ MEASURE_FUNCS: Dict[str, Callable] = {
     # Placeholder (her zaman None)
     'tp_spread': m_tp_spread,
     'yp_spread': m_yp_spread,
+
+    # === YENİ 31 (2026-08-14 — measures.docx tam DAX taraması) ===
+    'toplam_brut_krediler': m_toplam_brut_krediler,
+    'toplam_canli_krediler': m_toplam_canli_krediler,
+    'toplam_fonlama': m_toplam_fonlama,
+    'toplam_kredi_kartlari': m_toplam_kredi_kartlari,
+    'toplam_mevduat_km_haric': m_toplam_mevduat_km_haric,
+    'toplam_ozkaynaklar_regulasyon': m_toplam_ozkaynaklar_regulasyon,
+    'toplam_pasifler': m_toplam_pasifler,
+    'toplam_pasifler_ozkaynak_haric': m_toplam_pasifler_ozkaynak_haric,
+    'rav': m_rav,
+    'toplam_risk_tabani': m_toplam_risk_tabani,
+    'kredi_riski_toplam_risk': m_kredi_riski_toplam_risk,
+    'piyasa_riski_toplam_risk': m_piyasa_riski_toplam_risk,
+    'operasyonel_risk_toplam_risk': m_operasyonel_risk_toplam_risk,
+    'brut_krediler_ta': m_brut_krediler_ta,
+    'alinan_krediler_toplam_pasifler': m_alinan_krediler_toplam_pasifler,
+    'bankalar_toplam_aktifler': m_bankalar_toplam_aktifler,
+    'birikimli_vadeli_mevduat_toplam_vadeli': m_birikimli_vadeli_mevduat_toplam_vadeli,
+    'resmi_kurumlar_mevduat_toplam_mevduat': m_resmi_kurumlar_mevduat_toplam_mevduat,
+    'toplam_fonlama_faiz_maliyetli_pasif': m_toplam_fonlama_faiz_maliyetli_pasif,
+    'tuzel_mevduat_toplam_mevduat': m_tuzel_mevduat_toplam_mevduat,
+    'nakit_degerler_ta': m_nakit_degerler_ta,
+    'vadeli_1ay_toplam_vadeli': m_vadeli_1ay_toplam_vadeli,
+    'vadeli_1_3ay_toplam_vadeli': m_vadeli_1_3ay_toplam_vadeli,
+    'vadeli_3_6ay_toplam_vadeli': m_vadeli_3_6ay_toplam_vadeli,
+    'vadeli_6_12ay_toplam_vadeli': m_vadeli_6_12ay_toplam_vadeli,
+    'yp_krediler_toplam_krediler': m_yp_krediler_toplam_krediler,
+    **{mid: _make_likidite_acigi_fn(kalem) for mid, kalem in _LIKIDITE_ACIGI_KALEM.items()},
 }
 
 
