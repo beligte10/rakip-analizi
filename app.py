@@ -740,12 +740,21 @@ def _rebuild_dynamic_meta(meta: dict, bank_data: dict, catalog: dict) -> dict:
     """meta'nın DİNAMİK alanlarını hesaplanan bank_data'dan yeniden üretir.
 
     Statik alanlar (banks, groups, group_order, group_colors, kt_ramp,
-    neutral_ramp, accent, compositions) carried meta'dan korunur.
+    neutral_ramp, accent) carried meta'dan korunur.
     Dinamik alanlar (dates, total_periods, bank_coverage, top20_by_date,
     available_measures) her zaman gerçek veriden türetilir — böylece meta
     asla bank_data ile tutarsız / boş kalmaz.
+
+    compositions: catalog.json'dan TAZELENİR (source of truth). 2026-08-15
+    fix'i öncesi carried meta'dan korunuyordu → catalog.json'da kompozisyon
+    düzenlemesi (ör. pasif bileşeni Mevduat Dışı Kaynaklar → Alınan Krediler)
+    rebuild'de hiç yansımıyor, meta ile composition_data uyuşmuyordu.
     """
     meta = dict(meta or {})
+
+    # compositions: catalog source-of-truth (bkz. docstring + datatable.py)
+    if catalog.get('compositions'):
+        meta['compositions'] = catalog['compositions']
     real_banks = [b['banka_adi'] for b in catalog.get('banks', [])]
     real_set = set(real_banks)
     ta = bank_data.get('toplam_aktifler', {})
