@@ -1521,6 +1521,24 @@
     return bankVal(measure.id, banka, d);
   }
 
+  // Büyümenin MİKTARSAL (mutlak) hali — % yerine ölçünün kendi biriminde fark.
+  // Şube&Personel grup büyüme kartlarında kullanılır (kullanıcı isteği). Baz
+  // dönem stok→YtD (yıl başı), akım→YoY (geçen yıl aynı çeyrek).
+  function growthMiktar(measure, banka, tarih) {
+    var d = measure.akim_stok === 'akim' ? yoyTarih(tarih) : ytdTarih(tarih);
+    var cur = bankVal(measure.id, banka, tarih);
+    var prev = bankVal(measure.id, banka, d);
+    if (cur == null || prev == null) return null;
+    return cur - prev;
+  }
+  function growthMiktarGroup(measure, grupName, tarih) {
+    var d = measure.akim_stok === 'akim' ? yoyTarih(tarih) : ytdTarih(tarih);
+    var cur = groupVal(measure.id, grupName, tarih);
+    var prev = groupVal(measure.id, grupName, d);
+    if (cur == null || prev == null) return null;
+    return cur - prev;
+  }
+
   // Medyan (girdi dizisi sıralı OLMAK ZORUNDA değil)
   function medyan(arr) {
     if (!arr.length) return null;
@@ -2178,8 +2196,8 @@
         className: 'bank-ranking-header',
         style: { gridTemplateColumns: gridCols }
       },
-        h('div', null, isRasyo ? ('İlk 20 Banka Rasyo (' + birimLabel(measure) + ')')
-                               : ('İlk 20 Banka Büyüklükleri (' + buyuklukLabel(measure) + ')')),
+        h('div', null, isRasyo ? ('İlk ' + sortedTop20.length + ' Banka Rasyo (' + birimLabel(measure) + ')')
+                               : ('İlk ' + sortedTop20.length + ' Banka Büyüklükleri (' + buyuklukLabel(measure) + ')')),
         h('div', null, 'Değer'),
         hasDelta && h('div', null,
           isMiktarDelta(measure)
@@ -2359,7 +2377,7 @@
 
     var cleanBars = bars.filter(function(b){ return b.growth != null && !b.isAnomalous; });
     if (cleanBars.length === 0) return h('div', { className: 'panel' },
-      h('div', { className: 'panel-header' }, 'İlk 20 Banka ' + metricLabel + ' Büyüme (%)'),
+      h('div', { className: 'panel-header' }, 'İlk ' + bars.length + ' Banka ' + metricLabel + ' Büyüme (%)'),
       h('div', { className: 'empty-state' }, 'Veri yok')
     );
 
@@ -2380,7 +2398,7 @@
 
     return h('div', { className: 'panel' },
       h('div', { className: 'panel-header' },
-        'İlk 20 Banka ' + metricLabel + ' Büyüme (%)'),
+        'İlk ' + bars.length + ' Banka ' + metricLabel + ' Büyüme (%)'),
       h('div', { className: 'ytd-panel-body' },
         h('div', { className: 'ytd-chart-container' },
           // Satır 1: değer etiketleri
@@ -2505,9 +2523,15 @@
     var groupOrder = DATA.meta.group_order;
     var metricLabel = growthMetricLabel(measure);
 
+    // Şube&Personel büyüklük ölçüleri (Şube/Personel Sayısı): grup büyümesi
+    // % yerine MİKTARSAL (adet) gösterilir — kullanıcı isteği (2026-08-15).
+    var miktar = isMiktarDelta(measure) && !isRasyo;
+
     var cells = groupOrder.map(function(g) {
       var val;
       if (isRasyo) val = groupVal(measure.id, g, tarih);
+      else if (miktar) val = (g === KT_NAME ? growthMiktar(measure, KT_NAME, tarih)
+                                            : growthMiktarGroup(measure, g, tarih));
       else if (g === KT_NAME) val = growthMetric(measure, KT_NAME, tarih);
       else val = growthMetricGroup(measure, g, tarih);
       return { label: g, value: val };
@@ -2515,7 +2539,9 @@
 
     var title = isRasyo
       ? ('Banka Grupları Rasyo (' + birimLabel(measure) + ')')
-      : 'Banka Grupları ' + metricLabel + ' Büyüme (%)';
+      : miktar
+        ? ('Banka Grupları ' + metricLabel + ' Büyüme (' + (measure.birim === 'adet' ? 'adet' : 'TL') + ')')
+        : ('Banka Grupları ' + metricLabel + ' Büyüme (%)');
 
     return h('div', { className: 'panel' },
       h('div', { className: 'panel-header' }, title),
@@ -2528,7 +2554,9 @@
             h('div', { className: 'group-cell-label' }, c.label),
             h('div', { className: 'group-cell-value' },
               c.value == null ? '—'
-                : (isRasyo ? fmtMeasure(c.value, measure, 2) : fmtPctPlain(c.value, 2))
+                : isRasyo ? fmtMeasure(c.value, measure, 2)
+                : miktar ? fmtMiktarDelta(c.value, measure)
+                : fmtPctPlain(c.value, 2)
             )
           );
         })
@@ -2545,20 +2573,24 @@
     // iki yüzdenin farkı baz puandır. TL tutarı (bin_TL), çarpan (kat) veya
     // adet birimli measure'larda çeyreklik değişim YÜZDE olarak gösterilir.
     var bpsUygun = isPctBirim(measure);
+    // Şube&Personel: çeyreklik grup değişimi MİKTARSAL (banka seviyesiyle tutarlı).
+    var miktar = isMiktarDelta(measure);
 
     var cells = groupOrder.map(function(g) {
       return {
         label: g,
-        deger: measureQoQDelta(measure, g, tarih, g !== KT_NAME)
+        deger: miktar ? miktarDelta(measure, g, tarih, g !== KT_NAME)
+                      : measureQoQDelta(measure, g, tarih, g !== KT_NAME)
       };
     });
 
-    var esik = qoqDeltaEsik(measure);
+    var esik = miktar ? miktarDeltaEsik(measure) : qoqDeltaEsik(measure);
 
     return h('div', { className: 'panel' },
       h('div', { className: 'panel-header' },
-        bpsUygun ? 'Banka Grupları Rasyo Çeyreklik Değişim (Bps)'
-                 : 'Banka Grupları Çeyreklik Değişim (%)'),
+        miktar ? ('Banka Grupları Çeyreklik Değişim (' + (measure.birim === 'bin_TL' ? 'TL' : 'adet') + ')')
+               : bpsUygun ? 'Banka Grupları Rasyo Çeyreklik Değişim (Bps)'
+               : 'Banka Grupları Çeyreklik Değişim (%)'),
       h('div', { className: 'group-grid' },
         cells.map(function(c) {
           var sortAscGB = measure.sort_direction === 'asc';
@@ -2571,7 +2603,9 @@
           },
             h('div', { className: 'group-cell-label' }, c.label),
             h('div', { className: 'group-cell-value ' + cls },
-              c.deger == null ? '—' : fmtQoQDelta(c.deger, measure)
+              c.deger == null ? '—'
+                : miktar ? fmtMiktarDelta(c.deger, measure)
+                : fmtQoQDelta(c.deger, measure)
             )
           );
         })
