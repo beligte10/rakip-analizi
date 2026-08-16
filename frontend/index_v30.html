@@ -182,13 +182,13 @@
   .date-pill.disabled { opacity: 0.3; cursor: not-allowed; }
   .date-pill.disabled:hover { background: rgba(255,255,255,0.1); }
 
-  /* -------- Mode + measure selector bar -------- */
+  /* -------- Measure selector bar (mode-toggle artık date bar'da) -------- */
   .control-bar {
     background: #fff;
     border-bottom: 1px solid #d4dde3;
     padding: 10px 16px;
     display: flex; align-items: center; gap: 14px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;   /* ölçü kontrolleri tek satırda */
   }
   body.dark .control-bar { background: #13202e; border-color: #1a2f42; }
   .mode-toggle {
@@ -198,6 +198,11 @@
     padding: 2px;
   }
   body.dark .mode-toggle { background: #1a2f42; }
+  /* Mode-toggle date bar (koyu yeşil zemin) içinde — sağa yaslı, açık pill grubu */
+  .date-selector-bar .mode-toggle { margin-left: auto; background: rgba(255,255,255,0.13); }
+  .date-selector-bar .mode-btn { color: rgba(255,255,255,0.82); padding: 6px 16px; }
+  .date-selector-bar .mode-btn:hover { color: #fff; }
+  .date-selector-bar .mode-btn.active { background: #fff; color: var(--kt-green); box-shadow: none; }
   .mode-btn {
     padding: 7px 18px;
     border: none; background: transparent;
@@ -1903,6 +1908,10 @@
       if (target) props.setTarih(target);
     }
 
+    // Mode butonları (Snapshot/Trend/Kompozisyon/Export) — yıl-çeyrek satırında,
+    // sağa yaslı (2026-08-17). Eskiden ayrı control-bar'daydı.
+    var MODES = [['snapshot','Snapshot'], ['trend','Trend'], ['composition','Kompozisyon'], ['export','Export']];
+
     return h('div', { className: 'date-selector-bar' },
       h('div', { className: 'date-selector-group' },
         h('span', { className: 'date-selector-label' }, 'Yıl'),
@@ -1918,6 +1927,15 @@
             disabled: !exists,
             onClick: exists ? function(){ selectQuarter(q.mm); } : undefined
           }, q.label);
+        })
+      ),
+      props.setMode && h('div', { className: 'mode-toggle' },
+        MODES.map(function(m) {
+          return h('button', {
+            key: m[0],
+            className: 'mode-btn' + (props.mode === m[0] ? ' active' : ''),
+            onClick: function(){ props.setMode(m[0]); }
+          }, m[1]);
         })
       )
     );
@@ -2044,7 +2062,7 @@
           )
         )
       ),
-      h(DateSelectorBar, { tarih: props.tarih, setTarih: props.setTarih }),
+      h(DateSelectorBar, { tarih: props.tarih, setTarih: props.setTarih, mode: props.mode, setMode: props.setMode }),
       pwOpenState[0] && h(PasswordModal, { onClose: function(){ pwOpenState[1](false); } })
     );
   }
@@ -2128,25 +2146,6 @@
     }
 
     return h('div', { className: 'control-bar' },
-      h('div', { className: 'mode-toggle' },
-        h('button', {
-          className: 'mode-btn' + (props.mode === 'snapshot' ? ' active' : ''),
-          onClick: function(){ props.setMode('snapshot'); }
-        }, 'Snapshot'),
-        h('button', {
-          className: 'mode-btn' + (props.mode === 'trend' ? ' active' : ''),
-          onClick: function(){ props.setMode('trend'); }
-        }, 'Trend'),
-        h('button', {
-          className: 'mode-btn' + (props.mode === 'composition' ? ' active' : ''),
-          onClick: function(){ props.setMode('composition'); }
-        }, 'Kompozisyon'),
-        h('button', {
-          className: 'mode-btn' + (props.mode === 'export' ? ' active' : ''),
-          onClick: function(){ props.setMode('export'); }
-        }, 'Export')
-      ),
-      h('div', { className: 'control-divider' }),
       props.mode === 'export'
         ? h('div', { className: 'control-label', style: { color: '#94a3b8', fontStyle: 'italic' } },
             'Filtreler aşağıda — banka, tarih, kalem seçimi')
@@ -4648,7 +4647,7 @@
         theme: theme, setTheme: setTheme,
         tarih: tarih, setTarih: setTarih,
         activeMeasure: activeMeasure,
-        mode: mode,
+        mode: mode, setMode: setMode,
         activeComposition: activeComposition,
         isAdmin: isAdmin
       }),
