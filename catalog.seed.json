@@ -1,0 +1,2244 @@
+{
+  "banks": [
+    {
+      "banka_adi": "Kuveyt Türk",
+      "tur": "Katılım",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Kuveyt Türk",
+        "Katılım Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Türkiye Finans",
+      "tur": "Katılım",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Katılım Bankaları",
+        "KT Hariç Katılım Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Vakıf Katılım",
+      "tur": "Katılım",
+      "rakip": true,
+      "dijital_only": false,
+      "groups": [
+        "Katılım Bankaları",
+        "KT Hariç Katılım Bankaları",
+        "Rakip Bankalar"
+      ]
+    },
+    {
+      "banka_adi": "Ziraat Katılım",
+      "tur": "Katılım",
+      "rakip": true,
+      "dijital_only": false,
+      "groups": [
+        "Katılım Bankaları",
+        "KT Hariç Katılım Bankaları",
+        "Rakip Bankalar"
+      ]
+    },
+    {
+      "banka_adi": "Albaraka",
+      "tur": "Katılım",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Katılım Bankaları",
+        "KT Hariç Katılım Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Emlak Katılım",
+      "tur": "Katılım",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Katılım Bankaları",
+        "KT Hariç Katılım Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Hayat Finans",
+      "tur": "Katılım",
+      "rakip": false,
+      "dijital_only": true,
+      "groups": [
+        "Katılım Bankaları",
+        "KT Hariç Katılım Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Dünya Katılım",
+      "tur": "Katılım",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Katılım Bankaları",
+        "KT Hariç Katılım Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "TOM Bank",
+      "tur": "Katılım",
+      "rakip": false,
+      "dijital_only": true,
+      "groups": [
+        "Katılım Bankaları",
+        "KT Hariç Katılım Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Vakıfbank",
+      "tur": "Mevduat",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Yapı Kredi",
+      "tur": "Mevduat",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Ziraat Bankası",
+      "tur": "Mevduat",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Akbank",
+      "tur": "Mevduat",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Alternatif Bank",
+      "tur": "Mevduat",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Burgan Bank",
+      "tur": "Mevduat",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Denizbank",
+      "tur": "Mevduat",
+      "rakip": true,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları",
+        "Rakip Bankalar"
+      ]
+    },
+    {
+      "banka_adi": "Enpara",
+      "tur": "Mevduat",
+      "rakip": false,
+      "dijital_only": true,
+      "groups": [
+        "Mevduat Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Fibabanka",
+      "tur": "Mevduat",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Garanti Bankası",
+      "tur": "Mevduat",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Halk Bank",
+      "tur": "Mevduat",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "HSBC",
+      "tur": "Mevduat",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "ING Bank",
+      "tur": "Mevduat",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "İş Bankası",
+      "tur": "Mevduat",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "Odeabank",
+      "tur": "Mevduat",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "QNB Finansbank",
+      "tur": "Mevduat",
+      "rakip": true,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları",
+        "Rakip Bankalar"
+      ]
+    },
+    {
+      "banka_adi": "Şekerbank",
+      "tur": "Mevduat",
+      "rakip": false,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları"
+      ]
+    },
+    {
+      "banka_adi": "TEB",
+      "tur": "Mevduat",
+      "rakip": true,
+      "dijital_only": false,
+      "groups": [
+        "Mevduat Bankaları",
+        "Rakip Bankalar"
+      ]
+    }
+  ],
+  "groups": {
+    "order": [
+      "Kuveyt Türk",
+      "Mevduat Bankaları",
+      "Rakip Bankalar",
+      "Katılım Bankaları",
+      "KT Hariç Katılım Bankaları"
+    ],
+    "members": {
+      "Kuveyt Türk": [
+        "Kuveyt Türk"
+      ],
+      "Mevduat Bankaları": [
+        "Akbank",
+        "Alternatif Bank",
+        "Burgan Bank",
+        "Denizbank",
+        "Enpara",
+        "Fibabanka",
+        "Garanti Bankası",
+        "HSBC",
+        "Halk Bank",
+        "ING Bank",
+        "Odeabank",
+        "QNB Finansbank",
+        "TEB",
+        "Vakıfbank",
+        "Yapı Kredi",
+        "Ziraat Bankası",
+        "İş Bankası",
+        "Şekerbank"
+      ],
+      "Katılım Bankaları": [
+        "Kuveyt Türk",
+        "Türkiye Finans",
+        "Vakıf Katılım",
+        "Ziraat Katılım",
+        "Albaraka",
+        "Emlak Katılım",
+        "Hayat Finans",
+        "Dünya Katılım",
+        "TOM Bank"
+      ],
+      "KT Hariç Katılım Bankaları": [
+        "Türkiye Finans",
+        "Vakıf Katılım",
+        "Ziraat Katılım",
+        "Albaraka",
+        "Emlak Katılım",
+        "Hayat Finans",
+        "Dünya Katılım",
+        "TOM Bank"
+      ],
+      "Rakip Bankalar": [
+        "Vakıf Katılım",
+        "Ziraat Katılım",
+        "Denizbank",
+        "QNB Finansbank",
+        "TEB"
+      ]
+    },
+    "colors": {
+      "Kuveyt Türk": "#559D87",
+      "Mevduat Bankaları": "#2C3E50",
+      "Rakip Bankalar": "#B87333",
+      "Katılım Bankaları": "#7c3aed",
+      "KT Hariç Katılım Bankaları": "#5b21b6"
+    }
+  },
+  "measures": [
+    {
+      "id": "toplam_aktifler",
+      "ad": "Toplam Aktifler",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "krediler",
+      "ad": "Krediler",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "grup_1_krediler",
+      "ad": "Grup 1 Krediler",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "donuk_alacaklar",
+      "ad": "Donuk Alacaklar",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": true,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "donuk_alacaklar_satis_terkin_oncesi",
+      "ad": "Donuk Alacaklar (Satış ve Terkin Öncesi)",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": true,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "grup_2_krediler",
+      "ad": "Grup 2 Krediler",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": true,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "tuketici_kredileri",
+      "ad": "Tüketici Kredileri ve Bireysel Kredi Kartları",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "bireysel_kredi_kartlari",
+      "ad": "Bireysel Kredi Kartları",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "ihtiyac_kredileri",
+      "ad": "İhtiyaç Kredileri",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "konut_kredileri",
+      "ad": "Konut Kredileri",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "tasit_kredileri",
+      "ad": "Taşıt Kredileri",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "tuzel_krediler",
+      "ad": "Tüzel Krediler",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "tp_aktifler_ta",
+      "ad": "TP Aktifler / Toplam Aktifler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "finansal_varliklar_net_ta",
+      "ad": "Finansal Varlıklar (Net) / Toplam Aktifler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "menkul_kiymetler_ta",
+      "ad": "Menkul Kıymetler / Toplam Aktifler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "krediler_ta",
+      "ad": "Krediler / Toplam Aktifler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "grup_1_krediler_toplam",
+      "ad": "Grup 1 Krediler / Toplam Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "npl_rasyosu",
+      "ad": "Donuk Alacaklar / Toplam Krediler (NPL Rasyosu)",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "npl_rasyosu_satis_terkin_oncesi",
+      "ad": "NPL Rasyosu (Satış ve Terkin Öncesi)",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "npl_formasyonu",
+      "ad": "Net NPL Formasyon Rasyosu",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "donuk_tahsilat_ort_krediler",
+      "ad": "Donuk Alacaklar Dönemiçi Tahsilat / Ortalama Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "donuk_intikal_ort_krediler",
+      "ad": "Donuk Alacaklar Dönemiçi İntikal / Ortalama Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "grup_2_krediler_toplam",
+      "ad": "Grup 2 Krediler / Toplam Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "grup_2_krediler_cekirdek_sermaye",
+      "ad": "Grup 2 Krediler / Çekirdek Sermaye",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "tuketici_toplam",
+      "ad": "Tüketici Kredileri / Toplam Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "grup_2_tuketici_tuketici",
+      "ad": "Grup 2 Tüketici Kredileri / Tüketici Kredileri",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "bkk_toplam",
+      "ad": "Bireysel Kredi Kartları / Toplam Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "ihtiyac_toplam",
+      "ad": "İhtiyaç Kredileri / Toplam Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "konut_tuketici",
+      "ad": "Konut Kredileri / Tüketici Kredileri",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "konut_tp_pasifler",
+      "ad": "Konut Kredileri / TP Pasifler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "tasit_tuketici",
+      "ad": "Taşıt Kredileri / Tüketici Kredileri",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "tuzel_toplam",
+      "ad": "Tüzel Krediler / Toplam Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "grup_2_tuzel_tuzel",
+      "ad": "Grup 2 Tüzel Krediler / Tüzel Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "dis_ticaret_toplam",
+      "ad": "Dış Ticaret Kredileri / Toplam Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "mali_kesim_toplam",
+      "ad": "Mali Kesime Verilen Krediler / Toplam Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "tp_krediler_toplam",
+      "ad": "TP Krediler / Toplam Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "usd_yp_krediler",
+      "ad": "USD Cinsi Krediler / YP Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "euro_yp_krediler",
+      "ad": "EURO Cinsi Krediler / YP Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "ortaklik_yatirimlari_ta",
+      "ad": "Ortaklık Yatırımları / Toplam Aktifler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "diger_aktifler_ta",
+      "ad": "Diğer Aktifler / Toplam Aktifler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "faiz_getirili_ta",
+      "ad": "Faiz (Kar Payı) Getirili Aktifler / Toplam Aktifler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "faiz_getirili_maliyetli",
+      "ad": "Faiz (Kar Payı) Getirili Aktifler / Maliyetli Pasifler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "kat",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "yp_aktifler_toplam_pasifler",
+      "ad": "YP Aktifler / YP Pasifler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "faiz_getirili_ozkaynak",
+      "ad": "Faiz (Kar Payı) Getirili Aktifler / Özkaynaklar",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "kat",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "yp_net_pozisyon_ozkaynak",
+      "ad": "Yabancı Para Net Genel Pozisyonu / Toplam Özkaynaklar",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "npl_karsilama_orani",
+      "ad": "NPL Karşılama Oranı",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "mevduat",
+      "ad": "Mevduat",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "toplam_kaynak",
+      "ad": "Toplam Kaynak",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "kiymetli_maden_mevduati",
+      "ad": "Kıymetli Maden Mevduatı",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "vadesiz_mevduat",
+      "ad": "Vadesiz Mevduat",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "vadeli_mevduat",
+      "ad": "Vadeli Mevduat",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "resmi_kurumlar_mevduat",
+      "ad": "Resmi Kurumlar Mevduatı",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "ozkaynaklar",
+      "ad": "Özkaynaklar",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "alinan_krediler_iemk_toplam_kaynak",
+      "ad": "Alınan Krediler ve İ.E.M.K / Toplam Kaynak",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "tp_alinan_toplam_alinan",
+      "ad": "TP Alınan Krediler ve İ.E.M.K / Toplam Alınan Krediler ve İ.E.M.K",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "krediler_mevduat",
+      "ad": "Krediler / Mevduat",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "tuzel_krediler_tuzel_mevduat",
+      "ad": "Tüzel Krediler / Tüzel Mevduat",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "krediler_altindisi_mevduat",
+      "ad": "Krediler / Altındışı Mevduat",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "krediler_toplam_kaynak",
+      "ad": "Krediler / Toplam Kaynak",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "tp_krediler_tp_kaynak",
+      "ad": "TP Krediler / TP Kaynak",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "yp_krediler_yp_altindisi_kaynak",
+      "ad": "YP Krediler / YP Altındışı Kaynak",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "vadesiz_mevduat_toplam_mevduat",
+      "ad": "Vadesiz Mevduat / Toplam Mevduat",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "vadesiz_mevduat_toplam_kaynak",
+      "ad": "Vadesiz Mevduat / Toplam Kaynak",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "tp_mevduat_toplam_mevduat",
+      "ad": "TP Mevduat / Toplam Mevduat",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "tp_mevduat_altindisi_mevduat",
+      "ad": "TP Mevduat / Altındışı Mevduat",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "tp_kaynak_toplam_kaynak",
+      "ad": "TP Kaynak / Toplam Kaynak",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "toplam_kaynak_toplam_pasifler",
+      "ad": "Toplam Kaynak / Toplam Pasifler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "tp_pasifler_toplam_pasifler_ozkaynak_haric",
+      "ad": "TP Pasifler / Toplam Pasifler (Özkaynaklar Hariç)",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "sermaye_benzeri_pasifler",
+      "ad": "Sermaye Benzeri Krediler / Toplam Pasifler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "ppborclari_pasifler",
+      "ad": "Para Piyasasına Borçlar / Toplam Pasifler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "maliyetli_pasifler_toplam_pasifler",
+      "ad": "Faiz (Kar Payı) Maliyetli Pasifler / Toplam Pasifler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "serbest_sermaye_ta",
+      "ad": "Serbest Sermaye / Toplam Aktifler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "syr",
+      "ad": "Sermaye Yeterlilik Rasyosu (SYR)",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "cekirdek_syr",
+      "ad": "Çekirdek Sermaye Yeterliliği Oranı",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "gayrinakdi_krediler",
+      "ad": "Gayrinakdi Krediler (Garanti ve Kefaletler)",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "TL",
+      "kategori": "Bilanço",
+      "alt_kategori": "Bilanço Dışı",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "net_donem_kari",
+      "ad": "Net Dönem Karı (Zararı)",
+      "tip": "buyukluk",
+      "akim_stok": "akim",
+      "birim": "TL",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "brut_faaliyet_kari",
+      "ad": "Brüt Faaliyet Karı / Zararı",
+      "tip": "buyukluk",
+      "akim_stok": "akim",
+      "birim": "TL",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "faiz_gelirleri",
+      "ad": "Faiz (Kar Payı) Gelirleri",
+      "tip": "buyukluk",
+      "akim_stok": "akim",
+      "birim": "TL",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "faiz_giderleri",
+      "ad": "Faiz (Kar Payı) Giderleri",
+      "tip": "buyukluk",
+      "akim_stok": "akim",
+      "birim": "TL",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "net_faiz_geliri",
+      "ad": "Net Faiz (Kar Payı) Geliri (Gideri)",
+      "tip": "buyukluk",
+      "akim_stok": "akim",
+      "birim": "TL",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "alinan_ucret_komisyonlar",
+      "ad": "Alınan Ücret ve Komisyonlar",
+      "tip": "buyukluk",
+      "akim_stok": "akim",
+      "birim": "TL",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "gnakdi_alinan_ucret_komisyonlar",
+      "ad": "G.Nakdi Kredilerden Alınan Ücret ve Komisyonlar",
+      "tip": "buyukluk",
+      "akim_stok": "akim",
+      "birim": "TL",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "verilen_ucret_komisyonlar",
+      "ad": "Verilen Ücret ve Komisyonlar",
+      "tip": "buyukluk",
+      "akim_stok": "akim",
+      "birim": "TL",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "net_ucret_komisyonlar",
+      "ad": "Net Ücret ve Komisyonlar",
+      "tip": "buyukluk",
+      "akim_stok": "akim",
+      "birim": "TL",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "diger_faaliyet_giderleri",
+      "ad": "Diğer Faaliyet Giderleri (Operasyonel Giderler)",
+      "tip": "buyukluk",
+      "akim_stok": "akim",
+      "birim": "TL",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "net_ticari_kar",
+      "ad": "Net Ticari Kar (Zarar)",
+      "tip": "buyukluk",
+      "akim_stok": "akim",
+      "birim": "TL",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "reklam_giderleri",
+      "ad": "Reklam Giderleri",
+      "tip": "buyukluk",
+      "akim_stok": "akim",
+      "birim": "TL",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "personel_giderleri",
+      "ad": "Personel Giderleri",
+      "tip": "buyukluk",
+      "akim_stok": "akim",
+      "birim": "TL",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "karsilik_giderleri",
+      "ad": "Karşılık Giderleri",
+      "tip": "buyukluk",
+      "akim_stok": "akim",
+      "birim": "TL",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "roaa",
+      "ad": "Ortalama Aktif Karlılığı (ROAA)",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "roae",
+      "ad": "Ortalama Özkaynak Karlılığı (ROAE)",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "rorwa",
+      "ad": "RORWA",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "net_faiz_ort_rav",
+      "ad": "Net Faiz (Kar Payı) Geliri / Ortalama RAV",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "faiz_getirili_aktif_getirisi",
+      "ad": "Faiz (Kar Payı) Getirili Aktiflerin Getirisi",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "faiz_gideri_faiz_geliri",
+      "ad": "Faiz (Kar Payı) Gideri / Faiz (Kar Payı) Geliri",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "faaliyet_gid_ort_aktif",
+      "ad": "Faaliyet Giderleri / Ortalama Aktifler",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "faiz_maliyetli_pasif_maliyeti",
+      "ad": "Faiz (Kar Payı) Maliyetli Pasiflerin Maliyeti",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "nim",
+      "ad": "Net Faiz (Kar Payı) Marjı (NIM)",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "nim_duzeltilmis",
+      "ad": "Düzeltilmiş Net Faiz (Kar Payı) Marjı (NIM)",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "nim_bzk_sonrasi",
+      "ad": "BZK Sonrası Düzeltilmiş Net Faiz (Kar Payı) Marjı (NIM)",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "gayrinakdi_komisyon_gayrinakdi",
+      "ad": "Gayrinakdi Kredi Komisyonları / Gayrinakdi Krediler",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "komisyon_gid_gel",
+      "ad": "Komisyon Giderleri / Komisyon Gelirleri",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "net_ucret_ort_aktif",
+      "ad": "Net Ücret ve Komisyonlar / Ortalama Aktifler",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "net_ucret_operasyonel",
+      "ad": "Net Ücret ve Komisyonlar / Operasyonel Giderler",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "reklam_ort_aktif",
+      "ad": "Reklam Giderleri / Ortalama Aktifler",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "reklam_net_kar",
+      "ad": "Reklam Giderleri / Net Dönem Kar/Zararı",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "personel_ort_aktif",
+      "ad": "Personel Giderleri / Ortalama Aktifler",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "personel_net_kar",
+      "ad": "Personel Giderleri / Net Dönem Kar/Zararı",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "maliyet_gelir",
+      "ad": "Maliyet / Gelir Rasyosu",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "maliyet_gelir_duzeltilmis",
+      "ad": "Düzeltilmiş Maliyet / Gelir Rasyosu",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "cost_of_risk",
+      "ad": "Kredi Riski Maliyeti (Cost of Risk)",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "kredi_mevduat_spread",
+      "ad": "Kredi Mevduat Spread'i",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "spread",
+      "ad": "Spread",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "tp_spread",
+      "ad": "TP Kredi Mevduat Spread'i",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "yp_spread",
+      "ad": "YP Kredi Mevduat Spread'i",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "kredi_pacal_getiri",
+      "ad": "Kredilerin Paçal Getirisi",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "kaynak_pacal_maliyet",
+      "ad": "Kaynağın Paçal Maliyeti",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "%",
+      "kategori": "Gelir Tablosu",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "sube_sayisi",
+      "ad": "Şube Sayısı",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "adet",
+      "kategori": "Şube & Personel",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "sube_basina_krediler",
+      "ad": "Şube Başına Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "bin_TL",
+      "kategori": "Şube & Personel",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "sube_basina_mevduat",
+      "ad": "Şube Başına Mevduat",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "bin_TL",
+      "kategori": "Şube & Personel",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "sube_basina_net_kar",
+      "ad": "Şube Başına Net Kar",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "bin_TL",
+      "kategori": "Şube & Personel",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "personel_sayisi",
+      "ad": "Personel Sayısı",
+      "tip": "buyukluk",
+      "akim_stok": "stok",
+      "birim": "adet",
+      "kategori": "Şube & Personel",
+      "alt_kategori": null,
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "sube_basina_personel",
+      "ad": "Şube Başına Personel",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "adet",
+      "kategori": "Şube & Personel",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "personel_basina_krediler",
+      "ad": "Personel Başına Krediler",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "bin_TL",
+      "kategori": "Şube & Personel",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "personel_basina_mevduat",
+      "ad": "Personel Başına Mevduat",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "bin_TL",
+      "kategori": "Şube & Personel",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "personel_basina_net_kar",
+      "ad": "Personel Başına Net Kar",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "bin_TL",
+      "kategori": "Şube & Personel",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "personel_basina_personel_gideri",
+      "ad": "Personel Başına Personel Gideri",
+      "tip": "rasyo",
+      "akim_stok": "akim",
+      "birim": "bin_TL",
+      "kategori": "Şube & Personel",
+      "alt_kategori": null,
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "toplam_brut_krediler",
+      "ad": "Toplam Brüt Krediler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "tip": "buyukluk",
+      "birim": "TL",
+      "akim_stok": "stok",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "toplam_canli_krediler",
+      "ad": "Toplam Canlı Krediler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "tip": "buyukluk",
+      "birim": "TL",
+      "akim_stok": "stok",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "toplam_fonlama",
+      "ad": "Toplam Fonlama",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "buyukluk",
+      "birim": "TL",
+      "akim_stok": "stok",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "toplam_kredi_kartlari",
+      "ad": "Toplam Kredi Kartları",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "tip": "buyukluk",
+      "birim": "TL",
+      "akim_stok": "stok",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "toplam_mevduat_km_haric",
+      "ad": "Toplam Mevduat (KM Hariç)",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "buyukluk",
+      "birim": "TL",
+      "akim_stok": "stok",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "toplam_ozkaynaklar_regulasyon",
+      "ad": "Toplam Özkaynaklar (Ana Sermaye+ Katkı Sermaye)",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "buyukluk",
+      "birim": "TL",
+      "akim_stok": "stok",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "toplam_pasifler",
+      "ad": "Toplam Pasifler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "buyukluk",
+      "birim": "TL",
+      "akim_stok": "stok",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "toplam_pasifler_ozkaynak_haric",
+      "ad": "Toplam Pasifler (Özkaynak Hariç)",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "buyukluk",
+      "birim": "TL",
+      "akim_stok": "stok",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "rav",
+      "ad": "Toplam Risk Ağırlıklı Varlıklar (RAV)",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "buyukluk",
+      "birim": "TL",
+      "akim_stok": "stok",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "toplam_risk_tabani",
+      "ad": "Toplam Risk",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "buyukluk",
+      "birim": "TL",
+      "akim_stok": "stok",
+      "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "kredi_riski_toplam_risk",
+      "ad": "Kredi Riski/ Toplam Risk Tabanı",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "piyasa_riski_toplam_risk",
+      "ad": "Piyasa Riski/ Toplam Risk Tabanı",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "operasyonel_risk_toplam_risk",
+      "ad": "Operasyonel Riski/ Toplam Risk Tabanı",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "brut_krediler_ta",
+      "ad": "Brüt Krediler/ Toplam Aktifler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "alinan_krediler_toplam_pasifler",
+      "ad": "Alınan Krediler/ Toplam Pasifler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "bankalar_toplam_aktifler",
+      "ad": "Bankalar/ Toplam Aktifler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "birikimli_vadeli_mevduat_toplam_vadeli",
+      "ad": "Birikimli Vadeli Mevduat/ Toplam Vadeli Mevduat",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "resmi_kurumlar_mevduat_toplam_mevduat",
+      "ad": "Resmi Kurumlar Mevduatı/ Toplam Mevduat",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "toplam_fonlama_faiz_maliyetli_pasif",
+      "ad": "Toplam Fonlama/ Faiz (Kar Payı) Maliyetli Pasifler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "rasyo",
+      "birim": "kat",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "tuzel_mevduat_toplam_mevduat",
+      "ad": "Tüzel Mevduat / Toplam Mevduat",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "nakit_degerler_ta",
+      "ad": "Nakit Değerler / Toplam Aktifler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "vadeli_1ay_toplam_vadeli",
+      "ad": "1 Aya Kadar Vadeli Mevduat/ Toplam Vadeli Mevduat",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "vadeli_1_3ay_toplam_vadeli",
+      "ad": "1-3 Ay Vadeli Mevduat/ Toplam Vadeli Mevduat",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "vadeli_3_6ay_toplam_vadeli",
+      "ad": "3-6 Ay Vadeli Mevduat/ Toplam Vadeli Mevduat",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "vadeli_6_12ay_toplam_vadeli",
+      "ad": "6-12 Ay Vadeli Mevduat/ Toplam Vadeli Mevduat",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "yp_krediler_toplam_krediler",
+      "ad": "YP Krediler/ Toplam Krediler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "likidite_acigi_vadesiz_ta",
+      "ad": "Likidite Açığı, Vadesiz / Toplam Aktifler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "likidite_acigi_1ay_ta",
+      "ad": "Likidite Açığı, 1 Aya Kadar / Toplam Aktifler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "likidite_acigi_1_3ay_ta",
+      "ad": "Likidite Açığı, 1-3 Ay / Toplam Aktifler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "likidite_acigi_3_12ay_ta",
+      "ad": "Likidite Açığı, 3-12 Ay / Toplam Aktifler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "likidite_acigi_1_5yil_ta",
+      "ad": "Likidite Açığı, 1-5 Yıl / Toplam Aktifler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "likidite_acigi_5yil_uzeri_ta",
+      "ad": "Likidite Açığı, 5 Yıl ve Üzeri / Toplam Aktifler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "likidite_acigi_dagitilamayan_ta",
+      "ad": "Likidite Açığı, Dağıtılamayan / Toplam Aktifler",
+      "kategori": "Bilanço",
+      "alt_kategori": "Aktifler",
+      "tip": "rasyo",
+      "birim": "%",
+      "akim_stok": "stok",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    }
+  ],
+  "compositions": {
+    "aktif": {
+      "id": "aktif",
+      "ad": "Aktif Kompozisyonu",
+      "kategori": "Bilanço",
+      "currency_supported": true,
+      "components": [
+        {
+          "id": "diger",
+          "ad": "Diğer Aktifler",
+          "color": "#94a3b8"
+        },
+        {
+          "id": "net_kredi",
+          "ad": "Net Krediler",
+          "color": "#1e3a5f"
+        },
+        {
+          "id": "menkul",
+          "ad": "Menkul Kıymetler",
+          "color": "#60a5fa"
+        },
+        {
+          "id": "nakit",
+          "ad": "Nakit ve Nakit Benzerleri",
+          "color": "#10b981"
+        }
+      ]
+    },
+    "kredi": {
+      "id": "kredi",
+      "ad": "Kredi Kompozisyonu",
+      "kategori": "Bilanço",
+      "currency_supported": true,
+      "components": [
+        {
+          "id": "tuketici_kart",
+          "ad": "Tüketici Kredileri ve Bireysel Kartlar",
+          "color": "#4A90E2"
+        },
+        {
+          "id": "mali_kesim",
+          "ad": "Mali Kesim Kredileri",
+          "color": "#94a3b8"
+        },
+        {
+          "id": "dis_ticaret",
+          "ad": "Dış Ticaret Kredileri",
+          "color": "#2DD4BF"
+        },
+        {
+          "id": "leasing",
+          "ad": "Leasing / Finansal Kiralama",
+          "color": "#f97316"
+        },
+        {
+          "id": "tuzel_diger",
+          "ad": "Tüzel Krediler ve Kurumsal Kartlar",
+          "color": "#1e3a5f"
+        }
+      ]
+    },
+    "pasif": {
+      "id": "pasif",
+      "ad": "Pasif Kompozisyonu",
+      "kategori": "Bilanço",
+      "currency_supported": true,
+      "components": [
+        {
+          "id": "mevduat",
+          "ad": "Toplam Mevduat",
+          "color": "#1e3a5f"
+        },
+        {
+          "id": "alinan_kredi",
+          "ad": "Alınan Krediler",
+          "color": "#60a5fa"
+        },
+        {
+          "id": "sermaye_benzeri",
+          "ad": "Sermaye Benzeri Krediler",
+          "color": "#a855f7"
+        },
+        {
+          "id": "ozkaynak",
+          "ad": "Özkaynaklar",
+          "color": "#10b981"
+        },
+        {
+          "id": "diger",
+          "ad": "Diğer Pasifler",
+          "color": "#94a3b8"
+        }
+      ]
+    },
+    "kaynak": {
+      "id": "kaynak",
+      "ad": "Toplam Kaynak Kompozisyonu",
+      "kategori": "Bilanço",
+      "currency_supported": true,
+      "components": [
+        {
+          "id": "mevduat",
+          "ad": "Toplam Mevduat",
+          "color": "#1e3a5f"
+        },
+        {
+          "id": "alinan_kredi",
+          "ad": "Alınan Krediler",
+          "color": "#60a5fa"
+        },
+        {
+          "id": "para_piyasa",
+          "ad": "Para Piyasalarına Borçlar",
+          "color": "#a855f7"
+        },
+        {
+          "id": "ihrac",
+          "ad": "İhraç Edilen Menkul Kıymetler",
+          "color": "#10b981"
+        }
+      ]
+    },
+    "gelir": {
+      "id": "gelir",
+      "ad": "Toplam Gelir Kompozisyonu",
+      "kategori": "Gelir Tablosu",
+      "currency_supported": false,
+      "components": [
+        {
+          "id": "net_faiz",
+          "ad": "Net Faiz / Kar Payı Geliri",
+          "color": "#1e3a5f"
+        },
+        {
+          "id": "net_komisyon",
+          "ad": "Net Ücret ve Komisyon Geliri",
+          "color": "#60a5fa"
+        },
+        {
+          "id": "net_ticari",
+          "ad": "Net Ticari Kar/Zarar",
+          "color": "#a855f7"
+        },
+        {
+          "id": "diger_faaliyet",
+          "ad": "Diğer Faaliyet Gelirleri",
+          "color": "#10b981"
+        }
+      ]
+    }
+  }
+}

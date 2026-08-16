@@ -76,6 +76,11 @@ DATA_RAW = DATA_DIR / 'raw'
 DATA_PARQUET = DATA_DIR / 'veriler.parquet'
 DATA_COMPUTED = DATA_DIR / 'computed.json'
 DATA_CATALOG = DATA_DIR / 'catalog.json'
+# Config kaynağı (git-tracked, repo kökünde — data/ volume'unun DIŞINDA, deploy'da
+# gölgelenmez). Ölçü/kompozisyon/banka tanımları buradan gelir; startup'ta canlı
+# data/catalog.json'a merge edilir (runtime `groups` korunarak). Bkz.
+# _sync_catalog_from_seed (2026-08-15 denetimi #7 — kod↔config uyumsuzluğu).
+SEED_CATALOG = APP_ROOT / 'catalog.seed.json'
 DATA_HISTORY = DATA_DIR / 'upload_history.json'
 DATA_USERS = DATA_DIR / 'users.json'
 SESSION_SECRET_PATH = DATA_DIR / '.session_secret'
@@ -212,10 +217,43 @@ HTML_SIGNUP = FRONTEND_DIR / 'signup.html'
 # ============================================================
 # İlk açılış — data/ klasörünün var olduğundan emin ol
 # ============================================================
+def _sync_catalog_from_seed():
+    """catalog.json'un CONFIG kısmını (measures/compositions/banks) git-tracked
+    catalog.seed.json'dan tazeler; runtime-değişen `groups` (admin panelden
+    düzenlenen banka grupları) canlı data/catalog.json'dan KORUNUR (2026-08-15
+    denetimi #7 — kod↔config uyumsuzluğu kökten çözülür).
+
+    - Yeni ölçüler/kompozisyonlar kodla birlikte deploy olur (seed git'te).
+    - Grup düzenlemeleri deploy'da kaybolmaz (canlı groups korunur).
+    - İlk kurulum (canlı catalog yok): seed olduğu gibi kopyalanır.
+    - Seed yoksa (eski/lokal kurulum): dokunma, mevcut catalog.json kullanılır.
+    """
+    if not SEED_CATALOG.exists():
+        return
+    with open(SEED_CATALOG, encoding='utf-8') as f:
+        merged = json.load(f)
+    if DATA_CATALOG.exists():
+        try:
+            with open(DATA_CATALOG, encoding='utf-8') as f:
+                live = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            live = {}
+        if live.get('groups'):
+            merged['groups'] = live['groups']  # runtime grup düzenlemelerini koru
+    tmp = DATA_CATALOG.with_suffix('.tmp')
+    with open(tmp, 'w', encoding='utf-8') as f:
+        json.dump(merged, f, ensure_ascii=False, indent=2)
+    tmp.replace(DATA_CATALOG)
+    print(f"[startup] catalog.json seed'den senkronlandı ({len(merged.get('measures', []))} ölçü)")
+
+
 def ensure_data_dir():
     """data/ ve data/raw/ klasörlerini oluşturur, upload_history.json/users.json yoksa yaratır."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     DATA_RAW.mkdir(parents=True, exist_ok=True)
+
+    # catalog.json'u git-tracked seed'den senkronla (config güncel, gruplar korunur)
+    _sync_catalog_from_seed()
 
     if not DATA_HISTORY.exists():
         DATA_HISTORY.write_text(json.dumps({'uploads': []},
