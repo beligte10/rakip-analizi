@@ -217,11 +217,12 @@
     background: #559D87; color: #fff;
     box-shadow: 0 2px 4px rgba(85,157,135,0.25);
   }
-  /* NOT: 'body.dark .mode-btn' iki class (dark+mode-btn) + 1 element (body)
-     içerdiği için CSS specificity'de '.mode-btn.active'i (2 class) eziyordu —
-     aktif sekme (örn. Snapshot) karanlık modda neredeyse görünmez oluyordu
-     (ölçülen kontrast oranı 1.02, WCAG minimum 4.5). Açıkça override edilir. */
-  body.dark .mode-btn.active { color: #fff; }
+  /* NOT (2026-08-17): eskiden burada 'body.dark .mode-btn.active { color:#fff }'
+     vardı — mode-toggle o zaman control-bar'da (yeşil zemin, beyaz yazı) yaşıyordu.
+     Artık date-selector-bar'da (aktifken BEYAZ zemin + yeşil yazı, bkz. yukarı
+     '.date-selector-bar .mode-btn.active'); o eski override CSS specificity'de
+     üstün gelip koyu modda yazıyı beyaza zorluyordu → beyaz zemin+beyaz yazı,
+     aktif sekme görünmez oluyordu. Artık kullanılmadığı için kaldırıldı. */
   .control-divider {
     width: 1px; height: 28px; background: #d4dde3;
   }
