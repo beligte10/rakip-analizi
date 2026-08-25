@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KT Cockpit — Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
 <style>
 :root {
   --bg: #f8f9fa;
@@ -394,6 +395,26 @@ button.secondary:hover { background: var(--hover); }
 @media (max-width: 640px) {
   .transfer-grid { grid-template-columns: 1fr !important; }
 }
+
+/* YOL HARİTASI — markdown render (docs/BACKLOG.md) */
+.markdown-body { font-size: 14px; line-height: 1.65; color: var(--text); max-width: 860px; }
+.markdown-body h1 { font-size: 22px; margin: 0 0 16px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+.markdown-body h2 { font-size: 18px; margin: 28px 0 12px; padding-top: 8px; border-top: 1px solid var(--border); color: var(--kt-green-dark); }
+.markdown-body h2:first-child { border-top: none; padding-top: 0; }
+.markdown-body h3 { font-size: 15px; margin: 20px 0 8px; color: var(--primary); }
+.markdown-body p { margin: 0 0 10px; }
+.markdown-body ul, .markdown-body ol { margin: 0 0 10px; padding-left: 22px; }
+.markdown-body li { margin-bottom: 5px; }
+.markdown-body code { font-family: ui-monospace, monospace; font-size: 0.88em; background: var(--hover); padding: 1px 5px; border-radius: 4px; }
+.markdown-body pre { background: var(--hover); padding: 10px 12px; border-radius: 6px; overflow-x: auto; }
+.markdown-body pre code { background: none; padding: 0; }
+.markdown-body blockquote { margin: 0 0 10px; padding: 4px 14px; border-left: 3px solid var(--primary); color: var(--muted); background: var(--info-bg); border-radius: 0 6px 6px 0; }
+.markdown-body table { border-collapse: collapse; width: 100%; margin: 0 0 14px; font-size: 13px; }
+.markdown-body th, .markdown-body td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
+.markdown-body th { background: var(--hover); font-weight: 600; }
+.markdown-body hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+.markdown-body a { color: var(--primary); }
+.markdown-body strong { font-weight: 600; }
 </style>
 </head>
 <body>
@@ -415,6 +436,7 @@ button.secondary:hover { background: var(--hover); }
     <button class="tab-btn" data-tab="uyelik" onclick="switchTab('uyelik')">👥 Üyelik Başvuruları<span class="tab-badge" id="pending-badge" style="display:none"></span></button>
     <button class="tab-btn" data-tab="gruplar" onclick="switchTab('gruplar')">🏷️ Banka Grupları</button>
     <button class="tab-btn" data-tab="gecmis" onclick="switchTab('gecmis')">📜 Yükleme Geçmişi</button>
+    <button class="tab-btn" data-tab="backlog" onclick="switchTab('backlog')">🗺️ Yol Haritası</button>
   </div>
 
   <!-- VERİ DURUMU -->
@@ -600,6 +622,19 @@ button.secondary:hover { background: var(--hover); }
   <div class="panel">
     <h2><span class="icon">📜</span> Yükleme Geçmişi</h2>
     <div id="history-content">
+      <div class="loading">Yükleniyor…</div>
+    </div>
+  </div>
+  </div>
+
+  <!-- YOL HARİTASI / BACKLOG -->
+  <div class="tab-panel" data-tab-panel="backlog" hidden>
+  <div class="panel">
+    <h2><span class="icon">🗺️</span> Yol Haritası</h2>
+    <p style="margin:0 0 12px;font-size:13px;color:var(--muted)">
+      Projenin başından bugüne ne yapıldığı ve öncelik sıralı bekleyen işler — <code style="background:var(--hover);padding:2px 6px;border-radius:3px">docs/BACKLOG.md</code>'den okunur, kod ile birlikte deploy edilir.
+    </p>
+    <div id="backlog-content" class="markdown-body">
       <div class="loading">Yükleniyor…</div>
     </div>
   </div>
@@ -1686,12 +1721,33 @@ function renderHistory(data, target) {
 }
 
 // ============================================================
+// YOL HARİTASI / BACKLOG
+// ============================================================
+async function loadBacklog() {
+  const target = $('backlog-content');
+  try {
+    const r = await fetch('/admin/backlog');
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ detail: 'HTTP ' + r.status }));
+      throw new Error(err.detail || `HTTP ${r.status}`);
+    }
+    const md = await r.text();
+    target.innerHTML = (typeof marked !== 'undefined')
+      ? marked.parse(md)
+      : `<pre style="white-space:pre-wrap">${escapeHtml(md)}</pre>`;
+  } catch (err) {
+    target.innerHTML = `<div class="result-panel error">Yol haritası yüklenemedi: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+// ============================================================
 // INIT
 // ============================================================
 loadCoverage();
 loadUsers();
 loadGroups();
 loadHistory();
+loadBacklog();
 </script>
 
 </body>

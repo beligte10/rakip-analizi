@@ -1758,6 +1758,23 @@ def _build_export_manifest() -> dict:
     return manifest
 
 
+@app.get('/admin/backlog')
+def admin_backlog(_: str = Depends(require_admin_access)):
+    """
+    docs/BACKLOG.md'yi ham metin olarak döner — admin panelde "Yol Haritası"
+    sekmesi bunu markdown render edip gösterir. Dosya git-tracked (koddan
+    ayrı taşınan data/'nın aksine, deploy'da hep kod ile birlikte gelir).
+    """
+    backlog_path = APP_ROOT / 'docs' / 'BACKLOG.md'
+    if not backlog_path.exists():
+        raise HTTPException(status_code=404, detail='docs/BACKLOG.md bulunamadı')
+    return Response(
+        content=backlog_path.read_text(encoding='utf-8'),
+        media_type='text/markdown; charset=utf-8',
+        headers=NO_CACHE,
+    )
+
+
 @app.get('/admin/export-data')
 def admin_export_data(
     include_users: bool = False,
