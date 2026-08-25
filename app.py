@@ -48,14 +48,16 @@ import io
 import json
 import shutil
 import secrets
+import zipfile
 import threading
 import traceback
+import subprocess
 import multiprocessing
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 
-from fastapi import FastAPI, HTTPException, Request, UploadFile, File, status, Depends
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form, status, Depends
 from fastapi.responses import FileResponse, JSONResponse, HTMLResponse, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from starlette.middleware.sessions import SessionMiddleware
@@ -1691,6 +1693,193 @@ def admin_rebuild(user: str = Depends(heavy_op_guard)):
             status_code=500,
             detail=f'Rebuild hatası: {type(exc).__name__}: {exc}',
         )
+
+
+# ============================================================
+# Veri Taşıma — Dışa Aktar / İçe Aktar (2026-08-25)
+# ============================================================
+# SSH/dosya sistemi erişimi olmayan bir sunucuya (ör. üçüncü bir hosting
+# sağlayıcısı üzerinde çalışan canlı) veriyi GÜVENİLİR ve DOĞRULANABİLİR
+# şekilde taşımak için: admin panelinden tek tıkla indirilen bir ZIP,
+# yine admin panelinden hedef sunucuya yüklenir. Elle "proje klasörünü
+# zip'le" yöntemi .gitignore'u atlar ve hangi anlık görüntünün taşındığını
+# belirsiz bırakır (2026-08-19'da yaşanan olay: bir sunucuda sadece
+# Eylül 2025 verisi çıktı, çünkü aktarılan data/ klasörü o tarihte donmuştu
+# ve bu hiçbir yerde kayıtlı değildi). Bu paket manifest.json ile "hangi
+# tarihte, hangi commit'ten, kaç banka/ölçü/dönem" sorusunu her zaman
+# yanıtlanabilir kılar.
+#
+# KAPSAM: computed.json + veriler.parquet + upload_history.json (+ opsiyonel
+# users.json). data/raw/ (ham xlsx arşivi, ~178MB, binlerce dosya) BU pakete
+# dahil DEĞİL — sadece dashboard'un çalışması için gerekli önceden-hesaplanmış
+# veriler taşınır. Tam geçmişten /admin/rebuild yapma kapasitesi gerekiyorsa
+# data/raw/ ayrıca (rsync ile, SSH erişimi olan bir ortamdan) taşınmalı.
+EXPORT_DATA_FILES = [
+    ('computed.json', DATA_COMPUTED),
+    ('veriler.parquet', DATA_PARQUET),
+    ('upload_history.json', DATA_HISTORY),
+]
+
+
+def _build_export_manifest() -> dict:
+    manifest: dict = {
+        'exported_at': datetime.now().isoformat(),
+        'git_commit': None,
+        'measure_count': None,
+        'bank_count': None,
+        'total_periods': None,
+        'date_range': None,
+    }
+    try:
+        r = subprocess.run(
+            ['git', 'rev-parse', '--short', 'HEAD'],
+            cwd=APP_ROOT, capture_output=True, text=True, timeout=3,
+        )
+        if r.returncode == 0:
+            manifest['git_commit'] = r.stdout.strip()
+    except Exception:
+        pass
+    if DATA_COMPUTED.exists():
+        try:
+            with open(DATA_COMPUTED, encoding='utf-8') as f:
+                computed = json.load(f)
+            bank_data = computed.get('bank_data', {})
+            manifest['measure_count'] = len(bank_data)
+            ta = bank_data.get('toplam_aktifler', {})
+            manifest['bank_count'] = len(ta)
+            all_dates = sorted({
+                d for series in ta.values() for d, v in series.items()
+                if v is not None
+            })
+            manifest['total_periods'] = len(all_dates)
+            manifest['date_range'] = [all_dates[0], all_dates[-1]] if all_dates else None
+        except Exception:
+            pass
+    return manifest
+
+
+@app.get('/admin/export-data')
+def admin_export_data(
+    include_users: bool = False,
+    _: str = Depends(require_admin_access),
+):
+    """
+    Canlı veriyi (computed.json + veriler.parquet + upload_history.json,
+    opsiyonel users.json) tek bir ZIP olarak indirir — bir sunucudan diğerine
+    SSH gerektirmeden, admin panelinden taşımak için. ZIP içindeki
+    manifest.json, dışa aktarma anını, kaynak git commit'ini ve veri
+    özetini (ölçü/banka/dönem sayısı, tarih aralığı) kaydeder.
+    """
+    if not DATA_COMPUTED.exists():
+        raise HTTPException(
+            status_code=400,
+            detail='computed.json yok — dışa aktarılacak veri yok. Önce veri yükleyin/rebuild yapın.',
+        )
+
+    manifest = _build_export_manifest()
+    manifest['includes_users'] = bool(include_users and DATA_USERS.exists())
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr('manifest.json', json.dumps(manifest, ensure_ascii=False, indent=2))
+        for name, path in EXPORT_DATA_FILES:
+            if path.exists():
+                zf.write(path, arcname=name)
+        if include_users and DATA_USERS.exists():
+            zf.write(DATA_USERS, arcname='users.json')
+    buf.seek(0)
+
+    ts = datetime.now().strftime('%Y%m%d_%H%M')
+    filename = f'kt-rakip-analizi-veri_{ts}.zip'
+    return Response(
+        content=buf.getvalue(),
+        media_type='application/zip',
+        headers={'Content-Disposition': f'attachment; filename="{filename}"'},
+    )
+
+
+@app.post('/admin/import-data')
+def admin_import_data(
+    file: UploadFile = File(...),
+    include_users: bool = Form(False),
+    user: str = Depends(heavy_op_guard),
+):
+    """
+    /admin/export-data'nın ürettiği ZIP'i içe aktarır. Mevcut veri ÖNCE
+    yedeklenir (_backup_computed + varsa users.json yedeği), sonra atomik
+    olarak değiştirilir. include_users=False (varsayılan): users.json'a
+    dokunulmaz — hedef sunucuda zaten gerçek üye hesapları varsa yanlışlıkla
+    silinmesin diye.
+    """
+    if not file.filename or not file.filename.lower().endswith('.zip'):
+        raise HTTPException(status_code=400, detail='Sadece .zip dosyası kabul edilir')
+
+    content = file.file.read()
+    file.file.close()
+
+    try:
+        zf = zipfile.ZipFile(io.BytesIO(content))
+    except zipfile.BadZipFile:
+        raise HTTPException(status_code=400, detail='Geçersiz veya bozuk ZIP dosyası')
+
+    names = set(zf.namelist())
+    if 'manifest.json' not in names:
+        raise HTTPException(
+            status_code=400,
+            detail='manifest.json bulunamadı — bu dosya /admin/export-data ile mi üretildi?',
+        )
+    if 'computed.json' not in names:
+        raise HTTPException(status_code=400, detail='ZIP içinde computed.json yok')
+
+    manifest = json.loads(zf.read('manifest.json'))
+
+    # computed.json geçerli JSON mu ve bank_data içeriyor mu — yazmadan önce doğrula
+    try:
+        computed_check = json.loads(zf.read('computed.json'))
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail='computed.json bozuk (geçersiz JSON)')
+    if not computed_check.get('bank_data'):
+        raise HTTPException(status_code=400, detail='computed.json boş görünüyor (bank_data yok) — içe aktarma iptal edildi')
+
+    # Mevcut veriyi yedekle (üzerine yazmadan önce)
+    _backup_computed()
+    if include_users and DATA_USERS.exists() and 'users.json' in names:
+        DATA_BACKUPS.mkdir(parents=True, exist_ok=True)
+        ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+        shutil.copy2(DATA_USERS, DATA_BACKUPS / f'users_{ts}.json')
+
+    applied = []
+    for name, path in EXPORT_DATA_FILES:
+        if name in names:
+            tmp = path.with_name(path.name + '.import_tmp')
+            with open(tmp, 'wb') as f:
+                f.write(zf.read(name))
+            tmp.replace(path)
+            applied.append(name)
+
+    if include_users and 'users.json' in names:
+        tmp = DATA_USERS.with_name(DATA_USERS.name + '.import_tmp')
+        with open(tmp, 'wb') as f:
+            f.write(zf.read('users.json'))
+        tmp.replace(DATA_USERS)
+        applied.append('users.json')
+
+    _append_history({
+        'timestamp': datetime.now().isoformat(),
+        'user': user,
+        'filename': f'[IMPORT] {file.filename}',
+        'banka': '*ALL*',
+        'tarih': '*ALL*',
+        'file_size': len(content),
+        'status': 'ok',
+        'rebuild': True,
+    })
+
+    return {
+        'status': 'ok',
+        'applied_files': applied,
+        'source_manifest': manifest,
+    }
 
 
 # ============================================================

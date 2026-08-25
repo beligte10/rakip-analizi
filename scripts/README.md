@@ -4,6 +4,7 @@ CLI araçları.
 
 - `init_data.py` — İlk kurulum: ZIP veya raw klasörden parquet+computed.json üret
 - `recompute.py` — Mevcut raw'dan computed.json'u yeniden hesapla (yeni measure/banka eklendiğinde)
+- `export_data_snapshot.py` — Sunucu göçü için `data/`'nın güncel, doğrulanabilir bir paketini üretir (bkz. `docs/DATA_MIGRATION.md`)
 
 ## Kullanım
 
@@ -13,4 +14,7 @@ python scripts/init_data.py --raw-zip Veriler.zip
 
 # Sonradan yeniden hesaplama (bug fix, yeni measure vb.)
 python scripts/recompute.py
+
+# Sunucu göçü için veri paketi üretme
+python scripts/export_data_snapshot.py
 ```

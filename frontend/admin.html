@@ -391,6 +391,9 @@ button.secondary:hover { background: var(--hover); }
   white-space: nowrap;
   z-index: 10;
 }
+@media (max-width: 640px) {
+  .transfer-grid { grid-template-columns: 1fr !important; }
+}
 </style>
 </head>
 <body>
@@ -510,6 +513,47 @@ button.secondary:hover { background: var(--hover); }
     </div>
 
     <div id="rebuild-result"></div>
+  </div>
+
+  <!-- SUNUCU TAŞIMA - EXPORT/IMPORT (2026-08-25) -->
+  <div class="panel">
+    <h2><span class="icon">🚚</span> Sunucu Taşıma</h2>
+    <p style="color:var(--muted);margin:0 0 16px;font-size:13px">
+      Veriyi <strong>SSH gerekmeden</strong>, tarayıcı üzerinden başka bir sunucuya taşımak için.
+      Dışa aktar → indirilen ZIP'i hedef sunucunun admin panelinden içe aktar. Elle "proje klasörünü
+      zip'leyip yükleme" yöntemi kullanma — hangi anlık görüntünün taşındığı belirsiz kalır, bu da
+      eski/yanlış verinin farkına varılmadan canlıya taşınmasına yol açabilir.
+    </p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" class="transfer-grid">
+      <div>
+        <h3 style="margin:0 0 8px;font-size:14px">⬇️ Dışa Aktar</h3>
+        <p style="color:var(--muted);margin:0 0 10px;font-size:12.5px">
+          Mevcut hesaplanmış veriyi (computed.json + veriler.parquet + yükleme geçmişi) tek bir ZIP olarak indirir.
+        </p>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);margin-bottom:10px">
+          <input type="checkbox" id="export-include-users"> Üye hesaplarını da dahil et (users.json)
+        </label>
+        <button id="exportBtn" class="secondary" style="padding:10px 18px;font-weight:600">⬇️ Veriyi İndir</button>
+        <div id="export-result" style="margin-top:10px"></div>
+      </div>
+
+      <div>
+        <h3 style="margin:0 0 8px;font-size:14px">⬆️ İçe Aktar</h3>
+        <p style="color:var(--muted);margin:0 0 10px;font-size:12.5px">
+          Başka bir kurulumdan "Dışa Aktar" ile indirilmiş ZIP'i yükle. Mevcut veri önce otomatik yedeklenir.
+        </p>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);margin-bottom:10px">
+          <input type="checkbox" id="import-include-users"> ZIP içindeki üye hesaplarını da uygula
+        </label>
+        <div class="upload-zone" id="importDropZone" style="padding:16px">
+          <input type="file" id="importFileInput" accept=".zip" />
+          <div class="icon" style="font-size:22px">📥</div>
+          <p style="margin:4px 0"><strong>ZIP dosyasını buraya sürükle</strong> veya tıkla</p>
+        </div>
+        <div id="import-result" style="margin-top:10px"></div>
+      </div>
+    </div>
   </div>
   </div>
 
@@ -1150,6 +1194,99 @@ function showRebuildError(msg) {
     </div>
   `;
 }
+
+// ============================================================
+// SUNUCU TAŞIMA — Dışa Aktar / İçe Aktar (2026-08-25)
+// ============================================================
+$('exportBtn').onclick = async () => {
+  const btn = $('exportBtn');
+  const includeUsers = $('export-include-users').checked;
+  btn.disabled = true;
+  btn.textContent = '⏳ Hazırlanıyor...';
+  $('export-result').innerHTML = '';
+  try {
+    const r = await fetch(`/admin/export-data?include_users=${includeUsers}`);
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ detail: 'Bilinmeyen hata' }));
+      throw new Error(err.detail || `HTTP ${r.status}`);
+    }
+    const blob = await r.blob();
+    const disposition = r.headers.get('Content-Disposition') || '';
+    const match = disposition.match(/filename="([^"]+)"/);
+    const filename = match ? match[1] : 'kt-rakip-analizi-veri.zip';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    $('export-result').innerHTML = `<div class="result-panel success" style="padding:10px 12px;font-size:12.5px">✅ İndirildi: <strong>${escapeHtml(filename)}</strong></div>`;
+  } catch (err) {
+    $('export-result').innerHTML = `<div class="result-panel error" style="padding:10px 12px;font-size:12.5px">❌ ${escapeHtml(err.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⬇️ Veriyi İndir';
+  }
+};
+
+async function handleImportZip(file) {
+  const includeUsers = $('import-include-users').checked;
+  $('import-result').innerHTML = `<div class="loading">⏳ Yükleniyor ve uygulanıyor…</div>`;
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('include_users', includeUsers);
+  try {
+    const r = await fetch('/admin/import-data', { method: 'POST', body: fd });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.detail || `HTTP ${r.status}`);
+    const manifest = data.source_manifest || {};
+    $('import-result').innerHTML = `
+      <div class="result-panel success" style="padding:12px 14px;font-size:12.5px">
+        <strong>✅ İçe aktarma başarılı</strong>
+        <div style="margin-top:6px;color:var(--muted)">
+          Kaynak: ${manifest.bank_count ?? '?'} banka, ${manifest.measure_count ?? '?'} ölçü,
+          son tarih ${manifest.date_range ? manifest.date_range[1] : '?'}
+          (dışa aktarım zamanı: ${manifest.exported_at ? new Date(manifest.exported_at).toLocaleString('tr-TR') : '?'})
+        </div>
+        <div style="margin-top:6px">Uygulanan dosyalar: ${(data.applied_files || []).join(', ')}</div>
+        <p style="margin:10px 0 0;font-size:12px">Cockpit'te güncel veriyi görmek için <a href="/" target="_blank">ana sayfaya</a> gidin ve hard refresh yapın (Ctrl+Shift+R).</p>
+      </div>
+    `;
+    setTimeout(() => loadCoverage(), 500);
+    setTimeout(() => loadHistory(), 500);
+  } catch (err) {
+    $('import-result').innerHTML = `<div class="result-panel error" style="padding:10px 12px;font-size:12.5px">❌ ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+$('importFileInput').addEventListener('change', (e) => {
+  if (e.target.files[0]) {
+    const confirmed = confirm(
+      'Mevcut computed.json ve veriler.parquet bu ZIP\'in içeriğiyle değiştirilecek.\n\n' +
+      '• Mevcut computed.json otomatik yedeklenir\n' +
+      '• İşlem üzerine yazma şeklindedir, geri almak için yedeği elle geri yüklemek gerekir\n\n' +
+      'Devam etmek istiyor musunuz?'
+    );
+    if (confirmed) handleImportZip(e.target.files[0]);
+    e.target.value = '';
+  }
+});
+$('importDropZone').addEventListener('click', () => $('importFileInput').click());
+$('importDropZone').addEventListener('dragover', (e) => { e.preventDefault(); $('importDropZone').classList.add('drag'); });
+$('importDropZone').addEventListener('dragleave', () => $('importDropZone').classList.remove('drag'));
+$('importDropZone').addEventListener('drop', (e) => {
+  e.preventDefault();
+  $('importDropZone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.toLowerCase().endsWith('.zip')) {
+    const confirmed = confirm(
+      'Mevcut computed.json ve veriler.parquet bu ZIP\'in içeriğiyle değiştirilecek.\n\n' +
+      '• Mevcut computed.json otomatik yedeklenir\n' +
+      '• İşlem üzerine yazma şeklindedir, geri almak için yedeği elle geri yüklemek gerekir\n\n' +
+      'Devam etmek istiyor musunuz?'
+    );
+    if (confirmed) handleImportZip(file);
+  }
+});
 
 // ============================================================
 // ÜYELİK BAŞVURULARI
