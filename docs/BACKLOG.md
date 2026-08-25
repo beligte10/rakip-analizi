@@ -273,6 +273,12 @@ alınmamıştı).
   deploy edildiği için (data/'nın aksine) canlıda da her zaman güncel;
   kullanıcının "backlog dosyasına admin panelinden erişilmesini istiyorum"
   talebiyle eklendi.
+- **Bug (aynı gün, canlıda bulundu): "Yol Haritası" 404 veriyordu.**
+  `docs/` hem `.dockerignore`'da hariç tutuluyordu hem Dockerfile'da
+  `COPY` edilmiyordu — yani `BACKLOG.md` image'a hiç girmiyordu. `docs/`
+  hariç tutması `data/`'nın gizlilik/boyut mantığıyla karışıp yanlışlıkla
+  genişletilmişti. Düzeltme: `.dockerignore`'dan `docs/` satırı kaldırıldı,
+  `Dockerfile`'a `COPY docs/ docs/` eklendi (~100KB, image'ı şişirmiyor).
 
 ---
 
