@@ -1,11 +1,14 @@
 [
   {
     "date": "2026-08-25",
-    "title": "Veri taşınabilirliği ve Yol Haritası",
+    "title": "Yeni ölçüler ve arayüz iyileştirmeleri",
     "items": [
-      "Admin panelden tek tıkla veri yedeği indirilip başka bir sunucuya SSH gerekmeden taşınabiliyor (\"Sunucu Taşıma\" bölümü) — bu sayede sunucu değişikliklerinde eski/eksik verinin yanlışlıkla canlıya taşınması engelleniyor.",
-      "Admin panelde yeni \"Yol Haritası\" sekmesi: projenin başından bugüne neler yapıldığı ve önceliklendirilmiş bekleyen işler artık panelden okunabiliyor.",
-      "Bu \"Yenilikler\" penceresi eklendi — güncellemeler artık buradan takip edilebilecek."
+      "160 finansal ölçü artık kullanılabilir (33 yeni ölçü: Toplam Risk, Likidite Açığı kalemleri, vade dilimleri, Toplam Brüt/Canlı Krediler ve daha fazlası).",
+      "Ölçü seçicisine arama kutusu eklendi — istediğiniz ölçüye tüm kategorilerde hızlıca ulaşabilirsiniz.",
+      "Şube & Personel ölçülerinde yıllık büyüme artık yüzde yerine miktar olarak gösteriliyor, daha net bir karşılaştırma sağlıyor.",
+      "CAGR (Bileşik Yıllık Büyüme) hesaplaması düzeltildi.",
+      "Koyu modda bazı sekmelerin okunamaması sorunu giderildi.",
+      "Bu \"Yenilikler\" penceresi eklendi — önemli güncellemeler artık buradan takip edilebilecek."
     ]
   }
 ]
