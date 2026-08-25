@@ -20,4 +20,7 @@ __pycache__/
 .DS_Store
 .vscode/
 .claude/
-docs/
+
+# NOT: docs/ BİLEREK burada değil (2026-08-25) — /admin/backlog endpoint'i
+# docs/BACKLOG.md'yi runtime'da okuyor, image'a girmezse admin panelde
+# "Yol Haritası" sekmesi 404 verir. docs/ toplam ~100KB, image'ı şişirmez.

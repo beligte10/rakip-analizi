@@ -31,6 +31,7 @@ COPY catalog.seed.json .
 COPY pipeline/ pipeline/
 COPY frontend/ frontend/
 COPY scripts/ scripts/
+COPY docs/ docs/
 
 # NOT (2026-08-15): `data/` KASITLI OLARAK image'a kopyalanmıyor.
 # - Deploy'da data/ kalıcı bir volume'dan bağlanır (bind-mount image içeriğini
