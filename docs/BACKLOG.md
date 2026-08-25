@@ -329,8 +329,16 @@ bir not eklenecek.
 **Durum:** ✅ Yapıldı (2026-08-25). `whats_new.json` repo kökünde (git-tracked,
 `data/` değil — `catalog.seed.json` deseniyle aynı), `GET /api/whats-new`
 üzerinden servis ediliyor, dashboard topbar'ında "🆕 Yenilikler" butonu +
-modal. Yeni bir sürüm notu eklemek için `whats_new.json`'a en üste yeni bir
-`{date, title, items}` girdisi eklenip commit/push yeterli.
+modal (BDR'nin yanından Çıkış'ın sonuna, logo bloğunun hemen öncesine
+taşındı). Yeni bir sürüm notu eklemek için `whats_new.json`'a en üste yeni
+bir `{date, title, items}` girdisi eklenip commit/push yeterli.
+**Düzeltme (aynı gün):** İlk içerik yanlışlıkla admin-only özellikleri
+(Sunucu Taşıma, Yol Haritası sekmesi) anlatıyordu — normal dashboard
+kullanıcısı `/admin`'e erişemediği için bunları hiç göremezdi. İçerik
+gerçekten dashboard'da görünen değişikliklere çevrildi (yeni ölçüler,
+arama kutusu, CAGR düzeltmesi, koyu mod düzeltmesi vb.). **Ders:** Bu
+buton için içerik yazarken her zaman "normal üye bunu dashboard'da görebilir
+mi" testi uygulanmalı, admin panel değişiklikleri buraya girmemeli.
 
 ### 2. Role-bazlı ölçü erişimi + PDF export (BİRLEŞİK — birbirine bağımlı)
 **KARAR (2026-08-19):** Bu iki madde aslında tek bir özellik seti — ayrı ayrı
