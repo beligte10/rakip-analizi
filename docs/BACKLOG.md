@@ -279,6 +279,12 @@ alınmamıştı).
   hariç tutması `data/`'nın gizlilik/boyut mantığıyla karışıp yanlışlıkla
   genişletilmişti. Düzeltme: `.dockerignore`'dan `docs/` satırı kaldırıldı,
   `Dockerfile`'a `COPY docs/ docs/` eklendi (~100KB, image'ı şişirmiyor).
+- **"Yenilikler" butonu yapıldı** (yukarıda Bölüm 2, madde 1 — artık kapalı).
+- **Admin panelde "Yol Haritası" başlıkları accordion'a çevrildi.**
+  Marked.js ile render edilen H2 (Dönem/tier başlıkları) ve H3 (tekil
+  backlog maddeleri) artık DOM'da runtime'da sarmalanıp tıklanınca açılan/
+  kapanan bölümlere dönüştürülüyor (varsayılan hepsi kapalı) — uzun
+  dokümanı taramak kolaylaştı.
 
 ---
 
@@ -320,7 +326,11 @@ alınmamıştı).
 **KARAR (2026-08-19):** İçerik elle güncellenen basit bir liste olacak
 (`data/whats_new.json` gibi) — her önemli değişiklikte kısa, kullanıcı-dostu
 bir not eklenecek.
-**Durum:** 📋 Backlog'da, uygulanmayı bekliyor.
+**Durum:** ✅ Yapıldı (2026-08-25). `whats_new.json` repo kökünde (git-tracked,
+`data/` değil — `catalog.seed.json` deseniyle aynı), `GET /api/whats-new`
+üzerinden servis ediliyor, dashboard topbar'ında "🆕 Yenilikler" butonu +
+modal. Yeni bir sürüm notu eklemek için `whats_new.json`'a en üste yeni bir
+`{date, title, items}` girdisi eklenip commit/push yeterli.
 
 ### 2. Role-bazlı ölçü erişimi + PDF export (BİRLEŞİK — birbirine bağımlı)
 **KARAR (2026-08-19):** Bu iki madde aslında tek bir özellik seti — ayrı ayrı
