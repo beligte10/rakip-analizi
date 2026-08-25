@@ -267,6 +267,12 @@ alınmamıştı).
   alınıyor, bozuk ZIP reddediliyor) hem CLI script'i (160 ölçü, 27 banka,
   son dönem 2026-06-30) çalıştırıldı — regresyon test suite'i (47 test)
   değişiklik sonrası yeşil.
+- **Admin panele "🗺️ Yol Haritası" sekmesi eklendi.** Yeni
+  `GET /admin/backlog` endpoint'i `docs/BACKLOG.md`'yi ham metin döner,
+  admin.html `marked.js` (CDN) ile render edip gösterir — bu dosya git ile
+  deploy edildiği için (data/'nın aksine) canlıda da her zaman güncel;
+  kullanıcının "backlog dosyasına admin panelinden erişilmesini istiyorum"
+  talebiyle eklendi.
 
 ---
 
