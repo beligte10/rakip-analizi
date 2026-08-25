@@ -133,6 +133,39 @@
   .pw-btn.primary { background: var(--kt-green); color: #fff; }
   .pw-btn.primary:disabled { opacity: 0.6; cursor: default; }
 
+  /* -------- Yenilikler modal'ı (2026-08-25) -------- */
+  .wn-modal {
+    background: #fff; color: #1a2b3c; width: 480px; max-width: 92vw;
+    max-height: 78vh; display: flex; flex-direction: column;
+    border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+  body.dark .wn-modal { background: #16232f; color: #e2e8f0; }
+  .wn-modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 22px 14px; border-bottom: 1px solid #e5eaed;
+  }
+  body.dark .wn-modal-head { border-color: #223142; }
+  .wn-modal-title { font-size: 17px; font-weight: 700; color: var(--kt-green); }
+  body.dark .wn-modal-title { color: #7EBAA5; }
+  .wn-modal-close {
+    background: none; border: none; cursor: pointer; font-size: 18px;
+    color: #94a3b8; line-height: 1; padding: 4px;
+  }
+  .wn-modal-close:hover { color: #1a2b3c; }
+  body.dark .wn-modal-close:hover { color: #e2e8f0; }
+  .wn-modal-body { padding: 16px 22px 22px; overflow-y: auto; }
+  .wn-entry + .wn-entry { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eef1f3; }
+  body.dark .wn-entry + .wn-entry { border-color: #1e2c3a; }
+  .wn-entry-date {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase;
+    color: #94a3b8; margin-bottom: 4px;
+  }
+  .wn-entry-title { font-size: 14.5px; font-weight: 700; margin-bottom: 8px; }
+  .wn-entry-items { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 7px; }
+  .wn-entry-items li { font-size: 13px; line-height: 1.5; color: #3a4a5a; }
+  body.dark .wn-entry-items li { color: #c3d2de; }
+  .wn-empty { font-size: 13px; color: #94a3b8; text-align: center; padding: 20px 0; }
+
   /* -------- Tarih seçici satırı (yıl + çeyrek ayrı buton grupları) -------- */
   .date-selector-bar {
     background: var(--kt-green-dark);
@@ -1999,8 +2032,48 @@
     );
   }
 
+  // "Yenilikler" modal'ı (2026-08-25) — whats_new.json'u açıldığında çeker
+  // (bkz. app.py::api_whats_new). İçerik elle güncellenen basit bir liste
+  // (KARAR 2026-08-19) — her yeni sürümde yeni bir { date, title, items }
+  // girdisi eklenir, en yeni en üstte.
+  function WhatsNewModal(props) {
+    var entriesState = useState(null);   // null = yükleniyor
+    useEffect(function() {
+      fetch('/api/whats-new', { credentials: 'same-origin' })
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(j){ entriesState[1](Array.isArray(j) ? j : []); })
+        .catch(function(){ entriesState[1]([]); });
+    }, []);
+    var entries = entriesState[0];
+    return h('div', {
+      className: 'pw-modal-overlay',
+      onClick: function(e){ if (e.target.className === 'pw-modal-overlay') props.onClose(); }
+    },
+      h('div', { className: 'wn-modal' },
+        h('div', { className: 'wn-modal-head' },
+          h('div', { className: 'wn-modal-title' }, '🆕 Yenilikler'),
+          h('button', { className: 'wn-modal-close', onClick: props.onClose, title: 'Kapat' }, '✕')
+        ),
+        h('div', { className: 'wn-modal-body' },
+          entries === null ? h('div', { className: 'wn-empty' }, 'Yükleniyor…') :
+          entries.length === 0 ? h('div', { className: 'wn-empty' }, 'Henüz bir güncelleme notu yok.') :
+          entries.map(function(entry, i){
+            return h('div', { className: 'wn-entry', key: i },
+              h('div', { className: 'wn-entry-date' }, entry.date || ''),
+              h('div', { className: 'wn-entry-title' }, entry.title || ''),
+              h('ul', { className: 'wn-entry-items' },
+                (entry.items || []).map(function(item, j){ return h('li', { key: j }, item); })
+              )
+            );
+          })
+        )
+      )
+    );
+  }
+
   function TopBar(props) {
     var pwOpenState = useState(false);
+    var wnOpenState = useState(false);
     var measure = DATA.catalog.filter(function(m){ return m.id === props.activeMeasure; })[0];
     var compMeta = props.mode === 'composition' && props.activeComposition
       ? DATA.meta.compositions[props.activeComposition]
@@ -2034,6 +2107,11 @@
             title: 'Tüm BDR Raporları',
             style: { textDecoration: 'none' }
           }, h('span', { className: 'btn-icon' }, '📑'), h('span', { className: 'btn-label' }, 'BDR')),
+          h('button', {
+            className: 'topbar-icon-btn',
+            onClick: function(){ wnOpenState[1](true); },
+            title: 'Yenilikler'
+          }, h('span', { className: 'btn-icon' }, '🆕'), h('span', { className: 'btn-label' }, 'Yenilikler')),
           props.isAdmin && h('a', {
             className: 'topbar-icon-btn',
             href: '/admin',
@@ -2064,7 +2142,8 @@
         )
       ),
       h(DateSelectorBar, { tarih: props.tarih, setTarih: props.setTarih, mode: props.mode, setMode: props.setMode }),
-      pwOpenState[0] && h(PasswordModal, { onClose: function(){ pwOpenState[1](false); } })
+      pwOpenState[0] && h(PasswordModal, { onClose: function(){ pwOpenState[1](false); } }),
+      wnOpenState[0] && h(WhatsNewModal, { onClose: function(){ wnOpenState[1](false); } })
     );
   }
 

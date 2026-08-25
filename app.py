@@ -554,6 +554,22 @@ def api_catalog(_: dict = Depends(require_member)):
     return FileResponse(DATA_CATALOG, media_type='application/json', headers=NO_CACHE)
 
 
+@app.get('/api/whats-new')
+def api_whats_new(_: dict = Depends(require_member)):
+    """
+    "Yenilikler" penceresi (2026-08-25) — dashboard topbar'ındaki 🆕 butonu.
+    whats_new.json repo kökünde (catalog.seed.json gibi git-tracked, kod ile
+    deploy edilir — bkz. docs/BACKLOG.md'nin docs/ Docker COPY bug'ı: aynı
+    hataya düşmemek için data/ DEĞİL, kökte tutuluyor). İçerik elle
+    güncellenen basit bir liste (KARAR 2026-08-19) — admin panelden
+    düzenlenebilir bir UI yok, kasıtlı.
+    """
+    path = APP_ROOT / 'whats_new.json'
+    if not path.exists():
+        return []
+    return FileResponse(path, media_type='application/json', headers=NO_CACHE)
+
+
 @app.get('/api/version')
 def api_version():
     last_modified = None

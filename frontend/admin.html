@@ -415,6 +415,18 @@ button.secondary:hover { background: var(--hover); }
 .markdown-body hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
 .markdown-body a { color: var(--primary); }
 .markdown-body strong { font-weight: 600; }
+
+/* Yol Haritası — tıklanınca açılan/kapanan başlıklar (2026-08-25) */
+.backlog-section { margin: 0 0 4px; }
+.backlog-section > h2, .backlog-section > h3 {
+  cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px;
+  border-radius: 6px; padding: 4px 8px; margin-left: -8px;
+}
+.backlog-section > h2:hover, .backlog-section > h3:hover { background: var(--hover); }
+.backlog-section .chev { font-size: 12px; color: var(--muted); transition: transform 0.15s; flex: none; }
+.backlog-section:not(.collapsed) > h2 .chev, .backlog-section:not(.collapsed) > h3 .chev { transform: rotate(90deg); }
+.backlog-section.collapsed .backlog-section-body { display: none; }
+.backlog-section-body { padding-left: 4px; }
 </style>
 </head>
 <body>
@@ -1732,11 +1744,60 @@ async function loadBacklog() {
       throw new Error(err.detail || `HTTP ${r.status}`);
     }
     const md = await r.text();
-    target.innerHTML = (typeof marked !== 'undefined')
-      ? marked.parse(md)
-      : `<pre style="white-space:pre-wrap">${escapeHtml(md)}</pre>`;
+    if (typeof marked !== 'undefined') {
+      target.innerHTML = marked.parse(md);
+      makeBacklogCollapsible(target);
+    } else {
+      target.innerHTML = `<pre style="white-space:pre-wrap">${escapeHtml(md)}</pre>`;
+    }
   } catch (err) {
     target.innerHTML = `<div class="result-panel error">Yol haritası yüklenemedi: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+// H2'leri (Dönem/tier başlıkları), sonra her H2 gövdesi içindeki H3'leri
+// (tekil backlog maddeleri) tıklanınca aç/kapa bölümlere sarar. H1'ler
+// (doküman başlığı, "BÖLÜM 1/2") dokunulmadan kalır — sadece ayraç.
+function makeBacklogCollapsible(root) {
+  wrapBacklogHeadingLevel(root, 'H2');
+  root.querySelectorAll('.backlog-section-body').forEach(body => wrapBacklogHeadingLevel(body, 'H3'));
+}
+
+function wrapBacklogHeadingLevel(container, tagName) {
+  const nodes = Array.from(container.childNodes);
+  const groups = [];
+  let current = null;
+  for (const node of nodes) {
+    if (node.nodeType === 1 && node.tagName === tagName) {
+      if (current) groups.push(current);
+      current = { header: node, body: [] };
+    } else if (current) {
+      current.body.push(node);
+    } else {
+      groups.push(node);
+    }
+  }
+  if (current) groups.push(current);
+
+  container.innerHTML = '';
+  for (const item of groups) {
+    if (item && item.header) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'backlog-section collapsed';
+      const chev = document.createElement('span');
+      chev.className = 'chev';
+      chev.textContent = '▸';
+      item.header.insertBefore(chev, item.header.firstChild);
+      item.header.addEventListener('click', () => wrapper.classList.toggle('collapsed'));
+      wrapper.appendChild(item.header);
+      const bodyDiv = document.createElement('div');
+      bodyDiv.className = 'backlog-section-body';
+      item.body.forEach(n => bodyDiv.appendChild(n));
+      wrapper.appendChild(bodyDiv);
+      container.appendChild(wrapper);
+    } else {
+      container.appendChild(item);
+    }
   }
 }
 
