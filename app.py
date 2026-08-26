@@ -1935,12 +1935,11 @@ if __name__ == '__main__':
     # NOT (2026-08-11 güvenlik düzeltmesi, 2026-08-12 HOST env ile genişletildi):
     # varsayılan host='127.0.0.1' — sunucu SADECE bu makineden erişilebilir.
     # 0.0.0.0'a geçmek, HTTPS/reverse-proxy olmadan tüm ağa (ofis/ev WiFi veya
-    # internet) auth'suz /api/data ve admin paneli açar. Docker+Caddy
-    # kurulumunda (bkz. docker-compose.yml) HOST=0.0.0.0 ZORUNLU — ama
-    # konteyner dışarıya port açmadığı, sadece Caddy container'ı içeriden
-    # erişebildiği için dışa açıklık değişmez, tek public yüzey Caddy kalır.
-    # Docker dışı bir ortamda (yerel geliştirme, bu makine) HOST'u ASLA elle
-    # 0.0.0.0 yapma.
+    # internet) auth'suz /api/data ve admin paneli açar. Coolify/Docker
+    # kurulumunda HOST=0.0.0.0 ZORUNLU — ama container dışarıya port açmadığı,
+    # sadece Traefik (Coolify'ın reverse proxy'si) içeriden erişebildiği için
+    # dışa açıklık değişmez, tek public yüzey Traefik kalır. Docker dışı bir
+    # ortamda (yerel geliştirme, bu makine) HOST'u ASLA elle 0.0.0.0 yapma.
     host = os.environ.get('HOST', '127.0.0.1')
     # KRİTİK (denetim #12): TEK WORKER şart — `workers` verilmiyor (varsayılan 1).
     # users.json kilidi (users.py::_users_file_lock), ağır-işlem kilidi
