@@ -280,6 +280,13 @@ alınmamıştı).
   genişletilmişti. Düzeltme: `.dockerignore`'dan `docs/` satırı kaldırıldı,
   `Dockerfile`'a `COPY docs/ docs/` eklendi (~100KB, image'ı şişirmiyor).
 - **"Yenilikler" butonu yapıldı** (yukarıda Bölüm 2, madde 1 — artık kapalı).
+- **Ölü deploy dosyaları kaldırıldı (2026-08-25).** `docker-compose.yml`,
+  `Caddyfile`, `.github/workflows/deploy.yml` — Coolify'a geçmeden önce
+  planlanan eski bir "kendi Caddy + GitHub Actions SSH deploy" yaklaşımından
+  kalmıştı, gerçek canlı deploy hiç bunlara dokunmuyordu (Coolify kendi
+  webhook + Traefik + Dockerfile sürecini kullanıyor). Repo'yu incelerken
+  kafa karıştırdığı fark edilince silindi; `app.py`'deki ilgili güvenlik
+  yorumu (`HOST=0.0.0.0` gerekçesi) Coolify/Traefik'e güncellendi.
 - **Admin panelde "Yol Haritası" başlıkları accordion'a çevrildi.**
   Marked.js ile render edilen H2 (Dönem/tier başlıkları) ve H3 (tekil
   backlog maddeleri) artık DOM'da runtime'da sarmalanıp tıklanınca açılan/
