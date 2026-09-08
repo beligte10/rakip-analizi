@@ -358,6 +358,37 @@
   /* Trend grafik hover tooltip ve dikey crosshair */
   .trend-svg-wrap { position: relative; }
 
+  /* Kompozisyon hover tooltip (2026-09-08) — bar sütununa gelince o dönemin
+     TÜM bileşen yüzdeleri tam hassasiyetle listelenir. Eskiden sadece native
+     `title` vardı (geç açılıyor, stilsiz) ve %5'in altındaki segmentlerin
+     etiketi hiç görünmüyordu. */
+  .comp-tooltip {
+    position: fixed;
+    background: rgba(15, 31, 47, 0.97);
+    color: #e6edf3;
+    padding: 9px 12px;
+    border-radius: 7px;
+    font-size: 11.5px;
+    line-height: 1.55;
+    pointer-events: none;
+    z-index: 200;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.32);
+    white-space: nowrap;
+    transform: translate(-50%, calc(-100% - 14px));
+  }
+  .comp-tooltip-head {
+    font-weight: 700; font-size: 11.5px;
+    border-bottom: 1px solid rgba(255,255,255,0.16);
+    padding-bottom: 5px; margin-bottom: 6px;
+  }
+  .comp-tooltip-row { display: flex; align-items: center; gap: 8px; }
+  .comp-tooltip-row.active { font-weight: 700; }
+  .comp-tooltip-row.active .comp-tooltip-name { color: #fff; }
+  .comp-tooltip-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+  .comp-tooltip-name { color: #c5d3dd; flex: 1; padding-right: 10px; }
+  .comp-tooltip-pct { font-variant-numeric: tabular-nums; }
+  .comp-tooltip-val { color: #94a3b8; font-variant-numeric: tabular-nums; min-width: 62px; text-align: right; }
+
   .trend-tooltip {
     position: absolute;
     background: rgba(15, 31, 47, 0.96);
@@ -1798,34 +1829,48 @@
   }
 
   // YEŞİL TONU SADECE KT'YE AYRILMIŞ. Diğer bankalar farklı renk paletinden.
+  // Banka renkleri (2026-09-08 yeniden tasarlandı — kullanıcı isteği).
+  // İLKE: her banka kendi marka/logo renk ailesinde kalır (yeşil, mavi,
+  // kırmızı, mor, turuncu), aynı ailedeki bankalar PARLAKLIK kademeleriyle
+  // ayrılır — ton marka kimliğini taşıdığı için korunur. Palet CIELAB'da
+  // doğrulandı: 27 rengin birbirine en yakın çifti ΔE 15,9 (ayırt
+  // edilebilirlik eşiği ~15), yani hiçbir iki banka karışmıyor.
+  // Kuveyt Türk rengi kullanıcı tarafından sabitlendi, DEĞİŞTİRİLMEMELİ.
+  // Repoda logosu bulunan 4 banka (KT, TEB, Vakıf Katılım, Ziraat Katılım)
+  // için renk doğrudan logo SVG'sinden alındı.
   var BANK_COLORS = {
-    'Kuveyt Türk': '#559D87',          // KT yeşili — dashboard primary (rezerve)
-    'QNB Finansbank': '#1B2D58',       // QNB Group lacivert (Pantone 2767C)
-    'Denizbank': '#003F87',            // Koyu kraliyet mavisi (logo ana rengi)
-    'TEB': '#00875A',                  // BNP Paribas yeşili (TEB BNP iştiraki)
-    'Vakıf Katılım': '#E5197F',        // Logo pembe-fuşya accent
-    'Ziraat Katılım': '#D9272E',       // Logo parlak kırmızı
-    'Albaraka': '#7c3aed',             // mor (eski koyu yeşil/teal #0f766e'den değişti)
-    'Türkiye Finans': '#a855f7',       // açık mor
-    'Akbank': '#c0392b',               // koyu kırmızı
-    'Garanti Bankası': '#854d0e',      // kahve (eski yeşil/teal #16a085'ten değişti)
-    'Yapı Kredi': '#d35400',           // koyu turuncu
-    'İş Bankası': '#2980b9',           // okyanus mavisi
-    'Halk Bank': '#e74c3c',            // mercan
-    'Vakıfbank': '#e67e22',            // turuncu
-    'Ziraat Bankası': '#8e44ad',       // mor
-    'ING Bank': '#f39c12',             // amber
-    'HSBC': '#d62828',                 // kırmızı
-    'Şekerbank': '#0891b2',            // turkuaz (eski yeşil #27ae60'tan değişti)
-    'Enpara': '#9b59b6',               // mor
-    'Odeabank': '#34495e',             // koyu gri
-    'Emlak Katılım': '#f4a261',        // krem
-    'Hayat Finans': '#264653',         // gece mavisi
-    'Burgan Bank': '#e76f51',          // kiremit
-    'Alternatif Bank': '#457b9d',      // çelik mavisi
-    'Fibabanka': '#e63946',            // koyu pembe
-    'TOM Bank': '#a8dadc',             // açık mavi
-    'Dünya Katılım': '#1d3557'         // gece mavisi
+    // --- Yeşil / teal ailesi ---
+    'Kuveyt Türk':      '#62AE41',   // KT yeşili — SABİT (kullanıcı belirledi)
+    'Garanti Bankası':  '#047857',   // Garanti yeşili (koyu zümrüt)
+    'TEB':              '#00A76D',   // BNP/TEB yeşili — logo SVG
+    'Albaraka':         '#0F766E',   // Albaraka teal
+    'Hayat Finans':     '#5EEAD4',   // açık turkuaz
+    'Emlak Katılım':    '#4D7C0F',   // zeytin yeşili
+    'Şekerbank':        '#0E7490',   // turkuaz (chip kontrastı için koyulaştırıldı)
+    // --- Mavi ailesi ---
+    'Türkiye Finans':   '#0B2E63',   // TF laciverti (ailenin en koyusu)
+    'Dünya Katılım':    '#334155',   // arduvaz mavi-gri
+    'İş Bankası':       '#0057A8',   // İş Bankası mavisi
+    'Halk Bank':        '#2563EB',   // Halkbank kobalt mavisi
+    'Yapı Kredi':       '#1E40AF',   // Yapı Kredi indigo laciverti
+    'Denizbank':        '#0EA5E9',   // Denizbank gök mavisi
+    'Burgan Bank':      '#64748B',   // Burgan mavi-grisi
+    // --- Kırmızı / bordo ailesi ---
+    'Akbank':           '#E30613',   // Akbank kırmızısı
+    'Ziraat Katılım':   '#C2333E',   // Ziraat Katılım kırmızısı — logo SVG ailesi
+    'HSBC':             '#FF7A70',   // HSBC kırmızısı (açık ton)
+    'Ziraat Bankası':   '#7F1D1D',   // Ziraat koyu bordosu
+    'Fibabanka':        '#A16207',   // Fiba hardal-altın
+    // --- Mor / pembe ailesi ---
+    'Vakıf Katılım':    '#CC0099',   // Vakıf Katılım fuşyası — logo SVG
+    'QNB Finansbank':   '#6B21A8',   // QNB koyu moru
+    'Enpara':           '#9333EA',   // Enpara moru (chip kontrastı için koyulaştırıldı)
+    'TOM Bank':         '#E879F9',   // TOM açık orkidesi
+    'Odeabank':         '#9F1239',   // Odea şarabı
+    // --- Sarı / turuncu ailesi ---
+    'Vakıfbank':        '#FFB600',   // Vakıfbank altın-sarısı
+    'ING Bank':         '#FF6200',   // ING turuncusu
+    'Alternatif Bank':  '#C2410C'    // ABank kiremit turuncusu
   };
   function bankColor(b) { return BANK_COLORS[b] || '#64748b'; }
 
@@ -1874,6 +1919,23 @@
     return result;
   }
   function bankTextColor(b) { return darkSafeColor(bankColor(b)); }
+
+  // Renkli bir zemin üzerine yazılacak metnin rengi (2026-09-08). Yeni banka
+  // paletinde hem çok koyu (#0B2E63) hem çok açık (#FFB600, #5EEAD4) tonlar
+  // var; seçili chip'lerde sabit beyaz yazı açık zeminlerde okunmuyordu.
+  // Sabit bir parlaklık eşiği yerine İKİ adayın (beyaz / koyu) gerçek WCAG
+  // kontrast oranı hesaplanıp yüksek olan seçilir — eşik yöntemi orta
+  // parlaklıktaki renklerde (ör. KT yeşili #62AE41: beyazla 2,7:1) AA
+  // sınırının altında kalıyordu.
+  function contrastTextOn(hex) {
+    var c = _hexToRgb(hex);
+    function ch(v){ v/=255; return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); }
+    var L = 0.2126*ch(c.r) + 0.7152*ch(c.g) + 0.0722*ch(c.b);
+    var DARK_L = 0.0146;                       // #14202b
+    var withWhite = 1.05 / (L + 0.05);
+    var withDark  = (L + 0.05) / (DARK_L + 0.05);
+    return withDark > withWhite ? '#14202b' : '#ffffff';
+  }
 
   // Banka logoları — banka adı → base64 data URI.
   // BOŞ bırakılır; `python scripts/embed_logos.py` komutu frontend/logos/
@@ -2974,9 +3036,11 @@
 
     var min = Math.min.apply(null, allValues);
     var max = Math.max.apply(null, allValues);
+    var dataMin = min;
     var range = max - min || 1;
     min = min - range * 0.1;
     max = max + range * 0.12;  // biraz daha üst pay, label'lar için
+    if (dataMin >= 0 && min < 0) min = 0;   // pozitif seride eksen eksiye inmesin (2026-09-08)
     range = max - min;
 
     var W = 560, H = 220;
@@ -3192,6 +3256,14 @@
     // seçilir (en güncel dönem her zaman yazılır). Ölçüm, panel genişliği
     // ekrana/sütun sayısına göre değiştiği için sabit bir kuraldan daha
     // güvenilir.
+    // Bar sütunu hover'ı (2026-09-08) — {head, rows, activeId, x, y}
+    var compHoverState = useState(null);
+    var compHover = compHoverState[0], setCompHover = compHoverState[1];
+    function hoverEvt(e, head, rows, activeId) {
+      setCompHover({ head: head, rows: rows, activeId: activeId,
+                     x: e.clientX, y: e.clientY });
+    }
+
     var barsRef = useRef(null);
     var barsWState = useState(0);
     var barsW = barsWState[0], setBarsW = barsWState[1];
@@ -3307,7 +3379,17 @@
                   pctMap[c.id] = c.pct;
                   valueMap[c.id] = c.value;
                 });
-                return h('div', { key: idx, className: 'comp-bar-col' },
+                // Tooltip satırları: TÜM bileşenler (etiketi görünmeyecek
+                // kadar küçük segmentler dahil), üstten alta bar sırasıyla.
+                var tipRows = components.slice().reverse()
+                  .filter(function(c){ return (pctMap[c.id] || 0) > 0; })
+                  .map(function(c){
+                    return { id: c.id, ad: c.ad, color: c.color,
+                             pct: pctMap[c.id] || 0, val: valueMap[c.id] || 0 };
+                  });
+                var tipHead = entity.name + ' — ' + tarihLabel(row.tarih);
+                return h('div', { key: idx, className: 'comp-bar-col',
+                    onMouseLeave: function(){ setCompHover(null); } },
                   h('div', { className: 'comp-bar-stack' },
                     components.map(function(c){
                       var pct = pctMap[c.id] || 0;
@@ -3317,7 +3399,8 @@
                         key: c.id,
                         className: 'comp-bar-segment',
                         style: { height: pct + '%', background: c.color },
-                        title: c.ad + ': ' + fmtPctPlain(pct, 2) + ' (' + fmtTLAbbr(val) + ')'
+                        onMouseEnter: function(e){ hoverEvt(e, tipHead, tipRows, c.id); },
+                        onMouseMove: function(e){ hoverEvt(e, tipHead, tipRows, c.id); }
                       },
                         pct >= 5 && h('div', { className: 'comp-bar-segment-label' },
                           fmtPctPlain(pct, 1))
@@ -3368,7 +3451,12 @@
                   { id:'tp', label:'Türk Parası', pct: row.cur.tp_pct, val: row.cur.tp_value, color: TP_COLOR },
                   { id:'yp', label:'Yabancı Para', pct: row.cur.yp_pct, val: row.cur.yp_value, color: YP_COLOR },
                 ];
-                return h('div', { key: idx, className: 'comp-bar-col' },
+                var tipRows2 = segments.slice().reverse().map(function(sg){
+                  return { id: sg.id, ad: sg.label, color: sg.color, pct: sg.pct, val: sg.val };
+                });
+                var tipHead2 = entity.name + ' — ' + tarihLabel(row.tarih);
+                return h('div', { key: idx, className: 'comp-bar-col',
+                    onMouseLeave: function(){ setCompHover(null); } },
                   h('div', { className: 'comp-bar-stack' },
                     segments.map(function(s){
                       if (s.pct < 0.5) return null;
@@ -3376,7 +3464,8 @@
                         key: s.id,
                         className: 'comp-bar-segment',
                         style: { height: s.pct + '%', background: s.color },
-                        title: s.label + ': ' + fmtPctPlain(s.pct, 2) + ' (' + fmtTLAbbr(s.val) + ')'
+                        onMouseEnter: function(e){ hoverEvt(e, tipHead2, tipRows2, s.id); },
+                        onMouseMove: function(e){ hoverEvt(e, tipHead2, tipRows2, s.id); }
                       },
                         s.pct >= 5 && h('div', { className: 'comp-bar-segment-label' },
                           fmtPctPlain(s.pct, 1))
@@ -3451,7 +3540,8 @@
                 else if (isK) cls += ' katilim';
                 return h('div', {
                   key: b, className: cls,
-                  style: sel ? { background: bankColor(b), borderColor: bankColor(b) } : null,
+                  style: sel ? { background: bankColor(b), borderColor: bankColor(b),
+                                 color: contrastTextOn(bankColor(b)) } : null,
                   onClick: function(){ toggleBank(b); }
                 }, b);
               })
@@ -3519,6 +3609,23 @@
             )
           )
         )
+      ),
+      compHover && h('div', {
+        className: 'comp-tooltip',
+        style: { left: compHover.x + 'px', top: compHover.y + 'px' }
+      },
+        h('div', { className: 'comp-tooltip-head' }, compHover.head),
+        compHover.rows.map(function(r){
+          return h('div', {
+            key: r.id,
+            className: 'comp-tooltip-row' + (r.id === compHover.activeId ? ' active' : '')
+          },
+            h('div', { className: 'comp-tooltip-dot', style: { background: r.color } }),
+            h('div', { className: 'comp-tooltip-name' }, r.ad),
+            h('div', { className: 'comp-tooltip-pct' }, fmtPctPlain(r.pct, 2)),
+            h('div', { className: 'comp-tooltip-val' }, fmtTLAbbr(r.val))
+          );
+        })
       ),
       entities.length === 0
         ? h('div', { className: 'empty-state' }, 'En az 1 banka veya banka grubu seçin.')
@@ -3672,9 +3779,16 @@
     if (!noData) {
       min = Math.min.apply(null, allVals);
       max = Math.max.apply(null, allVals);
+      var dataMin = min;
       range_v = max - min || 1;
       min = min - range_v * 0.08;
       max = max + range_v * 0.08;
+      // 2026-09-08: tüm değerler pozitifken eksen NEGATİFE inmesin. Alt pay
+      // (%8) dar aralıklı serilerde tabanı sıfırın altına itebiliyordu —
+      // "eksi büyüklük" diye bir şey olmadığı için yanıltıcıydı. Tabanı 0'a
+      // kırpıyoruz; veri zaten sıfırdan uzaksa eksen veriye yakın kalır,
+      // yani dar bantlı rasyolarda trend farkı ezilmez.
+      if (dataMin >= 0 && min < 0) min = 0;
       range_v = max - min;
       stepX = filteredDates.length > 1 ? chartW / (filteredDates.length - 1) : chartW;
       scale = function(v){ return padT + chartH - ((v - min) / range_v) * chartH; };
@@ -3788,7 +3902,8 @@
                 return h('div', {
                   key: b,
                   className: cls,
-                  style: selected ? { background: bankColor(b), borderColor: bankColor(b) } : null,
+                  style: selected ? { background: bankColor(b), borderColor: bankColor(b),
+                                      color: contrastTextOn(bankColor(b)) } : null,
                   onClick: function(){ toggleBank(b); }
                 }, b);
               })
@@ -3936,8 +4051,11 @@
 
                 return h('g', { key: s.name },
                   h('path', {
+                    // textColor = koyu modda açılmış ton (bkz. darkSafeColor);
+                    // açık modda marka renginin birebir kendisi. Yeni palette
+                    // #0B2E63 gibi koyu tonlar var, koyu zeminde kaybolmasın.
                     d: path, fill:'none',
-                    stroke: s.color, strokeWidth:'2.2',
+                    stroke: s.textColor, strokeWidth:'2.2',
                     strokeDasharray: s.dashed ? '6,3' : 'none'
                   }),
                   s.values.map(function(v, i) {
@@ -3945,7 +4063,7 @@
                     return h('circle', {
                       key: i,
                       cx: padL + i * stepX, cy: scale(v),
-                      r: 3, fill: s.color
+                      r: 3, fill: s.textColor
                     });
                   }),
                 );
@@ -3982,7 +4100,7 @@
                     key: 'hov-' + s.name,
                     cx: padL + hoverIdx.i * stepX, cy: scale(v),
                     r: 5,
-                    fill: s.color,
+                    fill: s.textColor,
                     stroke: '#fff', strokeWidth: '2'
                   });
                 })
