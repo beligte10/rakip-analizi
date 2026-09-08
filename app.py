@@ -1946,13 +1946,15 @@ def _build_export_manifest() -> dict:
 @app.get('/admin/backlog')
 def admin_backlog(_: str = Depends(require_admin_access)):
     """
-    docs/BACKLOG.md'yi ham metin olarak döner — admin panelde "Yol Haritası"
-    sekmesi bunu markdown render edip gösterir. Dosya git-tracked (koddan
-    ayrı taşınan data/'nın aksine, deploy'da hep kod ile birlikte gelir).
+    docs/PROJE_EL_KITABI.md'yi ham metin olarak döner — admin panelde
+    "Proje El Kitabı" sekmesi bunu markdown render edip gösterir. Dosya
+    git-tracked (koddan ayrı taşınan data/'nın aksine, deploy'da hep kod ile
+    birlikte gelir). 2026-09-08: kaynak BACKLOG.md'den el kitabına taşındı —
+    kronoloji, yol haritası, mimari ve işletme rehberi tek dosyada birleşti.
     """
-    backlog_path = APP_ROOT / 'docs' / 'BACKLOG.md'
+    backlog_path = APP_ROOT / 'docs' / 'PROJE_EL_KITABI.md'
     if not backlog_path.exists():
-        raise HTTPException(status_code=404, detail='docs/BACKLOG.md bulunamadı')
+        raise HTTPException(status_code=404, detail='docs/PROJE_EL_KITABI.md bulunamadı')
     return Response(
         content=backlog_path.read_text(encoding='utf-8'),
         media_type='text/markdown; charset=utf-8',

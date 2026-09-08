@@ -191,7 +191,7 @@
   <div class="wrap">
     <div class="eyebrow">Rakip Analizi &middot; İç Doküman</div>
     <h1 class="title">Yol Haritası</h1>
-    <p class="subtitle">Projenin ilk kuruluşundan bugüne ne yapıldığının kronolojisi, ve önümüzdeki fikirlerin öncelik sıralı listesi. <span class="mono" style="font-size:13px">docs/BACKLOG.md</span>'nin görsel karşılığıdır.</p>
+    <p class="subtitle">Projenin ilk kuruluşundan bugüne ne yapıldığının kronolojisi, ve önümüzdeki fikirlerin öncelik sıralı listesi. <span class="mono" style="font-size:13px">docs/PROJE_EL_KITABI.md</span>'nin görsel özetidir.</p>
 
     <div class="stats">
       <div class="stat"><div class="n tabnum">9</div><div class="l">dönem</div></div>
@@ -465,16 +465,16 @@
       </div>
 
       <div class="tier tier3">
-        <div class="tier-head"><span class="tier-dot"></span><span class="tier-name">BÜYÜK R&amp;D</span><span class="tier-sub">kendi spike'ı gerekiyor</span></div>
+        <div class="tier-head"><span class="tier-dot"></span><span class="tier-name">BÜYÜK R&amp;D</span><span class="tier-sub">planı çıkarıldı, FAZ 0 bekliyor</span></div>
         <div class="cards">
-          <div class="card card-q">
-            <div class="card-head"><span class="card-title">Rasyonet'in yerine BDR otomasyonu</span><span class="pill">keşif aşamasında</span></div>
+          <div class="card card-decision">
+            <div class="card-head"><span class="card-title">PDF fazı — BDR'den otomatik veri</span><span class="pill">plan hazır</span></div>
             <div class="card-body">
-              <p>Bankaların Bağımsız Denetim Raporu PDF'lerinden ilgili kalemleri otomatik çekip Rasyonet'in bugün ürettiğiyle aynı Excel formatında çıktı üretmek.</p>
-              <div class="card-row"><span class="k">Neden büyük</span><span class="v">Yüzlerce sayfa/kalem, hassas finansal veri — doğrulama şart.</span></div>
-              <div class="card-row"><span class="k">Yaklaşım</span><span class="v">1 banka / 1 dönem spike, mevcut Rasyonet çıktısıyla satır satır karşılaştırma.</span></div>
-              <div class="card-row"><span class="k">Açık soru</span><span class="v">Örnek Rasyonet Excel çıktısı var mı? Tam otomasyon mu, elle tetiklenen bir araç mı?</span></div>
-              <div class="card-row"><span class="k">Karar</span><span class="v">Kullanıcı şimdilik erteledi — "daha sonra geliştireceğiz, şu an planlanan kısımda kalsın."</span></div>
+              <p>Veri girişi Excel'den BDR PDF'lerine taşınır, tüm rasyolar sistemde türetilir, ölçülere açıklama baloncukları eklenir, erişim etiketle belirlenir, kullanıcılar kendi formüllerini oluşturur.</p>
+              <div class="card-row"><span class="k">Plan</span><span class="v"><span class="mono" style="font-size:12.5px">docs/PROJE_EL_KITABI.md</span> §8 — 6 faz, bağımlılık akışı, risk tablosu, açık sorular.</span></div>
+              <div class="card-row"><span class="k">Kararlar</span><span class="v">2026Q3'ten itibaren PDF · arada Excel yok · otomatik indirme · etiket başına tekil ölçü seçimi · baloncuk taslaklarını Claude üretir · kullanıcı formülleri şimdilik bayrak arkasında.</span></div>
+              <div class="card-row"><span class="k">Fizibilite</span><span class="v">PDF'lerde gerçek metin katmanı var (OCR gerekmeyebilir); 51 dönemlik mevcut veri, çıkarımı kanıtlamak için altın standart.</span></div>
+              <div class="card-row"><span class="k">Sıradaki</span><span class="v">FAZ 0 — fizibilite kanıtı. %99+ eşleşme sağlanmadan üzerine sistem kurulmayacak.</span></div>
             </div>
           </div>
         </div>
@@ -519,5 +519,5 @@
 </section>
 
 <footer>
-  <div class="wrap">Rakip Analizi — iç yol haritası. Kaynak: docs/BACKLOG.md. Son güncelleme 2026-09-08.</div>
+  <div class="wrap">Rakip Analizi — iç yol haritası. Kaynak: docs/PROJE_EL_KITABI.md. Son güncelleme 2026-09-08.</div>
 </footer>

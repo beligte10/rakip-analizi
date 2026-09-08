@@ -1,0 +1,301 @@
+<title>PDF Fazı Yol Haritası</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Bu sayfa, projenin mevcut yol haritası dokümanıyla aynı görsel dili
+     kullanır (bkz. docs/backlog-visual.html): tek temalı açık zemin,
+     Fraunces + Public Sans + JetBrains Mono, KT yeşili vurgu. */
+  :root{
+    --bg:#FBFAF7; --surface:#FFFFFF; --surface-2:#F4F2ED;
+    --ink:#1D2420; --ink-soft:#576259; --ink-faint:#8B948D;
+    --accent:#2F6A53; --accent-ink:#1F4A3A; --accent-soft:#E6EFE9;
+    --line:#E1E4DF; --line-strong:#C9CFC8;
+    --karar:#B8452F; --karar-soft:#F7E7E2;
+    --paralel:#3D6FA3; --paralel-soft:#E3ECF4;
+    --bekleme:#8B948D; --bekleme-soft:#EFF1EE;
+    --uyari:#A9761B; --uyari-soft:#F5EBD8;
+    --serif:'Fraunces', Georgia, serif;
+    --sans:'Public Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono:'JetBrains Mono', ui-monospace, "SF Mono", monospace;
+    --shadow: 0 1px 2px rgba(29,36,32,.06), 0 8px 24px -14px rgba(29,36,32,.14);
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:var(--serif); margin:0; text-wrap:balance; color:var(--ink)}
+  p{margin:0}
+  .mono{font-family:var(--mono)}
+  .wrap{max-width:920px; margin:0 auto; padding:0 24px}
+  code{font-family:var(--mono); font-size:.86em; background:var(--surface-2);
+       padding:1px 5px; border-radius:4px; color:var(--accent-ink)}
+
+  /* hero */
+  .hero{padding:56px 0 34px; border-bottom:1px solid var(--line)}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.09em;
+           text-transform:uppercase; color:var(--accent-ink); font-weight:600;
+           display:flex; align-items:center; gap:8px}
+  .eyebrow::before{content:""; width:7px; height:7px; border-radius:50%;
+                   background:var(--accent)}
+  h1{font-size:clamp(30px,4.6vw,42px); font-weight:600; margin-top:13px; letter-spacing:-.01em}
+  .lede{margin-top:14px; max-width:62ch; color:var(--ink-soft); font-size:16.5px}
+
+  section{padding:44px 0}
+  section + section{border-top:1px solid var(--line)}
+  .sec-title{font-size:22px; font-weight:600; margin-bottom:6px}
+  .sec-note{color:var(--ink-soft); font-size:14.5px; max-width:64ch; margin-bottom:22px}
+
+  /* karar tablosu */
+  table{width:100%; border-collapse:collapse; font-size:14.5px}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-family:var(--mono); font-size:11.5px; text-transform:uppercase;
+     letter-spacing:.05em; color:var(--ink-faint); font-weight:600}
+  td.k{width:31%; font-weight:600}
+  .scroll{overflow-x:auto}
+
+  /* baslangic bulgulari */
+  .bulgular{display:grid; gap:10px}
+  .bulgu{display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:start;
+         background:var(--surface); border:1px solid var(--line); border-radius:11px;
+         padding:14px 16px; box-shadow:var(--shadow)}
+  .bulgu .isaret{font-family:var(--mono); font-size:11px; font-weight:600;
+        padding:3px 8px; border-radius:999px; white-space:nowrap; margin-top:1px}
+  .iyi{background:var(--accent-soft); color:var(--accent-ink)}
+  .eksik{background:var(--uyari-soft); color:var(--uyari)}
+  .bulgu b{font-weight:600}
+  .bulgu p{font-size:14px; color:var(--ink-soft); margin-top:3px}
+
+  /* faz akisi */
+  .akis-basligi{font-family:var(--mono); font-size:11.5px; letter-spacing:.06em;
+     text-transform:uppercase; color:var(--ink-faint); font-weight:600; margin:26px 0 12px}
+  .zincir{display:grid; gap:0}
+  .faz{background:var(--surface); border:1px solid var(--line); border-radius:12px;
+       padding:18px 20px; box-shadow:var(--shadow)}
+  .faz + .ok{justify-self:start; margin-left:26px}
+  .ok{color:var(--line-strong); font-size:18px; line-height:1; padding:6px 0}
+  .faz-head{display:flex; align-items:baseline; gap:11px; flex-wrap:wrap}
+  .no{font-family:var(--mono); font-weight:600; font-size:12px; color:#fff;
+      background:var(--accent); border-radius:6px; padding:3px 8px}
+  .faz.karar .no{background:var(--karar)}
+  .faz.paralel-k .no{background:var(--paralel)}
+  .faz.bekleme-k .no{background:var(--bekleme)}
+  .faz-ad{font-family:var(--serif); font-size:18px; font-weight:600}
+  .rozet{font-family:var(--mono); font-size:10.5px; letter-spacing:.04em;
+     text-transform:uppercase; font-weight:600; padding:3px 9px; border-radius:999px;
+     margin-left:auto; white-space:nowrap}
+  .r-karar{background:var(--karar-soft); color:var(--karar)}
+  .r-paralel{background:var(--paralel-soft); color:var(--paralel)}
+  .r-bekleme{background:var(--bekleme-soft); color:var(--bekleme)}
+  .r-zincir{background:var(--accent-soft); color:var(--accent-ink)}
+  .amac{font-size:14.5px; color:var(--ink-soft); margin-top:9px}
+  .faz ul{margin:10px 0 0; padding-left:19px; display:flex; flex-direction:column; gap:6px}
+  .faz li{font-size:14px; color:var(--ink-soft)}
+  .faz li b{color:var(--ink); font-weight:600}
+  .cikti{margin-top:11px; font-size:13.5px; background:var(--surface-2);
+         border-left:3px solid var(--accent); border-radius:0 7px 7px 0; padding:9px 12px}
+  .cikti b{font-family:var(--mono); font-size:10.5px; text-transform:uppercase;
+           letter-spacing:.05em; color:var(--accent-ink); display:block; margin-bottom:3px}
+  .paralel-grid{display:grid; gap:12px; grid-template-columns:1fr}
+  @media (min-width:760px){ .paralel-grid{grid-template-columns:1fr 1fr} }
+
+  /* risk */
+  .risk td.r{width:26%; font-weight:600}
+  .risk td.a{color:var(--ink-soft)}
+
+  /* acik sorular */
+  .soru{background:var(--surface); border:1px solid var(--line);
+        border-left:3px solid var(--uyari); border-radius:0 11px 11px 0;
+        padding:13px 16px; box-shadow:var(--shadow)}
+  .sorular{display:grid; gap:10px}
+  .soru b{font-weight:600}
+  .soru p{font-size:13.8px; color:var(--ink-soft); margin-top:3px}
+
+  footer{padding:34px 0 60px; border-top:1px solid var(--line);
+         color:var(--ink-faint); font-size:13px}
+</style>
+
+<div class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Rakip Analizi · Faz Planı</p>
+    <h1>PDF'ten veriye, veriden içgörüye</h1>
+    <p class="lede">Veri girişini Excel'den <strong>BDR PDF'lerine</strong> taşıyan, tüm rasyoları
+    sistem içinde türeten, ölçülere anlam kazandıran ve kimin neyi göreceğini etiketle
+    belirleyen faz planı. Kaynak: <code>docs/PROJE_EL_KITABI.md</code> §8</p>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec-title">Alınan kararlar</h2>
+    <p class="sec-note">Plan bu altı karara göre şekillendi; hiçbiri varsayım değil.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Konu</th><th>Karar</th></tr></thead>
+        <tbody>
+          <tr><td class="k">Excel'in kaderi</td><td>Bugüne kadarki Excel verisi kalır; <strong>2026Q3'ten itibaren</strong> çeyreklik güncellemeler tamamen PDF üzerinden</td></tr>
+          <tr><td class="k">Veri akışı</td><td>Arada Excel olmasın — <strong>PDF → doğrudan Python</strong></td></tr>
+          <tr><td class="k">PDF kaynağı</td><td>Sistem <strong>otomatik indirsin</strong> (bdr-kisayol panosu)</td></tr>
+          <tr><td class="k">Kullanıcı formülleri</td><td>Ham BDDK kalemleri üzerinden; sadece oluşturan görür; log tutulur; <strong>şimdilik canlıya alınmayacak</strong></td></tr>
+          <tr><td class="k">Baloncuk içeriği</td><td>Claude taslak üretir, kullanıcı onaylar</td></tr>
+          <tr><td class="k">Etiket modeli</td><td>Bir kullanıcıya <strong>birden fazla etiket</strong>; etiket → tekil ölçü seçimi</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec-title">Nereden başlıyoruz</h2>
+    <p class="sec-note">Planı yazmadan önce doğrulanan tespitler — bunlar planın dayanağı.</p>
+    <div class="bulgular">
+      <div class="bulgu"><span class="isaret iyi">avantaj</span><div>
+        <b>PDF'lerde gerçek metin katmanı var.</b>
+        <p>Örnek BDR (Ziraat, 9,8 MB) ham baytları incelendi: 331 font referansı, 97 metin akışı, 502 görsel. Taranmış görüntü değil — OCR gerekmeyebilir. Asıl zorluk metni çıkarmak değil, <strong>tablo yapısını doğru yorumlamak</strong>.</p>
+      </div></div>
+      <div class="bulgu"><span class="isaret iyi">avantaj</span><div>
+        <b>Doğrulama için altın standart elimizde.</b>
+        <p>51 dönem × 27 banka × ~2,85M satır doğrulanmış veri var. PDF çıkarımı, aynı dönemin Excel sonucuyla satır satır karşılaştırılarak kanıtlanabilir — güveni sıfırdan inşa etmeye gerek yok.</p>
+      </div></div>
+      <div class="bulgu"><span class="isaret iyi">avantaj</span><div>
+        <b>Kaynak pano uygun yapıda.</b>
+        <p>bdr-kisayol panosunda banka listeleri, dönem/çeyrek seçimi ve doğrudan PDF linkleri var (Solo ve Konsolide ayrı).</p>
+      </div></div>
+      <div class="bulgu"><span class="isaret eksik">eksik</span><div>
+        <b>Ölçülerin hiçbirinde açıklama alanı yok.</b>
+        <p><code>catalog.seed.json</code>'daki 160 ölçü yalnızca <code>id, ad, tip, birim, kategori…</code> taşıyor. Baloncuk için sıfırdan metadata katmanı gerekecek.</p>
+      </div></div>
+      <div class="bulgu"><span class="isaret eksik">eksik</span><div>
+        <b>13 ölçü hâlâ dış kaynağa bağlı.</b>
+        <p>SYR, Çekirdek SYR, NIM, Spread, RORWA, Maliyet/Gelir ve diğerleri ham veriden hesaplanmıyor; baseline'dan taşınıyor ve her yeni çeyrekte <strong>bir dönem geride kalıyor</strong>.</p>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec-title">Fazlar</h2>
+    <p class="sec-note">Numaralar sıra değil <strong>bağımlılık</strong> anlatıyor: ilk üçü zincirleme,
+    sonraki üçü paralel yürüyebilir.</p>
+
+    <p class="akis-basligi">Zincir — sırayla ilerlemeli</p>
+    <div class="zincir">
+      <div class="faz karar">
+        <div class="faz-head"><span class="no">FAZ 0</span><span class="faz-ad">Fizibilite kanıtı</span><span class="rozet r-karar">karar noktası</span></div>
+        <p class="amac">PDF çıkarımının güvenilirliği kanıtlanmadan üzerine sistem kurmak, projenin en pahalı hatası olur. Finansal veride "çoğunlukla doğru" kabul edilemez.</p>
+        <ul>
+          <li>3 banka × 1 dönem seç (KT + bir büyük mevduat + bir katılım) — <b>formatlar farklı olduğu için çeşitlilik şart</b></li>
+          <li>PDF'ten tablo çıkar, kalemleri <b>aynı dönemin Excel verisiyle satır satır karşılaştır</b></li>
+          <li>Rapor: eşleşme oranı ve tutmayanların nedeni (kalem adı / birim / tablo yapısı)</li>
+        </ul>
+        <div class="cikti"><b>çıktı ve eşik</b>Doğruluk raporu + git/devam kararı. Ana tablolarda <strong>%99+ birebir eşleşme</strong> beklenir; altındaysa kapsam daraltılır ya da yaklaşım değişir.</div>
+      </div>
+      <div class="ok">↓</div>
+      <div class="faz">
+        <div class="faz-head"><span class="no">FAZ 1</span><span class="faz-ad">PDF → veri motoru</span><span class="rozet r-zincir">FAZ 0'a bağlı</span></div>
+        <p class="amac">PDF yükleyerek çeyrek güncellemesi yapılabilir hâle gelmek — henüz elle yükleme ile.</p>
+        <ul>
+          <li><code>pipeline/pdf_ingest.py</code> — çıktı şeması <b>mevcut parquet ile birebir aynı</b>, böylece measures/groups/composition katmanlarının hiçbiri değişmez</li>
+          <li><b>Kalem eşleme sözlüğü</b> — NFC normalizasyonu ve NBSP temizliği zorunlu (bu iki tuzağa projede 3 kez düşüldü)</li>
+          <li><b>Kalite kapıları:</b> bilanço denkliği (Aktif = Pasif), önceki çeyreğe göre makul değişim, beklenen tabloların varlığı — biri başarısızsa dosya <b>işlenmez</b></li>
+          <li>Geriye dönük doğrulama: son 4 çeyrek PDF'ten üretilip Excel sonucuyla karşılaştırılır</li>
+        </ul>
+        <div class="cikti"><b>ilke</b>Sessizce yanlış veri yazmaktansa "işlenemedi" demek yeğdir.</div>
+      </div>
+      <div class="ok">↓</div>
+      <div class="faz">
+        <div class="faz-head"><span class="no">FAZ 2</span><span class="faz-ad">Otomatik indirme</span><span class="rozet r-zincir">FAZ 1'e bağlı</span></div>
+        <p class="amac">Çeyrek geldiğinde PDF'leri sistem kendisi bulup indirsin; elle iş kalmasın.</p>
+        <ul>
+          <li>Panodan link toplama → indirme → arşivleme (<code>data/raw_pdf/</code>)</li>
+          <li>Çeyrek sonrası periyodik tarama, eksik banka uyarısı ("3 banka henüz yayımlamadı")</li>
+          <li><b>İnsan onayı kapısı:</b> indirilen veri otomatik işlenir ama <b>doğrudan yayına girmez</b> — "şunlar geldi, farklar bunlar, onayla" ekranı</li>
+          <li>İndirme ve çıkarım <b>ayrı katman</b>; elle yükleme her zaman yedek yol olarak kalır</li>
+        </ul>
+        <div class="cikti"><b>tasarım kararı</b>Otomasyon veriyi hazırlar; yayına alma kararı insanda kalır.</div>
+      </div>
+    </div>
+
+    <p class="akis-basligi">Paralel — birbirinden bağımsız ilerleyebilir</p>
+    <div class="paralel-grid">
+      <div class="faz paralel-k">
+        <div class="faz-head"><span class="no">FAZ 3</span><span class="faz-ad">13 ölçünün türetilmesi</span><span class="rozet r-paralel">paralel</span></div>
+        <p class="amac">"Dışarıdan hesaplanmış değer almayalım" hedefinin ikinci yarısı. Excel verisiyle de yapılabilir, PDF'i beklemez.</p>
+        <ul>
+          <li>PDF/Excel'de <b>doğrudan mevcut</b>: Sermaye Yeterlilik Rasyosu, Çekirdek Sermaye Yeterliliği Oranı, Çekirdek Sermaye Toplamı, Net Faiz Geliri/Gideri</li>
+          <li>Türet → <b>geçmiş dönemlerde baseline değeriyle karşılaştır</b> → tutuyorsa formül doğrudur</li>
+          <li>Doğrudan okunabilenlerle başla, sonra NIM/Spread/RORWA gibi türetilmesi gerekenlere geç</li>
+        </ul>
+        <div class="cikti"><b>çıktı</b>Yeni çeyrek yüklendiğinde 160 ölçünün tamamı dolu gelir.</div>
+      </div>
+      <div class="faz paralel-k">
+        <div class="faz-head"><span class="no">FAZ 4</span><span class="faz-ad">Bilgi baloncukları</span><span class="rozet r-paralel">paralel</span></div>
+        <p class="amac">Her ölçünün ne anlattığını ve nasıl yorumlanacağını ekranda göstermek.</p>
+        <ul>
+          <li>Catalog'a üç yeni alan: <b>tanım</b>, <b>nasıl hesaplanır</b>, <b>içgörü</b> (yüksek/düşük olması ne demek)</li>
+          <li>Claude 160 ölçü için taslak üretir → siz düzeltip onaylarsınız</li>
+          <li>Arayüzde ⓘ baloncuğu; admin panelden metin düzenleme</li>
+          <li>İçerik <b>statik</b> — her açılışta LLM çağrısı yok (maliyet ve tutarlılık)</li>
+        </ul>
+      </div>
+      <div class="faz paralel-k">
+        <div class="faz-head"><span class="no">FAZ 5</span><span class="faz-ad">Etiket bazlı erişim</span><span class="rozet r-paralel">paralel</span></div>
+        <p class="amac">Kimin hangi kalemleri göreceğini etiketle belirlemek.</p>
+        <ul>
+          <li><code>data/tags.json</code> — etiket → ölçü listesi; kullanıcıda birden fazla etiket, gördüğü ölçüler <b>birleşim</b></li>
+          <li>Admin panelde etiket yönetimi + aranabilir ölçü seçici (160 ölçü)</li>
+          <li><b>Filtreleme sunucuda</b> — görmemesi gereken ölçü frontend'e hiç gönderilmez; gizlemek yetmez</li>
+        </ul>
+      </div>
+      <div class="faz bekleme-k">
+        <div class="faz-head"><span class="no">FAZ 6</span><span class="faz-ad">Kullanıcı formülleri</span><span class="rozet r-bekleme">bayrak arkasında</span></div>
+        <p class="amac">Kullanıcı kendi rasyosunu ham kalemlerden türetsin — geliştirilir ama <b>şimdilik canlıya alınmaz</b>.</p>
+        <ul>
+          <li><b>Güvenli ifade değerlendirici</b> — <code>eval</code> kesinlikle yok; AST whitelist, sıfıra bölme koruması</li>
+          <li>~1.891 ham kalem içinden aranabilir seçici (kullanıcının etiketiyle sınırlı → FAZ 5'e bağlı)</li>
+          <li>Kişisel formüller: sadece oluşturan görür · <b>kim ne zaman ne oluşturdu log'u</b></li>
+          <li>Kaydetmeden önce seçili banka/dönem için önizleme</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec-title">Riskler</h2>
+    <p class="sec-note">En tehlikelisi ilk sırada: yanlış veri, çöken sistemden daha zararlıdır çünkü fark edilmez.</p>
+    <div class="scroll">
+      <table class="risk">
+        <thead><tr><th>Risk</th><th>Neden ciddi</th><th>Azaltım</th></tr></thead>
+        <tbody>
+          <tr><td class="r">Sessiz yanlış çıkarım</td><td class="a">PDF'ten yanlış hücre okunur, kimse fark etmez, yanlış rakamla karar alınır</td><td class="a">Excel ile çapraz doğrulama · bilanço denkliği · dönemsel sıçrama kontrolü · mevcut regresyon kilidi</td></tr>
+          <tr><td class="r">Banka format çeşitliliği</td><td class="a">27 banka, farklı denetim firmaları ve şablonlar</td><td class="a">Banka bazlı şablon; başarısızlıkta "işlenemedi" — asla tahmin yürütme</td></tr>
+          <tr><td class="r">Solo/Konsolide karışması</td><td class="a">Yanlış rapor tipi tüm seriyi kaydırır, gözle fark edilmez</td><td class="a">Rapor tipi dosya adına ve manifeste yazılır; FAZ 0'da mevcut veriyle kanıtlanır</td></tr>
+          <tr><td class="r">Otomatik indirmenin kırılması</td><td class="a">Banka siteleri ve linkler değişir, çeyrek kaçar</td><td class="a">İndirme ve çıkarım ayrı katman · elle yükleme hep açık · eksik banka uyarısı</td></tr>
+          <tr><td class="r">Etiket filtresinin atlanması</td><td class="a">Yetkisiz kişi gizli ölçüyü görür</td><td class="a">Filtreleme sunucuda; veri ağdan hiç geçmez; testle doğrulanır</td></tr>
+          <tr><td class="r">Formülde kod çalıştırma</td><td class="a">Kullanıcı metni sunucuda kod olarak çalışırsa ciddi güvenlik açığı</td><td class="a">AST whitelist · <code>eval</code> yok · bayrak arkasında kapalı başlangıç</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec-title">Açık sorular</h2>
+    <p class="sec-note">Uygulamaya geçmeden netleşmesi gerekenler.</p>
+    <div class="sorular">
+      <div class="soru"><b>Solo mu, konsolide mi?</b><p>Pano her banka için iki rapor sunuyor. Mevcut BDDK verisi hangisine karşılık geliyor? Yanlış seçim tüm seriyi sessizce kaydırır — FAZ 0'da karşılaştırmayla kanıtlanmalı.</p></div>
+      <div class="soru"><b>Kapsam genişleyecek mi?</b><p>Panoda kalkınma ve yatırım bankaları da var; sistem şu an 27 banka izliyor.</p></div>
+      <div class="soru"><b>Etiketsiz kullanıcı ne görür?</b><p>Hiçbir şey mi (güvenli varsayılan), yoksa temel bir ölçü seti mi?</p></div>
+      <div class="soru"><b>Kullanıcı formülleri ne zaman açılacak?</b><p>Özellik bayrağı hangi koşulda canlıya alınacak?</p></div>
+      <div class="soru"><b>Excel yolu tamamen kapanacak mı?</b><p>Karar "2026Q3'ten itibaren PDF" — Excel yükleme ekranı acil durum yedeği olarak kalsın mı?</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Rakip Analizi — PDF fazı yol haritası · 2026-09-08 · Kaynak: docs/PROJE_EL_KITABI.md §8</div>
+</footer>

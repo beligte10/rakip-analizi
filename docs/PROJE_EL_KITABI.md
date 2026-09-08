@@ -1,27 +1,334 @@
-# Backlog — KT Rakip Analizi
+# KT Rakip Analizi — Proje El Kitabı
 
-Bu doküman iki bölümden oluşur: **(1) Ne yapıldı** — projenin başından bugüne
-ayrıntılı kronoloji, **(2) Ne yapılacak** — yeni özellik istekleri + ertelenmiş
-konular, öncelik sırasıyla.
+**Son güncelleme:** 2026-09-08 · **Hedef okuyucu:** projeyi devralacak geliştirici
 
-**Kaynaklar:** `docs/CHANGELOG.md`, git geçmişi (`git log`), Claude'un proje
-hafıza notları, bu konuşmanın kendisi. Tarihler kaynağında ne yazıyorsa öyle
-aktarıldı — bkz. aşağıdaki tarih notu.
+Bu dosya projenin **tek doğru kaynağıdır**: ne olduğu, nasıl çalıştığı, nasıl
+işletildiği, bugüne kadar ne yapıldığı ve bundan sonra ne yapılacağı burada.
+Daha önce bu bilgi `BACKLOG.md`, `PDF_FAZI_YOL_HARITASI.md` ve `CONTEXT.md`
+arasında dağılmıştı; üçü bu dosyada birleştirildi ve kaldırıldı.
 
-**⚠️ Tarih notu:** `docs/CHANGELOG.md`'deki en eski dönem "2025-05" tarihleriyle
-etiketli, ama proje git geçmişi ve yoğun geliştirme 2026-08'de başlıyor. Bu
-tutarsızlık, projenin **kullanıcılar arasındaki devir sürecinden** kaynaklanıyor
-— yani "2025-05" dönemi muhtemelen önceki sahip/geliştiriciye ait, tam takvim
-karşılığı netleşmedi. Tarihler kaynak dokümanlarda yazdığı gibi bırakıldı,
-düzeltme yapılmadı.
+**Okuma sırası önerisi**
+1. Projeyi hiç bilmiyorsanız: §1 → §2 (çalıştırın) → §3 (nasıl çalışıyor)
+2. Veri yükleyecekseniz: §4 (işletme) — özellikle §4.2
+3. Koda dokunacaksanız: §5 (tuzaklar) **önce okunmalı**, sonra §3
+4. "Neden böyle yapılmış?" sorusu için: §9 (kararlar günlüğü) ve §6 (kronoloji)
 
-**Son güncelleme:** 2026-09-08
+**Derinlik dokümanları** (bu dosya özetler, detay oradadır):
+`docs/ARCHITECTURE.md` (storage şeması) · `docs/MEASURES.md` (160 ölçünün
+formülleri) · `docs/MEASURE_LISTESI.md` · `docs/EXTENDING.md` (yeni ölçü/banka
+/grup ekleme adımları) · `docs/DATA_MIGRATION.md` (sunucu göçü) ·
+`docs/CHANGELOG.md` (sürüm geçmişi)
 
 ---
 
-# BÖLÜM 1 — Ne Yapıldı (Kronoloji)
+## 1. Proje nedir
 
-## Dönem 0 — İlk kuruluş ("2025-05" etiketli, devir öncesi dönem)
+Türk bankacılık sektörü için **rakip analiz dashboard'u**. BDDK'nın kamuya
+açık çeyreklik verilerinden beslenir; Kuveyt Türk'ün rakipleri karşısındaki
+konumunu büyüklük, pazar payı, büyüme ve rasyo bazında gösterir.
+
+**Sahibi:** Kuveyt Türk Strateji ekibi · **Canlı:** kt-strateji.space
+
+**Bir bakışta**
+
+| | |
+|---|---|
+| Banka | 27 |
+| Dönem | 51 çeyrek (2013-12-31 → 2026-06-30) |
+| Ölçü | 160 (147'si ham veriden hesaplanıyor, 13'ü dış kaynaktan taşınıyor) |
+| Ham veri | ~1.193 xlsx, 2,85M satır konsolide |
+| Banka grubu | 5 (Kuveyt Türk, Mevduat Bankaları, Rakip Bankalar, Katılım Bankaları, KT Hariç Katılım) |
+| Görünüm | 4 mod: Anında Görünüm, Trend, Kompozisyon, Dışa Aktar |
+| Test | 66 (pytest) |
+
+**Neyi çözüyor:** Daha önce bu analiz, dışarıdan satın alınan hazır Excel
+çıktıları (Rasyonet) ve elle hazırlanan PowerBI raporlarıyla yapılıyordu.
+Sistem, ham BDDK verisinden başlayıp tüm rasyoları kendisi hesaplayarak bu
+bağımlılığı kaldırmayı hedefliyor — bu geçiş hâlâ sürüyor (bkz. §8.3).
+
+---
+
+## 2. Hızlı başlangıç
+
+**Gereksinimler:** Python 3.11+, ~500 MB disk (veri dahil)
+
+```bash
+cd "Rakip Analizi"
+pip install -r requirements.txt
+./start.sh                      # http://127.0.0.1:7860
+```
+
+> ⚠️ **`python3 app.py` ile başlatmayın.** `start.sh`, admin şifresini ve
+> ultra-admin kimliğini ortam değişkeni olarak verir; doğrudan çalıştırma
+> zayıf varsayılan şifreye düşer.
+
+**Giriş:** Dashboard üyelik ister. Admin, kendi Basic Auth şifresiyle
+`/login` üzerinden `{KT_USERNAME}@admin.local` hesabıyla girer (bu hesap her
+açılışta otomatik senkronlanır). Admin paneli ayrıca `/admin` adresinde
+HTTP Basic Auth ile korunur.
+
+**Testler:**
+```bash
+python3 -m pytest tests/ -q     # 66 test
+```
+
+**Kod değiştirdiyseniz sunucuyu yeniden başlatın** — `uvicorn` `reload=False`
+ile çalışıyor (bilinçli: tek worker garantisi için, bkz. §5).
+
+---
+
+## 3. Sistem nasıl çalışıyor
+
+### 3.1 Veri akışı
+
+```
+BDDK xlsx (1 banka × 1 dönem)
+      │  pipeline/ingest.py — parse + kalite kontrolü
+      ▼
+data/raw/<Banka>/<Banka> - GG.AA.YYYY.xlsx        ← ham arşiv, dokunulmaz
+      │  update_parquet_incremental / rebuild_parquet
+      ▼
+data/veriler.parquet    (long format, 2,85M satır)
+      │  pipeline/compute.py  → measures.py (147 ölçü)
+      │  pipeline/groups.py   → grup toplamları
+      │  pipeline/composition.py → kompozisyon + TP/YP
+      ▼
+data/computed.json      (dashboard'un okuduğu tek dosya, ~10 MB)
+      │  FastAPI /api/data
+      ▼
+frontend/index_v30.html (React, CDN — build adımı yok)
+```
+
+**Temel ilke:** Frontend hesaplama yapmaz. Yeni bir ölçü eklemek yalnızca
+pipeline tarafını ilgilendirir; frontend `computed.json`'u render eder.
+
+### 3.2 Dosya yapısı
+
+```
+app.py                 FastAPI backend — tüm route'lar, auth, admin uçları (~2.000 satır)
+users.py               üyelik katmanı (bcrypt + imzalı çerez)
+catalog.seed.json      ölçü/kompozisyon/banka tanımları (git-tracked kaynak)
+whats_new.json         "Yenilikler" penceresi içeriği
+
+pipeline/
+  ingest.py            xlsx → parquet, kalite kontrolü, dosya adı doğrulama
+  lookup.py            LookupContext — parquet üzerinde kalem arama
+  measures.py          147 ölçünün formülleri (en büyük dosya, ~1.365 satır)
+  groups.py            grup toplamları / ağırlıklı rasyolar
+  composition.py       kompozisyon ve TP/YP dağılımı
+  compute.py           orkestratör (compute_all)
+  datatable.py         ESKİ — PowerBI export yolu, artık kullanılmıyor
+
+frontend/
+  index_v30.html       dashboard (React CDN, ~4.800 satır, tek dosya)
+  admin.html           admin paneli
+  login.html, signup.html
+  logos/               banka logoları
+
+scripts/               CLI araçları (init_data, recompute, export_data_snapshot…)
+tests/                 pytest (66 test)
+data/                  GİT'TE DEĞİL — canlı veri (bkz. §5)
+```
+
+### 3.3 Veri formatları
+
+**`data/veriler.parquet`** — long format, 8 kolon:
+
+| Kolon | Tip | Açıklama |
+|---|---|---|
+| Tarih | datetime | Çeyrek sonu |
+| Banka Adı | category | Görünen ad ("Kuveyt Türk") |
+| Banka Türü | category | Mevduat \| Katılım |
+| Tablo Türü | category | Ana Tablo \| … |
+| Tablo Adı | category | Bilanço, Gelir Tablosu, Şube-Personel… (45 tablo) |
+| Kalem Adı | category | BDDK kalem adı, orijinal Türkçe (1.891 farklı kalem) |
+| Para Birimi | category | Toplam \| TP \| YP |
+| Tutar | float64 | TL |
+
+**`data/computed.json`** — dashboard payload'u:
+```
+meta              banka listesi, gruplar, tarihler, kapsam, top-20
+catalog           160 ölçünün metadata'sı
+bank_data         [ölçü][banka][tarih] = değer
+group_data        [ölçü][grup][tarih] = {value: …}
+composition_data  5 kompozisyon
+currency_data     4 TP/YP dağılımı
+timestamp         üretim zamanı
+```
+
+**`catalog.seed.json` ↔ `data/catalog.json`** — seed git'te tutulur (ölçü/
+kompozisyon/banka tanımları = kod), runtime kopyası `data/`'da yaşar ve
+admin panelden düzenlenen **grup üyeliklerini** korur. Açılışta seed'den
+senkronlanır: config tazelenir, gruplar korunur.
+
+### 3.4 Ölçü sistemi
+
+- **`MEASURE_FUNCS` (147)** — ham veriden hesaplanır. Her fonksiyonun
+  docstring'inde DAX-eşdeğer formülü vardır.
+- **`BASELINE_PASSTHROUGH` (13)** — ham BDDK verisinde karşılığı olmayan ya
+  da henüz türetilmemiş ölçüler (SYR, Çekirdek SYR, NIM, Spread, RORWA,
+  Maliyet/Gelir…). Bunlar eski PowerBI baseline'ından **taşınır**, yani her
+  yeni çeyrekte bir dönem geride kalırlar. Bu bilinçli bir borç ve
+  kapatılması planlanıyor (§8.3, FAZ 3).
+
+Ölçü metadata'sı: `id, ad, tip (buyukluk|rasyo), akim_stok, birim, kategori,
+alt_kategori, pazar_payi, sort_direction`. **Açıklama alanı henüz yok** —
+bilgi baloncukları fazında eklenecek (§8.3, FAZ 4).
+
+Yeni ölçü ekleme adımları: `docs/EXTENDING.md`.
+
+### 3.5 Grup katmanı ve kısmi çeyrek kuralı
+
+Grup toplamları `pipeline/groups.py`'da **tek yerde** tanımlıdır; hem
+`app.py` hem `scripts/recompute.py` aynı fonksiyonu çağırır.
+
+- Büyüklükler: üyelerin toplamı
+- Rasyolar: **ağırlıklı ortalama** (Σpay / Σpayda) — basit ortalama değil
+
+**Kritik kural:** Bir grup, üyelerinden biri o dönemi raporlamamışsa `None`
+("—") döner. Yanıltıcı küçük toplam üretmektense veri yok demeyi tercih
+ediyoruz. "Banka henüz kurulmamış" ile "bu çeyreği henüz raporlamadı" ayrımı
+`first_date_map` ile yapılır (bkz. §5).
+
+### 3.6 Kimlik doğrulama — iki ayrı katman
+
+| Katman | Kim | Nasıl | Neye erişir |
+|---|---|---|---|
+| **Basic Auth** | Kök admin | `KT_USERNAME` / `KT_PASSWORD` | `/admin` paneli, tüm admin uçları |
+| **Üyelik oturumu** | Üyeler | `/signup` → admin onayı → `/login` | Sadece `/api/data`, `/api/catalog` |
+
+Onaylı bir üyeye admin panelden `role='admin'` verilebilir — bu, Basic Auth
+ile **eş değer tam yetki** demektir (kısmi yetki yok). Ayrıca tek hesaba özel
+**ultra admin** katmanı vardır (`KT_ULTRA_ADMIN_EMAIL`): diğer adminler bu
+hesabı üye listesinde göremez ve üzerinde işlem yapamaz.
+
+### 3.7 Koruma katmanları
+
+Veri yazan her akışta sırayla:
+
+1. **Ağır işlem kilidi** — upload/rebuild aynı anda çalışamaz (409 döner)
+2. **Kalite kontrolü** — bozuk xlsx `data/raw/`'a hiç yazılmaz
+3. **Otomatik yedek** — `_backup_computed()`, son 5 kopya `data/backups/`
+4. **Boşluk kilidi** — sonuç tamamen boşsa yazma
+5. **Regresyon kilidi** — sonuç mevcut veriden küçükse (ölçü/banka/dönem
+   düşüyor ya da dolu hücre %2'den fazla azalıyor) **409 ile reddedilir**;
+   admin panelde "Veri azalmasına izin ver" kutusuyla bilinçli olarak
+   zorlanabilir
+6. **Atomik yazım** — `.tmp` + `replace`
+7. **Açılışta kurtarma** — `computed.json` bozuksa son sağlam yedeğe dönülür,
+   bozuk dosya `computed.corrupt_<zaman>.json` olarak saklanır ve admin
+   panelde uyarı gösterilir
+
+---
+
+## 4. İşletme rehberi
+
+### 4.1 Yeni çeyrek yükleme
+
+1. 27 bankanın xlsx'ini `<Banka Adı> - GG.AA.YYYY.xlsx` formatında hazırla
+   (tarih çeyrek sonu olmalı: 31.03 / 30.06 / 30.09 / 31.12)
+2. `/admin` → **📤 Veri Yükleme** → dosyaları sürükle
+3. Sistem sırasıyla: yedek alır → her dosyayı doğrular → `data/raw/`'a yazar
+   → parquet'i **sadece yeni dosyalar için** günceller → tüm bankalar için
+   ölçüleri yeniden hesaplar → `computed.json`'u atomik yazar
+4. **Veri Durumu** sekmesinden kapsamı doğrula (ör. "27 / 27")
+
+Süre: 27 dosya ≈ 40 saniye.
+
+### 4.2 Upload vs Rebuild — bunu karıştırmayın
+
+| | **Upload** | **Rebuild** |
+|---|---|---|
+| Ne yapar | Sadece yüklenen dosyaları işler, mevcut veriye **ekler** (upsert) | `data/raw/`'ın **tamamını** okuyup her şeyi sıfırdan hesaplar |
+| Ne zaman | **Normal çeyrek güncellemesi — varsayılan bu** | Pipeline'da formül değişikliği yaptıysanız |
+| Risk | Yok; aynı banka+tarih temiz şekilde değişir | Sunucuda ham arşiv eksikse **geçmişi siler** |
+
+> 🔴 2026-08-19'da canlıda Rebuild'e basıldı; sunucuda ham arşiv olmadığı
+> için 51 dönemlik geçmiş silinip yerine 1 dönem yazıldı. Bugün regresyon
+> kilidi bunu durdurur, ama **canlıda Rebuild'e basmayın** — ham arşiv
+> yalnızca yerel makinede.
+
+### 4.3 Sunucu taşıma
+
+İki yol var, ikisi de `docs/DATA_MIGRATION.md`'de adım adım:
+
+- **Admin panelden (SSH gerekmez, önerilen):** `/admin` → Sunucu Taşıma →
+  "Veriyi İndir" → hedef sunucuda "İçe Aktar". Paket içinde manifest vardır
+  (kaç ölçü/banka/dönem, hangi tarihe kadar) — yüklemeden önce doğrulayın.
+- **CLI (SSH varsa):** `python scripts/export_data_snapshot.py` → `scp` →
+  Docker volume'a aç → `chown -R 10001:10001` → container restart.
+
+> **`data/` klasörünü asla elle zip'leyip taşımayın.** Git'te olmadığı için
+> hangi kopyanın güncel olduğu belirsizleşir; 2026-08'de tam bu yüzden bir
+> sunucuda Eylül 2025'te donmuş veri yayına çıktı.
+
+### 4.4 Yedekleme ve kurtarma
+
+- Her yazım öncesi otomatik: `data/backups/computed_<zaman>.json` (son 5)
+- Elle tam yedek: `computed.json` + `veriler.parquet` kopyalayın
+- `computed.json` bozulursa: sistem açılışta kendi kurtarır; müdahale
+  gerekmiyorsa yalnızca admin panelindeki uyarıyı okuyun
+
+### 4.5 Canlı ortam
+
+| | |
+|---|---|
+| Sunucu | Contabo VPS (4 vCPU / 8 GB) |
+| Orkestrasyon | Coolify · Traefik · Let's Encrypt |
+| Domain | kt-strateji.space (Namecheap) |
+| Deploy | GitHub App webhook — `main`'e push = otomatik deploy |
+| Veri | Kalıcı Docker volume (`/app/data`), uid 10001 |
+| Container | Non-root, healthcheck'li, tek worker |
+
+**Kod ve veri birbirinden bağımsızdır:** push kodu günceller, `data/` volume'a
+dokunmaz. Yeni sunucuya taşırken kod GitHub'dan gelir ama **veri gelmez** —
+§4.3'teki yöntemlerden birini kullanın.
+
+---
+
+## 5. Tuzaklar — koda dokunmadan önce okuyun
+
+Bunların her biri gerçekten yaşandı ve zaman kaybettirdi.
+
+1. **NFD / NFC Türkçe karakter tuzağı (3 kez düşüldü).** macOS dosya adlarını
+   NFD (ayrışık), JSON'lar NFC (birleşik) saklar. `"Dünya Katılım" ==
+   "Dünya Katılım"` **sessizce `False` döner**. Karşılaştırmadan önce her iki
+   tarafı da `unicodedata.normalize('NFC', s)` yapın.
+
+2. **NBSP (`\xa0`) tuzağı.** BDDK ham verisinde bazı kalem/tablo adlarında
+   normal boşluk yerine kırılmaz boşluk var. Normalize edilmezse ölçü %0,49
+   çıkar (gerçeği %14,95).
+
+3. **`reload=False` — kod değişince sunucu restart şart.** Bilinçli tercih:
+   tek worker garantisi (kilitler ve rate-limit in-process).
+
+4. **Tek worker zorunlu.** `users.json` kilidi, ağır işlem kilidi ve login
+   rate-limit hepsi in-process. `--workers>1` bunları bozar.
+
+5. **`ensure_data_dir()` sadece MainProcess'te.** `ProcessPoolExecutor`
+   worker'ları `app.py`'yi yeniden import ediyor; bu kontrol olmazsa her
+   worker `users.json`'a yazmaya çalışıp `BrokenProcessPool` üretiyor.
+
+6. **Grup, eksik üyede `None` döner.** Yeni bir grup ölçüsü eklerken bunu
+   bekleyin; "0" veya kısmi toplam üretmeyin.
+
+7. **`data/` git'te değildir.** Bilinçli: `git pull` canlı veriyi ezmesin
+   diye. Sonucu: kod ile veri ayrı taşınır (§4.3).
+
+8. **13 passthrough ölçü bir dönem geride.** Yeni çeyrek yüklediğinizde
+   SYR/NIM/RORWA boş görünür — bu bug değil, bilinen borç (§8.3 FAZ 3).
+
+9. **Excel dosya adı bilgi taşır.** Banka ve dönem dosya adından okunur;
+   format bozuksa dosya reddedilir.
+
+---
+## 6. Ne yapıldı — kronoloji
+
+Projenin başından bugüne dönem dönem: ne yapıldı, hangi bug bulundu,
+hangi karar neden alındı. Bir davranışın nedenini ararken buraya bakın.
+
+
+### Dönem 0 — İlk kuruluş ("2025-05" etiketli, devir öncesi dönem)
 
 Kaynak: `docs/CHANGELOG.md`. Bu dönemin git karşılığı yok (repo henüz git'e
 alınmamıştı).
@@ -55,7 +362,7 @@ alınmamıştı).
 
 ---
 
-## Dönem 1 — Veri kaynağı arayışı (2026-08-02 → 2026-08-09)
+### Dönem 1 — Veri kaynağı arayışı (2026-08-02 → 2026-08-09)
 
 - **2026-08-02:** `data/raw/` boş olduğundan, `datatable_1.xlsx` (zaten
   hesaplanmış PowerBI export'u) geçici birincil kaynak yapıldı
@@ -81,7 +388,7 @@ alınmamıştı).
 
 ---
 
-## Dönem 2 — Veri kalitesi, admin panel, performans (2026-08-09 → 2026-08-11)
+### Dönem 2 — Veri kalitesi, admin panel, performans (2026-08-09 → 2026-08-11)
 
 - **2026-08-09 — `/admin/upload` 3 bug:**
   1. **422 hatası** — backend tekil `file`, frontend çoğul `files` gönderiyordu,
@@ -140,7 +447,7 @@ alınmamıştı).
 
 ---
 
-## Dönem 3 — Üyelik, roller, formül hizalama, marka (2026-08-12)
+### Dönem 3 — Üyelik, roller, formül hizalama, marka (2026-08-12)
 
 - **Üyelik sistemi.** Açık kayıt (`/signup`) + admin onaylı giriş. İki ayrı
   yetki seviyesi: Basic Auth (admin, upload/rebuild) ve session tabanlı üyelik
@@ -169,7 +476,7 @@ alınmamıştı).
 
 ---
 
-## Dönem 4 — Deploy altyapısı + ölçü genişletme (2026-08-12 → 2026-08-18)
+### Dönem 4 — Deploy altyapısı + ölçü genişletme (2026-08-12 → 2026-08-18)
 
 *Bu dönemden itibaren git commit geçmişi var.*
 
@@ -206,7 +513,7 @@ alınmamıştı).
 
 ---
 
-## Dönem 5 — Canlıya alma (2026-08-18 → 19, deploy operasyonu)
+### Dönem 5 — Canlıya alma (2026-08-18 → 19, deploy operasyonu)
 
 *Bu dönem büyük ölçüde git commit'e dökülmedi — operasyonel/altyapı işlemleri.*
 
@@ -229,7 +536,7 @@ alınmamıştı).
 
 ---
 
-## Dönem 6 — Veri taşınabilirliği (2026-08-25)
+### Dönem 6 — Veri taşınabilirliği (2026-08-25)
 
 - **Yeni belirti, aynı kök neden ailesi:** Kullanıcı, GitHub repo'yu indirip
   **başka (üçüncü) bir sunucuya** taşıdı — proje klasörü olduğu gibi zip'lenip
@@ -295,7 +602,7 @@ alınmamıştı).
 
 ---
 
-## Dönem 7 — Dashboard okunurluk ve kullanılabilirlik turu (2026-09-08)
+### Dönem 7 — Dashboard okunurluk ve kullanılabilirlik turu (2026-09-08)
 
 Kullanıcının tek seferde ilettiği 6 maddelik iyileştirme listesi; her biri
 uygulanmadan önce belirsiz noktalar (terim karşılıkları, sıralama referansı,
@@ -377,7 +684,7 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
 
 ---
 
-## Dönem 8 — 2026Q2 tamamlandı + kritik pipeline bug'ı (2026-09-08)
+### Dönem 8 — 2026Q2 tamamlandı + kritik pipeline bug'ı (2026-09-08)
 
 - **Kullanıcı "BDR Veriler" klasörünü yükledi:** 27 banka × 30.06.2026, düz
   klasör, dosya adları pipeline formatına (`<Banka> - GG.AA.YYYY.xlsx`)
@@ -433,7 +740,8 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
 
 ---
 
-## Açık/bekleyen konular (şu an, 2026-09-08 itibarıyla)
+## 7. Açık ve bekleyen konular
+
 
 - **Site tarafında geçmiş veri eksik (Contabo/`kt-strateji.space`)** —
   `data/raw/` tam arşivin (178MB, ~1193 dosya) sunucuya taşınıp rebuild
@@ -462,11 +770,12 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
 
 ---
 
-# BÖLÜM 2 — Ne Yapılacak (Backlog)
+## 8. Yol haritası — ne yapılacak
 
-## 🔴 Sprint 1 (küçük işler, hemen başlanabilir)
 
-### 1. What's New butonu
+### 🔴 Sprint 1 (küçük işler, hemen başlanabilir)
+
+#### 1. What's New butonu
 **Ne:** Topbar'a, son değişiklikleri gösteren bir "Yenilikler" butonu.
 **KARAR (2026-08-19):** İçerik elle güncellenen basit bir liste olacak
 (`data/whats_new.json` gibi) — her önemli değişiklikte kısa, kullanıcı-dostu
@@ -485,7 +794,7 @@ arama kutusu, CAGR düzeltmesi, koyu mod düzeltmesi vb.). **Ders:** Bu
 buton için içerik yazarken her zaman "normal üye bunu dashboard'da görebilir
 mi" testi uygulanmalı, admin panel değişiklikleri buraya girmemeli.
 
-### 2. Role-bazlı ölçü erişimi + PDF export (BİRLEŞİK — birbirine bağımlı)
+#### 2. Role-bazlı ölçü erişimi + PDF export (BİRLEŞİK — birbirine bağımlı)
 **KARAR (2026-08-19):** Bu iki madde aslında tek bir özellik seti — ayrı ayrı
 değil, birlikte planlanmalı:
 - **Role sistemi:** Birden fazla özel rol tanımlanacak (basit "yönetici/analist"
@@ -499,7 +808,7 @@ kurulmalı — rolsüz bir "hangi ölçüler dahil olsun" kapsamı tanımlanamaz
 **Açık soru:** Kaç rol olacak, isimleri ne, hangi rol hangi ölçülere erişsin?
 **Durum:** 📋 Backlog'da, rol listesi netleşince başlanabilir.
 
-### 3. Passthrough ölçülerin ham veriden türetilmesi (13 ölçü)
+#### 3. Passthrough ölçülerin ham veriden türetilmesi (13 ölçü)
 **Ne:** SYR, Çekirdek SYR, NIM, Düzeltilmiş NIM, Spread, RORWA, Maliyet/Gelir,
 Düzeltilmiş Maliyet/Gelir, Net Faiz Geliri/Ort. Aktifler, Gayrinakdi Krediler,
 Gayrinakdi Kredi Komisyonları, Faiz Getirili Aktifler, BZK Sonrası Düzeltilmiş
@@ -521,15 +830,15 @@ sağlamlaştırma, ölçüler sonra" dedi — bu iş ayrı bir tura bırakıldı
 
 ---
 
-## 🟠 Sprint 2 adayı
+### 🟠 Sprint 2 adayı
 
-### 3. OTP güvenlik özelliği
+#### 3. OTP güvenlik özelliği
 **KARAR (2026-08-19):** Teslimat yöntemi **e-posta**. Mevcut altyapıda SMTP
 entegrasyonu yok — bu, alt-görev olarak eklenmeli (bkz. üyelik sistemi,
 `users.py`/`app.py`).
 **Durum:** 📋 Backlog'da, uygulanmayı bekliyor.
 
-### 4. Chat LLM entegrasyonu (2 fazlı)
+#### 4. Chat LLM entegrasyonu (2 fazlı)
 **KARAR (2026-08-19):** Aşamalı yaklaşım:
 - **Faz 1 (önce):** Dar kapsamlı — sadece bu dashboard'un verisini (computed.json/
   ölçüler) yorumlayan bir asistan. Daha ucuz, kullanıcının role-bazlı ölçü
@@ -540,24 +849,229 @@ entegrasyonu yok — bu, alt-görev olarak eklenmeli (bkz. üyelik sistemi,
 
 ---
 
-## 🟣 Büyük R&D projesi (kendi spike'ı gerekiyor)
+### 🟣 Büyük R&D projesi (kendi spike'ı gerekiyor)
 
-### 5. Rasyonet'in yerine BDR otomasyonu (Claude destekli)
-**Ne:** Bankaların yayımladığı Bağımsız Denetim Raporu PDF'lerinden (bkz.
-bdr-kisayol.netlify.app) ilgili kalemleri otomatik çekip, Rasyonet'in bugün
-ürettiğiyle aynı Excel formatında çıktı üretmek.
-**Neden büyük:** Yüzlerce sayfa/kalem, hassas finansal veri — doğrulama şart.
-**Önerilen yaklaşım:** 1 banka/1 dönem spike, mevcut Rasyonet çıktısıyla
-satır satır karşılaştırma.
-**Açık soru:** Örnek Rasyonet Excel çıktısı var mı? Hedef tam otomasyon mu,
-elle tetiklenen bir araç mı?
-**Durum:** 🔬 Keşif aşamasında, örnek dosya bekleniyor.
+#### 5. PDF fazı — BDR'den otomatik veri, türetilmiş formüller, etiketli erişim
+**Ne:** Projenin bir sonraki büyük fazı. Veri girişi Excel'den **BDR PDF'lerine**
+taşınır, tüm rasyolar sistem içinde türetilir, ölçülere açıklama/içgörü
+baloncukları eklenir, kimin hangi ölçüyü göreceği etiketle belirlenir ve
+kullanıcılar ham kalemlerden kendi formüllerini oluşturabilir.
+
+**KARARLAR (2026-09-08, kullanıcıya sorularak netleştirildi):**
+- Bugüne kadarki Excel verisi kalır; **2026Q3'ten itibaren** çeyreklik
+  güncellemeler tamamen PDF üzerinden.
+- **Arada Excel olmasın** — PDF doğrudan Python veri katmanına yazsın.
+- PDF'leri **sistem otomatik indirsin** (bdr-kisayol panosu).
+- Kullanıcı formülleri **ham BDDK kalemleri** üzerinden; sadece oluşturan
+  görür; **log tutulur**; **şimdilik canlıya alınmayacak** (özellik bayrağı).
+- Baloncuk içeriğini **Claude taslak üretir, kullanıcı onaylar**; metin
+  statik tutulur (her açılışta LLM çağrısı yok).
+- Etiket: bir kullanıcıya **birden fazla**; etiket → **tekil ölçü seçimi**;
+  filtreleme **sunucu tarafında**.
+
+**Fizibilite (doğrulandı):** BDR PDF'lerinde gerçek metin katmanı var (OCR
+gerekmeyebilir); bdr-kisayol panosunda dönem seçimi + doğrudan PDF linkleri
+var; elimizdeki 51 dönemlik doğrulanmış veri, çıkarımı kanıtlamak için altın
+standart olarak kullanılacak.
+
+**Fazlar:** 0) fizibilite kanıtı (karar noktası, %99+ eşleşme eşiği) →
+1) PDF→veri motoru (elle yükleme) → 2) otomatik indirme (insan onay kapısıyla).
+Paralel: 3) 13 passthrough ölçünün türetilmesi · 4) bilgi baloncukları ·
+5) etiket bazlı erişim → 6) kullanıcı formülleri (bayrak arkasında).
+
+**Durum:** 📋 Plan hazır, uygulama başlamadı. Önce FAZ 0 (fizibilite kanıtı)
+çalıştırılmalı — olumlu çıkmadan üzerine sistem kurulmamalı.
 
 ---
 
-## 🔵 v2'ye ertelenmiş konular (daha önce karara bağlanmış, unutulmasın)
 
-### 6. Konfigüre edilebilir odak banka
+#### PDF fazı — faz detayları
+
+##### FAZ 0 — Fizibilite kanıtı (KARAR NOKTASI)
+**Neden ilk:** PDF çıkarımının güvenilirliği kanıtlanmadan üzerine sistem
+kurmak, projenin en pahalı hatası olur. Finansal veride "çoğunlukla doğru"
+kabul edilemez.
+
+**İşler**
+1. 3 banka × 1 dönem seç (Kuveyt Türk + bir büyük mevduat + bir katılım) —
+   formatları farklı olduğu için çeşitlilik önemli.
+2. PDF'i metin/tablo olarak çıkar (pdfplumber; gerekirse camelot).
+3. Çıkan kalemleri **aynı dönemin mevcut Excel verisiyle satır satır
+   karşılaştır**.
+4. Rapor: kalem eşleşme oranı, birebir tutan değer oranı, tutmayanların
+   nedeni (kalem adı farkı / birim / tablo yapısı / okunamayan sayfa).
+
+**Çıktı:** doğruluk raporu + **git/devam kararı**.
+**Başarı ölçütü:** ana tablolarda (Bilanço, Gelir Tablosu) **%99+ birebir
+eşleşme**. Altındaysa: hangi tabloların güvenilir olduğu belirlenip kapsam
+daraltılır ya da yaklaşım değişir.
+
+---
+
+##### FAZ 1 — PDF → veri motoru (elle yükleme ile)
+**Bağımlılık:** FAZ 0 olumlu sonuçlanmalı.
+
+**İşler**
+1. `pipeline/pdf_ingest.py` — PDF → uzun format DataFrame (mevcut parquet
+   şemasıyla **birebir aynı**: Tarih, Banka Adı, Banka Türü, Tablo Türü,
+   Tablo Adı, Kalem Adı, Para Birimi, Tutar). Böylece alt katmanların
+   (measures, groups, composition) hiçbiri değişmez.
+2. **Kalem eşleme sözlüğü** — BDR'deki kalem adı ile mevcut kalem adları
+   arasında eşleme; NFC normalizasyonu ve NBSP temizliği zorunlu (bu iki
+   tuzağa proje geçmişinde 3 kez düşüldü).
+3. **Kalite kapıları** (yazmadan önce):
+   - Bilanço denkliği: Toplam Aktifler = Toplam Pasifler
+   - Toplam Aktifler bir önceki çeyreğe göre makul aralıkta mı (ör. ±%40)
+   - Beklenen tabloların hepsi bulundu mu
+   - Herhangi biri başarısızsa dosya **işlenmez** — sessizce yanlış veri
+     yazmaktansa "işlenemedi" demek yeğdir.
+4. Admin panele **PDF yükleme** (mevcut Excel yüklemenin yanına).
+5. **Geriye dönük doğrulama:** son 4 çeyrek PDF'ten yeniden üretilip Excel
+   sonucuyla farkları raporlanır.
+
+**Çıktı:** PDF yükleyerek çeyrek güncellemesi yapılabilir hâle gelmek.
+
+---
+
+##### FAZ 2 — Otomatik indirme
+**Bağımlılık:** FAZ 1.
+
+**İşler**
+1. Link toplayıcı: bdr-kisayol panosundan banka + dönem + PDF linki.
+2. İndirme + arşivleme (`data/raw_pdf/<Banka>/<Banka> - GG.AA.YYYY.pdf`).
+3. Zamanlanmış kontrol (çeyrek sonrası periyodik tarama).
+4. **İnsan onayı kapısı:** indirilen PDF otomatik işlenir ama sonuç
+   **doğrudan yayına girmez**; admin panelde "şu bankalar geldi, farklar
+   şunlar, onayla" ekranı. Otomasyon veriyi *hazırlar*, yayına alma kararı
+   insanda kalır.
+5. Eksik/başarısız banka uyarısı (ör. "3 banka henüz yayımlamadı").
+6. **Elle yükleme her zaman yedek yol olarak kalır** — dış kaynak kırılırsa
+   sistem durmasın.
+
+**Risk:** linkler bankaların kendi sitelerine gidiyor; adres/format
+değişiklikleri kaçınılmaz. Bu yüzden indirme katmanı, çıkarım katmanından
+**tamamen ayrı** tutulur — biri kırılınca diğeri çalışmaya devam eder.
+
+---
+
+##### FAZ 3 — 13 passthrough ölçünün türetilmesi
+**Bağımlılık:** yok (Excel verisiyle de yapılabilir), ama PDF fazıyla
+birlikte anlamlı: "dışarıdan hesaplanmış değer almayalım" hedefinin ikinci
+yarısı.
+
+**İşler**
+1. Her ölçü için ham kalem karşılığını bul. Tespit edilenler: PDF/Excel'de
+   `Sermaye Yeterlilik Rasyosu (%)`, `Çekirdek Sermaye Yeterliliği Oranı (%)`,
+   `Çekirdek Sermaye Toplamı`, `Net Faiz Geliri/Gideri` **doğrudan mevcut**.
+2. Türet, sonra **geçmiş dönemlerde baseline değeriyle karşılaştır** — tutuyorsa
+   formül doğrudur.
+3. `BASELINE_PASSTHROUGH`'tan çıkar, `MEASURE_FUNCS`'a taşı.
+4. Doğrudan okunabilenlerle başla (SYR, Çekirdek SYR), sonra türetilmesi
+   gerekenlere geç (NIM, Spread, RORWA).
+
+**Çıktı:** yeni çeyrek yüklendiğinde 160 ölçünün **tamamı** dolu gelir.
+
+---
+
+##### FAZ 4 — Bilgi baloncukları
+**Bağımlılık:** yok — diğer fazlardan bağımsız ilerleyebilir.
+
+**İşler**
+1. `catalog.seed.json`'a ölçü başına yeni alanlar:
+   `tanim` (bu ölçü nedir), `nasil_hesaplanir` (sade formül anlatımı),
+   `icgoru` (yüksek/düşük olması ne anlama gelir, nelere dikkat edilmeli).
+2. Claude 160 ölçü için taslak üretir → kullanıcı düzeltir/onaylar.
+   Metinler dosyada durur, sonradan düzenlenebilir.
+3. UI: ölçü seçicide ve panel başlıklarında ⓘ ikonu → baloncuk.
+4. Admin panelde metin düzenleme ekranı (kod değiştirmeden güncelleme).
+
+**Not:** İçerik **statik** tutulur (her açılışta LLM çağrısı yok) — maliyet
+ve tutarlılık için. İleride dinamik yorum istenirse Chat LLM fazına eklenir.
+
+---
+
+##### FAZ 5 — Etiket bazlı ölçü erişimi
+**Bağımlılık:** yok. FAZ 6'nın önkoşulu.
+
+**İşler**
+1. `data/tags.json` — etiket tanımları: `{ad, aciklama, olculer: [ölçü id]}`.
+2. `users.json`'a `etiketler: []` (bir kullanıcıda birden fazla; görebildiği
+   ölçüler etiketlerinin **birleşimi**).
+3. Admin panelde etiket yönetimi: oluştur/düzenle/sil + **aranabilir ölçü
+   seçici** (160 ölçü içinden tek tek seçim; kategori bazlı toplu seçim
+   kısayolları kolaylık için eklenebilir).
+4. **Sunucu tarafında filtreleme** — `/api/data` ve `/api/catalog` kullanıcının
+   göremeyeceği ölçüleri **hiç göndermez**. Frontend'de gizlemek yeterli
+   değildir; veri ağdan geçmemelidir.
+5. Etiketsiz kullanıcı için varsayılan davranış belirlenir (bkz. açık soru).
+
+---
+
+##### FAZ 6 — Kullanıcı formülleri (canlıya alınmayacak)
+**Bağımlılık:** FAZ 5 (kullanıcının hangi kalemleri kullanabileceği
+etiketiyle sınırlanmalı).
+**Karar:** bu faz geliştirilecek ama **şimdilik canlıya alınmayacak** —
+özellik bayrağı (`KT_FEATURE_USER_FORMULAS`) arkasında kapalı durur.
+
+**İşler**
+1. **Güvenli ifade değerlendirici** — kullanıcı metnini `eval` ile çalıştırmak
+   kesinlikle yasak. AST tabanlı, yalnız izin verilen düğümler (sayı, dört
+   işlem, parantez, kalem referansı) ve sıfıra bölme koruması.
+2. Ham kalem seçici: ~1.891 kalem içinden aranabilir liste (kullanıcının
+   etiketiyle sınırlı).
+3. Kişisel formüller: `data/user_formulas.json` — oluşturan görür.
+4. **Log:** kim, ne zaman, hangi formülü oluşturdu/düzenledi/sildi
+   (denetim izi — kullanıcı isteği).
+5. Önizleme: formül kaydedilmeden önce seçili banka/dönem için sonucu göster.
+
+---
+
+#### PDF fazı — bağımlılık akışı
+
+```
+FAZ 0 (kanıt) ──► FAZ 1 (PDF motoru) ──► FAZ 2 (otomatik indirme)
+                        │
+                        └──► FAZ 3 (13 ölçünün türetilmesi)   [Excel ile de yapılabilir]
+
+FAZ 4 (baloncuklar)     — bağımsız, paralel ilerleyebilir
+FAZ 5 (etiketler) ──► FAZ 6 (kullanıcı formülleri, bayrak arkasında)
+```
+
+---
+
+#### PDF fazı — riskler
+
+| Risk | Neden ciddi | Azaltım |
+|---|---|---|
+| **Sessiz yanlış çıkarım** | PDF'ten yanlış hücre okunur, kimse fark etmez, yanlış rakamla karar alınır | Excel ile çapraz doğrulama, bilanço denkliği kontrolü, dönemsel sıçrama kontrolü, mevcut regresyon kilidi |
+| **Banka format çeşitliliği** | 27 banka, farklı denetim firmaları, farklı şablonlar | Banka bazlı şablon; başarısızlıkta "işlenemedi" — asla tahmin yürütme |
+| **Solo/Konsolide karışması** | Yanlış rapor tipi tüm seriyi bozar, fark gözle görülmez | Rapor tipi dosya adına ve manifest'e yazılır; mevcut veriyle karşılaştırılarak doğrulanır (bkz. açık soru) |
+| **Otomatik indirme kırılganlığı** | Dış site/link değişir, çeyrek kaçar | İndirme ve çıkarım ayrı katman; elle yükleme her zaman açık; eksik banka uyarısı |
+| **Yayın takvimi dağınıklığı** | Bankalar aynı anda yayımlamaz | Kısmi çeyrek mantığı zaten var (grup toplamları eksik üyede "—" döner) |
+| **Etiket filtresinin atlanması** | Yetkisiz kişi gizli ölçüyü görür | Filtreleme **sunucuda**; frontend'e hiç gönderilmez; testle doğrulanır |
+| **Kullanıcı formülünde kod çalıştırma** | `eval` ile sunucuda kod çalıştırma açığı | AST whitelist, `eval` yok, bayrak arkasında kapalı başlangıç |
+
+---
+
+#### PDF fazı — açık sorular
+
+1. **Solo mu, konsolide mi?** bdr-kisayol her banka için iki rapor sunuyor.
+   Mevcut BDDK verisi hangisine karşılık geliyor? Yanlış seçim tüm seriyi
+   sessizce kaydırır — FAZ 0'da mevcut veriyle karşılaştırılarak
+   kanıtlanmalı.
+2. **Kapsam genişleyecek mi?** Panoda kalkınma/yatırım bankaları da var;
+   sistem şu an 27 banka izliyor. Yeni bankalar eklenecek mi?
+3. **Etiketsiz kullanıcı ne görür?** Hiçbir şey mi (güvenli varsayılan),
+   yoksa temel bir set mi?
+4. **Kullanıcı formülleri ne zaman canlıya alınacak?** Bayrak hangi koşulda
+   açılacak?
+5. **Excel yolu tamamen kapanacak mı?** Karar "2026Q3'ten itibaren PDF" —
+   Excel yükleme ekranı acil durum yedeği olarak kalsın mı?
+
+
+### 🔵 v2'ye ertelenmiş konular (daha önce karara bağlanmış, unutulmasın)
+
+#### 6. Konfigüre edilebilir odak banka
 **Ne:** Kuveyt Türk yerine başka bir bankayı "odak" yapabilme.
 **Neden ertelendi:** Grup katmanının kırılgan geçmişi (bkz. Dönem 2'deki
 grup agregasyon bug'ları) nedeniyle riskli bulundu.
@@ -567,7 +1081,7 @@ bağlanacak, `PROTECTED_GROUPS` ve varsayılan grup üyeliği odağa göre
 güncellenecek.
 **Durum:** ⏸️ v2'ye ertelendi.
 
-### 7. Screenshot / PDF-öncesi PNG indirme
+#### 7. Screenshot / PDF-öncesi PNG indirme
 **Ne:** Bulunduğun görünümü PNG olarak indirme butonu.
 **Neden ertelendi:** Kullanıcı v2'de yapmaya karar verdi.
 **Durum:** ⏸️ Kod `feature/v2-screenshot` branch'inde hazır (2 commit),
@@ -576,7 +1090,7 @@ v2'de ya bu fix'i test et ya da native `getDisplayMedia`'ya geç.
 
 ---
 
-## ⚙️ Süreç
+### ⚙️ Süreç
 
 - **Backlog dokümanı:** ✅ Bu dosya (son güncelleme 2026-09-08).
 - **Otomatik güncelleme talimatı (2026-08-25):** Bundan sonra yapılan her
@@ -584,3 +1098,44 @@ v2'de ya bu fix'i test et ya da native `getDisplayMedia`'ya geç.
 - **Zaman planı:** 📋 Sprint 1 tamamlanınca tarih hedefleri eklenecek.
 - **Sprint oluşturma:** ✅ Sprint 1 yukarıda tanımlı. Rasyonet otomasyonu
   boyutu nedeniyle sprint'e alınmadı, önce spike gerekiyor.
+
+---
+
+## 9. Kararlar günlüğü — neden böyle yapıldı
+
+Bir şeyi değiştirmeden önce buraya bakın; çoğu "tuhaf" görünen tercih, bedeli
+ödenmiş bir dersin sonucudur.
+
+| Karar | Gerekçe |
+|---|---|
+| **`data/` git'te değil** | Git-push-to-deploy kurulumunda sunucudaki `git pull`, tracked bir veri dosyasını eski kopyayla ezip canlı veriyi geri alabilirdi. Bedeli: kod ve veri ayrı taşınır (§4.3). |
+| **Ham xlsx arşivi kalıcı, dokunulmaz** | Her şey yeniden hesaplanabilir olmalı. Yeni ölçü eklemek ham veriye dokunmaz. |
+| **Frontend hesaplama yapmaz** | Formül değişikliği tek yerde (pipeline) olur, frontend'e dokunulmaz; tutarsızlık riski kalkar. |
+| **Grup, eksik üyede `None` döner** | Yanıltıcı küçük toplam üretmektense "veri yok" demek. 2026-08-11'de tam tersi davranış yanlış grup toplamları üretiyordu. |
+| **Grup rasyoları ağırlıklı ortalama** | Basit ortalama, büyük bankayı küçükle eşitleyip sektör gerçeğini bozar. |
+| **Tek worker** | Kilitler ve rate-limit in-process; çoklu worker bunları sessizce devre dışı bırakırdı. |
+| **`catalog.seed.json` + runtime `catalog.json`** | Config (ölçüler) kodla, gruplar (admin panelden düzenlenen) veriyle gelmeli. Seed mimarisi ikisini ayırıp kod↔config uyumsuzluğunu bitirdi. |
+| **Regresyon kilidi (2026-09-08)** | "Sonuç boş mu" kontrolü yetmiyordu: 51 dönem → 1 döneme düşen kaza bu kontrolü geçmişti. Artık küçülme reddediliyor, bilinçliyse elle zorlanıyor. |
+| **Sunucu taşıma paketi manifest'li** | "Hangi zip güncel" sorusu insan hafızasına kalınca, bir sunucuda Eylül 2025'te donmuş veri yayına çıktı. Manifest bunu görünür kılıyor. |
+| **Otomasyon veriyi hazırlar, yayına insan alır** | PDF fazında da aynı ilke: indirme otomatik, yayın kararı admin onayında (§8, FAZ 2). |
+| **13 ölçü hâlâ passthrough** | Ham veriden türetilmeleri doğrulama gerektiriyor; yanlış formülle "dolu ama hatalı" veri üretmektense bilinen bir boşluk bırakıldı. |
+
+---
+
+## 10. Referans dokümanlar
+
+| Dosya | Ne zaman bakılır |
+|---|---|
+| `docs/MEASURES.md` | Bir ölçünün formülünü/tanımını ararken (445 satır, DAX eşdeğerleriyle) |
+| `docs/MEASURE_LISTESI.md` | 160 ölçünün hızlı listesi |
+| `docs/EXTENDING.md` | Yeni ölçü, banka, grup veya kompozisyon eklerken — adım adım |
+| `docs/ARCHITECTURE.md` | Storage şeması ve pipeline modüllerinin detayı |
+| `docs/DATA_MIGRATION.md` | Sunucu göçü / veri paketi üretimi |
+| `docs/CHANGELOG.md` | Sürüm geçmişi (v17 → v29 dönemi) |
+| `docs/backlog-visual.html` | Bu dosyanın görsel özeti (yayınlanmış sayfa) |
+| `docs/pdf-fazi-gorsel.html` | PDF fazının görsel yol haritası |
+
+**Kod içindeki yorumlar birincil kaynaktır.** `app.py` ve `pipeline/*.py`
+içinde her kritik kararın yanında tarihli açıklama vardır (ör. "2026-08-11
+düzeltmesi: …"). Bir satırın neden öyle yazıldığını merak ettiğinizde önce
+oradaki yoruma bakın.
