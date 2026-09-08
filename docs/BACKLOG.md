@@ -413,6 +413,23 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   rollback ve kompozisyon üretimi bu akışın içinde).
 - `BDR Veriler/` `.gitignore`'a eklendi — ham veri git'e girmez (`data/`
   ile aynı ilke).
+- **computed.json sağlamlaştırıldı (aynı gün).** Mevcut korumalar yetersizdi:
+  `_assert_nonempty_result` yalnızca sonucun TAMAMEN boş olmasını yakalıyordu,
+  bu yüzden 2026-08-19'daki "51 dönem → 1 dönem" kazası kilidi geçmişti.
+  İki katman eklendi (kullanıcı seçimi):
+  1. **Regresyon kilidi.** Yazımdan önce yeni sonuç mevcut `computed.json` ile
+     kıyaslanır; ölçü/banka/dönem sayısı düşerse ya da dolu hücre sayısı %2'den
+     fazla azalırsa yazma **409 ile reddedilir**, mevcut veri korunur ve neyin
+     ne kadar düştüğü raporlanır. Üç yazma akışında da devrede (upload,
+     upload-zip, rebuild). **KARAR:** meşru küçülmeler için kaçış kapısı var —
+     admin panelde "Veri azalmasına izin ver" onay kutusu.
+  2. **Bozukluk kurtarma.** Açılışta `computed.json` okunamıyor/şeması bozuksa
+     (yarım yazım, disk dolması) uygulama çökmek yerine `data/backups/`
+     içindeki en yeni **sağlam** yedeğe döner; bozuk dosya
+     `computed.corrupt_<zaman>.json` olarak saklanır ve admin panelde ne
+     olduğunu anlatan bir uyarı gösterilir.
+  **19 yeni test** eklendi (`tests/test_computed_guards.py`) — 2026-08-19
+  kazasının birebir senaryosu dahil. Toplam 66 test yeşil.
 
 ---
 
@@ -481,6 +498,26 @@ değil, birlikte planlanmalı:
 kurulmalı — rolsüz bir "hangi ölçüler dahil olsun" kapsamı tanımlanamaz.
 **Açık soru:** Kaç rol olacak, isimleri ne, hangi rol hangi ölçülere erişsin?
 **Durum:** 📋 Backlog'da, rol listesi netleşince başlanabilir.
+
+### 3. Passthrough ölçülerin ham veriden türetilmesi (13 ölçü)
+**Ne:** SYR, Çekirdek SYR, NIM, Düzeltilmiş NIM, Spread, RORWA, Maliyet/Gelir,
+Düzeltilmiş Maliyet/Gelir, Net Faiz Geliri/Ort. Aktifler, Gayrinakdi Krediler,
+Gayrinakdi Kredi Komisyonları, Faiz Getirili Aktifler, BZK Sonrası Düzeltilmiş
+NIM — bu 13 ölçü ham BDDK verisinden hesaplanmıyor, eski PowerBI baseline'ından
+taşınıyor (`BASELINE_PASSTHROUGH`).
+**Neden önemli:** Baseline sabit olduğu için bu ölçüler **her yeni çeyrekte bir
+dönem geride kalıyor** — 2026Q2 yüklendiği hâlde 13'ünün de son dolu dönemi
+2026-03-31. Kullanıcının "bir dahaki çeyrekte sadece veri yükleyeceğim, formül
+türetmeyi de sistem içinden yapacağız" hedefinin önündeki tek engel bu.
+**Fizibilite (2026-09-08 tespiti):** ham veride karşılıkları VAR —
+`Sermaye Yeterlilik Rasyosu (%)`, `Çekirdek Sermaye Yeterliliği Oranı (%)`,
+`Çekirdek Sermaye Toplamı`, `Net Faiz Geliri/Gideri` gibi kalemler
+`Özkaynak Kalemlerine İlişkin Bilgiler` ve `Gelir Tablosu` tablolarında mevcut.
+**Önerilen yöntem:** her ölçüyü tek tek türet, mevcut baseline değerleriyle
+birebir karşılaştır (geçmiş dönemlerde tutuyorsa formül doğrudur), sonra
+`MEASURE_FUNCS`'a taşı. SYR/Çekirdek SYR gibi doğrudan okunabilenlerle başla.
+**Durum:** 📋 Backlog'da. **KARAR (2026-09-08):** kullanıcı "sadece
+sağlamlaştırma, ölçüler sonra" dedi — bu iş ayrı bir tura bırakıldı.
 
 ---
 
