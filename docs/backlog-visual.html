@@ -194,7 +194,7 @@
     <p class="subtitle">Projenin ilk kuruluşundan bugüne ne yapıldığının kronolojisi, ve önümüzdeki fikirlerin öncelik sıralı listesi. <span class="mono" style="font-size:13px">docs/BACKLOG.md</span>'nin görsel karşılığıdır.</p>
 
     <div class="stats">
-      <div class="stat"><div class="n tabnum">8</div><div class="l">dönem</div></div>
+      <div class="stat"><div class="n tabnum">9</div><div class="l">dönem</div></div>
       <div class="stat"><div class="n tabnum">160</div><div class="l">aktif ölçü</div></div>
       <div class="stat"><div class="n tabnum">7</div><div class="l">backlog maddesi</div></div>
       <div class="stat"><div class="n tabnum">13</div><div class="l">alınan karar</div></div>
@@ -350,7 +350,7 @@
         </div>
       </details>
 
-      <details class="era is-new" id="d7" open>
+      <details class="era" id="d7">
         <summary class="era-head">
           <span class="node">7</span>
           <span class="era-title">Dashboard okunurluk ve kullanılabilirlik turu</span>
@@ -376,6 +376,24 @@
         </div>
       </details>
 
+
+      <details class="era is-new" id="d8" open>
+        <summary class="era-head">
+          <span class="node">8</span>
+          <span class="era-title">2026Q2 tamamlandı + kritik pipeline bug'ı</span>
+          <span class="era-date">2026-09-08</span>
+          <span class="new-tag">yeni</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li>Kullanıcı 27 bankalık <strong>2026Q2 (30.06.2026) BDR klasörünü</strong> yükledi. Yüklemeden önce doğrulandı: dosyalar mevcutlardan ~%25 küçüktü (geçmişteki "bozuk export" belirtisi) ama satır/tablo/kalem sayısı ve Toplam Aktifler değerleri birebir aynıydı — fark sadece hücre formatlaması. 24 bankanın verisi değişmiyordu, <strong>3 banka için 2026Q2 ilk kez geliyordu</strong>.</li>
+            <li><strong>KRİTİK BUG bulundu — yeni çeyrek hiç hesaplanmıyordu.</strong> 27 dosya sorunsuz yüklenip parquet'e işlendiği hâlde 3 bankanın verisi dashboard'a yansımadı. Kök neden: <span class="mono" style="font-size:13px">compute_all</span> hesaplanacak tarihleri yalnızca baseline'dan (mevcut computed.json) alıyor, ham veri tarihlerine ancak baseline o banka için tamamen boşsa düşüyordu — yani mevcut bir bankaya yeni bir çeyrek eklendiğinde o dönem için hiçbir ölçü hesaplanmıyordu. Upload akışı baseline ile çağırdığı için bu <strong>her yeni çeyrekte, canlıda da</strong> yaşanacaktı.</li>
+            <li><strong>Düzeltme:</strong> tarih kümesi artık <em>baseline ∪ ham veri</em> birleşimi — passthrough geçmişi korunur, yeni dönemler hesaplanır.</li>
+            <li><strong>Sonuç:</strong> 2026-06-30 raporlayan banka <strong>24/27 → 27/27</strong>. Eksik üyeler tamamlanınca hesaplanamayan grup toplamları da geldi: Katılım Bankaları "—" → 4.903.083 mn TL, KT Hariç Katılım "—" → 3.430.769 mn TL. Geçmiş bozulmadı (1157 banka×dönem karşılaştırmasında 0 değişiklik), 51 dönem / 160 ölçü yerinde, 47 test yeşil.</li>
+          </ul>
+        </div>
+      </details>
     </div>
 
     <div class="callout">

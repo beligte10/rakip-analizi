@@ -377,6 +377,45 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
 
 ---
 
+## Dönem 8 — 2026Q2 tamamlandı + kritik pipeline bug'ı (2026-09-08)
+
+- **Kullanıcı "BDR Veriler" klasörünü yükledi:** 27 banka × 30.06.2026, düz
+  klasör, dosya adları pipeline formatına (`<Banka> - GG.AA.YYYY.xlsx`)
+  birebir uygun. Yüklemeden önce içerik doğrulaması yapıldı: dosyalar
+  mevcutlardan ~%25 küçüktü (geçmişte "eklentisiz export → bozuk veri"
+  belirtisi buydu), ama satır/tablo/kalem sayıları ve Toplam Aktifler
+  değerleri **birebir aynı** çıktı — fark yalnızca hücre formatlaması.
+  24 bankanın verisi değişmiyor, **3 banka için 2026Q2 ilk kez geliyordu**
+  (Dünya Katılım, Hayat Finans, TOM Bank).
+- **KRİTİK BUG — yeni çeyrek hesaplanmıyordu (`pipeline/compute.py`).**
+  27 dosya sorunsuz yüklenip parquet'e işlendiği hâlde 3 bankanın verisi
+  dashboard'a yansımadı; coverage 24/27'de kaldı. Kök neden: `compute_all`,
+  bir banka için hesaplanacak tarihleri **yalnızca baseline'dan** (mevcut
+  `computed.json`) alıyordu; ham veri (parquet) tarihlerine ancak baseline
+  o banka için TAMAMEN boşsa düşüyordu. Yani mevcut bir bankaya **yeni bir
+  çeyrek** eklendiğinde o tarih baseline'da olmadığı için hiçbir measure
+  hesaplanmıyordu. Upload akışı baseline ile çağırdığından bu yol **her
+  yeni çeyrekte** tetikleniyordu — yani canlıda da her yeni dönem
+  yüklemesinde aynı sorun yaşanacaktı.
+  **Düzeltme:** tarih kümesi artık `baseline ∪ ham veri`. Baseline'da olup
+  raw'da olmayan tarihler (passthrough geçmişi) korunur, raw'a yeni gelen
+  dönemler hesaplanır.
+- **Sonuç:** 2026-06-30 raporlayan banka **24/27 → 27/27**, coverage'da
+  "eksik banka: YOK". Eksik üyeler tamamlanınca 2026Q2 için hesaplanamayan
+  grup toplamları da geldi: **Katılım Bankaları "—" → 4.903.083 mn TL**,
+  **KT Hariç Katılım "—" → 3.430.769 mn TL** (dashboard'da YtD %13,50 ve
+  %15,59). Geçmiş bozulmadı: 1157 banka×dönem karşılaştırmasında **0
+  değişiklik**; 51 dönem, 160 ölçü, kompozisyon/döviz payload'ları yerinde.
+  47 test yeşil.
+- İşlem öncesi `computed.json` + `veriler.parquet` elle yedeklendi
+  (`data/backups/manuel_<zaman>/`); yükleme production'daki gerçek
+  `/admin/upload` akışıyla yapıldı (kalite kontrolü, otomatik yedek,
+  rollback ve kompozisyon üretimi bu akışın içinde).
+- `BDR Veriler/` `.gitignore`'a eklendi — ham veri git'e girmez (`data/`
+  ile aynı ilke).
+
+---
+
 ## Açık/bekleyen konular (şu an, 2026-09-08 itibarıyla)
 
 - **Site tarafında geçmiş veri eksik (Contabo/`kt-strateji.space`)** —
