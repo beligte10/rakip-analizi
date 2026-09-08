@@ -396,6 +396,21 @@ button.secondary:hover { background: var(--hover); }
   .transfer-grid { grid-template-columns: 1fr !important; }
 }
 
+/* Regresyon kilidi onay kutusu + kurtarma uyarısı (2026-09-08) */
+.force-box {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: var(--warning-bg); border: 1px solid #fcd34d;
+  border-radius: 6px; padding: 9px 12px; margin: 12px 0 0;
+  font-size: 12.5px; color: #92400e;
+}
+.force-box input { margin-top: 2px; flex: none; }
+.force-box b { font-weight: 700; }
+.recovery-banner {
+  background: var(--error-bg); border: 1px solid #fca5a5; color: #7f1d1d;
+  border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; font-size: 13px;
+}
+.recovery-banner b { display: block; margin-bottom: 4px; font-size: 13.5px; }
+
 /* YOL HARİTASI — markdown render (docs/BACKLOG.md) */
 .markdown-body { font-size: 14px; line-height: 1.65; color: var(--text); max-width: 860px; }
 .markdown-body h1 { font-size: 22px; margin: 0 0 16px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
@@ -455,6 +470,7 @@ button.secondary:hover { background: var(--hover); }
   <div class="tab-panel" data-tab-panel="durum">
   <div class="panel">
     <h2><span class="icon">📊</span> Veri Durumu</h2>
+    <div id="recovery-banner"></div>
     <div id="coverage-content">
       <div class="loading">Yükleniyor…</div>
     </div>
@@ -491,6 +507,14 @@ button.secondary:hover { background: var(--hover); }
       <p style="text-align:center;font-size:13px;color:var(--muted)" id="progress-status">Hazırlanıyor…</p>
     </div>
 
+    <label class="force-box">
+      <input type="checkbox" id="force-upload">
+      <span><b>Veri azalmasına izin ver.</b> Normalde, hesaplama sonucu mevcut veriden
+      küçükse (dönem/banka/ölçü sayısı düşüyorsa) yazma otomatik olarak durdurulur ve
+      mevcut veri korunur. Bu kutuyu yalnızca azalmanın <em>bilinçli</em> olduğu
+      durumlarda işaretleyin (ör. hatalı bir bankanın verisini kasten siliyorsanız).</span>
+    </label>
+
     <div id="upload-result"></div>
   </div>
 
@@ -522,6 +546,13 @@ button.secondary:hover { background: var(--hover); }
       <p style="text-align:center;font-size:13px;color:var(--muted)" id="zip-status">Hazırlanıyor…</p>
     </div>
 
+    <label class="force-box">
+      <input type="checkbox" id="force-zip">
+      <span><b>Veri azalmasına izin ver.</b> ZIP, mevcut verinin bir kısmını
+      içermiyorsa sonuç küçülür ve yazma durdurulur. Bilinçli bir daraltma
+      yapıyorsanız işaretleyin.</span>
+    </label>
+
     <div id="zip-result"></div>
   </div>
 
@@ -545,6 +576,13 @@ button.secondary:hover { background: var(--hover); }
       </div>
       <p style="text-align:center;font-size:13px;color:var(--muted)" id="rebuild-status">Hazırlanıyor…</p>
     </div>
+
+    <label class="force-box">
+      <input type="checkbox" id="force-rebuild">
+      <span><b>Veri azalmasına izin ver.</b> Sunucuda ham arşiv eksikse rebuild,
+      geçmişi mevcut dosyalarla sınırlar — 2026-08-19'da 51 dönem bu şekilde 1 döneme
+      düşmüştü. Kilit bunu durdurur; yalnızca ne yaptığınızdan eminseniz işaretleyin.</span>
+    </label>
 
     <div id="rebuild-result"></div>
   </div>
@@ -701,10 +739,20 @@ async function loadCoverage() {
     const r = await fetch('/api/admin/coverage');
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
+    renderRecoveryNotice(data.recovery_notice);
     renderCoverage(data, target);
   } catch (err) {
     target.innerHTML = `<div class="result-panel error">Coverage yüklenemedi: ${err.message}</div>`;
   }
+}
+
+// Açılışta computed.json bozuk bulunup yedekten geri yüklendiyse uyar (2026-09-08)
+function renderRecoveryNotice(notice) {
+  const el = $('recovery-banner');
+  if (!el) return;
+  el.innerHTML = notice
+    ? `<div class="recovery-banner"><b>⚠️ Veri dosyası otomatik kurtarıldı</b>${escapeHtml(notice)}</div>`
+    : '';
 }
 
 function renderCoverage(data, target) {
@@ -874,6 +922,7 @@ async function handleUpload(files) {
     setStage('upload', 'done');
     setStage('parquet', 'active');
 
+    fd.append('force', $('force-upload').checked);
     const r = await fetch('/admin/upload', { method: 'POST', body: fd });
 
     setProgress(60, 'Parquet merge + pipeline çalışıyor…');
@@ -1050,6 +1099,7 @@ async function handleZipUpload(file) {
   fd.append('file', file);
 
   try {
+    fd.append('force', $('force-zip').checked);
     const r = await fetch('/admin/upload-zip', { method: 'POST', body: fd });
 
     if (!r.ok) {
@@ -1162,7 +1212,8 @@ $('rebuildBtn').onclick = async () => {
   }, 5000);
 
   try {
-    const r = await fetch('/admin/rebuild', { method: 'POST' });
+    const r = await fetch('/admin/rebuild?force=' + ($('force-rebuild').checked ? 'true' : 'false'),
+                          { method: 'POST' });
 
     if (!r.ok) {
       const err = await r.json().catch(() => ({ detail: 'Bilinmeyen hata' }));

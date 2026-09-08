@@ -328,6 +328,7 @@ def ensure_data_dir():
     )
 
 
+
 def _get_or_create_session_secret() -> str:
     """
     Oturum çerezlerini imzalamak için kullanılan secret — dosyada kalıcı
@@ -681,6 +682,9 @@ def admin_coverage(_: str = Depends(require_admin_access)):
         'banks': banks,
         'quarters': quarters,
         'matrix': matrix,
+        # Açılışta computed.json bozuk bulunup yedekten geri yüklendiyse
+        # admin panelde uyarı gösterilir (2026-09-08).
+        'recovery_notice': _RECOVERY_NOTICE,
         'summary': {
             'total_banks': len(banks),
             'latest_quarter': latest,
@@ -938,6 +942,162 @@ def _result_period_count(bank_data: dict) -> int:
     return sum(len(series) for series in ta.values())
 
 
+# ============================================================
+# computed.json sağlamlaştırma (2026-09-08)
+# ============================================================
+# İki katman: (1) yazım öncesi REGRESYON KİLİDİ — yeni sonuç mevcut veriden
+# küçükse diske yazma; (2) açılışta BOZUKLUK TESPİTİ — computed.json
+# okunamıyorsa son sağlam yedeğe dön (bkz. _recover_computed_if_corrupt).
+#
+# Neden: _assert_nonempty_result yalnızca sonucun TAMAMEN boş olmasını
+# yakalıyordu. 2026-08-19'daki kazada rebuild, 51 dönemlik geçmişi silip
+# yerine 1 dönem yazdı — sonuç boş DEĞİLDİ, bu yüzden kilidi geçti ve
+# canlı veri kayboldu. Regresyon kilidi tam bu boşluğu kapatır.
+
+def _computed_metrics(bank_data: dict) -> dict:
+    """Bir bank_data'nın "büyüklük" parmak izi — regresyon kıyaslaması için."""
+    ta = (bank_data or {}).get('toplam_aktifler', {}) or {}
+    dolu = 0
+    for series in (bank_data or {}).values():
+        if isinstance(series, dict):
+            for s2 in series.values():
+                if isinstance(s2, dict):
+                    dolu += sum(1 for v in s2.values() if v is not None)
+    tarihler = {t for s in ta.values() if isinstance(s, dict)
+                for t, v in s.items() if v is not None}
+    return {
+        'olcu': len(bank_data or {}),
+        'banka': len(ta),
+        'donem': len(tarihler),
+        'dolu_hucre': dolu,
+    }
+
+
+# Dolu hücre sayısında küçük dalgalanmalara izin verilir (bir measure'ın
+# birkaç hücresi None dönebilir); ölçü/banka/dönem sayısında tolerans YOK —
+# bunların azalması her zaman veri kaybı demektir.
+_REGRESSION_CELL_TOLERANCE = 0.98
+
+
+def _assert_no_regression(new_bank_data: dict, force: bool = False) -> dict:
+    """REGRESYON KİLİDİ: yeni sonuç mevcut computed.json'dan küçükse yazma.
+
+    force=True ile atlanabilir (admin panelde açık onay kutusu) — meşru
+    küçülmeler için (ör. hatalı bir bankanın verisinin bilinçli silinmesi).
+    Dönüş: karşılaştırma özeti (yanıtta raporlanır).
+    """
+    if not DATA_COMPUTED.exists():
+        return {'skipped': 'mevcut computed.json yok'}
+    try:
+        with open(DATA_COMPUTED, encoding='utf-8') as f:
+            eski = json.load(f).get('bank_data', {})
+    except (json.JSONDecodeError, OSError) as e:
+        # Mevcut dosya zaten okunamıyorsa kıyaslayacak taban yok; yeni veriyi
+        # yazmak durumu iyileştirir, engelleme.
+        return {'skipped': f'mevcut computed.json okunamadı: {e}'}
+
+    onceki, simdiki = _computed_metrics(eski), _computed_metrics(new_bank_data)
+    kayiplar = []
+    for alan in ('olcu', 'banka', 'donem'):
+        if simdiki[alan] < onceki[alan]:
+            kayiplar.append(f"{alan}: {onceki[alan]} -> {simdiki[alan]}")
+    if simdiki['dolu_hucre'] < onceki['dolu_hucre'] * _REGRESSION_CELL_TOLERANCE:
+        kayiplar.append(f"dolu_hucre: {onceki['dolu_hucre']:,} -> {simdiki['dolu_hucre']:,}")
+
+    ozet = {'onceki': onceki, 'simdiki': simdiki, 'kayiplar': kayiplar,
+            'zorlandi': bool(force and kayiplar)}
+    if kayiplar and not force:
+        raise HTTPException(
+            status_code=409,
+            detail=('VERİ KAYBI ENGELLENDİ — yeni hesaplama mevcut veriden küçük, '
+                    'yazma iptal edildi ve mevcut veri KORUNDU. Azalanlar: '
+                    + '; '.join(kayiplar)
+                    + '. Bu azalma bilinçliyse admin panelde "Veri azalmasına izin ver" '
+                      'kutusunu işaretleyip tekrar deneyin.'),
+        )
+    if kayiplar:
+        print(f"[regresyon] UYARI: kilit ZORLANDI, veri azalıyor: {kayiplar}")
+    return ozet
+
+
+def _validate_computed_payload(d: dict) -> tuple[bool, str]:
+    """computed.json şema/bütünlük kontrolü — kurtarma kararı için."""
+    if not isinstance(d, dict):
+        return False, 'kök nesne dict değil'
+    bd = d.get('bank_data')
+    if not isinstance(bd, dict) or not bd:
+        return False, 'bank_data yok veya boş'
+    if _computed_metrics(bd)['dolu_hucre'] == 0:
+        return False, 'bank_data içinde hiç dolu hücre yok'
+    if not d.get('catalog'):
+        return False, 'catalog yok'
+    if not isinstance(d.get('meta'), dict):
+        return False, 'meta yok'
+    return True, 'ok'
+
+
+# Açılışta kurtarma yapıldıysa admin panelde gösterilecek uyarı (in-memory).
+_RECOVERY_NOTICE: Optional[str] = None
+
+
+def _recover_computed_if_corrupt() -> None:
+    """Açılışta computed.json okunamıyor/bozuksa son SAĞLAM yedeğe döner.
+
+    Eskiden bozuk bir computed.json (yarım yazım, disk dolması) tüm
+    dashboard'ı çökertiyordu ve elle müdahale gerekiyordu. Artık bozuk dosya
+    `computed.corrupt_<zaman>.json` olarak saklanır (inceleme için),
+    yerine `data/backups/` içindeki en yeni sağlam yedek konur.
+    """
+    global _RECOVERY_NOTICE
+    if not DATA_COMPUTED.exists():
+        return
+    try:
+        with open(DATA_COMPUTED, encoding='utf-8') as f:
+            ok, sebep = _validate_computed_payload(json.load(f))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as e:
+        ok, sebep = False, f'okunamadı: {type(e).__name__}: {e}'
+    if ok:
+        return
+
+    print(f"[kurtarma] computed.json BOZUK ({sebep}) — yedek aranıyor")
+    adaylar = sorted(DATA_BACKUPS.glob('computed_*.json'), reverse=True)
+    for aday in adaylar:
+        try:
+            with open(aday, encoding='utf-8') as f:
+                iyi, _ = _validate_computed_payload(json.load(f))
+        except Exception:
+            continue
+        if not iyi:
+            continue
+        ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+        try:
+            shutil.move(str(DATA_COMPUTED), str(DATA_DIR / f'computed.corrupt_{ts}.json'))
+            shutil.copy2(aday, DATA_COMPUTED)
+        except OSError as e:
+            print(f"[kurtarma] BAŞARISIZ: {e}")
+            return
+        _RECOVERY_NOTICE = (
+            f'computed.json bozuktu ({sebep}) ve otomatik olarak "{aday.name}" '
+            f'yedeğinden geri yüklendi. Bozuk dosya computed.corrupt_{ts}.json '
+            f'olarak saklandı. Bu yedek tarihinden SONRAKİ yüklemeler kayıp '
+            f'olabilir — veri durumunu kontrol edip gerekirse son çeyreği '
+            f'yeniden yükleyin.'
+        )
+        print(f"[kurtarma] {aday.name} yedeğinden geri yüklendi")
+        return
+    _RECOVERY_NOTICE = (f'computed.json bozuk ({sebep}) ve geri yüklenebilecek '
+                        f'sağlam bir yedek bulunamadı. Veri yeniden yüklenmeli.')
+    print('[kurtarma] sağlam yedek YOK')
+
+
+# computed.json bozuksa son sağlam yedeğe dön. ensure_data_dir() içinden
+# DEĞİL buradan çağrılır: o fonksiyon modülün başında, bu yardımcılar
+# tanımlanmadan önce çalışıyor. Sadece ana süreçte (worker'larda değil) —
+# bkz. yukarıdaki MainProcess notu.
+if multiprocessing.current_process().name == 'MainProcess':
+    _recover_computed_if_corrupt()
+
+
 def _assert_nonempty_result(bank_data: dict):
     """GÜVENLİK KİLİDİ: Hesaplama boş sonuç verdiyse yazma — mevcut veriyi koru.
 
@@ -1052,6 +1212,7 @@ def _rebuild_dynamic_meta(meta: dict, bank_data: dict, catalog: dict) -> dict:
 @app.post('/admin/upload')
 def admin_upload(
     files: List[UploadFile] = File(...),
+    force: bool = Form(False),   # regresyon kilidini atla (2026-09-08)
     user: str = Depends(heavy_op_guard),
 ):
     """
@@ -1203,6 +1364,7 @@ def admin_upload(
 
         # 4a. GÜVENLİK KİLİDİ + dinamik meta yeniden üretimi
         _assert_nonempty_result(new_bank_data)
+        regresyon = _assert_no_regression(new_bank_data, force=force)   # veri kaybı kilidi
         meta = _rebuild_dynamic_meta(meta, new_bank_data, catalog)
         group_data = build_group_data(new_bank_data, catalog, ctx)
 
@@ -1250,6 +1412,7 @@ def admin_upload(
             'files_skipped': skipped,
             'banks_affected': sorted({s['banka'] for s in saved}),
             'measures_computed': len(new_bank_data),
+            'regression_check': regresyon,
             'banks_in_pipeline': len({b for m in new_bank_data.values()
                                        for b in m.keys()}),
             'timestamp': timestamp,
@@ -1293,6 +1456,7 @@ def admin_upload(
 @app.post('/admin/upload-zip')
 def admin_upload_zip(
     file: UploadFile = File(...),
+    force: bool = Form(False),   # regresyon kilidini atla (2026-09-08)
     user: str = Depends(heavy_op_guard),
 ):
     """
@@ -1451,6 +1615,7 @@ def admin_upload_zip(
 
         # 5a. GÜVENLİK KİLİDİ + dinamik meta yeniden üretimi
         _assert_nonempty_result(new_bank_data)
+        regresyon = _assert_no_regression(new_bank_data, force=force)   # veri kaybı kilidi
         meta = _rebuild_dynamic_meta(meta, new_bank_data, catalog)
         group_data = build_group_data(new_bank_data, catalog, ctx)
 
@@ -1507,6 +1672,7 @@ def admin_upload_zip(
             'banks_processed': len(banks_in_zip),
             'files_processed': n_extracted,
             'measures_computed': len(new_bank_data),
+            'regression_check': regresyon,
             'banks_in_pipeline': len({b for m in new_bank_data.values()
                                        for b in m.keys()}),
             'zip_size': zip_size,
@@ -1546,7 +1712,8 @@ def admin_upload_zip(
 # Admin: rebuild — tüm raw'dan baştan hesapla (Faz 3.5)
 # ============================================================
 @app.post('/admin/rebuild')
-def admin_rebuild(user: str = Depends(heavy_op_guard)):
+def admin_rebuild(force: bool = False,   # ?force=true ile regresyon kilidini atla (2026-09-08)
+                  user: str = Depends(heavy_op_guard)):
     """
     data/raw/ altındaki tüm xlsx'leri tarayıp parquet'i baştan üret,
     compute_all ile tüm computed.json'u yeniden hesapla.
@@ -1624,6 +1791,7 @@ def admin_rebuild(user: str = Depends(heavy_op_guard)):
 
         # GÜVENLİK KİLİDİ: boş/şüpheli sonuç → yazma, mevcut veriyi koru
         _assert_nonempty_result(new_bank_data)
+        regresyon = _assert_no_regression(new_bank_data, force=force)   # veri kaybı kilidi
 
         # Statik meta + group_data'yı koru
         meta = {}
@@ -1685,6 +1853,7 @@ def admin_rebuild(user: str = Depends(heavy_op_guard)):
             'banks_processed': len(bank_dirs),
             'files_processed': n_files_total,
             'measures_computed': len(new_bank_data),
+            'regression_check': regresyon,
             'banks_in_pipeline': len({b for m in new_bank_data.values()
                                        for b in m.keys()}),
             'started': started,
