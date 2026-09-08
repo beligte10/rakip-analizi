@@ -1,0 +1,500 @@
+<title>Rakip Analizi Yol Haritası</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBFAF7;
+    --surface:#FFFFFF;
+    --surface-2:#F4F2ED;
+    --ink:#1D2420;
+    --ink-soft:#576259;
+    --ink-faint:#8B948D;
+    --accent:#2F6A53;
+    --accent-ink:#1F4A3A;
+    --accent-soft:#E6EFE9;
+    --line:#E1E4DF;
+    --line-strong:#C9CFC8;
+    --t1:#B8452F; --t1-soft:#F7E7E2;
+    --t2:#A9761B; --t2-soft:#F5EBD8;
+    --t3:#6C4F9E; --t3-soft:#EBE5F5;
+    --t4:#3D6FA3; --t4-soft:#E3ECF4;
+    --t5:#5B655F; --t5-soft:#ECEEEA;
+    --new:#C4622E; --new-soft:#FBEADD;
+    --serif:'Fraunces', Georgia, serif;
+    --sans:'Public Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono:'JetBrains Mono', ui-monospace, "SF Mono", monospace;
+    --radius:14px;
+    --shadow: 0 1px 2px rgba(29,36,32,0.06), 0 8px 24px -12px rgba(29,36,32,0.12);
+  }
+
+  /* Bu sayfa bilinçli olarak tek temalı (açık/beyaz zemin) — koyu mod
+     desteklenmiyor, dashboard'un kendisi zaten koyu/açık mod destekliyor,
+     bu yol haritası dokümanı için kullanıcı sabit beyaz zemin istedi. */
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent-ink)}
+  ::selection{background:var(--accent-soft)}
+
+  h1,h2,h3{font-family:var(--serif); text-wrap:balance; margin:0; color:var(--ink)}
+  p{margin:0}
+  .mono{font-family:var(--mono)}
+  .tabnum{font-variant-numeric:tabular-nums}
+
+  .wrap{max-width:920px; margin:0 auto; padding:0 24px}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    background:
+      radial-gradient(1200px 480px at 15% -10%, var(--accent-soft) 0%, transparent 60%),
+      var(--bg);
+    border-bottom:1px solid var(--line);
+    padding:64px 0 40px;
+  }
+  .eyebrow{
+    font-family:var(--mono); font-size:12.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent-ink); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:""; width:7px; height:7px; border-radius:50%; background:var(--accent); display:inline-block}
+  h1.title{font-size:clamp(32px,5vw,46px); font-weight:600; margin-top:14px; letter-spacing:-0.01em}
+  .subtitle{margin-top:14px; max-width:60ch; color:var(--ink-soft); font-size:17px}
+
+  .stats{
+    display:grid; grid-template-columns:repeat(5,1fr); gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:var(--radius);
+    overflow:hidden; margin-top:36px;
+  }
+  .stat{background:var(--surface); padding:16px 14px}
+  .stat .n{font-family:var(--mono); font-size:24px; font-weight:600; color:var(--accent-ink)}
+  .stat .l{font-size:12px; color:var(--ink-soft); margin-top:4px}
+
+  .jumpnav{display:flex; gap:10px; margin-top:28px}
+  .jumpnav a{
+    font-family:var(--mono); font-size:13px; text-decoration:none; color:var(--ink);
+    background:var(--surface); border:1px solid var(--line-strong); padding:8px 14px;
+    border-radius:999px; transition:border-color .15s, color .15s;
+  }
+  .jumpnav a:hover{border-color:var(--accent); color:var(--accent-ink)}
+
+  /* ---------- SECTIONS ---------- */
+  section.block{padding:56px 0}
+  .block + .block{border-top:1px solid var(--line)}
+  .sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:8px; flex-wrap:wrap}
+  .sec-head h2{font-size:26px; font-weight:600}
+  .sec-num{font-family:var(--mono); font-size:13px; color:var(--ink-faint)}
+  .sec-desc{color:var(--ink-soft); margin-top:8px; max-width:64ch; font-size:15px}
+
+  /* ---------- TIMELINE ---------- */
+  .timeline{margin-top:36px; position:relative}
+  .timeline::before{
+    content:""; position:absolute; left:19px; top:6px; bottom:6px; width:2px;
+    background:linear-gradient(var(--line-strong), var(--line));
+  }
+  details.era{position:relative; padding-left:56px; margin-bottom:4px}
+  details.era:not(:last-child){padding-bottom:4px}
+  .node{
+    position:absolute; left:0; top:2px; width:40px; height:40px; border-radius:50%;
+    background:var(--surface); border:2px solid var(--line-strong); display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-weight:600; font-size:14px; color:var(--ink-soft); z-index:1;
+  }
+  details.era[open] .node{border-color:var(--accent); color:var(--accent-ink); background:var(--accent-soft)}
+  details.era.is-new .node{border-color:var(--new); color:var(--new); background:var(--new-soft)}
+  summary.era-head{
+    list-style:none; cursor:pointer; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+    padding:8px 0;
+  }
+  summary.era-head::-webkit-details-marker{display:none}
+  summary.era-head:focus-visible{outline:2px solid var(--accent); outline-offset:4px; border-radius:6px}
+  .era-title{font-family:var(--serif); font-size:19px; font-weight:600}
+  .era-date{font-family:var(--mono); font-size:12.5px; color:var(--ink-faint)}
+  .era-chevron{margin-left:auto; color:var(--ink-faint); transition:transform .15s; font-size:13px}
+  details.era[open] .era-chevron{transform:rotate(90deg)}
+  .new-tag{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase;
+    background:var(--new-soft); color:var(--new); border:1px solid var(--new); border-radius:999px;
+    padding:2px 8px; font-weight:600;
+  }
+  .era-body{padding:6px 0 26px; max-width:66ch}
+  .era-body ul{margin:0; padding-left:18px; display:flex; flex-direction:column; gap:10px}
+  .era-body li{color:var(--ink-soft); font-size:14.5px}
+  .era-body li strong{color:var(--ink); font-weight:600}
+  .era-body li b.tag{
+    font-family:var(--mono); font-size:11px; color:var(--accent-ink); background:var(--accent-soft);
+    padding:1px 6px; border-radius:5px; font-weight:600; margin-right:4px;
+  }
+
+  .callout{
+    margin-top:28px; margin-left:56px; padding:18px 20px; background:var(--surface-2);
+    border:1px solid var(--line-strong); border-left:3px solid var(--new); border-radius:10px;
+    max-width:66ch;
+  }
+  .callout .callout-title{font-family:var(--mono); font-size:12px; letter-spacing:.05em; text-transform:uppercase; color:var(--new); font-weight:700; margin-bottom:10px}
+  .callout ul{margin:0; padding-left:18px; display:flex; flex-direction:column; gap:8px}
+  .callout li{font-size:14px; color:var(--ink-soft)}
+
+  /* ---------- TIER BOARD ---------- */
+  .tier{margin-bottom:34px}
+  .tier-head{display:flex; align-items:center; gap:10px; margin-bottom:14px}
+  .tier-dot{width:10px; height:10px; border-radius:3px}
+  .tier-name{font-family:var(--mono); font-size:13px; font-weight:600; letter-spacing:.02em}
+  .tier-sub{font-size:12.5px; color:var(--ink-faint)}
+
+  .cards{display:grid; grid-template-columns:1fr; gap:12px}
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px 20px; box-shadow:var(--shadow);
+  }
+  .card-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap}
+  .card-title{font-family:var(--serif); font-size:17px; font-weight:600}
+  .pill{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.05em; text-transform:uppercase;
+    padding:3px 9px; border-radius:999px; font-weight:600; white-space:nowrap;
+  }
+  .card-body{margin-top:10px; font-size:14px; color:var(--ink-soft); display:flex; flex-direction:column; gap:8px}
+  .card-body b{color:var(--ink); font-weight:600}
+  .card-row{display:flex; gap:6px}
+  .card-row .k{font-family:var(--mono); font-size:11.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; min-width:88px; padding-top:1px}
+  .card-row .v{flex:1}
+
+  .card-decision{border-color:var(--accent); background:linear-gradient(180deg, var(--accent-soft) 0%, var(--surface) 46px)}
+  .card-decision .pill{background:var(--accent); color:#fff}
+  .card-q{border-left:3px solid var(--t2)}
+  .card-q .pill{background:var(--t2-soft); color:var(--t2)}
+
+  .tier1 .tier-dot{background:var(--t1)} .tier1 .card{border-left:3px solid var(--t1)}
+  .tier2 .tier-dot{background:var(--t2)} .tier2 .card{border-left:3px solid var(--t2)}
+  .tier3 .tier-dot{background:var(--t3)} .tier3 .card{border-left:3px solid var(--t3)}
+  .tier4 .tier-dot{background:var(--t4)} .tier4 .card{border-left:3px solid var(--t4)}
+  .tier5 .tier-dot{background:var(--t5)} .tier5 .card{border-left:3px solid var(--t5)}
+
+  footer{padding:40px 0 64px; color:var(--ink-faint); font-size:13px; border-top:1px solid var(--line)}
+
+  @media (max-width:640px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    details.era, .callout{padding-left:44px; margin-left:0}
+    .timeline::before{left:15px}
+    .node{width:32px; height:32px; font-size:12px}
+  }
+</style>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Rakip Analizi &middot; İç Doküman</div>
+    <h1 class="title">Yol Haritası</h1>
+    <p class="subtitle">Projenin ilk kuruluşundan bugüne ne yapıldığının kronolojisi, ve önümüzdeki fikirlerin öncelik sıralı listesi. <span class="mono" style="font-size:13px">docs/BACKLOG.md</span>'nin görsel karşılığıdır.</p>
+
+    <div class="stats">
+      <div class="stat"><div class="n tabnum">8</div><div class="l">dönem</div></div>
+      <div class="stat"><div class="n tabnum">160</div><div class="l">aktif ölçü</div></div>
+      <div class="stat"><div class="n tabnum">7</div><div class="l">backlog maddesi</div></div>
+      <div class="stat"><div class="n tabnum">13</div><div class="l">alınan karar</div></div>
+      <div class="stat"><div class="n tabnum">3</div><div class="l">açık soru</div></div>
+    </div>
+
+    <div class="jumpnav">
+      <a href="#gecmis">↓ Ne yapıldı</a>
+      <a href="#gelecek">↓ Ne yapılacak</a>
+    </div>
+  </div>
+</div>
+
+<section class="block" id="gecmis">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">BÖLÜM 1</span>
+      <h2>Ne yapıldı</h2>
+    </div>
+    <p class="sec-desc">Kaynak: <span class="mono" style="font-size:12.5px">docs/CHANGELOG.md</span>, git geçmişi, Claude'un proje hafıza notları. "2025-05" etiketli en eski dönemin git karşılığı yok — bu tutarsızlık projenin kullanıcılar arasındaki devir sürecinden kaynaklanıyor, tarihler kaynağında yazdığı gibi bırakıldı.</p>
+
+    <div class="timeline">
+
+      <details class="era" id="d0">
+        <summary class="era-head">
+          <span class="node">0</span>
+          <span class="era-title">İlk kuruluş</span>
+          <span class="era-date">"2025-05" etiketli, devir öncesi</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li><b class="tag">Faz 1</b>Repo iskeleti: dokümantasyon, <span class="mono" style="font-size:13px">pipeline/</span> modülleri, <span class="mono" style="font-size:13px">scripts/</span>, <span class="mono" style="font-size:13px">catalog.json</span>.</li>
+            <li><b class="tag">v17→v26</b>Kompozisyon modu, Trend modu (Değer/YtD/YoY/QoQ/Pazar Payı), Snapshot cascading dropdown. TP/YP refactor denendi, geri alındı.</li>
+            <li><b class="tag">v27</b>Export modu: banka/grup × tarih aralığı × measure ağacı → Excel/CSV indirme.</li>
+            <li><b class="tag">v29</b>21 yeni measure aktivasyonu.</li>
+            <li><b class="tag">Faz 1.5</b>Ham BDDK'dan tam hesaplama pipeline'ı kuruldu — 27 banka × 48 çeyrek × 128 measure'da %91,8 exact match. Kritik NBSP encoding bug'ı bulundu ve düzeltildi.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="era" id="d1">
+        <summary class="era-head">
+          <span class="node">1</span>
+          <span class="era-title">Veri kaynağı arayışı</span>
+          <span class="era-date">2026-08-02 → 09</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li><strong>08-02:</strong> <span class="mono" style="font-size:13px">data/raw/</span> boştu, geçici olarak hazır PowerBI export'u (<span class="mono" style="font-size:13px">datatable_1.xlsx</span>) birincil kaynak yapıldı.</li>
+            <li><strong>08-09:</strong> Tam ham BDDK arşivi sağlandı (27 banka × 2013-2026, 1.170 dosya) — doğrulandı, <span class="mono" style="font-size:13px">measures.py</span>/<span class="mono" style="font-size:13px">groups.py</span> yeniden birincil hesaplama yolu oldu.</li>
+            <li><strong>Kritik bug:</strong> rebuild, ham veride bulunmayan 13 passthrough measure'ı (SYR, NIM, Spread vb.) her seferinde siliyordu — düzeltildi.</li>
+            <li><strong>Tekrarlayan hata (3. kez):</strong> macOS NFD ↔ <span class="mono" style="font-size:13px">catalog.json</span> NFC Türkçe karakter uyuşmazlığı — kalıcı kural yazıldı.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="era" id="d2">
+        <summary class="era-head">
+          <span class="node">2</span>
+          <span class="era-title">Veri kalitesi, admin panel, performans</span>
+          <span class="era-date">2026-08-09 → 11</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li><strong>Upload'ta 3 bug:</strong> 422 hatası (tekil/çoğul alan uyuşmazlığı), N-dosya × tam-pipeline yavaşlığı (40dk→saniyeler), rollback'in var olan dosyayı silmesi (gerçek veri kaybı yaşandı, geri yüklendi).</li>
+            <li>"Gerçek BDR" arşivine geçiş — 27/27 banka kapsamına ulaşıldı.</li>
+            <li><strong>Sistematik veri kalitesi taraması:</strong> QNB Finansbank, Kuveyt Türk, Türkiye Finans ve diğer bankalarda bozuk/eksik dosyalar bulundu, düzeltildi — 61 dosya geri yüklendi, 13 dosya (banka henüz kurulmamış dönemler) silindi.</li>
+            <li>Otomatik kalite kontrolü + incremental parquet güncelleme (52sn → 33sn) + 27 testlik regresyon suite kuruldu.</li>
+            <li><strong>Kısmi çeyrek grup agregasyonu — 3 bağımsız bug:</strong> eksik üyeler sessizce dışlanıyordu, "banka henüz kurulmadı" ile "henüz raporlamadı" ayırt edilmiyordu, pazar payı hesabı aynı sorundan etkileniyordu. Üçü de düzeltildi.</li>
+            <li><strong>Güvenlik:</strong> sunucu <span class="mono" style="font-size:13px">0.0.0.0</span>'dan <span class="mono" style="font-size:13px">127.0.0.1</span>'e sabitlendi, zayıf varsayılan admin şifresi kaldırıldı.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="era" id="d3">
+        <summary class="era-head">
+          <span class="node">3</span>
+          <span class="era-title">Üyelik, roller, formül hizalama, marka</span>
+          <span class="era-date">2026-08-12</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li><strong>Üyelik sistemi:</strong> açık kayıt + admin onayı, Basic Auth'tan tamamen ayrı bir session katmanı (bcrypt + imzalı çerez).</li>
+            <li><strong>Rol tabanlı admin + banka grupları:</strong> onaylı üyeye tam admin yetkisi verilebiliyor, gruplar admin panelden CRUD edilebiliyor.</li>
+            <li><strong>PowerBI DAX formül hizalama:</strong> gerçek DAX'larla <span class="mono" style="font-size:13px">composition.py</span> karşılaştırıldı, 4 fark bulundu (en kritiği: Diğer Aktifler artık residual değil, açık kalem toplamı). Yan bulgu: <span class="mono" style="font-size:13px">ProcessPoolExecutor</span> worker'larının veri dizinini tekrar kurması rebuild'i çöktürüyordu — düzeltildi.</li>
+            <li>Dashboard header'a merkezi KT logo + "Rakip Analizi" marka bloğu, yıl/çeyrek buton seçicisi.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="era" id="d4">
+        <summary class="era-head">
+          <span class="node">4</span>
+          <span class="era-title">Deploy altyapısı + ölçü genişletme</span>
+          <span class="era-date">2026-08-12 → 18</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li><span class="mono" style="font-size:13px">git init</span>, ilk commit, GitHub'a private repo push (bu dönemden itibaren git geçmişi başlıyor).</li>
+            <li><strong>measures.docx tam DAX taraması:</strong> catalog 127 → 160 ölçü. 33 yeni measure + 9 mevcut ölçünün paydası düzeltildi. Şube&amp;Personel akım ölçüleri TTM ile yıllıklandırıldı.</li>
+            <li>Şifre değiştirme + tek hesaba özel "ultra admin" katmanı eklendi.</li>
+            <li><strong><span class="mono" style="font-size:13px">catalog.json</span> git'e alındı (seed mimarisi):</strong> <span class="mono" style="font-size:13px">catalog.seed.json</span> (kod) + runtime <span class="mono" style="font-size:13px">groups</span> (admin panel) ayrı tutan bir merge mekanizması kuruldu.</li>
+            <li><strong>Deploy denetimi — 14 madde, hepsi kapatıldı:</strong> event-loop bloklaması, eşzamanlılık kilidi, prod bayrağı, pinlenmemiş bağımlılıklar, root container, healthcheck, login rate-limit, otomatik yedek ve daha fazlası.</li>
+            <li>UI: marka metni "Stratejik Kokpit" → "Rakip Analizi", measure arama kutusu, koyu mod okunabilirlik düzeltmesi.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="era" id="d5">
+        <summary class="era-head">
+          <span class="node">5</span>
+          <span class="era-title">Canlıya alma</span>
+          <span class="era-date">2026-08-18 → 19</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li>Contabo VPS + Coolify kuruldu, GitHub App ile push-to-deploy webhook bağlandı.</li>
+            <li>Kalıcı Docker volume + izin (uid 10001) ayarlandı, veri sunucuya taşındı.</li>
+            <li>Domain (<span class="mono" style="font-size:13px">kt-strateji.space</span>) + DNS + HTTPS (Let's Encrypt) kuruldu — birkaç Coolify UI sorunuyla uğraşıldı.</li>
+            <li><strong>Kaza:</strong> admin panelden hem Upload hem Rebuild tetiklendi; sunucuda ham arşiv henüz taşınmamışken Rebuild, 51 dönemlik geçmişi silip yerine sadece o an yüklenen 1 dönemi yazdı. <strong>Ders:</strong> production'da sadece Upload kullanılmalı, Rebuild yalnızca tam arşiv sunucudayken güvenli.</li>
+            <li>2026-06-30 çeyreği locale eklendi (24/27 banka raporlamış) — site tarafının aynı şekilde düzeltilmesi kullanıcı isteğiyle beklemede.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="era" id="d6">
+        <summary class="era-head">
+          <span class="node">6</span>
+          <span class="era-title">Veri taşınabilirliği</span>
+          <span class="era-date">2026-08-25</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li><strong>Yeni belirti, aynı kök neden ailesi:</strong> GitHub repo'su üçüncü (kullanıcının erişimi olmadığı) bir sunucuya, proje klasörü olduğu gibi zip'lenerek taşındı. Kod güncel ama dashboard'da sadece 2025-09 verisi görünüyor — 2025-12 → 2026-06 tamamen eksik.</li>
+            <li><strong>Neden:</strong> <span class="mono" style="font-size:13px">data/</span> bilinçli olarak git dışında (Dönem 5'teki kazayla aynı mimari sebep) — zip'e dahil edilen kopya hangi kaynaktan geldiği belirsiz, eski/donmuş bir sürümdü. Kod güncelliği ile veri güncelliği birbirinden bağımsız iki şey, ama bunu doğrulayacak bir mekanizma yoktu.</li>
+            <li>Bu belirli sunucu için bir düzeltme yapılamadı (erişim yok) — sadece ileriye dönük süreç iyileştirmesi olarak ele alındı.</li>
+            <li><strong>Çözüm — iki tamamlayıcı araç:</strong> (1) <span class="mono" style="font-size:13px">/admin</span> panelinde yeni "🚚 Sunucu Taşıma" bölümü — SSH gerekmez, tek tıkla ZIP indir / hedefte sürükle-bırak yükle, manifest gömülü. (2) <span class="mono" style="font-size:13px">scripts/export_data_snapshot.py</span> — SSH erişimi olanlar için CLI paket üretici. İkisi de aynı doğrulama ilkesini taşıyor: her zaman güncel veriden taze paket, içeriği taşımadan önce görülebilir manifest.</li>
+            <li><span class="mono" style="font-size:13px">docs/DATA_MIGRATION.md</span> eklendi: iki yöntemi karşılaştıran tablo + adım adım kılavuz + Upload/Rebuild karışıklığı uyarısı, Dönem 5'teki kazaya doğrudan atıfla.</li>
+            <li>Test edildi: admin panel export→import round-trip'i (curl + tarayıcı, manifest doğru, backup alınıyor, bozuk ZIP reddediliyor) ve CLI script (160 ölçü, 27 banka, son dönem 2026-06-30) — regresyon suite (47 test) yeşil.</li>
+            <li><strong>Admin panele "🗺️ Yol Haritası" sekmesi eklendi</strong> — yeni <span class="mono" style="font-size:13px">GET /admin/backlog</span> endpoint'i bu dokümanı (docs/BACKLOG.md) ham metin döner, admin.html marked.js (CDN) ile render eder; dosya git ile deploy edildiği için canlıda da her zaman güncel.</li>
+            <li><strong>Bug, aynı gün canlıda bulundu:</strong> "Yol Haritası" 404 veriyordu — <span class="mono" style="font-size:13px">docs/</span> hem <span class="mono" style="font-size:13px">.dockerignore</span>'da hariçti hem Dockerfile'da COPY edilmiyordu, BACKLOG.md image'a hiç girmiyordu. Düzeltildi: COPY eklendi, ignore satırı kaldırıldı.</li>
+            <li><strong>"Yenilikler" butonu yapıldı</strong> — dashboard topbar'ına, <span class="mono" style="font-size:13px">whats_new.json</span>'dan (repo kökünde, git-tracked) okunan bir güncelleme notu penceresi. İlk içerik yanlışlıkla admin-only özellikleri anlatıyordu, gerçek dashboard değişikliklerine düzeltildi; buton da BDR'nin yanından Çıkış'ın sonuna taşındı.</li>
+            <li><strong>Ölü deploy dosyaları kaldırıldı</strong> — <span class="mono" style="font-size:13px">docker-compose.yml</span>, <span class="mono" style="font-size:13px">Caddyfile</span>, <span class="mono" style="font-size:13px">.github/workflows/deploy.yml</span> — Coolify öncesi planlanan eski bir yaklaşımdan kalmıştı, gerçek deploy hiç kullanmıyordu.</li>
+            <li><strong>Admin panelde "Yol Haritası" başlıkları accordion'a çevrildi</strong> — Dönem/tier başlıkları (H2) ve tekil backlog maddeleri (H3) artık tıklanınca açılıp kapanıyor, varsayılan hepsi kapalı.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="era is-new" id="d7" open>
+        <summary class="era-head">
+          <span class="node">7</span>
+          <span class="era-title">Dashboard okunurluk ve kullanılabilirlik turu</span>
+          <span class="era-date">2026-09-08</span>
+          <span class="new-tag">yeni</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li>Kullanıcının tek seferde ilettiği 6 maddelik iyileştirme listesi. Her madde uygulanmadan önce belirsiz noktalar (terim karşılıkları, sıralama referansı, seçim hafızasının kapsamı, panel düzeni) kullanıcıya sorulup karara bağlandı.</li>
+            <li><strong>Kompozisyon okunurluğu:</strong> geniş ekranda 3 yerine <strong>2 panel yan yana</strong>, bar genişliği <strong>60 → 110px</strong>, yükseklik 240 → 300px, tüm fontlar büyütüldü (segment yüzdesi 10 → 12,5px, panel başlığı 13 → 16px). Barlar yükseldiği için segment etiketi eşiği %6 → %5.</li>
+            <li><strong>Türkçeleştirme:</strong> "(agrega)" → <strong>"(grup toplamı)"</strong>, "Measure" → <strong>"Ölçü"</strong>, "Snapshot" → <strong>"Anında Görünüm"</strong>, "Export" → <strong>"Dışa Aktar"</strong>, dışa aktarma dosya adından eski "Cockpit" markası temizlendi. <strong>KARAR:</strong> YtD/YoY/QoQ/CAGR/Bps bankacılıkta yerleşik kısaltmalar olduğu için çevrilmedi.</li>
+            <li><strong>Banka listesi sıralaması:</strong> Kuveyt Türk her zaman başta, gerisi Toplam Aktifler büyüklüğüne göre. <strong>KARAR:</strong> referans dönem sabit — yıl/çeyrek değişince chip'ler yerinden oynamıyor; her bankanın en son veri verdiği dönem kullanılıyor, son çeyreği raporlamamış banka dibe düşmüyor.</li>
+            <li><strong>Trend grafiğinde seri adları:</strong> grafiğin içini kapatan sol üst lejant kaldırıldı, adlar <strong>çizginin bittiği yerde değerin yanına</strong> taşındı ("Kuveyt Türk 1,47T"). Üst üste düşen etiketler dikeyde ayrıştırılıyor, kaydırılan etiket kendi noktasına ince bir bağ çizgisiyle bağlanıyor.</li>
+            <li><strong>X ekseninde adaptif tarih etiketleri:</strong> trend'deki eski kural 16-19 dönemlik aralıklarda çakışma üretiyordu; artık sığan etiket sayısı çizim genişliğinden hesaplanıp etiketler sondan geriye eşit aralıkla seçiliyor. Kompozisyonda bar alanının gerçek genişliği ölçülüyor (panel genişliği ekrana göre değiştiği için sabit kural yetersizdi). 51 dönemde bile çakışma yok.</li>
+            <li><strong>Sekme geçişlerinde seçimler korunuyor:</strong> Trend ve Kompozisyon state'i App'e taşındı (eskiden bileşen unmount olunca banka/grup, dönem, görünüm modu sıfırlanıyordu). <strong>KARAR:</strong> iki sekme kendi seçimini ayrı tutuyor.</li>
+            <li>Tarayıcıda uçtan uca doğrulandı: chip sırası, etiket çakışması (0), sekme geçişinde state korunması, koyu mod okunabilirliği, konsol temiz; 47 test yeşil.</li>
+          </ul>
+        </div>
+      </details>
+
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">Açık / bekleyen konular</div>
+      <ul>
+        <li><strong>Site tarafında geçmiş veri eksik (Contabo / kt-strateji.space)</strong> — ham arşivin sunucuya taşınıp rebuild edilmesi gerekiyor, kullanıcı ertelemeyi seçti.</li>
+        <li><strong>Üçüncü, erişimsiz sunucuda veri Eylül 2025'te donmuş</strong> — artık SSH gerekmiyor, o sunucunun admin paneline girebilen biri "İçe Aktar" ile güncel ZIP'i yükleyebilir; şu an aktif bir aksiyon yok.</li>
+        <li><strong>ktstrateji.com/kokpit'e taşıma — ertelendi.</strong> Hedef domain bağımsız bir platformda barınıyor, kullanıcı şimdilik <span class="mono" style="font-size:12.5px">kt-strateji.space</span>'te devam kararı verdi.</li>
+        <li><strong>measures.docx'ten 1 madde açık:</strong> Zorunlu Karşılıklar / Diğer Pasifler / DEK Krediler — ham BDDK verisinde karşılığı yok. (Toplam Kredi Kartları maddesi 2026-08-19'da DAX'a sadık kalma kararıyla kapatıldı.)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="gelecek">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">BÖLÜM 2</span>
+      <h2>Ne yapılacak</h2>
+    </div>
+    <p class="sec-desc">Öncelik sırasına göre gruplanmış. Yeşil kartlar alınmış kararları, turuncu kartlar hâlâ açık soruları gösterir.</p>
+
+    <div style="margin-top:36px">
+
+      <div class="tier tier1">
+        <div class="tier-head"><span class="tier-dot"></span><span class="tier-name">SPRINT 1</span><span class="tier-sub">küçük işler, hemen başlanabilir</span></div>
+        <div class="cards">
+          <div class="card card-decision">
+            <div class="card-head"><span class="card-title">What's New butonu</span><span class="pill">yapıldı ✓</span></div>
+            <div class="card-body">
+              <p>Topbar'a son değişiklikleri gösteren bir "Yenilikler" butonu.</p>
+              <div class="card-row"><span class="k">Durum</span><span class="v">✅ Yapıldı (2026-08-25). <span class="mono" style="font-size:12.5px">whats_new.json</span> repo kökünde (git-tracked), <span class="mono" style="font-size:12.5px">GET /api/whats-new</span> ile servis ediliyor.</span></div>
+              <div class="card-row"><span class="k">Düzeltme</span><span class="v">İlk içerik yanlışlıkla admin-only özellikleri anlatıyordu — normal üye bunları göremezdi. Gerçek dashboard değişikliklerine çevrildi.</span></div>
+            </div>
+          </div>
+          <div class="card card-decision">
+            <div class="card-head"><span class="card-title">Role-bazlı ölçü erişimi + PDF export</span><span class="pill">birleşik &middot; bağımlı</span></div>
+            <div class="card-body">
+              <p>İki ayrı istek olarak gelmişti, ama birbirine bağımlı tek bir özellik seti olduğu netleşti.</p>
+              <div class="card-row"><span class="k">Rol sistemi</span><span class="v">Birden fazla özel rol; her role hangi ölçülere erişebileceği measure-seviyesinde atanacak.</span></div>
+              <div class="card-row"><span class="k">PDF export</span><span class="v">Kullanıcı, kendi rolüne atanmış tüm ölçüleri kalem kalem (çoklu sayfa) PDF indirebilecek.</span></div>
+              <div class="card-row"><span class="k">Bağımlılık</span><span class="v">PDF export, rol sisteminden önce ya da onunla birlikte kurulmalı.</span></div>
+              <div class="card-row"><span class="k">Açık soru</span><span class="v">Kaç rol olacak, isimleri ne, hangi rol hangi ölçülere erişsin?</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tier tier2">
+        <div class="tier-head"><span class="tier-dot"></span><span class="tier-name">SPRINT 2 ADAYI</span></div>
+        <div class="cards">
+          <div class="card card-decision">
+            <div class="card-head"><span class="card-title">OTP güvenlik özelliği</span><span class="pill">karara bağlandı</span></div>
+            <div class="card-body">
+              <div class="card-row"><span class="k">Karar</span><span class="v">Teslimat yöntemi e-posta. SMTP entegrasyonu mevcut altyapıda yok, alt-görev olarak eklenmeli.</span></div>
+              <div class="card-row"><span class="k">Durum</span><span class="v">Backlog'da, uygulanmayı bekliyor.</span></div>
+            </div>
+          </div>
+          <div class="card card-decision">
+            <div class="card-head"><span class="card-title">Chat LLM entegrasyonu</span><span class="pill">2 fazlı</span></div>
+            <div class="card-body">
+              <div class="card-row"><span class="k">Faz 1</span><span class="v">Dar kapsamlı — sadece bu dashboard'un verisini yorumlayan bir asistan. Rol-bazlı ölçü erişimine saygı gösterebilir.</span></div>
+              <div class="card-row"><span class="k">Faz 2</span><span class="v">Genel amaçlı, geniş kapsamlı bir asistana genişletilecek.</span></div>
+              <div class="card-row"><span class="k">Açık soru</span><span class="v">Faz 1 için hangi LLM/API, kim ödeyecek?</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tier tier3">
+        <div class="tier-head"><span class="tier-dot"></span><span class="tier-name">BÜYÜK R&amp;D</span><span class="tier-sub">kendi spike'ı gerekiyor</span></div>
+        <div class="cards">
+          <div class="card card-q">
+            <div class="card-head"><span class="card-title">Rasyonet'in yerine BDR otomasyonu</span><span class="pill">keşif aşamasında</span></div>
+            <div class="card-body">
+              <p>Bankaların Bağımsız Denetim Raporu PDF'lerinden ilgili kalemleri otomatik çekip Rasyonet'in bugün ürettiğiyle aynı Excel formatında çıktı üretmek.</p>
+              <div class="card-row"><span class="k">Neden büyük</span><span class="v">Yüzlerce sayfa/kalem, hassas finansal veri — doğrulama şart.</span></div>
+              <div class="card-row"><span class="k">Yaklaşım</span><span class="v">1 banka / 1 dönem spike, mevcut Rasyonet çıktısıyla satır satır karşılaştırma.</span></div>
+              <div class="card-row"><span class="k">Açık soru</span><span class="v">Örnek Rasyonet Excel çıktısı var mı? Tam otomasyon mu, elle tetiklenen bir araç mı?</span></div>
+              <div class="card-row"><span class="k">Karar</span><span class="v">Kullanıcı şimdilik erteledi — "daha sonra geliştireceğiz, şu an planlanan kısımda kalsın."</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tier tier4">
+        <div class="tier-head"><span class="tier-dot"></span><span class="tier-name">v2'YE ERTELENDİ</span><span class="tier-sub">daha önce karara bağlanmış, unutulmasın</span></div>
+        <div class="cards">
+          <div class="card">
+            <div class="card-head"><span class="card-title">Konfigüre edilebilir odak banka</span><span class="pill" style="background:var(--t4-soft); color:var(--t4)">v2</span></div>
+            <div class="card-body">
+              <p>Kuveyt Türk yerine başka bir bankayı "odak" yapabilme. Grup katmanının kırılgan geçmişi nedeniyle riskli bulundu.</p>
+              <div class="card-row"><span class="k">Hazır olan</span><span class="v">Uygulama haritası hafıza notunda — v2'de sıfırdan araştırma gerekmeyecek.</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title">Screenshot / PNG indirme</span><span class="pill" style="background:var(--t4-soft); color:var(--t4)">v2</span></div>
+            <div class="card-body">
+              <p>Bulunduğun görünümü PNG olarak indirme butonu.</p>
+              <div class="card-row"><span class="k">Durum</span><span class="v">Kod <span class="mono" style="font-size:12.5px">feature/v2-screenshot</span> branch'inde hazır. Firefox <span class="mono" style="font-size:12.5px">toBlob</span> SecurityError sorunu vardı, v2'de test edilecek.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tier tier5">
+        <div class="tier-head"><span class="tier-dot"></span><span class="tier-name">SÜREÇ</span></div>
+        <div class="cards">
+          <div class="card">
+            <div class="card-body">
+              <div class="card-row"><span class="k">Backlog</span><span class="v">Bu dosya — son güncelleme 2026-09-08.</span></div>
+              <div class="card-row"><span class="k">Kaynak</span><span class="v">Bu sayfanın HTML kaynağı artık repoda: <span class="mono" style="font-size:12.5px">docs/backlog-visual.html</span> (2026-09-08'den itibaren, güncellemeler sürüm kontrolünde).</span></div>
+              <div class="card-row"><span class="k">Otomatik güncelleme</span><span class="v">2026-08-25'ten itibaren her büyük işlemde bu doküman VE bu sayfa sorulmadan güncelleniyor.</span></div>
+              <div class="card-row"><span class="k">Zaman planı</span><span class="v">Sprint 1 tamamlanınca tarih hedefleri eklenecek.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Rakip Analizi — iç yol haritası. Kaynak: docs/BACKLOG.md. Son güncelleme 2026-09-08.</div>
+</footer>

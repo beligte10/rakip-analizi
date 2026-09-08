@@ -15,7 +15,7 @@ tutarsızlık, projenin **kullanıcılar arasındaki devir sürecinden** kaynakl
 karşılığı netleşmedi. Tarihler kaynak dokümanlarda yazdığı gibi bırakıldı,
 düzeltme yapılmadı.
 
-**Son güncelleme:** 2026-08-25
+**Son güncelleme:** 2026-09-08
 
 ---
 
@@ -295,7 +295,56 @@ alınmamıştı).
 
 ---
 
-## Açık/bekleyen konular (şu an, 2026-08-25 itibarıyla)
+## Dönem 7 — Dashboard okunurluk ve kullanılabilirlik turu (2026-09-08)
+
+Kullanıcının tek seferde ilettiği 6 maddelik iyileştirme listesi; her biri
+uygulanmadan önce belirsiz noktalar (terim karşılıkları, sıralama referansı,
+seçim hafızasının kapsamı, panel düzeni) kullanıcıya sorulup karara bağlandı.
+
+- **Kompozisyon görünümü okunurluğu.** Geniş ekranda 3 yerine **2 panel yan
+  yana** (grid min genişliği 360 → 520px), bar genişliği **60 → 110px**,
+  bar yüksekliği 240 → 300px, tüm fontlar büyütüldü (segment yüzdesi 10 →
+  12,5px, tarih etiketi 11 → 12,5px, panel başlığı 13 → 16px, lejant 11 →
+  12,5px). Barlar yükseldiği için segment etiketi eşiği %6 → %5'e indi
+  (daha küçük dilimler de yüzdesini gösteriyor).
+- **Türkçeleştirme.** `(agrega)` → **`(grup toplamı)`**, `Measure` →
+  **`Ölçü`**, `Snapshot` → **`Anında Görünüm`**, `Export` → **`Dışa Aktar`**,
+  dışa aktarılan dosya adı `KT_Cockpit_Export_*` → `KT_Rakip_Analizi_*`
+  (eski "Cockpit" markası da temizlendi). **KARAR:** YtD / YoY / QoQ / CAGR
+  / Bps bankacılıkta yerleşik kısaltmalar olduğu için çevrilmedi.
+- **Banka listesi sıralaması (Trend + Kompozisyon).** Kuveyt Türk her zaman
+  başta, gerisi Toplam Aktifler büyüklüğüne göre azalan. **KARAR:** referans
+  dönem sabit — üstteki yıl/çeyrek seçimi değişince chip'lerin yeri
+  oynamasın diye "seçili dönem" değil, her bankanın en son veri verdiği
+  dönem kullanılıyor (son çeyreği raporlamamış banka listenin dibine
+  düşmüyor).
+- **Trend grafiğinde seri adları.** Sol üstte grafiğin içini kapatan lejant
+  kaldırıldı; adlar artık **çizginin bittiği yerde değerin yanında**
+  ("Kuveyt Türk  1,47T"). Aynı hizaya düşen etiketler dikeyde en az 15px
+  ayrıştırılıyor, kaydırılan etiket kendi veri noktasına ince bir bağ
+  çizgisiyle bağlanıyor. Sağ boşluk 80 → 200px.
+- **X ekseni tarih etiketlerinde adaptif seyreltme.** Trend'deki eski kural
+  (her `n/10`'uncu etiket + "sonu her zaman yaz") 16-19 dönemlik
+  aralıklarda çakışma üretiyordu; artık sığan etiket sayısı çizim
+  genişliğinden hesaplanıp etiketler **sondan geriye eşit aralıkla**
+  seçiliyor (en güncel dönem her zaman yazılı). Kompozisyonda bar alanının
+  **gerçek genişliği ölçülüp** aynı mantık uygulanıyor — panel genişliği
+  ekrana/sütun sayısına göre değiştiği için sabit bir kural yeterli
+  olmuyordu. 51 dönem seçiliyken bile çakışma yok (tarayıcıda ölçülerek
+  doğrulandı).
+- **Sekme geçişlerinde seçimler korunuyor.** Trend ve Kompozisyon kendi
+  `useState`'lerini kullandığı için sekme değişince bileşen unmount oluyor
+  ve tüm seçimler (banka/grup, dönem, görünüm modu, yılsonu, alt sekme)
+  varsayılana dönüyordu; state `App`'e taşındı. **KARAR:** iki sekme
+  seçimini **ayrı** tutuyor, biri diğerini etkilemiyor.
+
+Doğrulama: tarayıcıda uçtan uca test edildi — chip sırası, etiket çakışması
+(trend ve kompozisyonda 0), sekme geçişinde state korunması, koyu mod
+okunabilirliği, konsol hatası yok; 47 test yeşil.
+
+---
+
+## Açık/bekleyen konular (şu an, 2026-09-08 itibarıyla)
 
 - **Site tarafında geçmiş veri eksik (Contabo/`kt-strateji.space`)** —
   `data/raw/` tam arşivin (178MB, ~1193 dosya) sunucuya taşınıp rebuild
@@ -420,7 +469,7 @@ v2'de ya bu fix'i test et ya da native `getDisplayMedia`'ya geç.
 
 ## ⚙️ Süreç
 
-- **Backlog dokümanı:** ✅ Bu dosya (son güncelleme 2026-08-25).
+- **Backlog dokümanı:** ✅ Bu dosya (son güncelleme 2026-09-08).
 - **Otomatik güncelleme talimatı (2026-08-25):** Bundan sonra yapılan her
   büyük işlemde bu dosya VE görsel HTML artifact'ı sorulmadan güncellenecek.
 - **Zaman planı:** 📋 Sprint 1 tamamlanınca tarih hedefleri eklenecek.
