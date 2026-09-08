@@ -94,10 +94,19 @@ def compute_all(
             if dates is not None:
                 bank_dates = dates
             else:
-                bank_dates = list(out.get(mid, {}).get(banka, {}).keys())
-                # Eğer baseline'da yoksa bu banka için ctx tarihlerini kullan
-                if not bank_dates:
-                    bank_dates = [d.strftime('%Y-%m-%d') for d in ctx.get_dates(banka)]
+                # BUG FIX (2026-09-08): eskiden SADECE baseline'daki tarihler
+                # hesaplanıyordu; baseline tamamen boşsa ctx'e düşülüyordu.
+                # Sonuç: mevcut bir bankaya YENİ BİR ÇEYREK eklendiğinde
+                # (o tarih baseline'da yok ama parquet'te var) measure hiç
+                # hesaplanmıyor, dashboard'da dönem eksik görünüyordu —
+                # 2026Q2'de 3 bankanın (Dünya Katılım, Hayat Finans, TOM
+                # Bank) verisi yüklendiği hâlde ortaya çıkmamasının sebebi
+                # buydu. Artık baseline ∪ ham veri tarihleri hesaplanıyor:
+                # baseline'da olup raw'da olmayan tarihler (passthrough
+                # geçmişi) korunur, raw'a yeni gelen dönemler de eklenir.
+                base_dates = out.get(mid, {}).get(banka, {}).keys()
+                ctx_dates = (d.strftime('%Y-%m-%d') for d in ctx.get_dates(banka))
+                bank_dates = sorted(set(base_dates) | set(ctx_dates))
 
             out[mid].setdefault(banka, {})
             for d in bank_dates:
