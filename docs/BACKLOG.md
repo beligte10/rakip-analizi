@@ -342,6 +342,39 @@ Doğrulama: tarayıcıda uçtan uca test edildi — chip sırası, etiket çakı
 (trend ve kompozisyonda 0), sekme geçişinde state korunması, koyu mod
 okunabilirliği, konsol hatası yok; 47 test yeşil.
 
+**Aynı gün, ikinci tur (renk paleti + hover + eksen):**
+
+- **Banka renkleri marka/logo paletlerine göre yeniden kuruldu.** Her banka
+  kendi renk ailesinde kalıyor (yeşil / mavi / kırmızı / mor / turuncu),
+  aynı ailedeki bankalar **parlaklık kademeleriyle** ayrılıyor — ton marka
+  kimliğini taşıdığı için korunuyor. Repoda logosu bulunan 4 banka (KT, TEB,
+  Vakıf Katılım, Ziraat Katılım) için renk doğrudan logo SVG'sinden alındı;
+  kalan 23 banka için bilinen kurumsal renkler kullanıldı (kullanıcı kararı:
+  "bildiğin marka renklerini kullan, sonra onaya sun" — palet görsel olarak
+  onaya sunuldu). **Kuveyt Türk `#62AE41` olarak SABİTLENDİ**, kullanıcı
+  belirledi, değiştirilmemeli.
+  **Doğrulama:** CIELAB uzayında 27 rengin birbirine en yakın çifti
+  **ΔE 15,4** (ayırt edilebilirlik eşiği ~15) — "aynı renkte iki banka"
+  kalmadı. Palet üretimi/doğrulaması betikle yapıldı, elle göz kararı değil.
+- **Paletin iki yan etkisi düzeltildi:** (1) yeni palette hem çok koyu
+  (`#0B2E63`) hem çok açık (`#FFB600`) tonlar var; seçili chip'lerdeki sabit
+  beyaz yazı açık zeminlerde okunmuyordu → `contrastTextOn()` eklendi (beyaz
+  ve koyu adaydan WCAG kontrast oranı yüksek olanı seçer), 27 chip'in tamamı
+  artık ≥ 4,5:1. (2) Trend çizgi/noktaları koyu modda kaybolmasın diye
+  `darkSafeColor` tonuna geçti — açık modda marka renginin birebir kendisi.
+- **Kompozisyonda hover ile tam yüzde.** Bar sütununa gelince o dönemin
+  **tüm bileşenleri** tam hassasiyetle (2 ondalık) ve TL karşılığıyla
+  listeleniyor, imlecin üzerindeki segment vurgulanıyor. Eskiden yalnızca
+  geç açılan, stilsiz native `title` vardı ve %5'in altındaki segmentlerin
+  yüzdesi hiçbir yerde görünmüyordu.
+- **Y ekseni sıfır tabanı.** Tüm değerler pozitifken eksen artık negatife
+  inmiyor. Alt pay (%8-10) dar aralıklı serilerde tabanı sıfırın altına
+  itiyordu; "eksi büyüklük" diye bir şey olmadığı için yanıltıcıydı.
+  **KARAR:** taban 0'a *kırpılıyor* (her zaman 0'dan başlamıyor) — böylece
+  dar bantlı rasyolarda trend farkı ezilmiyor. Gerçekten negatif veri varsa
+  (QoQ/YoY düşüşleri) eksen yine eksiye iniyor. Hem ana trend hem snapshot
+  mini trendinde uygulandı.
+
 ---
 
 ## Açık/bekleyen konular (şu an, 2026-09-08 itibarıyla)
