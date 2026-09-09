@@ -194,7 +194,7 @@
     <p class="subtitle">Projenin ilk kuruluşundan bugüne ne yapıldığının kronolojisi, ve önümüzdeki fikirlerin öncelik sıralı listesi. <span class="mono" style="font-size:13px">docs/PROJE_EL_KITABI.md</span>'nin görsel özetidir.</p>
 
     <div class="stats">
-      <div class="stat"><div class="n tabnum">9</div><div class="l">dönem</div></div>
+      <div class="stat"><div class="n tabnum">10</div><div class="l">dönem</div></div>
       <div class="stat"><div class="n tabnum">160</div><div class="l">aktif ölçü</div></div>
       <div class="stat"><div class="n tabnum">7</div><div class="l">backlog maddesi</div></div>
       <div class="stat"><div class="n tabnum">13</div><div class="l">alınan karar</div></div>
@@ -377,12 +377,11 @@
       </details>
 
 
-      <details class="era is-new" id="d8" open>
+      <details class="era" id="d8">
         <summary class="era-head">
           <span class="node">8</span>
           <span class="era-title">2026Q2 tamamlandı + kritik pipeline bug'ı</span>
           <span class="era-date">2026-09-08</span>
-          <span class="new-tag">yeni</span>
           <span class="era-chevron">›</span>
         </summary>
         <div class="era-body">
@@ -395,12 +394,30 @@
           </ul>
         </div>
       </details>
+
+      <details class="era is-new" id="d9" open>
+        <summary class="era-head">
+          <span class="node">9</span>
+          <span class="era-title">Gayrinakdi Krediler raw'a taşındı</span>
+          <span class="era-date">2026-09-09</span>
+          <span class="new-tag">yeni</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li>Kullanıcı 2026Q2'de <strong>"Gayrinakdi Krediler (Garanti ve Kefaletler)"</strong> ölçüsünün boş olduğunu bildirdi. Kök neden: bu ölçü 13 <span class="mono" style="font-size:13px">BASELINE_PASSTHROUGH</span> kaleminden biriydi — eski PowerBI baseline'ından olduğu gibi kopyalanıyordu ve baseline yalnızca 2026-03-31'e kadar gidiyordu; yeni çeyrekler passthrough kalemleri asla otomatik doldurmuyor.</li>
+            <li><strong>Doğrulama:</strong> ham veride (<span class="mono" style="font-size:13px">Garanti Ve Kefaletler, Toplam</span> kalemi) 1057 tarihsel (banka, tarih) noktasından <strong>1053'ü baseline'la birebir eşleşti</strong>. Kalan 4'ü: iki küçük banka/dönemde ihmal edilebilir yuvarlama farkı, ve <strong>Kuveyt Türk 2020-06-30'da kaynak verinin kendisinde bir bozukluk</strong> — "Toplam" satırı -2,15 trilyon TL (fiziksel olarak imkânsız); alt kalemlerin toplamı ise doğru baseline değeriyle (~12,12 milyar TL) eşleşiyordu.</li>
+            <li><strong>Düzeltme:</strong> ölçü artık ham veriden hesaplanıyor, yalnızca negatif (bozuk) bir "Toplam" görülürse 9 alt kalemin toplamına düşüyor. <span class="mono" style="font-size:13px">MEASURE_FUNCS</span>'a taşındı, passthrough listesi 13 → 12'ye indi. 4 yeni birim test.</li>
+            <li><strong>Sonuç:</strong> production'ın kullandığı <span class="mono" style="font-size:13px">/admin/rebuild</span> koduyla yerel olarak yeniden hesaplandı — regresyon kilidi geçti (dolu hücre kaybı yok), 27/27 banka için 2026-06-30 doldu, KT'nin 2020-06-30 tarihsel bozukluğu da yan etki olarak düzeldi. Toplam 70 test yeşil. Kod push edildi; canlıya yansıması için <span class="mono" style="font-size:13px">/admin/rebuild</span> çalıştırılmalı (aşağıdaki "Site tarafında geçmiş veri eksik" maddesiyle aynı adım).</li>
+          </ul>
+        </div>
+      </details>
     </div>
 
     <div class="callout">
       <div class="callout-title">Açık / bekleyen konular</div>
       <ul>
-        <li><strong>Site tarafında geçmiş veri eksik (Contabo / kt-strateji.space)</strong> — ham arşivin sunucuya taşınıp rebuild edilmesi gerekiyor, kullanıcı ertelemeyi seçti.</li>
+        <li><strong>Site tarafında geçmiş veri eksik (Contabo / kt-strateji.space)</strong> — ham arşivin sunucuya taşınıp rebuild edilmesi gerekiyor, kullanıcı ertelemeyi seçti. Aynı rebuild, Dönem 9'daki Gayrinakdi Krediler düzeltmesini de canlıya taşıyacak — kod push edildi, eksik olan tek adım bu.</li>
         <li><strong>Üçüncü, erişimsiz sunucuda veri Eylül 2025'te donmuş</strong> — artık SSH gerekmiyor, o sunucunun admin paneline girebilen biri "İçe Aktar" ile güncel ZIP'i yükleyebilir; şu an aktif bir aksiyon yok.</li>
         <li><strong>ktstrateji.com/kokpit'e taşıma — ertelendi.</strong> Hedef domain bağımsız bir platformda barınıyor, kullanıcı şimdilik <span class="mono" style="font-size:12.5px">kt-strateji.space</span>'te devam kararı verdi.</li>
         <li><strong>measures.docx'ten 1 madde açık:</strong> Zorunlu Karşılıklar / Diğer Pasifler / DEK Krediler — ham BDDK verisinde karşılığı yok. (Toplam Kredi Kartları maddesi 2026-08-19'da DAX'a sadık kalma kararıyla kapatıldı.)</li>
@@ -519,5 +536,5 @@
 </section>
 
 <footer>
-  <div class="wrap">Rakip Analizi — iç yol haritası. Kaynak: docs/PROJE_EL_KITABI.md. Son güncelleme 2026-09-08.</div>
+  <div class="wrap">Rakip Analizi — iç yol haritası. Kaynak: docs/PROJE_EL_KITABI.md. Son güncelleme 2026-09-09.</div>
 </footer>

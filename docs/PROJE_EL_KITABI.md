@@ -315,8 +315,11 @@ Bunların her biri gerçekten yaşandı ve zaman kaybettirdi.
 7. **`data/` git'te değildir.** Bilinçli: `git pull` canlı veriyi ezmesin
    diye. Sonucu: kod ile veri ayrı taşınır (§4.3).
 
-8. **13 passthrough ölçü bir dönem geride.** Yeni çeyrek yüklediğinizde
+8. **12 passthrough ölçü bir dönem geride.** Yeni çeyrek yüklediğinizde
    SYR/NIM/RORWA boş görünür — bu bug değil, bilinen borç (§8.3 FAZ 3).
+   `gayrinakdi_krediler` 2026-09-09'da bu listeden çıkıp raw'a taşındı
+   (Dönem 9) — aynı doğrulama (baseline'la örtüşme ölçümü) yapılmadan
+   kalan 12'si taşınmamalı.
 
 9. **Excel dosya adı bilgi taşır.** Banka ve dönem dosya adından okunur;
    format bozuksa dosya reddedilir.
@@ -738,6 +741,48 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   **19 yeni test** eklendi (`tests/test_computed_guards.py`) — 2026-08-19
   kazasının birebir senaryosu dahil. Toplam 66 test yeşil.
 
+### Dönem 9 — Gayrinakdi Krediler raw'a taşındı (2026-09-09)
+
+- **Tetikleyici:** kullanıcı, 2026Q2'de "Gayrinakdi Krediler (Garanti ve
+  Kefaletler)" ölçüsünün boş göründüğünü bildirdi. Kök neden: bu ölçü
+  `BASELINE_PASSTHROUGH`'daydı (13 kalemden biri) — yani v29 PBI baseline
+  JSON'undan olduğu gibi kopyalanıyordu ve baseline yalnızca 2026-03-31'e
+  kadar gidiyordu. Yeni bir çeyrek geldiğinde passthrough kalemler ASLA
+  otomatik dolmaz (bkz. Dönem 8, aynı ailenin farklı bir belirtisi).
+- **Analiz:** ham veride (`Bilanço Dışı Yükümlülükler` tablosu, kalem
+  `'Garanti Ve Kefaletler, Toplam'`) bu ölçünün v29 baseline'la ne kadar
+  örtüştüğü ölçüldü — 1057 tarihsel (banka, tarih) noktasından **1053'ü
+  birebir eşleşti**. Kalan 4'ü: ikisi ~2015-2019 arası ihmal edilebilir
+  küçük bankalarda (milyon TL seviyesinde yuvarlama farkı) ve **KT
+  2020-06-30'da kaynak verinin kendisinde bir bozukluk** (`Toplam` satırı
+  -2,15 trilyon TL — fiziksel olarak imkânsız bir negatif değer; alt
+  kalemlerin toplamı ise doğru baseline değeriyle (~12,12 milyar TL)
+  eşleşiyordu).
+- **Düzeltme (`pipeline/measures.py`):** `m_gayrinakdi_krediler` artık
+  `ctx.bd(b, t, 'Garanti Ve Kefaletler, Toplam')`'ı doğrudan kullanıyor;
+  yalnızca değer **negatifse** (anlamsız/bozuk veri sinyali) 9 alt kalemin
+  toplamına düşüyor (`_GAYRINAKDI_LEAF_KALEMLER`). Ölçü `MEASURE_FUNCS`'a
+  eklendi, `BASELINE_PASSTHROUGH`'dan çıkarıldı (artık 13 → 12 kalem).
+  4 yeni birim test (`tests/test_gayrinakdi_krediler.py`, gerçek veriden
+  bağımsız, KT 2020-06-30 kazasının senaryosu dahil).
+- **Sonuç:** `/admin/rebuild` yerel ortamda çalıştırıldı (production'ın
+  kullandığı BİREBİR aynı kod yolu). Regresyon kilidi geçti (dolu hücre
+  183.656 → 183.783, **kayıp yok**). 27 bankanın 27'si için 2026-06-30
+  artık dolu; KT 2020-06-30'daki tarihsel bozukluk da yan etki olarak
+  düzeltildi. Toplam 70 test yeşil.
+- **Anlam:** bu, "13 passthrough ölçüyü ham veriden hesapla" kararının
+  (bkz. §8 FAZ yol haritası, henüz genel olarak ertelenmişti) tek bir
+  kalem için, kullanıcının somut talebiyle, önceden yapılmış hâli — geri
+  kalan 12 kalem hâlâ bilinçli olarak passthrough (bkz. §9 kararlar
+  günlüğü).
+- **AÇIK KALAN İŞ — canlı sunucuya yansıtma:** bu düzeltme yalnızca kodu
+  değiştirir (`pipeline/measures.py`); `git push` ile Coolify'a otomatik
+  deploy edilir ama **canlıdaki `computed.json` kendiliğinden yeniden
+  hesaplanmaz** (kod ve veri ayrı, bkz. §3). Canlıda bu düzeltmenin
+  etkili olması için admin panelden `/admin/rebuild` çalıştırılmalı —
+  bu da zaten bekleyen "canlı veri güncel değil" sorunuyla (§7) aynı
+  operasyona bağlı.
+
 ---
 
 ## 7. Açık ve bekleyen konular
@@ -745,7 +790,10 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
 
 - **Site tarafında geçmiş veri eksik (Contabo/`kt-strateji.space`)** —
   `data/raw/` tam arşivin (178MB, ~1193 dosya) sunucuya taşınıp rebuild
-  yapılması gerekiyor. Kullanıcı bunu ertelemeyi seçti.
+  yapılması gerekiyor. Kullanıcı bunu ertelemeyi seçti. **Not (2026-09-09):**
+  aynı `/admin/rebuild` aynı zamanda Dönem 9'daki Gayrinakdi Krediler
+  düzeltmesini de canlıya taşıyacak — kod zaten push edildi, eksik olan tek
+  şey bu rebuild adımı.
 - **Üçüncü, kullanıcının SSH erişimi olmadığı bir sunucuda veri Eylül
   2025'te donmuş** — artık SSH gerekmiyor: o sunucunun `/admin` paneline
   tarayıcıdan girebilen biri, bu makinedeki `/admin`'den indirilecek güncel
@@ -808,25 +856,32 @@ kurulmalı — rolsüz bir "hangi ölçüler dahil olsun" kapsamı tanımlanamaz
 **Açık soru:** Kaç rol olacak, isimleri ne, hangi rol hangi ölçülere erişsin?
 **Durum:** 📋 Backlog'da, rol listesi netleşince başlanabilir.
 
-#### 3. Passthrough ölçülerin ham veriden türetilmesi (13 ölçü)
+#### 3. Passthrough ölçülerin ham veriden türetilmesi (12 ölçü kaldı)
 **Ne:** SYR, Çekirdek SYR, NIM, Düzeltilmiş NIM, Spread, RORWA, Maliyet/Gelir,
-Düzeltilmiş Maliyet/Gelir, Net Faiz Geliri/Ort. Aktifler, Gayrinakdi Krediler,
+Düzeltilmiş Maliyet/Gelir, Net Faiz Geliri/Ort. Aktifler,
 Gayrinakdi Kredi Komisyonları, Faiz Getirili Aktifler, BZK Sonrası Düzeltilmiş
-NIM — bu 13 ölçü ham BDDK verisinden hesaplanmıyor, eski PowerBI baseline'ından
-taşınıyor (`BASELINE_PASSTHROUGH`).
+NIM — bu 12 ölçü ham BDDK verisinden hesaplanmıyor, eski PowerBI baseline'ından
+taşınıyor (`BASELINE_PASSTHROUGH`). (Gayrinakdi Krediler bu listeden çıktı —
+aşağıya bakın.)
 **Neden önemli:** Baseline sabit olduğu için bu ölçüler **her yeni çeyrekte bir
-dönem geride kalıyor** — 2026Q2 yüklendiği hâlde 13'ünün de son dolu dönemi
+dönem geride kalıyor** — 2026Q2 yüklendiği hâlde 12'sinin de son dolu dönemi
 2026-03-31. Kullanıcının "bir dahaki çeyrekte sadece veri yükleyeceğim, formül
 türetmeyi de sistem içinden yapacağız" hedefinin önündeki tek engel bu.
 **Fizibilite (2026-09-08 tespiti):** ham veride karşılıkları VAR —
 `Sermaye Yeterlilik Rasyosu (%)`, `Çekirdek Sermaye Yeterliliği Oranı (%)`,
 `Çekirdek Sermaye Toplamı`, `Net Faiz Geliri/Gideri` gibi kalemler
 `Özkaynak Kalemlerine İlişkin Bilgiler` ve `Gelir Tablosu` tablolarında mevcut.
-**Önerilen yöntem:** her ölçüyü tek tek türet, mevcut baseline değerleriyle
-birebir karşılaştır (geçmiş dönemlerde tutuyorsa formül doğrudur), sonra
-`MEASURE_FUNCS`'a taşı. SYR/Çekirdek SYR gibi doğrudan okunabilenlerle başla.
-**Durum:** 📋 Backlog'da. **KARAR (2026-09-08):** kullanıcı "sadece
-sağlamlaştırma, ölçüler sonra" dedi — bu iş ayrı bir tura bırakıldı.
+**Önerilen yöntem — artık kanıtlanmış bir şablonu var (Dönem 9):** her ölçüyü
+tek tek türet, mevcut baseline değerleriyle **tüm tarihsel (banka, tarih)
+noktalarında** birebir karşılaştır (>%99 eşleşme = formül doğru), sonra
+`MEASURE_FUNCS`'a taşı ve `/admin/rebuild` ile regresyon kilidinden geçir.
+SYR/Çekirdek SYR gibi doğrudan okunabilenlerle başla.
+**Durum:** 📋 Backlog'da — 12/13 kaldı. **KARAR (2026-09-08):** kullanıcı
+"sadece sağlamlaştırma, ölçüler sonra" dedi — genel iş ayrı bir tura
+bırakıldı. **2026-09-09:** kullanıcı `Gayrinakdi Krediler`'i 2026Q2'de boş
+görünce özel olarak istedi; yukarıdaki yöntemle türetildi (bkz. Dönem 9,
+§6) — bu artık kalan 12 ölçü için de aynen izlenebilecek doğrulanmış bir
+örnek.
 
 ---
 
@@ -876,7 +931,7 @@ standart olarak kullanılacak.
 
 **Fazlar:** 0) fizibilite kanıtı (karar noktası, %99+ eşleşme eşiği) →
 1) PDF→veri motoru (elle yükleme) → 2) otomatik indirme (insan onay kapısıyla).
-Paralel: 3) 13 passthrough ölçünün türetilmesi · 4) bilgi baloncukları ·
+Paralel: 3) 12 passthrough ölçünün türetilmesi (Gayrinakdi Krediler zaten yapıldı, bkz. Dönem 9) · 4) bilgi baloncukları ·
 5) etiket bazlı erişim → 6) kullanıcı formülleri (bayrak arkasında).
 
 **Durum:** 📋 Plan hazır, uygulama başlamadı. Önce FAZ 0 (fizibilite kanıtı)
@@ -954,7 +1009,7 @@ değişiklikleri kaçınılmaz. Bu yüzden indirme katmanı, çıkarım katmanı
 
 ---
 
-##### FAZ 3 — 13 passthrough ölçünün türetilmesi
+##### FAZ 3 — kalan 12 passthrough ölçünün türetilmesi
 **Bağımlılık:** yok (Excel verisiyle de yapılabilir), ama PDF fazıyla
 birlikte anlamlı: "dışarıdan hesaplanmış değer almayalım" hedefinin ikinci
 yarısı.
@@ -1031,7 +1086,7 @@ etiketiyle sınırlanmalı).
 ```
 FAZ 0 (kanıt) ──► FAZ 1 (PDF motoru) ──► FAZ 2 (otomatik indirme)
                         │
-                        └──► FAZ 3 (13 ölçünün türetilmesi)   [Excel ile de yapılabilir]
+                        └──► FAZ 3 (kalan 12 ölçünün türetilmesi)   [Excel ile de yapılabilir]
 
 FAZ 4 (baloncuklar)     — bağımsız, paralel ilerleyebilir
 FAZ 5 (etiketler) ──► FAZ 6 (kullanıcı formülleri, bayrak arkasında)
@@ -1118,7 +1173,8 @@ Bir şeyi değiştirmeden önce buraya bakın; çoğu "tuhaf" görünen tercih, 
 | **Regresyon kilidi (2026-09-08)** | "Sonuç boş mu" kontrolü yetmiyordu: 51 dönem → 1 döneme düşen kaza bu kontrolü geçmişti. Artık küçülme reddediliyor, bilinçliyse elle zorlanıyor. |
 | **Sunucu taşıma paketi manifest'li** | "Hangi zip güncel" sorusu insan hafızasına kalınca, bir sunucuda Eylül 2025'te donmuş veri yayına çıktı. Manifest bunu görünür kılıyor. |
 | **Otomasyon veriyi hazırlar, yayına insan alır** | PDF fazında da aynı ilke: indirme otomatik, yayın kararı admin onayında (§8, FAZ 2). |
-| **13 ölçü hâlâ passthrough** | Ham veriden türetilmeleri doğrulama gerektiriyor; yanlış formülle "dolu ama hatalı" veri üretmektense bilinen bir boşluk bırakıldı. |
+| **12 ölçü hâlâ passthrough** (2026-09-09'a kadar 13'tü) | Ham veriden türetilmeleri doğrulama gerektiriyor; yanlış formülle "dolu ama hatalı" veri üretmektense bilinen bir boşluk bırakıldı. `gayrinakdi_krediler` doğrulanıp (1057 noktadan 1053 tam eşleşme) raw'a taşındı — geri kalan 12'si için de aynı doğrulama süreci önce (bkz. Dönem 9, §8). |
+| **Bozuk "Toplam" satırına karşı alt kalem toplamı yedeği** (2026-09-09) | KT 2020-06-30'da BDDK ham verisinin kendisinde bir "Toplam" kalemi (-2,15 trilyon) fiziksel olarak imkânsızdı; alt kalemler toplamı doğruydu. Negatif/anlamsız bir toplam görülürse alt kalemlere düşmek, tek bozuk satırın tüm tarihi bozmasını önlüyor — ham BDDK verisi %100 güvenilir değil, formüllerde bu ihtimal göz önünde tutulmalı. |
 
 ---
 

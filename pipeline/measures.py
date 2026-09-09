@@ -259,10 +259,36 @@ def m_vadesiz_mevduat(ctx, b, t): return ctx.vadesiz_mevduat(b, t)
 def m_ozkaynaklar(ctx, b, t): return ctx.bilanco(b, t, 'Özkaynaklar')
 
 
+# Bilanço Dışı Yükümlülükler tablosundaki 'Garanti Ve Kefaletler, Toplam'ın
+# alt kalemleri — Toplam satırı bozuk/tutarsız göründüğünde yedek olarak
+# bunların toplamı kullanılır (bkz. m_gayrinakdi_krediler).
+_GAYRINAKDI_LEAF_KALEMLER = [
+    'Garanti Ve Kefaletler, Teminat Mektupları',
+    'Garanti Ve Kefaletler, Banka Kredileri',
+    'Garanti Ve Kefaletler, Akreditifler',
+    'Garanti Ve Kefaletler, Garanti Verilen Prefinansmanlar',
+    'Garanti Ve Kefaletler, Cirolar',
+    'Garanti ve Kefaletler, Menkul Kıy. İh. Satın Alma Garantilerimizden',
+    'Garanti ve Kefaletler, Faktoring Garantilerimizden',
+    'Garanti Ve Kefaletler, Diğer Garantilerimizden',
+    'Garanti ve Kefaletler, Diğer Kefaletlerimizden',
+]
+
+
 def m_gayrinakdi_krediler(ctx, b, t):
-    """v29 PBI tanımı raw 'Garanti Ve Kefaletler, Toplam' ile tam eşleşmiyor —
-    bu measure BASELINE_PASSTHROUGH'da. Burada placeholder."""
-    return None
+    """Bilanço dışı 'Garanti Ve Kefaletler, Toplam' kalemi (2026-09-09'da
+    raw'a taşındı — önceden BASELINE_PASSTHROUGH'daydı çünkü v29 PBI ile tam
+    eşleşip eşleşmediği doğrulanmamıştı). Analiz: 1057 tarihsel (banka,
+    tarih) noktasından 1053'ü v29 baseline'la birebir eşleşiyor; kalan 4'ü ya
+    ihmal edilebilir küçük bankalarda (~2015-2019, milyon TL seviyesinde)
+    ufak yuvarlama farkı ya da KT 2020-06-30'da kaynak veride 'Toplam'
+    satırının bizzat bozuk olması (-2.15 trilyon, alt kalemler toplamı ~12.1
+    milyar — baseline'la eşleşen değer). O yüzden negatif (fiziksel olarak
+    anlamsız) bir Toplam görülürse alt kalemlerin toplamına düşülür."""
+    toplam = ctx.bd(b, t, 'Garanti Ve Kefaletler, Toplam')
+    if toplam < 0:
+        return sum(ctx.bd(b, t, k) for k in _GAYRINAKDI_LEAF_KALEMLER)
+    return toplam
 
 
 # ============================================================
@@ -492,7 +518,7 @@ def m_maliyet_gelir(ctx, b, t):
 
 def m_gayrinakdi_komisyon_gayrinakdi(ctx, b, t):
     """Gayri Nakdi Komisyon Geliri / Gayri Nakdi Krediler — gayrinakdi PBI tanımına bağlı."""
-    return None  # gayrinakdi_krediler baseline'a düşüyor; bu da baseline'dan
+    return None  # formül belirsiz, hâlâ BASELINE_PASSTHROUGH'da (gayrinakdi_krediler'den farklı)
 
 
 # ============================================================
@@ -1191,6 +1217,7 @@ MEASURE_FUNCS: Dict[str, Callable] = {
     'mevduat': m_mevduat,
     'vadesiz_mevduat': m_vadesiz_mevduat,
     'ozkaynaklar': m_ozkaynaklar,
+    'gayrinakdi_krediler': m_gayrinakdi_krediler,
 
     # Gelir Tablosu büyüklük
     'faiz_gelirleri': m_faiz_gelirleri,
@@ -1352,7 +1379,6 @@ BASELINE_PASSTHROUGH: Set[str] = {
     'nim_duzeltilmis',
 
     # Ham veride v29 ile eşleşmiyor / formül belirsiz
-    'gayrinakdi_krediler',
     'gayrinakdi_komisyon_gayrinakdi',
 
     # PBI özel akım formülleri (raw delta hesabıyla tam tutmuyor)
