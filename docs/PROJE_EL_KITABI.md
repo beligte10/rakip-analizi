@@ -807,6 +807,32 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   tarayıcıda buton görünürlüğü (test1'de var, admin.local hesaplarında
   yok). Toplam 73 test yeşil.
 
+### Dönem 11 — Admin panelinden doğrudan üye ekleme (2026-09-09)
+
+- **Tetikleyici:** `kt-strateji.space` için yeni bir üyelik açılması
+  gerekti. İlk düşünce (herkese açık `/signup` formunu bizzat doldurmak)
+  reddedildi — hesap açma/kimlik girme, operatör politikası gereği asla
+  otomatik yapılmaz. Kullanıcı bunun yerine gerçek bir **admin-panel
+  özelliği** istedi: admin, signup + onay adımlarını atlayıp doğrudan
+  onaylı bir hesap açabilsin.
+- **Eklenen:** `users.py::admin_create_user()` — `create_signup` ile aynı
+  doğrulamaları (domain kısıtı `ALLOWED_SIGNUP_DOMAINS`, min 8 karakter
+  şifre, mükerrer email — signup'la **aynı email havuzunu** paylaşır)
+  uygular, ama `status='approved'` olarak, `approved_by`/`approved_at`
+  dolu şekilde kaydeder — bekleme yok. `app.py`'de
+  `POST /api/admin/users` (`require_admin_access` arkasında).
+  `frontend/admin.html`'de "➕ Üye Ekle (doğrudan onaylı)" formu, Üyelik
+  Başvuruları sekmesinin üstünde (Ad Soyad / e-posta / şifre alanları).
+- **Doğrulama:** 5 yeni test (doğrudan onaylı ekleme + hemen giriş,
+  domain kısıtı, şifre uzunluğu, mükerrer email, signup'la ortak email
+  havuzu) — toplam 78 test yeşil. Ayrıca yerel sunucuda tarayıcıdan uçtan
+  uca doğrulandı: form dolduruldu → "✓ Üye eklendi ve onaylandı" →
+  listede yeni üye onaylı/üye rolüyle göründü → test kaydı doğrulama
+  sonrası temizlendi (gerçek veriye karışmadı).
+- **Not:** Bu özellik, aynı gün içindeki yerel `data/` klasörü veri kaybı
+  olayının (bkz. §7) hemen öncesinde tamamlanmıştı; olay nedeniyle
+  doğrulama/dokümantasyon/commit adımları bu döneme ertelendi.
+
 ---
 
 ## 7. Açık ve bekleyen konular

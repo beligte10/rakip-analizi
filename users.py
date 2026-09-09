@@ -128,6 +128,48 @@ def create_signup(path: Path, name: str, email: str, password: str) -> tuple[boo
     return True, ''
 
 
+def admin_create_user(path: Path, name: str, email: str, password: str,
+                      created_by: str) -> tuple[bool, str]:
+    """Admin, self-signup + onay adımlarını atlayıp doğrudan ONAYLI bir üye
+    ekler (2026-09-09). create_signup ile aynı doğrulamalar (isim, e-posta
+    formatı, kurumsal domain, şifre uzunluğu, tekil e-posta) geçerli — tek
+    fark, kayıt 'pending' değil doğrudan 'approved' olarak oluşturulur.
+    Başarılıysa (True, ''), değilse (False, sebep)."""
+    name = (name or '').strip()
+    email = (email or '').strip().lower()
+
+    if not name:
+        return False, 'İsim boş olamaz'
+    if not EMAIL_RE.match(email):
+        return False, 'Geçerli bir e-posta adresi girin'
+    domain = email.rsplit('@', 1)[-1]
+    if domain not in ALLOWED_SIGNUP_DOMAINS:
+        return False, 'Sadece kuveytturk.com.tr uzantılı kurumsal e-posta adresleriyle üye eklenebilir'
+    if len(password or '') < MIN_PASSWORD_LEN:
+        return False, f'Şifre en az {MIN_PASSWORD_LEN} karakter olmalı'
+
+    with _users_file_lock:
+        data = _load(path)
+        if any(u['email'] == email for u in data['users']):
+            return False, 'Bu e-posta ile zaten bir başvuru/hesap mevcut'
+
+        new_id = max((u['id'] for u in data['users']), default=0) + 1
+        now = datetime.now().isoformat()
+        data['users'].append({
+            'id': new_id,
+            'name': name,
+            'email': email,
+            'password_hash': hash_password(password),
+            'status': 'approved',
+            'role': 'member',
+            'created_at': now,
+            'approved_at': now,
+            'approved_by': created_by,
+        })
+        _save(path, data)
+    return True, ''
+
+
 def authenticate(path: Path, email: str, password: str) -> tuple[Optional[dict], str]:
     """Başarılıysa (user_dict, ''), değilse (None, hata_mesajı)."""
     email = (email or '').strip().lower()

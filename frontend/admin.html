@@ -638,6 +638,22 @@ button.secondary:hover { background: var(--hover); }
       Onaylanana kadar giriş yapamazlar. Onaylı bir üyeye "Admin Yap" ile TAM admin panel yetkisi
       (upload/rebuild/ZIP/üyelik onayı/grup düzenleme) verebilirsin — aksi halde sadece dashboard görüntülerler.
     </p>
+
+    <div style="margin:0 0 20px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+      <h3 style="margin:0 0 10px;font-size:14px">➕ Üye Ekle (doğrudan onaylı)</h3>
+      <p style="margin:0 0 10px;font-size:12.5px;color:var(--muted)">/signup + onay adımlarını atlayıp doğrudan onaylı bir hesap oluşturur — ör. yeni işe başlayan biri için.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <input type="text" id="new-user-name" placeholder="Ad Soyad"
+          style="flex:1;min-width:160px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+        <input type="email" id="new-user-email" placeholder="ad.soyad@kuveytturk.com.tr"
+          style="flex:1;min-width:220px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+        <input type="text" id="new-user-password" placeholder="Şifre (en az 8 karakter)"
+          style="flex:1;min-width:180px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+      </div>
+      <button onclick="createUser()" style="padding:8px 16px;border-radius:6px;border:1px solid var(--primary);background:var(--info-bg);color:var(--primary);cursor:pointer;font-size:13px;font-weight:500">+ Üye Ekle</button>
+      <div id="new-user-result" style="margin-top:10px"></div>
+    </div>
+
     <div id="users-content">
       <div class="loading">Yükleniyor…</div>
     </div>
@@ -1412,6 +1428,39 @@ async function loadUsers() {
     renderUsersPanel();
   } catch (err) {
     target.innerHTML = `<div class="result-panel error">Üyelik listesi yüklenemedi: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+async function createUser() {
+  const name = $('new-user-name').value.trim();
+  const email = $('new-user-email').value.trim();
+  const password = $('new-user-password').value;
+  const resultEl = $('new-user-result');
+  if (!name || !email || !password) {
+    resultEl.innerHTML = `<div class="result-panel error">Ad Soyad, e-posta ve şifre gerekli.</div>`;
+    return;
+  }
+  if (password.length < 8) {
+    resultEl.innerHTML = `<div class="result-panel error">Şifre en az 8 karakter olmalı.</div>`;
+    return;
+  }
+  try {
+    const r = await fetch('/api/admin/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${r.status}`);
+    }
+    $('new-user-name').value = '';
+    $('new-user-email').value = '';
+    $('new-user-password').value = '';
+    resultEl.innerHTML = `<div class="result-panel success" style="padding:10px 14px"><strong>✓ Üye eklendi ve onaylandı.</strong> Şifreyi kendisine iletin.</div>`;
+    await loadUsers();
+  } catch (err) {
+    resultEl.innerHTML = `<div class="result-panel error">Eklenemedi: ${escapeHtml(err.message)}</div>`;
   }
 }
 

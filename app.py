@@ -716,6 +716,27 @@ def admin_list_users(admin_id: str = Depends(require_admin_access)):
     return {'users': list(reversed(users))}  # en yeni başvuru başta
 
 
+class AdminCreateUserPayload(BaseModel):
+    name: str
+    email: str
+    password: str
+
+
+@app.post('/api/admin/users')
+def admin_create_user(payload: AdminCreateUserPayload,
+                      admin_user: str = Depends(require_admin_access)):
+    """Admin, self-signup + onay adımlarını atlayıp doğrudan ONAYLI bir üye
+    ekler (2026-09-09) — ör. yeni işe başlayan birine hemen erişim vermek
+    için. create_signup'la aynı doğrulamalar (kurumsal e-posta domaini,
+    şifre uzunluğu, tekil e-posta) geçerli."""
+    ok, err = users_mod.admin_create_user(
+        DATA_USERS, payload.name, payload.email, payload.password, admin_user,
+    )
+    if not ok:
+        raise HTTPException(status_code=400, detail=err)
+    return {'status': 'ok'}
+
+
 @app.post('/api/admin/users/{user_id}/approve')
 def admin_approve_user(user_id: int, admin_user: str = Depends(require_admin_access)):
     _assert_can_target_user(user_id, admin_user)  # sıradan admin ultra'ya dokunamaz

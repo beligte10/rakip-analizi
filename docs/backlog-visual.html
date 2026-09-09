@@ -194,7 +194,7 @@
     <p class="subtitle">Projenin ilk kuruluşundan bugüne ne yapıldığının kronolojisi, ve önümüzdeki fikirlerin öncelik sıralı listesi. <span class="mono" style="font-size:13px">docs/PROJE_EL_KITABI.md</span>'nin görsel özetidir.</p>
 
     <div class="stats">
-      <div class="stat"><div class="n tabnum">11</div><div class="l">dönem</div></div>
+      <div class="stat"><div class="n tabnum">12</div><div class="l">dönem</div></div>
       <div class="stat"><div class="n tabnum">160</div><div class="l">aktif ölçü</div></div>
       <div class="stat"><div class="n tabnum">7</div><div class="l">backlog maddesi</div></div>
       <div class="stat"><div class="n tabnum">13</div><div class="l">alınan karar</div></div>
@@ -395,12 +395,11 @@
         </div>
       </details>
 
-      <details class="era is-new" id="d9" open>
+      <details class="era" id="d9">
         <summary class="era-head">
           <span class="node">9</span>
           <span class="era-title">Gayrinakdi Krediler raw'a taşındı</span>
           <span class="era-date">2026-09-09</span>
-          <span class="new-tag">yeni</span>
           <span class="era-chevron">›</span>
         </summary>
         <div class="era-body">
@@ -414,12 +413,11 @@
         </div>
       </details>
 
-      <details class="era is-new" id="d10" open>
+      <details class="era" id="d10">
         <summary class="era-head">
           <span class="node">10</span>
           <span class="era-title">Admin üye şifresi sıfırlama</span>
           <span class="era-date">2026-09-09</span>
-          <span class="new-tag">yeni</span>
           <span class="era-chevron">›</span>
         </summary>
         <div class="era-body">
@@ -427,6 +425,24 @@
             <li>Kullanıcı, bir üyenin (Berkan Keskin) şifresini unuttuğunu bildirdi. Kod taraması: admin panelinde onayla/reddet/rol dışında bir üye-yönetim aracı <strong>hiç yoktu</strong> — şifre sıfırlama yok, tekrar kayıt da email zaten kayıtlıyken durumdan bağımsız engelleniyordu. Gerçek bir özellik boşluğuydu.</li>
             <li><strong>Eklenen:</strong> <span class="mono" style="font-size:13px">users.py::admin_reset_password()</span> — mevcut şifre doğrulanmadan yeni şifre atar (admin zaten yetkili). <span class="mono" style="font-size:13px">POST /api/admin/users/{'{'}id{'}'}/reset-password</span>, mevcut onayla/reddet/rol endpoint'leriyle aynı yetki deseni. <span class="mono" style="font-size:13px">@admin.local</span> hesapları (start.sh → KT_PASSWORD'den senkron) hem backend'de hem panelde hariç tutuldu.</li>
             <li><strong>Doğrulama:</strong> 3 yeni test + curl ile uçtan uca + tarayıcıda buton görünürlüğü doğrulandı. Toplam 73 test yeşil.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="era is-new" id="d11" open>
+        <summary class="era-head">
+          <span class="node">11</span>
+          <span class="era-title">Admin panelinden doğrudan üye ekleme</span>
+          <span class="era-date">2026-09-09</span>
+          <span class="new-tag">yeni</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li><span class="mono" style="font-size:13px">kt-strateji.space</span> için yeni bir üyelik açılması gerekti. İlk yol (herkese açık <span class="mono" style="font-size:13px">/signup</span> formunu bizzat doldurmak) reddedildi — hesap açma/kimlik girme otomatik yapılmaz. Bunun yerine gerçek bir <strong>admin-panel özelliği</strong> istendi: admin, signup + onay adımlarını atlayıp doğrudan onaylı bir hesap açabilsin.</li>
+            <li><strong>Eklenen:</strong> <span class="mono" style="font-size:13px">users.py::admin_create_user()</span> — <span class="mono" style="font-size:13px">create_signup</span> ile aynı doğrulamalar (domain kısıtı, min 8 karakter şifre, mükerrer email — signup'la <strong>aynı email havuzunu</strong> paylaşır), ama <span class="mono" style="font-size:13px">status='approved'</span> olarak, bekleme yok. <span class="mono" style="font-size:13px">POST /api/admin/users</span>, panelde "➕ Üye Ekle (doğrudan onaylı)" formu.</li>
+            <li><strong>Doğrulama:</strong> 5 yeni test — toplam 78 test yeşil. Ayrıca yerel sunucuda tarayıcıdan uçtan uca doğrulandı: form dolduruldu → "✓ Üye eklendi ve onaylandı" → listede onaylı/üye rolüyle göründü → test kaydı doğrulama sonrası temizlendi.</li>
+            <li>Bu özellik, aynı gün içindeki yerel <span class="mono" style="font-size:13px">data/</span> klasörü veri kaybı olayının hemen öncesinde tamamlanmıştı; olay nedeniyle doğrulama/dokümantasyon/commit adımları bu döneme ertelendi. Kayıp veri (computed.json, users.json dahil) tamamen kurtarıldı — regresyon suite'i doğruladı.</li>
           </ul>
         </div>
       </details>

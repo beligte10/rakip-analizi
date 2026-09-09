@@ -76,6 +76,46 @@ def test_list_users_sifre_hash_sizmaz(users_file):
         assert 'password_hash' not in u
 
 
+# --- Admin üye ekleme (admin_create_user — 2026-09-09, self-signup + onay
+# adımlarını atlayıp admin'in doğrudan onaylı üye eklemesi) ---
+
+def test_admin_create_user_dogrudan_onayli(users_file):
+    ok, err = U.admin_create_user(users_file, 'Berkan Keskin', 'berkan@kuveytturk.com.tr',
+                                   'parola12345', 'admin@kuveytturk.com.tr')
+    assert ok, err
+    u = U.list_users(users_file)[-1]
+    assert u['status'] == 'approved'
+    assert u['approved_by'] == 'admin@kuveytturk.com.tr'
+    assert u['approved_at'] is not None
+    # signup gibi bekleme yok — hemen giriş yapabilir
+    user, err2 = U.authenticate(users_file, 'berkan@kuveytturk.com.tr', 'parola12345')
+    assert user is not None and err2 == ''
+
+
+def test_admin_create_user_domain_kisiti(users_file):
+    ok, err = U.admin_create_user(users_file, 'Veli', 'veli@gmail.com', 'parola12345', 'admin')
+    assert not ok and 'kuveytturk.com.tr' in err
+
+
+def test_admin_create_user_sifre_uzunlugu(users_file):
+    ok, err = U.admin_create_user(users_file, 'Veli', 'veli@kuveytturk.com.tr', 'kisa', 'admin')
+    assert not ok and 'karakter' in err
+
+
+def test_admin_create_user_mukerrer_email(users_file):
+    U.admin_create_user(users_file, 'Veli', 'veli@kuveytturk.com.tr', 'parola12345', 'admin')
+    ok, err = U.admin_create_user(users_file, 'Veli2', 'veli@kuveytturk.com.tr', 'parola12345', 'admin')
+    assert not ok and 'zaten' in err
+
+
+def test_admin_create_user_signup_ile_ayni_email_havuzu(users_file):
+    """admin_create_user ve create_signup aynı e-posta uzayını paylaşır —
+    biri diğerinin oluşturduğu adresi tekrar kullanamaz."""
+    U.create_signup(users_file, 'Veli', 'veli@kuveytturk.com.tr', 'parola12345')
+    ok, err = U.admin_create_user(users_file, 'Veli2', 'veli@kuveytturk.com.tr', 'parola12345', 'admin')
+    assert not ok and 'zaten' in err
+
+
 # --- Giriş (authenticate) ---
 
 def test_authenticate_pending_engelli(users_file):
