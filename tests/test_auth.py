@@ -128,6 +128,29 @@ def test_change_password_olmayan_kullanici(users_file):
     assert not ok
 
 
+# --- Admin şifre sıfırlama (admin_reset_password — 2026-09-09, "şifremi
+# unuttum" talebi) — change_password'dan farkı: mevcut şifre bilinmeden atanır.
+
+def test_admin_reset_password_mevcut_sifre_gerekmez(users_file):
+    email = 'berkan@kuveytturk.com.tr'
+    uid = _approved_member(users_file, email=email, pw='eskiparola123')
+    ok, err = U.admin_reset_password(users_file, uid, 'yeniparola456')
+    assert ok, err
+    assert U.authenticate(users_file, email, 'eskiparola123')[0] is None
+    assert U.authenticate(users_file, email, 'yeniparola456')[0] is not None
+
+
+def test_admin_reset_password_kisa_yeni(users_file):
+    uid = _approved_member(users_file)
+    ok, err = U.admin_reset_password(users_file, uid, 'kisa')
+    assert not ok and 'karakter' in err
+
+
+def test_admin_reset_password_olmayan_kullanici(users_file):
+    ok, err = U.admin_reset_password(users_file, 9999, 'yeniparola123')
+    assert not ok and 'bulunamadı' in err.lower()
+
+
 # --- Rol / durum ---
 
 def test_set_role(users_file):

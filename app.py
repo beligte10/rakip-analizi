@@ -752,6 +752,30 @@ def admin_set_user_role(user_id: int, payload: RolePayload, admin_user: str = De
     return {'status': 'ok'}
 
 
+class AdminResetPasswordPayload(BaseModel):
+    new_password: str
+
+
+@app.post('/api/admin/users/{user_id}/reset-password')
+def admin_reset_user_password(user_id: int, payload: AdminResetPasswordPayload,
+                              admin_user: str = Depends(require_admin_access)):
+    """Admin, şifresini unutan bir üyeye YENİ şifre atar — üyenin mevcut
+    şifresini bilmesine gerek yok (2026-09-09, ör. Berkan Keskin talebi).
+    change_password'dan farkı bu: orada üye kendi mevcut şifresini
+    doğrulamak zorunda, burada admin doğrudan atıyor."""
+    _assert_can_target_user(user_id, admin_user)  # sıradan admin ultra'nın şifresini sıfırlayamaz
+    target = users_mod.get_user_by_id(DATA_USERS, user_id)
+    if target and target.get('email', '').strip().lower().endswith('@admin.local'):
+        raise HTTPException(
+            status_code=400,
+            detail='Bu hesabın şifresi sunucu yapılandırmasından (start.sh → KT_PASSWORD) yönetilir.',
+        )
+    ok, err = users_mod.admin_reset_password(DATA_USERS, user_id, payload.new_password)
+    if not ok:
+        raise HTTPException(status_code=400, detail=err)
+    return {'status': 'ok'}
+
+
 @app.get('/api/admin/history')
 def admin_history(limit: int = 20, _: str = Depends(require_admin_access)):
     """Son N upload kaydı."""

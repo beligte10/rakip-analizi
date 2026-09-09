@@ -775,13 +775,37 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   kalem için, kullanıcının somut talebiyle, önceden yapılmış hâli — geri
   kalan 12 kalem hâlâ bilinçli olarak passthrough (bkz. §9 kararlar
   günlüğü).
-- **AÇIK KALAN İŞ — canlı sunucuya yansıtma:** bu düzeltme yalnızca kodu
-  değiştirir (`pipeline/measures.py`); `git push` ile Coolify'a otomatik
-  deploy edilir ama **canlıdaki `computed.json` kendiliğinden yeniden
-  hesaplanmaz** (kod ve veri ayrı, bkz. §3). Canlıda bu düzeltmenin
-  etkili olması için admin panelden `/admin/rebuild` çalıştırılmalı —
-  bu da zaten bekleyen "canlı veri güncel değil" sorunuyla (§7) aynı
-  operasyona bağlı.
+- **AÇIK KALAN İŞ — canlı sunucuya yansıtma (GÜNCELLEME: `/admin/rebuild`
+  GEREKMEDİ).** İlk düşünce `/admin/rebuild`'di ama bu, production'da
+  `data/raw/` tam değilken geçmişi silme riski taşıyordu (Dönem 5 kazası).
+  Bunun yerine yerelde (düzeltmeyi içeren, zaten yeniden hesaplanmış)
+  `computed.json` `/admin/export-data`'dan (CLI script'ten DEĞİL — o
+  `MANIFEST.txt` üretiyor, panel `manifest.json` bekliyor; bu karışıklık
+  bir kez yaşandı) paketlendi; kullanıcıya panelden **İçe Aktar** ile
+  yüklemesi için teslim edildi (import henüz teyit edilmedi — bkz. §7).
+  Rebuild'e hiç gerek kalmadı — hem staleness hem bu düzeltme tek pakette.
+
+### Dönem 10 — Admin üye şifresi sıfırlama (2026-09-09)
+
+- **Tetikleyici:** kullanıcı, bir üyenin (Berkan Keskin) şifresini
+  unuttuğunu bildirip nasıl sıfırlayacağını sordu. Kod taraması: admin
+  panelinde onayla/reddet/rol dışında bir üye-yönetim aracı yoktu — şifre
+  sıfırlama **hiç yoktu**, tekrar kayıt da email zaten kayıtlıyken
+  engelleniyordu (`create_signup`, durumdan bağımsız). Gerçek bir özellik
+  boşluğuydu.
+- **Eklenen:** `users.py::admin_reset_password()` — `change_password`'dan
+  farkı, mevcut şifre doğrulanmıyor (admin zaten yetkili). `app.py`'de
+  `POST /api/admin/users/{id}/reset-password`, mevcut approve/reject/role
+  endpoint'leriyle **aynı** yetki deseni (`require_admin_access` +
+  `_assert_can_target_user` — sıradan admin ultra'yı hedefleyemez).
+  `@admin.local` hesapları (start.sh → KT_PASSWORD'den senkron) hem
+  backend'de hem UI'da hariç tutuldu — onlarda buton hiç görünmüyor.
+  `frontend/admin.html`'de "🔑 Şifre Sıfırla" butonu, sadece onaylı +
+  env-senkron olmayan üyelerde.
+- **Doğrulama:** 3 yeni test (kısa şifre reddi, olmayan kullanıcı,
+  başarılı sıfırlama + eski şifreyle giriş engeli) + curl ile uçtan uca +
+  tarayıcıda buton görünürlüğü (test1'de var, admin.local hesaplarında
+  yok). Toplam 73 test yeşil.
 
 ---
 
@@ -789,11 +813,13 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
 
 
 - **Site tarafında geçmiş veri eksik (Contabo/`kt-strateji.space`)** —
-  `data/raw/` tam arşivin (178MB, ~1193 dosya) sunucuya taşınıp rebuild
-  yapılması gerekiyor. Kullanıcı bunu ertelemeyi seçti. **Not (2026-09-09):**
-  aynı `/admin/rebuild` aynı zamanda Dönem 9'daki Gayrinakdi Krediler
-  düzeltmesini de canlıya taşıyacak — kod zaten push edildi, eksik olan tek
-  şey bu rebuild adımı.
+  **DURUM DEĞİŞTİ (2026-09-09):** `/admin/rebuild` yerine (data/raw/ tam
+  değilken riskli, bkz. Dönem 5) `/admin/export-data` ile yerelden
+  paketlenmiş, düzeltmeleri (Dönem 9 dahil) içeren güncel bir
+  `computed.json` kullanıcıya teslim edildi — panelden **İçe Aktar** ile
+  yüklemesi bekleniyor. **İçe aktarmanın gerçekten yapılıp yapılmadığı
+  henüz teyit edilmedi** — bir sonraki oturumda dashboard'da 2026-06-30
+  görünüyor mu diye kontrol edilmeli.
 - **Üçüncü, kullanıcının SSH erişimi olmadığı bir sunucuda veri Eylül
   2025'te donmuş** — artık SSH gerekmiyor: o sunucunun `/admin` paneline
   tarayıcıdan girebilen biri, bu makinedeki `/admin`'den indirilecek güncel

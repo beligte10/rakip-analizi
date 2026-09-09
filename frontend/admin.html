@@ -1509,13 +1509,20 @@ function renderUsersTable() {
     } else {
       roleCell = `<span style="color:var(--muted);font-size:12px">—</span>`;
     }
+    // Şifre sıfırlama — SADECE onaylı, env-senkron OLMAYAN kullanıcılar için
+    // (2026-09-09, ör. "şifresini unuttum" talebi). @admin.local hesapları
+    // şifresi start.sh → KT_PASSWORD'den yönetildiği için backend'de zaten
+    // reddediliyor — buton da onlarda hiç görünmüyor.
+    const resetAction = (u.status === 'approved' && !u.email.endsWith('@admin.local'))
+      ? `<button onclick="resetUserPassword(${u.id}, '${escapeHtml(u.name).replace(/'/g, "\\'")}')" style="padding:4px 10px;border-radius:5px;border:1px solid var(--muted);background:var(--bg);color:var(--text);cursor:pointer;font-size:12px;margin-left:6px">🔑 Şifre Sıfırla</button>`
+      : '';
     html += `<tr>
       <td>${fmt.date(u.created_at)}</td>
       <td>${escapeHtml(u.name)}</td>
       <td>${escapeHtml(u.email)}</td>
       <td><span class="history-status ${info.cls}">${info.label}</span></td>
       <td>${roleCell}</td>
-      <td>${actions}${roleAction}</td>
+      <td>${actions}${roleAction}${resetAction}</td>
     </tr>`;
   }
   html += `</tbody></table>`;
@@ -1551,6 +1558,29 @@ async function setUserRole(userId, role) {
       throw new Error(err.detail || `HTTP ${r.status}`);
     }
     loadUsers();
+  } catch (err) {
+    alert('İşlem başarısız: ' + err.message);
+  }
+}
+
+async function resetUserPassword(userId, userName) {
+  const newPassword = prompt(`${userName} için yeni şifre belirleyin (en az 8 karakter).\nBu şifreyi kendisine ayrıca iletmeniz gerekir.`);
+  if (newPassword === null) return;  // vazgeçildi
+  if (newPassword.length < 8) {
+    alert('Şifre en az 8 karakter olmalı.');
+    return;
+  }
+  try {
+    const r = await fetch(`/api/admin/users/${userId}/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ new_password: newPassword }),
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${r.status}`);
+    }
+    alert(`${userName} için şifre güncellendi. Yeni şifreyi kendisine iletin.`);
   } catch (err) {
     alert('İşlem başarısız: ' + err.message);
   }

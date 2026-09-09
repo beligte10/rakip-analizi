@@ -229,6 +229,24 @@ def change_password(path: Path, user_id: int, current_password: str,
     return True, ''
 
 
+def admin_reset_password(path: Path, user_id: int, new_password: str) -> tuple[bool, str]:
+    """Admin, başka bir üyenin ŞİFRESİNİ UNUTMASI durumunda mevcut şifreyi
+    bilmeden yeni bir şifre atar (2026-09-09) — change_password'dan farkı bu:
+    orada kullanıcı kendi mevcut şifresini doğrulamak zorunda, burada admin
+    doğrudan atıyor. Aynı uzunluk kuralına tabi. Başarılıysa (True, ''),
+    değilse (False, sebep)."""
+    if len(new_password or '') < MIN_PASSWORD_LEN:
+        return False, f'Yeni şifre en az {MIN_PASSWORD_LEN} karakter olmalı'
+    with _users_file_lock:
+        data = _load(path)
+        user = next((u for u in data['users'] if u['id'] == user_id), None)
+        if not user:
+            return False, 'Kullanıcı bulunamadı'
+        user['password_hash'] = hash_password(new_password)
+        _save(path, data)
+    return True, ''
+
+
 def set_role(path: Path, user_id: int, role: str) -> bool:
     """role: 'member' | 'admin'. Admin rolü, tüm admin panel yetkilerini
     (upload/rebuild/ZIP/üyelik onayı/grup düzenleme) verir — bkz.
