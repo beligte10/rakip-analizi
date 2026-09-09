@@ -833,6 +833,48 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   olayının (bkz. §7) hemen öncesinde tamamlanmıştı; olay nedeniyle
   doğrulama/dokümantasyon/commit adımları bu döneme ertelendi.
 
+### Dönem 12 — Mobil duyarlı tasarım (2026-09-09)
+
+- **Tetikleyici:** kullanıcı dashboard'un ve admin panelinin tüm mobil
+  cihazlarda (görüntü ve fonksiyon bozulmadan, tüm açılan pencereler
+  dahil) düzgün çalışmasını istedi.
+- **Kök neden:** `index_v30.html`'de `.dashboard-grid`
+  (`minmax(460px,...) minmax(560px,...)`), `.comp-grid`
+  (`minmax(520px,1fr)` × N) ve `.export-grid` (`380px 1fr`) sabit piksel
+  alt sınırları, dar ekranlarda tüm sayfanın layout viewport'unu
+  ~1000px'e zorluyordu — mobil tarayıcı bunu telafi etmek için metni
+  dengesiz büyütüyordu (`text-size-adjust`), üstteki toolbar butonları
+  başlığın üzerine biniyordu. `admin.html`'de ise header (flex,
+  wrap yok) ve filtre/tablo alanları (sarmalayıcısız) aynı sınıf soruna
+  sahipti.
+- **İkinci kat sorun (CSS Grid min-content tuzağı):** grid'leri tek
+  sütuna indirmek yetmedi — grid item'ların varsayılan
+  `min-width:auto`'su, içindeki nested grid'lerin (ör. banka sıralama
+  tablosunun JS'ten inline set edilen `110px 1fr 82px` sütunları) asıl
+  içerik genişliğini yukarı taşıyıp paneli gizlice şişiriyordu (görünüşte
+  sığıyor ama sağ sütun kırpılıyordu). Çözüm: hem grid item'a
+  (`min-width:0`) hem grid track'ine (`1fr` → `minmax(0,1fr)`) birlikte
+  müdahale gerekti — ikisi de tek başına yeterli değildi.
+- **Yapılan:** `index_v30.html` ve `admin.html`'e `text-size-adjust:100%`
+  + `overflow-x:hidden` (global koruma), 900px/560px kademeli
+  `@media` blokları: dashboard/comp/export grid'leri tek sütun,
+  topbar/control-bar/header wrap, banka sıralama tablosu daraltılmış
+  sütunlar, 20 bankalık YtD değer satırı (üst üste biniyordu, alttaki
+  tablo zaten tam değeri gösteriyor) mobilde gizlendi, dönem karşılaştırma
+  popover'ı mobilde alttan açılan sabit panele döndü (tetikleyici konumundan
+  bağımsız taşma riski ortadan kalktı). `admin.html`'de ayrıca sarmalayıcısız
+  üye tablosu/filtre satırı da body'nin yeni `overflow-x:hidden`'ı yüzünden
+  sessizce kırpılıyordu — `overflow-x:auto` sarmalayıcı eklendi.
+  `login.html`/`signup.html` zaten sorunsuzdu, değişiklik gerekmedi.
+- **Doğrulama:** JS tabanlı otomatik taşma taraması (`getBoundingClientRect`
+  ile viewport'u aşan her element) 375px (mobil), 560px, 768px (tablet) ve
+  1400px (masaüstü) genişliklerde — dashboard'un 4 sekmesi (Anında Görünüm,
+  Trend, Kompozisyon, Dışa Aktar), tüm modaller (yıl seçici, ölçü arama,
+  şifre değiştir, yenilikler) ve admin panelinin 5 sekmesi (Üye Ekle formu
+  dahil) için 0 taşan element. Masaüstü (1400px) ekran görüntüsüyle
+  regresyon yok doğrulandı — grid'ler, orta logo, tek satır toolbar
+  korunmuş. 78 test yeşil (frontend-only değişiklik, backend etkilenmedi).
+
 ---
 
 ## 7. Açık ve bekleyen konular

@@ -26,6 +26,7 @@
   --hover: #f3f4f6;
 }
 * { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: hidden; }
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -33,6 +34,7 @@ body {
   color: var(--text);
   font-size: 14px;
   line-height: 1.5;
+  overflow-x: hidden;
 }
 header {
   background: linear-gradient(135deg, var(--kt-green), var(--kt-green-dark));
@@ -279,6 +281,11 @@ button.secondary:hover { background: var(--hover); }
 .spot-check-table td.value { text-align: right; font-family: monospace; }
 
 /* History */
+/* Dar ekranda tablo genişliği viewport'u aşabiliyor — body'nin
+   overflow-x:hidden'ı bunu sessizce kırpıp aksiyon butonlarını (Admin Yap,
+   Şifre Sıfırla, vb.) görünmez yapardı; kendi içinde yatay kaydırılabilir
+   yapıyoruz. */
+#users-table-area, #history-content { overflow-x: auto; }
 .history-table {
   width: 100%;
   border-collapse: collapse;
@@ -394,6 +401,14 @@ button.secondary:hover { background: var(--hover); }
 }
 @media (max-width: 640px) {
   .transfer-grid { grid-template-columns: 1fr !important; }
+  header { flex-wrap: wrap; padding: 12px 16px; row-gap: 10px; }
+  header h1 { font-size: 15px; }
+  header .nav-links { flex-wrap: wrap; width: 100%; gap: 8px; }
+  header .nav-links a { margin-left: 0; }
+  .container { padding: 0 12px; margin: 16px auto; }
+  .panel { padding: 14px 16px; }
+  .summary-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .seg-group { flex-wrap: wrap; }
 }
 
 /* Regresyon kilidi onay kutusu + kurtarma uyarısı (2026-09-08) */

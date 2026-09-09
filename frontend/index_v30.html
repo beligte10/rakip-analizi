@@ -10,7 +10,9 @@
 <style>
   :root { --kt-green: #016B4E; --kt-green-dark: #014a37; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
+  html, body { height: 100%; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  html { overflow-x: hidden; }
+  body { overflow-x: hidden; }
   body {
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     font-size: 13px; line-height: 1.4;
@@ -1278,6 +1280,79 @@
   }
   body.dark .export-error { background: #481b1b; color: #fecaca; }
 
+  /* ============================================================
+     MOBİL DUYARLI TASARIM (2026-09-09) — kaynak: dashboard-grid'in
+     minmax(460px,...) minmax(560px,...) sabit piksel alt sınırları
+     dar ekranlarda tüm sayfayı ~1000px genişliğe zorluyordu (layout
+     viewport taşması); mobil tarayıcı bunu telafi etmek için metni
+     dengesiz büyütüyordu (text-size-adjust). Kök neden yukarıda
+     (overflow-x + text-size-adjust) ve burada (grid'leri tek sütuna
+     indirme) çözülüyor.
+     ============================================================ */
+  @media (max-width: 900px) {
+    .dashboard-grid { grid-template-columns: minmax(0,1fr); }
+    .comp-grid { grid-template-columns: minmax(0,1fr); }
+    .export-grid { grid-template-columns: minmax(0,1fr); }
+    .export-sidebar { position: static; max-height: none; }
+    .export-wrap { padding: 12px; }
+
+    .topbar {
+      flex-wrap: wrap; padding: 10px 12px; min-height: 0; row-gap: 8px;
+    }
+    .topbar-left { max-width: 100%; order: 1; }
+    .topbar-toolbar { order: 2; flex-wrap: wrap; justify-content: flex-start; width: 100%; row-gap: 6px; }
+    .topbar-date { font-size: 16px; }
+    .topbar-measure { font-size: 13px; }
+    .topbar-divider { display: none; }
+
+    .date-selector-bar { padding: 8px 12px; gap: 10px; }
+    .date-selector-bar .mode-toggle { margin-left: 0; }
+
+    .control-bar { flex-wrap: wrap; padding: 10px 12px; gap: 8px; }
+    .control-select.measure { min-width: 0; max-width: none; flex: 1 1 100%; }
+    .control-select.cat, .control-select.subcat { min-width: 0; flex: 1 1 auto; }
+    .measure-search-wrap { flex: 1 1 100%; }
+    .measure-search-input, .measure-search-input:focus { width: 100%; }
+    .measure-search-results { min-width: 0; width: 100%; max-width: 100%; }
+
+    /* Dönem karşılaştırma popover'ı: dar ekranda tetikleyicinin nerede
+       olduğuna bakmaksızın taşmayı önlemek için alttan açılan sabit bir
+       panele dönüşür. */
+    .date-multi-panel {
+      position: fixed; top: auto; bottom: 0; left: 0; right: 0;
+      min-width: 0; width: 100%; max-width: 100%;
+      max-height: 75vh; border-radius: 12px 12px 0 0;
+    }
+
+    .main-panel { padding: 8px; }
+    .competitor-grid { grid-template-columns: repeat(3, 1fr); }
+    .group-grid { grid-template-columns: repeat(3, 1fr); }
+
+    /* Grid item'ların varsayılan min-width:auto'su, içindeki nested grid'in
+       (bank-row'un JS'ten inline set edilen sabit piksel sütunları) min-content
+       genişliğini yukarı taşıyıp .panel'i (dolayısıyla .main-panel'i) dar
+       ekranda gizlice yatay kaydırmaya zorluyordu — .panel görünüşte
+       sığıyor gibi duruyor ama sağ sütun (Bps) kırpılıyordu. */
+    .dashboard-grid > .panel, .comp-grid > .comp-panel { min-width: 0; }
+    .bank-ranking-header, .bank-row { grid-template-columns: 110px minmax(0,1fr) 82px !important; }
+    .bank-bar-cell { grid-template-columns: minmax(0,1fr) 60px; }
+  }
+
+  @media (max-width: 560px) {
+    .topbar-icon-btn { width: 40px; min-height: 38px; }
+    .pw-modal, .wn-modal { width: calc(100vw - 24px); }
+    .bank-ranking-header, .bank-row { grid-template-columns: 88px minmax(0,1fr) 64px !important; }
+    .bank-bar-cell { grid-template-columns: minmax(0,1fr) 48px; }
+    .bank-row-name { font-size: 10.5px; padding: 4px 6px; }
+    .bank-value { font-size: 10px; }
+    .competitor-grid { grid-template-columns: repeat(2, 1fr); }
+    .group-grid { grid-template-columns: repeat(2, 1fr); }
+    .rank-badge-row { padding: 8px; }
+    /* 20 banka tek satırda sığmadığı için değer etiketleri üst üste
+       biniyordu — barlar + etiketler yeterli, tam değer zaten "Anında
+       Görünüm" tablosunda var. */
+    .ytd-values-row { display: none; }
+  }
 </style>
 </head>
 <body>
