@@ -1168,6 +1168,36 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   hamburger hiç görünmüyor, toolbar değişmedi — regresyon yok. 78 test
   yeşil (frontend-only).
 
+### Dönem 21 — YtD kartında banka isimleri kırpılıyordu (2026-09-10)
+
+- **Tetikleyici:** kullanıcı, "İlk 20 Banka YtD Büyüme" kartındaki banka
+  isim etiketlerinin (dikey yazı) "çok sınırda" göründüğünü bildirdi,
+  kartın büyütülmesini istedi.
+- **Kök neden (gerçek bug, salt görsel tercih değil):** JS ile ölçüldü
+  — en uzun etiket ("Garanti Bankası", 15 karakter) gerçek yükseklik
+  ihtiyacı ~86px iken, `.ytd-labels-row` yüksekliği 80px'e sabitliydi
+  (Dönem 16'da 70→80px yapılmıştı, yeterli değilmiş). `.ytd-label-cell`
+  `overflow:visible` olduğu için satırın kendisi kırpmıyordu, ama fazlalık
+  `.panel`'in (`overflow:hidden`, yuvarlak köşeler için) sınırına
+  taşınca ORADA kırpılıyordu — etiketin gerçek render yüksekliği 33px
+  ölçüldü (tam metnin sadece ~%38'i görünür kalıyordu).
+- **Yapılan:** `.ytd-labels-row` yüksekliği 80px → 150px,
+  `.ytd-chart-container`'ın `max-height`'ı (Dönem 16'da 300px'e
+  sınırlanmıştı) 300px → 420px — kart artık en uzun ismi rahatça
+  sığdıracak kadar büyük.
+- **Yan etki — panel hizalaması hafifçe bozuldu:** Dönem 18'in
+  `space-between` mekanizması sağ sütunun 3 kartını sol panelin
+  yüksekliğine (`min-height`) göre yayıyordu; YtD kartı büyüyünce sağ
+  sütunun DOĞAL toplam yüksekliği sol panelinkini ~38px aştı
+  (`min-height` bir taban, üstüne çıkmayı engellemiyor). Ekran
+  görüntüsünde bu fark görsel olarak fark edilmiyor (900px'lik toplam
+  yükseklikte ~38px); kullanıcının bu turdaki net talebi (kırpılmayı
+  düzelt) önceliklendirildi, ekstra hizalama telafisi yapılmadı —
+  gerekirse sonraki bir dönemde ele alınabilir.
+- **Doğrulama:** masaüstünde JS ile 20 etiketin TAMAMININ panel sınırı
+  içinde kaldığı (`clippedCount: 0`) teyit edildi. Koyu mod ve mobil
+  (0 taşan element) ekran görüntüsüyle kontrol edildi. 78 test yeşil.
+
 ---
 
 ## 7. Açık ve bekleyen konular
