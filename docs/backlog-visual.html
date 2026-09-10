@@ -194,7 +194,7 @@
     <p class="subtitle">Projenin ilk kuruluşundan bugüne ne yapıldığının kronolojisi, ve önümüzdeki fikirlerin öncelik sıralı listesi. <span class="mono" style="font-size:13px">docs/PROJE_EL_KITABI.md</span>'nin görsel özetidir.</p>
 
     <div class="stats">
-      <div class="stat"><div class="n tabnum">18</div><div class="l">dönem</div></div>
+      <div class="stat"><div class="n tabnum">19</div><div class="l">dönem</div></div>
       <div class="stat"><div class="n tabnum">160</div><div class="l">aktif ölçü</div></div>
       <div class="stat"><div class="n tabnum">7</div><div class="l">backlog maddesi</div></div>
       <div class="stat"><div class="n tabnum">13</div><div class="l">alınan karar</div></div>
@@ -535,12 +535,11 @@
         </div>
       </details>
 
-      <details class="era is-new" id="d17" open>
+      <details class="era" id="d17">
         <summary class="era-head">
           <span class="node">17</span>
           <span class="era-title">Trend grafikleri "diğerleri gibi" premium</span>
           <span class="era-date">2026-09-10</span>
-          <span class="new-tag">yeni</span>
           <span class="era-chevron">›</span>
         </summary>
         <div class="era-body">
@@ -550,6 +549,24 @@
             <li><strong>Grafik çizim dili:</strong> yeni <span class="mono" style="font-size:13px">smoothPathFromPoints()</span> yardımcı fonksiyonu (Catmull-Rom → kübik Bezier) ile düz çoklu-çizgi yerine yumuşak eğri. Yalnızca TEK seri seçiliyken çizginin altına gradyan alan dolgusu ekleniyor (çoklu seride karmaşıklaşacağı için atlanıyor). Çizgi kalınlığı ve nokta boyutu büyütüldü, noktalar artık beyaz halkalı; gridline'lar daha soluk ve solid.</li>
             <li><strong>Rozet (pill) etiketler:</strong> çizgi sonu etiketleri artık yuvarlak köşeli, beyaz zeminli, seri rengiyle ince kenarlıklı bir rozet arka planına sahip — ekonbulten.html referansındaki değer etiketi stiline birebir benziyor.</li>
             <li><strong>Doğrulama:</strong> tek seri (gradyan dolgulu), 4 serili çoklu görünüm, YtD büyüme modu, koyu mod — hepsi ekran görüntüsüyle kontrol edildi. Mobilde 0 taşan element, 78 test yeşil.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="era is-new" id="d18" open>
+        <summary class="era-head">
+          <span class="node">18</span>
+          <span class="era-title">Başlık boyutu eşitlendi, YtD kartı zorla-hizalamadan kurtuldu</span>
+          <span class="era-date">2026-09-10</span>
+          <span class="new-tag">yeni</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li>Kullanıcı iki şey istedi: (1) "İlk 20 Banka Büyüklükleri" başlığının yazı boyutu "İlk 20 Banka YtD Büyüme" kadar büyük olsun ve tam ortalansın (yatay + dikey); (2) Dönem 13/16'daki "YtD kartını sol tabloyla aynı yüksekliğe zorla" mekanizması kaldırılsın — sağdaki 3 kart kendi doğal boyutunda kalıp ARALARINDAKİ boşluk esneyerek yığının toplamı sol panelle aynı yerde bitsin.</li>
+            <li><strong>Başlık boyutu/ortalama:</strong> <span class="mono" style="font-size:13px">.bank-ranking-header > div</span>'in yazı boyutu/kalınlığı/rengi <span class="mono" style="font-size:13px">.panel-header</span> ile birebir eşitlendi (10,5px → 13px). <span class="mono" style="font-size:13px">align-items:center</span> eklendi — dar sütunda sarabilen "Pazar Payı Değişimi (Bps)" metninin oluşturduğu fazladan yükseklik içinde kısa başlık artık dikey ortalanıyor.</li>
+            <li><strong>Zorla-hizalamadan esnek hizalamaya geçiş:</strong> <span class="mono" style="font-size:13px">matchHeight</span>/<span class="mono" style="font-size:13px">headerMatchHeight</span> mekanizması YtD kartından tamamen kaldırıldı (artık her zaman doğal/kompakt boyutunda). Onun yerine sağ sütunun SARMALAYICISINA sol panelin yüksekliği <span class="mono" style="font-size:13px">min-height</span> olarak veriliyor, <span class="mono" style="font-size:13px">justify-content:space-between</span> ekleniyor — 3 kart doğal boyutunda kalırken aralarındaki boşluk esneyip yığının toplamı eşitleniyor.</li>
+            <li><strong>Doğrulama:</strong> masaüstünde JS ile üç panelin alt kenarının (sol tablo, sağ sütun, son kart) birebir aynı piksel (884px) olduğu VE iki başlığın yazı boyutunun eşit (13px) olduğu teyit edildi; YtD kartı yüksekliği 682px (zorlanmış) → 311px (doğal) düştü. Rasyo modu, koyu mod, mobil kontrol edildi. 78 test yeşil.</li>
           </ul>
         </div>
       </details>

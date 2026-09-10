@@ -1069,6 +1069,41 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   (375px) SVG 293px genişliğe doğru küçüldü, 0 taşan element. 78 test
   yeşil (frontend-only).
 
+### Dönem 18 — Başlık boyutu eşitlendi, YtD kartı zorla-hizalamadan kurtuldu (2026-09-10)
+
+- **Tetikleyici:** kullanıcı iki şey istedi: (1) "İlk 20 Banka
+  Büyüklükleri" başlığının yazı boyutu "İlk 20 Banka YtD Büyüme"
+  kadar büyük olsun VE tam ortalansın (yatay + dikey); (2) Dönem 13/16'da
+  eklenen "YtD kartını sol tabloyla aynı yüksekliğe zorla" mekanizması
+  kaldırılsın — bunun yerine sağdaki 3 kart (YtD/Grup, Grup, Rakip
+  Kartları) kendi doğal boyutunda kalıp, ARALARINDAKİ boşluk esneyerek
+  yığının toplamı sol panelle aynı yerde bitsin.
+- **Başlık boyutu/ortalama:** `.bank-ranking-header > div`'in
+  `font-size:10,5px → 13px`, `font-weight:600 → 700`,
+  `color:#334155 → #1a2635` — artık `.panel-header` ile birebir aynı
+  tipografi. `.bank-ranking-header`'a `align-items:center` eklendi —
+  "Pazar Payı Değişimi (Bps)" dar sütunda 2-3 satıra sardığı için
+  satırın doğal yüksekliği "İlk 20 Banka Büyüklükleri" hücresinden
+  fazla oluyor; artık o kısa metin bu taşan yükseklik içinde dikey
+  ortalanıyor (üstten/alttan eşit boşluk).
+- **Zorla-hizalamadan esnek hizalamaya geçiş:** Dönem 13/16'daki
+  `matchHeight`/`headerMatchHeight` mekanizması YtDGrowthChart'tan
+  tamamen kaldırıldı (kart artık her zaman doğal/kompakt boyutunda —
+  Dönem 16'nın `max-height:300px` sınırı zaten kalıcı hale geldi).
+  Onun yerine `SnapshotView`'da sağ sütunun SARMALAYICISINA
+  (3 kartı saran flex-column div) sol panelin ölçülen yüksekliği
+  `min-height` olarak veriliyor, `justify-content:space-between`
+  ekleniyor — 3 kart kendi boyutunda kalırken ARALARINDAKİ boşluk
+  büyüyüp küçülerek yığının TOPLAM yüksekliği sol panelle eşitleniyor.
+  Dead code temizliği: `headerRef` ölçümü, `props.headerRef`,
+  `props.matchHeight`/`props.headerMatchHeight` tamamen kaldırıldı.
+- **Doğrulama:** masaüstünde JS ile `rankingBottom === rightColBottom
+  === lastCardBottom` (884px, üçü de) VE `leftHeaderFontSize ===
+  rightHeaderFontSize` ("13px" = "13px") aynı anda teyit edildi; YtD
+  kartının yüksekliği 682px (zorlanmış) → 311px (doğal) düştüğü
+  ölçüldü. Rasyo modu, koyu mod, mobil (0 taşan element) ekran
+  görüntüsüyle kontrol edildi. 78 test yeşil.
+
 ---
 
 ## 7. Açık ve bekleyen konular
