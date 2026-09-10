@@ -875,6 +875,64 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   regresyon yok doğrulandı — grid'ler, orta logo, tek satır toolbar
   korunmuş. 78 test yeşil (frontend-only değişiklik, backend etkilenmedi).
 
+### Dönem 13 — Panel hizalama, KT marka rengi, premium kart tasarımı (2026-09-10)
+
+- **Tetikleyici:** kullanıcı üç şey istedi: (1) "İlk 20 Banka Büyüklükleri"
+  (sol) ile "İlk 20 Banka YtD Büyüme" (sağ üst) panellerinin alt kenarları
+  eşit seviyede değildi, eşitlenmesi; (2) tüm panel/kart tasarımının daha
+  premium hale getirilmesi — **önce sorularak** (yön onaylandıktan sonra
+  uygulanacak); (3) topbar'daki yeşil tonun KT kurumsal rengiyle
+  (`#62AE41`) değiştirilmesi.
+- **Panel hizalama — kök neden:** sol sütun (`BankRanking`) tek uzun bir
+  panel (20 satır), sağ sütun ise `YtDGrowthChart` + `GroupSummary` +
+  `CompetitorCardsGrowth`'un alt alta dizilmiş 3 ayrı paneli — doğal
+  olarak YtD grafiği tek başına çok daha kısa kalıyordu.
+- **Çözüm:** `SnapshotView`'da sol panelin gerçek yüksekliği `useRef` +
+  `getBoundingClientRect` ile ölçülüp (`ResizeObserver` yerine mevcut
+  kod tabanındaki `barsW` deseniyle tutarlı, `window resize` dinleyicili
+  bir `useEffect`) `YtDGrowthChart`'a `matchHeight` prop'u olarak
+  aktarılıyor; grafik paneli CSS flex ile bu yüksekliğe geriliyor,
+  `ytd-bars-area`'nın GERÇEK render yüksekliği de ayrıca ölçülüp barların
+  oranı ona göre hesaplanıyor (0 vs 130px fallback → artık dinamik).
+  Yalnız masaüstünde (>900px) aktif — mobilde grid tek sütuna indiği için
+  eşleme anlamsız, `matchHeight=0` ile devre dışı.
+- **Kritik bug ve düzeltmesi — CSS Grid `align-items:stretch` döngüsü:**
+  ilk denemede yükseklik saniyeler içinde milyonlarca piksele patladı.
+  Kök neden: `.dashboard-grid`'in varsayılan `align-items:stretch`'i sol
+  paneli (BankRanking) zaten sağ sütunun toplam yüksekliğine göre
+  esnetiyordu; sağ paneli SOL panelin ÖLÇÜLEN (zaten esnetilmiş, gerçek
+  olmayan) yüksekliğine göre büyütmek bu iki değeri birbirini besleyen
+  sonsuz bir döngüye soktu. Düzeltme: `.ranking-panel { align-self: start }`
+  — sol panel artık grid'in esnetmesinden muaf, yalnızca kendi içeriğine
+  göre boyutlanıyor, döngü kırıldı. **Ders:** dinamik yükseklik eşleme
+  eklerken kaynak elemanın PASİF (grid/flex tarafından etkilenmeyen) bir
+  ölçüm noktası olduğundan emin olunmalı.
+- **KT marka rengi:** `--kt-green: #016B4E` → `#62AE41`,
+  `--kt-green-dark: #014a37` → `#457A2E` (0,7 oranında koyulaştırılmış
+  eşlenik). 4 dosyada (`index_v30.html`, `admin.html`, `login.html`,
+  `signup.html`) tek `:root` tanımından geliyordu — hepsi tutarlı şekilde
+  güncellendi. Çizelgelerdeki "bu Kuveyt Türk" vurgu rengi (`#559D87`,
+  farklı, veri-görselleştirme amaçlı bir ton) kasıtlı olarak
+  **dokunulmadı** — talep yalnızca marka/topbar rengiyle ilgiliydi.
+- **Premium tasarım — "zarif & minimal" (kullanıcı seçimi, 4 seçenekten):**
+  `AskUserQuestion` ile yön ve renk kaynağı önceden soruldu. Uygulanan:
+  `.panel`/`.comp-panel`/`.group-cell`/`.competitor-card` sert
+  `#d4dde3` kenarlıkları → `rgba(15,31,47,0.06-0.07)` ince kenarlık +
+  çok katmanlı yumuşak `box-shadow`; `border-radius` 4-8px → 8-12px;
+  `.panel-header`/`.bank-ranking-header`/`.rank-badge-row`'un düz gri
+  (`#eef2f5`) zemini → neredeyse beyaz (`#fafbfc`) + ince alt çizgi.
+  `.group-cell.kt`'nin kalın 2px kenarlığı → ince kenarlık + soluk tonlu
+  zemin + hafif halka gölgesi (marka rengiyle DEĞİL, mevcut `#559D87`
+  vurgu tonuyla — tutarlılık için). Koyu mod eşdeğerleri ayrı ayrı
+  ayarlandı (`rgba(255,255,255,0.02-0.07)` zemin/kenarlık,
+  `rgba(0,0,0,0.25-0.35)` gölge).
+- **Doğrulama:** panel yükseklikleri JS ile ölçülüp birebir eşit
+  olduğu teyit edildi (576,28px = 576,28px), rasyo modu (GroupSummary'nin
+  aynı slotu kullandığı durum) etkilenmediği ekran görüntüsüyle
+  doğrulandı, koyu mod ve Kompozisyon sekmesi görsel kontrol edildi,
+  mobilde (375px) 0 taşan element, admin/login/signup'ta yeni renk görsel
+  doğrulandı. 78 test yeşil (frontend-only).
+
 ---
 
 ## 7. Açık ve bekleyen konular

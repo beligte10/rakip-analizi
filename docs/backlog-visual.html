@@ -194,7 +194,7 @@
     <p class="subtitle">Projenin ilk kuruluşundan bugüne ne yapıldığının kronolojisi, ve önümüzdeki fikirlerin öncelik sıralı listesi. <span class="mono" style="font-size:13px">docs/PROJE_EL_KITABI.md</span>'nin görsel özetidir.</p>
 
     <div class="stats">
-      <div class="stat"><div class="n tabnum">13</div><div class="l">dönem</div></div>
+      <div class="stat"><div class="n tabnum">14</div><div class="l">dönem</div></div>
       <div class="stat"><div class="n tabnum">160</div><div class="l">aktif ölçü</div></div>
       <div class="stat"><div class="n tabnum">7</div><div class="l">backlog maddesi</div></div>
       <div class="stat"><div class="n tabnum">13</div><div class="l">alınan karar</div></div>
@@ -446,12 +446,11 @@
         </div>
       </details>
 
-      <details class="era is-new" id="d12" open>
+      <details class="era" id="d12">
         <summary class="era-head">
           <span class="node">12</span>
           <span class="era-title">Mobil duyarlı tasarım</span>
           <span class="era-date">2026-09-09</span>
-          <span class="new-tag">yeni</span>
           <span class="era-chevron">›</span>
         </summary>
         <div class="era-body">
@@ -461,6 +460,26 @@
             <li><strong>İkinci kat sorun — CSS Grid min-content tuzağı:</strong> grid'leri tek sütuna indirmek tek başına yetmedi; grid item'ların varsayılan <span class="mono" style="font-size:13px">min-width:auto</span>'su nested grid'lerin (banka sıralama tablosunun JS'ten inline set edilen sütunları) içerik genişliğini yukarı taşıyıp paneli gizlice şişiriyordu — görünüşte sığıyordu ama sağ sütun kırpılıyordu. Çözüm hem grid item'da (<span class="mono" style="font-size:13px">min-width:0</span>) hem track'te (<span class="mono" style="font-size:13px">1fr → minmax(0,1fr)</span>) birlikte gerekti.</li>
             <li><strong>Yapılan:</strong> <span class="mono" style="font-size:13px">text-size-adjust:100%</span> + <span class="mono" style="font-size:13px">overflow-x:hidden</span> global koruma; 900px/560px kademeli <span class="mono" style="font-size:13px">@media</span> blokları — grid'ler tek sütun, topbar/control-bar/header wrap, banka tablosu daraltıldı, 20 bankalık üst üste binen değer satırı mobilde gizlendi, dönem karşılaştırma popover'ı mobilde alttan açılan sabit panele döndü. Admin'de sarmalayıcısız üye tablosu/filtre satırı yeni <span class="mono" style="font-size:13px">overflow-x:hidden</span> yüzünden sessizce kırpılıyordu — kaydırılabilir sarmalayıcı eklendi.</li>
             <li><strong>Doğrulama:</strong> otomatik taşma taraması (viewport'u aşan her element) 375px/560px/768px/1400px genişliklerde — dashboard'un 4 sekmesi, tüm modaller, admin'in 5 sekmesi için 0 taşan element. Masaüstü regresyon yok (ekran görüntüsüyle doğrulandı). 78 test yeşil.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="era is-new" id="d13" open>
+        <summary class="era-head">
+          <span class="node">13</span>
+          <span class="era-title">Panel hizalama, KT marka rengi, premium kart tasarımı</span>
+          <span class="era-date">2026-09-10</span>
+          <span class="new-tag">yeni</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li>Kullanıcı üç şey istedi: <strong>(1)</strong> "İlk 20 Banka Büyüklükleri" (sol) ile "İlk 20 Banka YtD Büyüme" (sağ üst) panellerinin alt kenarları eşit değildi, eşitlenmesi; <strong>(2)</strong> tüm panel/kart tasarımının premium hale getirilmesi — <strong>önce sorularak</strong>; <strong>(3)</strong> topbar'daki yeşilin KT kurumsal rengiyle (<span class="mono" style="font-size:13px">#62AE41</span>) değiştirilmesi.</li>
+            <li><strong>Panel hizalama:</strong> sol sütun tek uzun bir panel (20 satır), sağ sütun ise 3 ayrı panelin alt alta dizilmiş hali — YtD grafiği tek başına çok daha kısa kalıyordu. Çözüm: sol panelin gerçek yüksekliği <span class="mono" style="font-size:13px">useRef + getBoundingClientRect</span> ile ölçülüp YtD grafiğine <span class="mono" style="font-size:13px">matchHeight</span> prop'u olarak aktarıldı, grafik CSS flex ile bu yüksekliğe gerildi; bar oranları da gerçek render yüksekliğine göre dinamik hesaplanıyor. Yalnız masaüstünde (&gt;900px) aktif.</li>
+            <li><strong>Kritik bug — CSS Grid <span class="mono" style="font-size:13px">align-items:stretch</span> döngüsü:</strong> ilk denemede yükseklik saniyeler içinde milyonlarca piksele patladı. Kök neden: grid'in varsayılan esnetmesi sol paneli zaten sağ sütunun toplamına göre büyütüyordu; sağ paneli sol panelin ÖLÇÜLEN (zaten esnetilmiş) yüksekliğine göre büyütmek birbirini besleyen sonsuz bir döngü yarattı. Düzeltme: <span class="mono" style="font-size:13px">.ranking-panel { align-self: start }</span> — sol panel grid'in esnetmesinden muaf tutuldu, döngü kırıldı.</li>
+            <li><strong>KT marka rengi:</strong> <span class="mono" style="font-size:13px">--kt-green: #016B4E → #62AE41</span>, <span class="mono" style="font-size:13px">--kt-green-dark: #014a37 → #457A2E</span>. 4 dosyada (dashboard, admin, login, signup) tek <span class="mono" style="font-size:13px">:root</span> tanımından geliyordu — hepsi güncellendi. Çizelgelerdeki ayrı "bu Kuveyt Türk" vurgu rengi (<span class="mono" style="font-size:13px">#559D87</span>) kasıtlı olarak dokunulmadı.</li>
+            <li><strong>Premium tasarım — "zarif &amp; minimal"</strong> (kullanıcının <span class="mono" style="font-size:13px">AskUserQuestion</span> ile 4 seçenekten seçtiği yön): sert kenarlıklar → ince kenarlık + yumuşak çok katmanlı gölge, köşe yarıçapları büyütüldü, düz gri panel başlıkları → neredeyse beyaz zemin + ince çizgi, "bu Kuveyt Türk" kalın kenarlığı → ince kenarlık + soluk zemin + halka gölgesi. Koyu mod eşdeğerleri ayrıca ayarlandı.</li>
+            <li><strong>Doğrulama:</strong> panel yükseklikleri JS ile ölçülüp birebir eşit olduğu teyit edildi, rasyo modu ve koyu mod görsel kontrol edildi, mobilde 0 taşan element, admin/login/signup'ta yeni renk doğrulandı. 78 test yeşil.</li>
           </ul>
         </div>
       </details>

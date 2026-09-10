@@ -8,7 +8,7 @@
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
-  :root { --kt-green: #016B4E; --kt-green-dark: #014a37; }
+  :root { --kt-green: #62AE41; --kt-green-dark: #457A2E; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   html { overflow-x: hidden; }
@@ -328,6 +328,14 @@
   body.dark .measure-search-item .m-cat { color: #94a3b8; }
   .measure-search-empty { padding: 10px 12px; font-size: 12.5px; color: #94a3b8; }
 
+  /* ranking-panel'in kendi doğal (içerik bazlı) yüksekliğinde kalması
+     lazım — .dashboard-grid'in varsayılan align-items:stretch'i olmasaydı,
+     bu paneli sağ sütunun toplam yüksekliğine göre esnetirdi; sağ sütundaki
+     YtD grafiği de BU panelin ölçülen yüksekliğine göre büyütüldüğü için
+     (bkz. SnapshotView matchHeight) ikisi birbirini besleyip sonsuz döngüye
+     girerdi. align-self:start bu döngüyü kırar. */
+  .ranking-panel { align-self: start; }
+
   /* -------- Layout (no sidebar now) -------- */
   .main-panel {
     padding: 10px 14px;
@@ -342,20 +350,24 @@
     gap: 12px;
   }
 
-  /* -------- Panel card -------- */
+  /* -------- Panel card (premium: yumuşak gölge + ince kenarlık) -------- */
   .panel {
-    background: #fff; border: 1px solid #d4dde3;
-    border-radius: 6px; overflow: hidden;
+    background: #fff; border: 1px solid rgba(15,31,47,0.07);
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 1px 2px rgba(15,31,47,0.04), 0 4px 14px rgba(15,31,47,0.05);
   }
-  body.dark .panel { background: #1a2635; border-color: #2a3b4d; }
+  body.dark .panel {
+    background: #1a2635; border-color: rgba(255,255,255,0.07);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25), 0 4px 18px rgba(0,0,0,0.35);
+  }
   .panel-header {
-    background: #eef2f5;
-    padding: 8px 14px;
-    font-size: 13px; font-weight: 600; color: #1a2635;
-    border-bottom: 1px solid #d4dde3;
-    text-align: center;
+    background: #fafbfc;
+    padding: 12px 16px;
+    font-size: 13px; font-weight: 700; color: #1a2635;
+    border-bottom: 1px solid rgba(15,31,47,0.06);
+    text-align: center; letter-spacing: 0.15px;
   }
-  body.dark .panel-header { background: #253649; color: #e8eef1; border-color: #2a3b4d; }
+  body.dark .panel-header { background: rgba(255,255,255,0.02); color: #e8eef1; border-color: rgba(255,255,255,0.06); }
 
   /* Trend grafik hover tooltip ve dikey crosshair */
   .trend-svg-wrap { position: relative; }
@@ -426,10 +438,10 @@
   .bank-ranking-header {
     display: grid;
     grid-template-columns: 110px 1fr 82px;
-    background: #eef2f5;
-    border-bottom: 1px solid #d4dde3;
+    background: #fafbfc;
+    border-bottom: 1px solid rgba(15,31,47,0.06);
   }
-  body.dark .bank-ranking-header { background: #253649; border-color: #2a3b4d; }
+  body.dark .bank-ranking-header { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.06); }
   .bank-ranking-header > div {
     font-size: 10.5px; font-weight: 600; color: #334155;
     text-align: center;
@@ -526,10 +538,10 @@
   .rank-badge-row {
     display: flex; justify-content: space-between; align-items: center;
     padding: 8px 12px;
-    background: #eef2f5;
-    border-top: 1px solid #d4dde3;
+    background: #fafbfc;
+    border-top: 1px solid rgba(15,31,47,0.06);
   }
-  body.dark .rank-badge-row { background: #253649; border-color: #2a3b4d; }
+  body.dark .rank-badge-row { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.06); }
   .rank-label {
     font-size: 11px; color: #64748b; font-weight: 500;
   }
@@ -545,11 +557,16 @@
   /* -------- YtD/YoY Growth chart — 0-eksen, dikey bar -------- */
   .ytd-panel-body {
     padding: 10px 10px 8px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
   }
   .ytd-chart-container {
     display: flex;
     flex-direction: column;
-    height: 230px;
+    flex: 1;
+    min-height: 230px;
   }
   .ytd-values-row {
     display: flex;
@@ -588,7 +605,8 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    height: 130px;
+    flex: 1;
+    min-height: 130px;
     overflow: hidden;
   }
   .ytd-bars-pos, .ytd-bars-neg {
@@ -681,14 +699,19 @@
     padding: 8px;
   }
   .group-cell {
-    background: #eef2f5;
-    border-radius: 4px;
-    padding: 8px 6px;
+    background: #f7f9fb;
+    border-radius: 8px;
+    padding: 10px 8px;
     text-align: center;
-    border: 1px solid #d4dde3;
+    border: 1px solid rgba(15,31,47,0.06);
   }
-  body.dark .group-cell { background: #253649; border-color: #2a3b4d; }
-  .group-cell.kt { border: 2px solid #559D87; }
+  body.dark .group-cell { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.06); }
+  .group-cell.kt {
+    border: 1px solid #559D87;
+    background: rgba(85,157,135,0.07);
+    box-shadow: 0 0 0 1px rgba(85,157,135,0.12);
+  }
+  body.dark .group-cell.kt { background: rgba(85,157,135,0.14); }
   .group-cell-label {
     font-size: 10px; font-weight: 600; color: #334155;
     margin-bottom: 4px;
@@ -715,11 +738,15 @@
   }
   .competitor-card {
     background: #fff;
-    border: 1px solid #d4dde3;
-    border-radius: 4px;
-    padding: 6px;
+    border: 1px solid rgba(15,31,47,0.06);
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 1px 3px rgba(15,31,47,0.04);
   }
-  body.dark .competitor-card { background: #1a2635; border-color: #2a3b4d; }
+  body.dark .competitor-card {
+    background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.06);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  }
   .competitor-title {
     font-size: 10.5px; font-weight: 700;
     margin-bottom: 4px; color: #1a2635;
@@ -930,10 +957,14 @@
     grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
   }
   .comp-panel {
-    background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
-    padding: 14px 14px 16px;
+    background: #fff; border: 1px solid rgba(15,31,47,0.06); border-radius: 12px;
+    padding: 16px 16px 18px;
+    box-shadow: 0 1px 2px rgba(15,31,47,0.03), 0 4px 14px rgba(15,31,47,0.05);
   }
-  body.dark .comp-panel { background: #112030; border-color: #1e2d3f; }
+  body.dark .comp-panel {
+    background: #112030; border-color: rgba(255,255,255,0.06);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25), 0 4px 18px rgba(0,0,0,0.35);
+  }
   .comp-panel-title {
     font-size: 16px; font-weight: 700; text-align: center;
     margin-bottom: 16px; color: #1a2635;
@@ -2539,7 +2570,7 @@
 
     var gridCols = hasDelta ? '110px 1fr 82px' : '110px 1fr';
 
-    return h('div', { className: 'panel ranking-panel' },
+    return h('div', { className: 'panel ranking-panel', ref: props.panelRef },
       h('div', {
         className: 'bank-ranking-header',
         style: { gridTemplateColumns: gridCols }
@@ -2627,6 +2658,26 @@
   function YtDGrowthChart(props) {
     var measure = props.measure;
     var tarih = props.tarih;
+
+    // Sol paneldeki (BankRanking) yüksekliğe hizalanmak için — bars-area'nın
+    // GERÇEKTEN render edilen yüksekliği (CSS flex:1 ile SnapshotView'dan
+    // gelen matchHeight'e göre büyüyebiliyor) ölçülüp bar oranları buna göre
+    // hesaplanır. matchHeight yoksa (mobil/ilk render) CSS min-height:130px
+    // fallback'i devreye girer, aşağıdaki 130 varsayılanıyla tutarlı kalır.
+    var barsAreaRef = useRef(null);
+    var barsAreaHState = useState(130);
+    var barsAreaH = barsAreaHState[0], setBarsAreaH = barsAreaHState[1];
+    useEffect(function() {
+      function measureBarsArea() {
+        if (!barsAreaRef.current) return;
+        var hgt = barsAreaRef.current.getBoundingClientRect().height;
+        if (hgt && Math.abs(hgt - barsAreaH) > 2) setBarsAreaH(hgt);
+      }
+      measureBarsArea();
+      window.addEventListener('resize', measureBarsArea);
+      return function(){ window.removeEventListener('resize', measureBarsArea); };
+    });
+
     var top20Set = getFixedTop20(tarih);
     var metricLabel = growthMetricLabel(measure); // 'YtD' veya 'YoY'
     // Şube&Personel büyüklük ölçüleri (Şube/Personel Sayısı): banka büyümeleri
@@ -2745,12 +2796,19 @@
     // Yarıların yüksekliği maxPos:|minNeg| oranında bölünür.
     // Bar yüksekliği px = (|growth| / TOTAL_HEIGHT_RANGE) * TOTAL_HEIGHT_PX
     // Bu sayede 198 puanlık pozitif bar, 31 puanlık negatif bardan ~6x daha uzun görünür.
-    var TOTAL_HEIGHT_PX = 130;
+    var TOTAL_HEIGHT_PX = barsAreaH > 20 ? barsAreaH : 130;
     var totalRange = maxPos + Math.abs(minNeg);  // örn: 198 + 31 = 229
     var posHeight = totalRange > 0 ? Math.round(TOTAL_HEIGHT_PX * (maxPos / totalRange)) : 65;
     var negHeight = TOTAL_HEIGHT_PX - posHeight;
 
-    return h('div', { className: 'panel' },
+    // "İlk 20 Banka Büyüklükleri" panelinin alt kenarıyla hizalanmak için
+    // (bkz. SnapshotView'daki matchHeight ölçümü) — yalnızca masaüstünde
+    // dolu bir değer gelir, mobilde/ölçülmeden önce panel doğal boyutunda
+    // kalır (CSS min-height fallback'leri).
+    var panelStyle = { display: 'flex', flexDirection: 'column' };
+    if (props.matchHeight) panelStyle.height = props.matchHeight + 'px';
+
+    return h('div', { className: 'panel', style: panelStyle },
       h('div', { className: 'panel-header' },
         'İlk ' + bars.length + ' Banka ' + metricLabel + ' Büyüme (' + birimEtiket + ')'),
       h('div', { className: 'ytd-panel-body' },
@@ -2795,7 +2853,7 @@
           // Satır 2: bar alanı (pozitif üst, negatif alt, 0 çizgisi ortada)
           h('div', {
             className: 'ytd-bars-area',
-            style: { height: TOTAL_HEIGHT_PX + 'px' }
+            ref: barsAreaRef
           },
             // Pozitif yarı
             h('div', {
@@ -3257,13 +3315,35 @@
     var tarih = props.tarih;
     var isRasyo = measure.tip === 'rasyo';
 
+    // "İlk 20 Banka Büyüklükleri" (sol) ile "İlk 20 Banka YtD Büyüme" (sağ üst)
+    // panellerinin alt kenarları hizalı görünsün diye sol panelin gerçek
+    // yüksekliği ölçülüp sağdakine aktarılır. Yalnız masaüstünde (>900px) —
+    // dar ekranda dashboard-grid tek sütuna iniyor, eşleme anlamsız kalır.
+    var rankingRef = useRef(null);
+    var matchHState = useState(0);
+    var matchH = matchHState[0], setMatchH = matchHState[1];
+    useEffect(function() {
+      function measureRanking() {
+        if (window.innerWidth <= 900) {
+          if (matchH !== 0) setMatchH(0);
+          return;
+        }
+        if (!rankingRef.current) return;
+        var hgt = rankingRef.current.getBoundingClientRect().height;
+        if (hgt && Math.abs(hgt - matchH) > 2) setMatchH(hgt);
+      }
+      measureRanking();
+      window.addEventListener('resize', measureRanking);
+      return function(){ window.removeEventListener('resize', measureRanking); };
+    });
+
     return h('div', null,
       h('div', { className: 'dashboard-grid' },
-        h(BankRanking, { measure: measure, tarih: tarih }),
+        h(BankRanking, { measure: measure, tarih: tarih, panelRef: rankingRef }),
         h('div', { style: { display:'flex', flexDirection:'column', gap:'14px' } },
           isRasyo
             ? h(GroupSummary, { measure: measure, tarih: tarih })
-            : h(YtDGrowthChart, { measure: measure, tarih: tarih }),
+            : h(YtDGrowthChart, { measure: measure, tarih: tarih, matchHeight: matchH }),
           isRasyo
             ? h(GroupBpsChange, { measure: measure, tarih: tarih })
             : h(GroupSummary, { measure: measure, tarih: tarih }),
