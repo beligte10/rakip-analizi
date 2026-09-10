@@ -1198,6 +1198,34 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   içinde kaldığı (`clippedCount: 0`) teyit edildi. Koyu mod ve mobil
   (0 taşan element) ekran görüntüsüyle kontrol edildi. 78 test yeşil.
 
+### Dönem 22 — STRATEJİ logosu mobilde her zaman görünür (2026-09-10)
+
+- **Tetikleyici:** Dönem 20'de STRATEJİ logosu hamburger menünün İÇİNE
+  (yalnızca açılınca görünen dropdown panele) yerleştirilmişti. Kullanıcı
+  bunun yerine logonun mobilde hamburger'in hemen yanında, her zaman
+  (menü kapalıyken de) görünmesini istedi.
+- **Yapılan (`TopBar`):** `topbar-brand` (logo) JSX'i `topbar-toolbar`'ın
+  İÇİNDEN çıkarılıp bağımsız bir kardeş eleman olarak `topbar-menu-btn`'in
+  hemen öncesine taşındı — artık `menuOpen` durumundan bağımsız, her
+  zaman render ediliyor. `.topbar-toolbar.open .topbar-brand` CSS kuralı
+  (artık geçersiz) kaldırıldı.
+  - **Masaüstü:** `.topbar-brand { order: 3 }` (taban CSS) — DOM'da artık
+    toolbar'dan ÖNCE olsa da, flex `order` ile eskisi gibi toolbar'ın
+    SONUNDA (en sağda) görünmeye devam ediyor. Hamburger zaten
+    `display:none` olduğu için mobil-özel sıralama etkisiz.
+  - **Mobil (≤900px):** `.topbar-brand { order: 2 }`,
+    `.topbar-menu-btn { order: 3 }` (eskiden 2) — logo artık hamburger'in
+    hemen solunda sabit duruyor. `.topbar-left`'in ayrılan genişliği
+    (`calc(100% - 52px)` → `calc(100% - 118px)`) logo+hamburger'in
+    ikisine birden yer açacak şekilde büyütüldü.
+- **Doğrulama:** mobilde (375px) logo menü kapalıyken de görünür,
+  hamburger'e tıklayıp menü açılınca logo aynı yerde kalıyor ve
+  dropdown panelde TEKRARLANMIYOR (`document.querySelectorAll(
+  '.topbar-brand').length` menü açık/kapalı ikisinde de 1) JS ile teyit
+  edildi. 0 taşan element. Masaüstünde (1400px) JS ile `brandLeft >
+  toolbarRight` (logo toolbar'dan sonra, eski konumunda) ve
+  `menuBtnDisplay: 'none'` teyit edildi — regresyon yok. 78 test yeşil.
+
 ---
 
 ## 7. Açık ve bekleyen konular

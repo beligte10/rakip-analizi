@@ -194,7 +194,7 @@
     <p class="subtitle">Projenin ilk kuruluşundan bugüne ne yapıldığının kronolojisi, ve önümüzdeki fikirlerin öncelik sıralı listesi. <span class="mono" style="font-size:13px">docs/PROJE_EL_KITABI.md</span>'nin görsel özetidir.</p>
 
     <div class="stats">
-      <div class="stat"><div class="n tabnum">22</div><div class="l">dönem</div></div>
+      <div class="stat"><div class="n tabnum">23</div><div class="l">dönem</div></div>
       <div class="stat"><div class="n tabnum">160</div><div class="l">aktif ölçü</div></div>
       <div class="stat"><div class="n tabnum">7</div><div class="l">backlog maddesi</div></div>
       <div class="stat"><div class="n tabnum">13</div><div class="l">alınan karar</div></div>
@@ -604,12 +604,11 @@
         </div>
       </details>
 
-      <details class="era is-new" id="d21" open>
+      <details class="era" id="d21">
         <summary class="era-head">
           <span class="node">21</span>
           <span class="era-title">YtD kartında banka isimleri kırpılıyordu</span>
           <span class="era-date">2026-09-10</span>
-          <span class="new-tag">yeni</span>
           <span class="era-chevron">›</span>
         </summary>
         <div class="era-body">
@@ -619,6 +618,23 @@
             <li><strong>Yapılan:</strong> etiket satırı yüksekliği 80px → 150px, grafik kutusunun <span class="mono" style="font-size:13px">max-height</span>'ı 300px → 420px — kart artık en uzun ismi rahatça sığdırıyor.</li>
             <li><strong>Yan etki:</strong> sağ sütunun 3 kartı büyüyünce doğal toplam yüksekliği sol paneli ~38px aştı (esnek hizalama bir taban, tavan değil) — 900px'lik toplamda görsel olarak fark edilmiyor, kullanıcının bu turdaki net talebi önceliklendirildi.</li>
             <li><strong>Doğrulama:</strong> masaüstünde JS ile 20 etiketin TAMAMININ panel sınırı içinde kaldığı teyit edildi. Koyu mod ve mobil (0 taşan element) kontrol edildi. 78 test yeşil.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="era is-new" id="d22" open>
+        <summary class="era-head">
+          <span class="node">22</span>
+          <span class="era-title">STRATEJİ logosu mobilde her zaman görünür</span>
+          <span class="era-date">2026-09-10</span>
+          <span class="new-tag">yeni</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li>Dönem 20'de STRATEJİ logosu hamburger menünün İÇİNE (yalnızca açılınca görünen panele) yerleştirilmişti. Kullanıcı logonun mobilde hamburger'in hemen yanında, her zaman (menü kapalıyken de) görünmesini istedi.</li>
+            <li><strong>Yapılan:</strong> logo JSX'i toolbar'ın İÇİNDEN çıkarılıp bağımsız bir kardeş eleman olarak hamburger'in hemen öncesine taşındı — artık menü durumundan bağımsız her zaman render ediliyor. Masaüstünde <span class="mono" style="font-size:13px">order:3</span> ile eskisi gibi toolbar'ın sonunda (en sağda) kalmaya devam ediyor; mobilde <span class="mono" style="font-size:13px">order:2</span> ile hamburger'in hemen solunda sabit duruyor.</li>
+            <li><strong>Doğrulama:</strong> mobilde logo menü kapalıyken de görünür, hamburger'e tıklayınca aynı yerde kalıp dropdown'da TEKRARLANMADIĞI JS ile teyit edildi (her iki durumda da <span class="mono" style="font-size:13px">.topbar-brand</span> sayısı 1). Masaüstünde logo toolbar'dan sonra, eski konumunda — regresyon yok. 78 test yeşil.</li>
           </ul>
         </div>
       </details>
