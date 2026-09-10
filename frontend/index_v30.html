@@ -103,6 +103,33 @@
     letter-spacing: 0.2px; color: rgba(255,255,255,0.85); white-space: nowrap;
   }
 
+  /* -------- Mobil hamburger menü (kullanıcı isteği, 2026-09-10) --------
+     Masaüstünde her zaman gizli — topbar-toolbar zaten tek satırda açık
+     duruyor. ≤900px'te görünür olur (bkz. mobil @media bloğu) ve
+     topbar-toolbar'ı açılır bir panele çevirir. */
+  .topbar-menu-btn {
+    display: none;
+    width: 40px; height: 40px; flex: none;
+    background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px; cursor: pointer;
+    align-items: center; justify-content: center;
+  }
+  .topbar-menu-btn:hover { background: rgba(255,255,255,0.22); }
+  .topbar-menu-icon, .topbar-menu-icon::before, .topbar-menu-icon::after {
+    display: block; width: 18px; height: 2px; background: #fff; border-radius: 2px;
+    transition: transform 0.18s, opacity 0.18s;
+  }
+  .topbar-menu-icon { position: relative; }
+  .topbar-menu-icon::before, .topbar-menu-icon::after { content: ''; position: absolute; left: 0; }
+  .topbar-menu-icon::before { top: -6px; }
+  .topbar-menu-icon::after { top: 6px; }
+  .topbar-menu-btn.open .topbar-menu-icon { background: transparent; }
+  .topbar-menu-btn.open .topbar-menu-icon::before { top: 0; transform: rotate(45deg); }
+  .topbar-menu-btn.open .topbar-menu-icon::after { top: 0; transform: rotate(-45deg); }
+  .topbar-menu-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.25); z-index: 90;
+  }
+
   /* -------- Şifre değiştirme modal'ı -------- */
   .pw-modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.45);
@@ -1360,11 +1387,37 @@
     .topbar {
       flex-wrap: wrap; padding: 10px 12px; min-height: 0; row-gap: 8px;
     }
-    .topbar-left { max-width: 100%; order: 1; }
-    .topbar-toolbar { order: 2; flex-wrap: wrap; justify-content: flex-start; width: 100%; row-gap: 6px; }
+    .topbar-left { max-width: calc(100% - 52px); order: 1; }
     .topbar-date { font-size: 16px; }
     .topbar-measure { font-size: 13px; }
     .topbar-divider { display: none; }
+
+    /* Toolbar butonları (BDR/Admin/Tema/Şifre/Çıkış/Yenilikler) hamburger
+       arkasında açılır bir panele toplanır (kullanıcı isteği, 2026-09-10) —
+       eskiden hepsi tek tek satırı kaplayıp dikey yer kaplıyordu. */
+    .topbar-menu-btn { display: flex; order: 2; }
+    .topbar-toolbar { display: none; }
+    .topbar-toolbar.open {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 12px;
+      left: 12px;
+      background: var(--kt-green-dark);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+      z-index: 100;
+    }
+    .topbar-toolbar.open .topbar-icon-btn { width: 100%; }
+    .topbar-toolbar.open .topbar-brand {
+      grid-column: 1 / -1; justify-content: center;
+      padding-top: 10px; margin-top: 2px;
+      border-top: 1px solid rgba(255,255,255,0.15);
+    }
 
     .date-selector-bar { padding: 8px 12px; gap: 10px; }
     .date-selector-bar .mode-toggle { margin-left: 0; }
@@ -2313,6 +2366,12 @@
   function TopBar(props) {
     var pwOpenState = useState(false);
     var wnOpenState = useState(false);
+    // Mobilde BDR/Admin/Tema/Şifre/Çıkış/Yenilikler butonları tek tek satırı
+    // kaplamasın diye hamburger menü arkasına alınır (kullanıcı isteği,
+    // 2026-09-10) — masaüstünde etkisiz (CSS ile her zaman açık gösterilir).
+    var menuOpenState = useState(false);
+    var menuOpen = menuOpenState[0], setMenuOpen = menuOpenState[1];
+    function closeMenu() { setMenuOpen(false); }
     var measure = DATA.catalog.filter(function(m){ return m.id === props.activeMeasure; })[0];
     var compMeta = props.mode === 'composition' && props.activeComposition
       ? DATA.meta.compositions[props.activeComposition]
@@ -2337,34 +2396,46 @@
           h('div', { className: 'center-divider' }),
           h('div', { className: 'center-text' }, 'Rakip Analizi')
         ),
-        h('div', { className: 'topbar-toolbar' },
+        // Mobil hamburger — yalnızca dar ekranda CSS ile görünür, tıklanınca
+        // topbar-toolbar'ı açılır menü olarak gösterir.
+        h('button', {
+          className: 'topbar-menu-btn' + (menuOpen ? ' open' : ''),
+          onClick: function(){ setMenuOpen(!menuOpen); },
+          'aria-label': 'Menü',
+          'aria-expanded': menuOpen
+        }, h('span', { className: 'topbar-menu-icon' })),
+        menuOpen && h('div', { className: 'topbar-menu-backdrop', onClick: closeMenu }),
+        h('div', { className: 'topbar-toolbar' + (menuOpen ? ' open' : '') },
           h('a', {
             className: 'topbar-icon-btn',
             href: 'https://bdr-kisayol.netlify.app/',
             target: '_blank',
             rel: 'noopener noreferrer',
             title: 'Tüm BDR Raporları',
-            style: { textDecoration: 'none' }
+            style: { textDecoration: 'none' },
+            onClick: closeMenu
           }, h('span', { className: 'btn-icon' }, '📑'), h('span', { className: 'btn-label' }, 'BDR')),
           props.isAdmin && h('a', {
             className: 'topbar-icon-btn',
             href: '/admin',
             title: 'Admin Panel',
-            style: { textDecoration: 'none' }
+            style: { textDecoration: 'none' },
+            onClick: closeMenu
           }, h('span', { className: 'btn-icon' }, '⚙️'), h('span', { className: 'btn-label' }, 'Admin')),
           h('button', {
             className: 'topbar-icon-btn',
-            onClick: function(){ props.setTheme(props.theme === 'light' ? 'dark' : 'light'); },
+            onClick: function(){ props.setTheme(props.theme === 'light' ? 'dark' : 'light'); closeMenu(); },
             title: 'Tema değiştir'
           }, h('span', { className: 'btn-icon' }, props.theme === 'light' ? '🌙' : '☀️'), h('span', { className: 'btn-label' }, 'Tema')),
           h('button', {
             className: 'topbar-icon-btn',
-            onClick: function(){ pwOpenState[1](true); },
+            onClick: function(){ pwOpenState[1](true); closeMenu(); },
             title: 'Şifre değiştir'
           }, h('span', { className: 'btn-icon' }, '🔑'), h('span', { className: 'btn-label' }, 'Şifre')),
           h('button', {
             className: 'topbar-icon-btn',
             onClick: function(){
+              closeMenu();
               fetch('/api/logout', { method: 'POST', credentials: 'same-origin' })
                 .finally(function(){ window.location.href = '/login'; });
             },
@@ -2372,7 +2443,7 @@
           }, h('span', { className: 'btn-icon' }, '🚪'), h('span', { className: 'btn-label' }, 'Çıkış')),
           h('button', {
             className: 'topbar-icon-btn',
-            onClick: function(){ wnOpenState[1](true); },
+            onClick: function(){ wnOpenState[1](true); closeMenu(); },
             title: 'Yenilikler'
           }, h('span', { className: 'btn-icon' }, '🆕'), h('span', { className: 'btn-label' }, 'Yenilikler')),
           h('div', { className: 'topbar-brand' },

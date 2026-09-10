@@ -1136,6 +1136,38 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   anda teyit edildi. Rasyo modu, koyu mod, mobil (0 taşan element)
   ekran görüntüsüyle kontrol edildi. 78 test yeşil.
 
+### Dönem 20 — Mobil topbar: hamburger menü (2026-09-10)
+
+- **Tetikleyici:** kullanıcı, mobilde BDR/Admin/Tema/Şifre/Çıkış/
+  Yenilikler butonlarının hepsinin tek tek görünüp dikey yer kaplaması
+  yerine, tıklanınca açılan bir menü barının arkasına toplanmasını
+  istedi.
+- **Yapılan (`TopBar`):** yeni `menuOpen` state'i + hamburger buton
+  (`.topbar-menu-btn`, CSS ile ikona dönüştürülmüş `.topbar-menu-icon`,
+  açıkken X'e morphluyor). `.topbar-toolbar`'ın className'ine
+  `menuOpen` durumuna göre `' open'` ekleniyor. Her aksiyon
+  butonu (Tema/Şifre/Çıkış/Yenilikler) kendi işlevine ek olarak artık
+  `closeMenu()` çağırıyor — tıklanınca hem aksiyon gerçekleşiyor hem
+  menü kapanıyor. Link'ler (BDR, Admin) de aynı şekilde `onClick:
+  closeMenu` alıyor (navigasyon zaten sayfayı değiştiriyor ama anlık
+  geri bildirim için).
+- **Backdrop:** `menuOpen` true iken `.topbar-menu-backdrop` (tam ekran,
+  yarı saydam siyah) render ediliyor — tıklanınca `closeMenu()`.
+- **CSS (yalnız ≤900px):** `.topbar-toolbar` varsayılan `display:none`;
+  `.open` durumunda `position:absolute` ile topbar'ın hemen altında,
+  3 sütunlu bir grid panel (`.topbar-icon-btn`'ler + en altta STRATEJİ
+  logosu, ince bir ayraçla ayrılmış) olarak açılıyor. Masaüstünde
+  (`.topbar-menu-btn { display:none }` varsayılan) hamburger hiç
+  görünmüyor, toolbar her zamanki gibi tek satırda açık.
+- **Doğrulama:** mobilde (375px) menü kapalıyken topbar yüksekliği
+  ciddi küçüldü (yalnızca başlık + hamburger satırı); menü açıkken 3×2
+  grid + STRATEJİ logosu ekran görüntüsüyle doğrulandı; Tema butonuna
+  tıklayınca hem tema değiştiği hem menünün otomatik kapandığı JS ile
+  teyit edildi; backdrop'a tıklayınca da kapandığı doğrulandı. Menü
+  açık/kapalı her iki durumda da 0 taşan element. Masaüstünde (1400px)
+  hamburger hiç görünmüyor, toolbar değişmedi — regresyon yok. 78 test
+  yeşil (frontend-only).
+
 ---
 
 ## 7. Açık ve bekleyen konular
