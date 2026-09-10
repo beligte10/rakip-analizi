@@ -957,6 +957,41 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   hem büyüklük hem rasyo modu kontrol edildi, mobilde 0 taşan element,
   78 test yeşil.
 
+### Dönem 15 — Banka sıralama barları "ekonbulten.html" tarzında (2026-09-10)
+
+- **Tetikleyici:** kullanıcı "İlk 20 Banka Büyüklükleri" başlığının
+  ortalanmasını ve satırların daha görünebilir/ferah bir formata
+  getirilmesini istedi; grafiklerin projeye yüklediği
+  `ekonbulten.html` (Ekonomi Bülteni — ayrı bir proje, referans için
+  bu projenin köküne kopyalanmış) dosyasındaki bar grafik diline
+  benzemesini istedi.
+- **Referans incelemesi:** `ekonbulten.html` bir "bundler" sarmalayıcısı
+  (self-contained data: URL'e açılan bir bundle) — tarayıcıda açılıp
+  gezilerek incelendi. "04 · Piyasalar → Reel Getiri" sekmesindeki
+  yatay bar grafiği ("Temmuz 2026 Aylık Reel Getiriler") en yakın
+  görsel analog: yuvarlak uçlu barlar, değerin bar'ın hemen bitişinde
+  ama kendi nefes payında ayrı bir etiket olarak durması, ferah satır
+  aralığı.
+- **Yapılan (`BankRanking`, `.bank-row`/`.bank-bar-cell`/`.bank-value`):**
+  `.bank-row` satır yüksekliği 20px → 29px; bar yüksekliği 13px → 16px;
+  bar sağ ucu `border-radius: 0 7px 7px 0` (belirgin yuvarlak uç,
+  eskiden 0 2px 2px 0); değer sütunu 60px → 66px, bar–değer arası
+  boşluk 4px → 7px, değer fontu 10.5px → 11px ve `font-weight: 700`
+  (daha okunur/belirgin). Başlık hücresinin bir önceki dönemde sola
+  yaslanan (`textAlign:'left'`) hali, sağ paneldeki ("İlk 20 Banka YtD
+  Büyüme") ortalanmış başlıkla tutarlı olsun diye tekrar ortaya
+  alındı (inline override kaldırıldı, `.bank-ranking-header > div`'in
+  varsayılan `text-align:center`'ı geçerli).
+- **Not — yükseklik eşleme etkisi:** satırlar uzayınca ranking-panel'in
+  doğal yüksekliği ~576px → ~682px'e çıktı; Dönem 13'teki `matchHeight`
+  mekanizması sayesinde YtD grafiği de otomatik olarak aynı yüksekliğe
+  büyüdü (barlar daha da belirgin göründü) — panel hizalaması
+  bozulmadı, ekstra müdahale gerekmedi.
+- **Doğrulama:** masaüstünde (1400px) `rankingHeight === ytdPanelHeight`
+  (682,375px = 682,375px) JS ile teyit edildi, mobilde (375px) 0 taşan
+  element, ekran görüntüsüyle hem büyüklük hem mobil görünüm kontrol
+  edildi. 78 test yeşil.
+
 ---
 
 ## 7. Açık ve bekleyen konular
