@@ -1104,6 +1104,38 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   ölçüldü. Rasyo modu, koyu mod, mobil (0 taşan element) ekran
   görüntüsüyle kontrol edildi. 78 test yeşil.
 
+### Dönem 19 — Delta başlığı küçültüldü, başlık hizalaması geri geldi (2026-09-10)
+
+- **Tetikleyici:** Dönem 18'de tüm `.bank-ranking-header > div` hücreleri
+  13px'e büyütülünce "Pazar Payı Değişimi (Bps)" / "Çeyreklik Değişim"
+  de (dar 82px sütunda) orantısız büyümüştü — kullanıcı bunun küçük
+  kalmasını istedi. Ayrıca Dönem 18'de kart-gövdesi zorlamasıyla BİRLİKTE
+  kaldırılan başlık-yükseklik eşitlemesinin **yalnızca kart gövdesi**
+  için kaldırılması gerektiği, başlıkların yine de yatayda hizalı
+  kalması istendiği netleşti.
+- **Delta başlığı küçültme:** JSX'te delta hücresine ayrı bir
+  `bank-ranking-header-delta` class'ı verildi (`h('div', {className:
+  'bank-ranking-header-delta'}, ...)` — eskiden `h('div', null, ...)`),
+  CSS'te `font-size:10,5px !important; font-weight:600 !important;
+  color:#64748b !important` ile ana başlıktan (13px/700) ayrıştırıldı.
+  `!important` gerekli çünkü `.bank-ranking-header > div` seçicisi aynı
+  specificity'de sonra tanımlanmış olsa bile class seçicisiyle
+  spesifiklik farkı net değildi — güvenli taraf seçildi.
+- **Başlık hizalamasının geri getirilmesi:** Dönem 18'de tamamen
+  kaldırılan `headerRef`/`headerMatchHeight` mekanizması `SnapshotView`
+  ve `YtDGrowthChart`'a AYNEN geri eklendi — ama bu kez `matchH`/
+  `rightColStyle`'dan (kart gövdesi zorlaması, Dönem 18'de kazanılan
+  esnek `space-between` hizalaması) tamamen BAĞIMSIZ, paralel bir
+  ölçüm. İki mekanizma birbirini etkilemiyor: biri yalnızca başlık
+  şeridinin yüksekliğini eşitliyor, diğeri kartların toplamının nerede
+  bittiğini.
+- **Doğrulama:** masaüstünde JS ile `leftHeaderHeight ===
+  rightHeaderHeight` (60,375px = 60,375px), `deltaFontSize` = "10.5px",
+  `titleFontSize` (ana başlık) hâlâ "13px", VE `rankingBottom ===
+  lastCardBottom` (858,375px, kart gövdesi hizalaması hâlâ sağlam) aynı
+  anda teyit edildi. Rasyo modu, koyu mod, mobil (0 taşan element)
+  ekran görüntüsüyle kontrol edildi. 78 test yeşil.
+
 ---
 
 ## 7. Açık ve bekleyen konular

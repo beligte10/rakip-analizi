@@ -453,6 +453,14 @@
     line-height: 1.25;
   }
   body.dark .bank-ranking-header > div { color: #e8eef1; }
+  /* Delta sütunu (Pazar Payı Değişimi / Çeyreklik Değişim) dar (82px) bir
+     kolonda — ana başlıkla aynı 13px'te çok büyük/sıkışık duruyordu
+     (kullanıcı isteği, 2026-09-10). */
+  .bank-ranking-header-delta {
+    font-size: 10.5px !important; font-weight: 600 !important;
+    color: #64748b !important;
+  }
+  body.dark .bank-ranking-header-delta { color: #94a3b8 !important; }
 
   .bank-row {
     display: grid;
@@ -2602,12 +2610,13 @@
     return h('div', { className: 'panel ranking-panel', ref: props.panelRef },
       h('div', {
         className: 'bank-ranking-header',
-        style: { gridTemplateColumns: headerGridCols }
+        style: { gridTemplateColumns: headerGridCols },
+        ref: props.headerRef
       },
         h('div', null,
           isRasyo ? ('İlk ' + sortedTop20.length + ' Banka Rasyo (' + birimLabel(measure) + ')')
                   : ('İlk ' + sortedTop20.length + ' Banka Büyüklükleri (' + buyuklukLabel(measure) + ')')),
-        hasDelta && h('div', null,
+        hasDelta && h('div', { className: 'bank-ranking-header-delta' },
           isMiktarDelta(measure)
             ? ('Çeyreklik Değişim (' + (measure.birim === 'bin_TL' ? 'TL' : 'adet') + ')')
             : isRasyo
@@ -2836,8 +2845,20 @@
     // olarak ayarlanıyor (bkz. SnapshotView), aradaki boşluk esniyor.
     var panelStyle = { display: 'flex', flexDirection: 'column' };
 
+    // Başlığın gri alanı sol paneldeki (bank-ranking-header) ile yatayda
+    // hizalı kalsın diye ölçülen değere göre gerilip dikey ortalanır —
+    // yalnızca başlık şeridi, kartın kendisi değil (kullanıcı isteği,
+    // 2026-09-10).
+    var headerStyle = { flex: 'none' };
+    if (props.headerMatchHeight) {
+      headerStyle.minHeight = props.headerMatchHeight + 'px';
+      headerStyle.display = 'flex';
+      headerStyle.alignItems = 'center';
+      headerStyle.justifyContent = 'center';
+    }
+
     return h('div', { className: 'panel', style: panelStyle },
-      h('div', { className: 'panel-header' },
+      h('div', { className: 'panel-header', style: headerStyle },
         'İlk ' + bars.length + ' Banka ' + metricLabel + ' Büyüme (' + birimEtiket + ')'),
       h('div', { className: 'ytd-panel-body' },
         h('div', { className: 'ytd-chart-container' },
@@ -3355,15 +3376,29 @@
     var rankingRef = useRef(null);
     var matchHState = useState(0);
     var matchH = matchHState[0], setMatchH = matchHState[1];
+    // Başlıkların gri alanı da yatayda hizalı kalsın diye AYRICA ölçülür —
+    // "Pazar Payı Değişimi (Bps)" dar sütunda sarabildiği için sol başlık
+    // sağdakinden doğal olarak daha uzun olabiliyor. Bu, kart gövdesinin
+    // (matchH/space-between, yukarıdaki not) esnek hizalamasından BAĞIMSIZ
+    // bir mekanizma — biri başlık şeridi, diğeri kartların toplamı için.
+    var headerRef = useRef(null);
+    var headerMatchHState = useState(0);
+    var headerMatchH = headerMatchHState[0], setHeaderMatchH = headerMatchHState[1];
     useEffect(function() {
       function measureRanking() {
         if (window.innerWidth <= 900) {
           if (matchH !== 0) setMatchH(0);
+          if (headerMatchH !== 0) setHeaderMatchH(0);
           return;
         }
-        if (!rankingRef.current) return;
-        var hgt = rankingRef.current.getBoundingClientRect().height;
-        if (hgt && Math.abs(hgt - matchH) > 2) setMatchH(hgt);
+        if (rankingRef.current) {
+          var hgt = rankingRef.current.getBoundingClientRect().height;
+          if (hgt && Math.abs(hgt - matchH) > 2) setMatchH(hgt);
+        }
+        if (headerRef.current) {
+          var hHgt = headerRef.current.getBoundingClientRect().height;
+          if (hHgt && Math.abs(hHgt - headerMatchH) > 2) setHeaderMatchH(hHgt);
+        }
       }
       measureRanking();
       window.addEventListener('resize', measureRanking);
@@ -3375,11 +3410,11 @@
 
     return h('div', null,
       h('div', { className: 'dashboard-grid' },
-        h(BankRanking, { measure: measure, tarih: tarih, panelRef: rankingRef }),
+        h(BankRanking, { measure: measure, tarih: tarih, panelRef: rankingRef, headerRef: headerRef }),
         h('div', { style: rightColStyle },
           isRasyo
             ? h(GroupSummary, { measure: measure, tarih: tarih })
-            : h(YtDGrowthChart, { measure: measure, tarih: tarih }),
+            : h(YtDGrowthChart, { measure: measure, tarih: tarih, headerMatchHeight: headerMatchH }),
           isRasyo
             ? h(GroupBpsChange, { measure: measure, tarih: tarih })
             : h(GroupSummary, { measure: measure, tarih: tarih }),
