@@ -1026,6 +1026,49 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   Rasyo modu ve mobil (375px, 0 taşan element) ekran görüntüsüyle kontrol
   edildi. 78 test yeşil.
 
+### Dönem 17 — Trend grafikleri "diğerleri gibi" premium (2026-09-10)
+
+- **Tetikleyici:** kullanıcı, Trend sekmesindeki çizgi grafiklerinin de
+  Dönem 13-16'da diğer panellere uygulanan premium tasarımla tutarlı
+  görünmesini istedi.
+- **Kart konteynerleri:** `.trend-controls` ve `.trend-chart-wrap`
+  (eskiden düz `#d4dde3` kenarlık, `border-radius:6px`, gölgesiz) diğer
+  panellerle aynı reçeteye getirildi — `rgba(15,31,47,0.06)` ince
+  kenarlık, `border-radius:12px`, çok katmanlı yumuşak `box-shadow`
+  (+ koyu mod eşdeğeri).
+  Bu iki class daha önceki premium geçişte (Dönem 13) atlanmıştı.
+- **Grafik çizim dili — `smoothPathFromPoints()` (yeni yardımcı
+  fonksiyon, Catmull-Rom → kübik Bezier, gerilim 1/6):** düz
+  `M...L...L...` çoklu-çizgi yerine artık yumuşak eğri kullanılıyor —
+  boşluklu (null) veri noktaları eskisi gibi atlanıp aradaki geçerli
+  noktalar birbirine bağlanıyor, davranış aynı kalıyor.
+- **Gradyan alan dolgusu:** yalnızca TEK seri seçiliyken (`series.length
+  === 1`) çizginin altına yarı saydam gradyan dolgu ekleniyor — birden
+  fazla seri üst üste binince dolgu karmaşıklaşacağı için çoklu seride
+  atlanıyor (yalnızca eğri + nokta stilini paylaşıyorlar).
+  `smoothAreaPath()` eğri çizgisini alt eksene kadar kapatıyor.
+  `<defs><linearGradient>` seri rengiyle (`series[0].textColor`)
+  eşleşiyor, %22 → %0 opaklık.
+- **Nokta ve çizgi stili:** çizgi kalınlığı 2,2 → 2,5px,
+  `strokeLinecap`/`strokeLinejoin: round` eklendi (yumuşak uçlar);
+  noktalar r=3 → 3,5, artık beyaz halka (`stroke:#fff`) ile — koyu
+  zeminde de çizgiden ayrışıyor. Gridline'lar daha soluk
+  (`rgba(15,31,47,0.07)`, dash kaldırıldı — solid) — referans
+  grafiklerdeki temiz görünüme daha yakın.
+- **Çizgi sonu etiketleri — rozet (pill):** eskiden düz renkli metin
+  olan uç etiketleri artık yuvarlak köşeli (`rx:6`), beyaz (%94 opak)
+  zeminli, seri rengiyle ince kenarlıklı bir rozet arka planına sahip —
+  ekonbulten.html referansındaki değer etiketi stiline birebir benziyor.
+  Genişlik `label.length × 6,4 + 16` ile kabaca tahmin ediliyor (SVG'de
+  gerçek metin genişliği DOM ölçümü gerektirdiği için). Rozetler artık
+  19px yüksekliğinde olduğundan, dikey çakışma-önleme eşiği de 15px →
+  20px'e çıkarıldı.
+- **Doğrulama:** tek seri (gradyan dolgulu), 4 serili çoklu görünüm
+  (dolgusuz, rozetler çakışmadan ayrışmış), YtD büyüme modu (0 referans
+  çizgili), koyu mod — hepsi ekran görüntüsüyle kontrol edildi. Mobilde
+  (375px) SVG 293px genişliğe doğru küçüldü, 0 taşan element. 78 test
+  yeşil (frontend-only).
+
 ---
 
 ## 7. Açık ve bekleyen konular

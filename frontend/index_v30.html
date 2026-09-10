@@ -798,12 +798,16 @@
   .trend-wrap { padding: 14px; }
   .trend-controls {
     background: #fff;
-    border: 1px solid #d4dde3;
-    border-radius: 6px;
-    padding: 14px;
+    border: 1px solid rgba(15,31,47,0.06);
+    border-radius: 12px;
+    padding: 16px;
     margin-bottom: 14px;
+    box-shadow: 0 1px 2px rgba(15,31,47,0.03), 0 4px 14px rgba(15,31,47,0.05);
   }
-  body.dark .trend-controls { background: #1a2635; border-color: #2a3b4d; }
+  body.dark .trend-controls {
+    background: #1a2635; border-color: rgba(255,255,255,0.06);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25), 0 4px 18px rgba(0,0,0,0.35);
+  }
   .trend-control-row {
     display: flex;
     flex-wrap: wrap;
@@ -914,11 +918,15 @@
 
   .trend-chart-wrap {
     background: #fff;
-    border: 1px solid #d4dde3;
-    border-radius: 6px;
-    padding: 16px;
+    border: 1px solid rgba(15,31,47,0.06);
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 1px 2px rgba(15,31,47,0.03), 0 4px 14px rgba(15,31,47,0.05);
   }
-  body.dark .trend-chart-wrap { background: #1a2635; border-color: #2a3b4d; }
+  body.dark .trend-chart-wrap {
+    background: #1a2635; border-color: rgba(255,255,255,0.06);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25), 0 4px 18px rgba(0,0,0,0.35);
+  }
 
   .empty-state {
     padding: 60px 20px; text-align: center; color: #94a3b8;
@@ -3832,6 +3840,33 @@
     );
   }
 
+  // Catmull-Rom → kübik Bezier dönüşümü: düz çizgi yerine yumuşak eğri
+  // (premium grafik dili — ekonbulten.html referansı, 2026-09-10). pts
+  // boşluklu (null atlanmış) noktalardan oluşur, gerilim 1/6 sabiti.
+  function smoothPathFromPoints(pts) {
+    if (pts.length === 0) return '';
+    if (pts.length === 1) return 'M' + pts[0].x + ',' + pts[0].y;
+    var d = 'M' + pts[0].x + ',' + pts[0].y + ' ';
+    for (var i = 0; i < pts.length - 1; i++) {
+      var p0 = pts[i === 0 ? 0 : i - 1];
+      var p1 = pts[i];
+      var p2 = pts[i + 1];
+      var p3 = pts[i + 2 < pts.length ? i + 2 : pts.length - 1];
+      var cp1x = p1.x + (p2.x - p0.x) / 6;
+      var cp1y = p1.y + (p2.y - p0.y) / 6;
+      var cp2x = p2.x - (p3.x - p1.x) / 6;
+      var cp2y = p2.y - (p3.y - p1.y) / 6;
+      d += 'C' + cp1x + ',' + cp1y + ' ' + cp2x + ',' + cp2y + ' ' + p2.x + ',' + p2.y + ' ';
+    }
+    return d;
+  }
+  function smoothAreaPath(pts, bottomY) {
+    if (pts.length < 2) return '';
+    return smoothPathFromPoints(pts) +
+      ' L' + pts[pts.length - 1].x + ',' + bottomY +
+      ' L' + pts[0].x + ',' + bottomY + ' Z';
+  }
+
   // ===============================================================
   // TREND VIEW — with final-value labels
   // ===============================================================
@@ -4062,7 +4097,7 @@
       Object.keys(byX).forEach(function(k) {
         var arr = byX[k].sort(function(a, b){ return a.y - b.y; });
         for (var i = 1; i < arr.length; i++) {
-          if (arr[i].y - arr[i - 1].y < 15) arr[i].y = arr[i - 1].y + 15;
+          if (arr[i].y - arr[i - 1].y < 20) arr[i].y = arr[i - 1].y + 20;
         }
         var overflow = arr[arr.length - 1].y - (padT + chartH);
         if (overflow > 0) arr.forEach(function(L){ L.y -= overflow; });
@@ -4202,13 +4237,21 @@
               onMouseLeave: function(){ setHoverIdx(null); }
             },
               h('svg', { viewBox: '0 0 '+W+' '+H, style:{width:'100%', height:'auto', display:'block'}},
+              h('defs', null,
+                series.length === 1 && h('linearGradient', {
+                  id: 'trendAreaGrad', x1:'0', y1:'0', x2:'0', y2:'1'
+                },
+                  h('stop', { offset:'0%', stopColor: series[0].textColor, stopOpacity: 0.22 }),
+                  h('stop', { offset:'100%', stopColor: series[0].textColor, stopOpacity: 0 })
+                )
+              ),
               [0, 0.25, 0.5, 0.75, 1].map(function(p, i) {
                 var yVal = min + (1 - p) * range_v;
                 return h('g', { key: 'gy'+i },
                   h('line', {
                     x1: padL, x2: W - padR,
                     y1: padT + p * chartH, y2: padT + p * chartH,
-                    stroke: '#e2e8f0', strokeDasharray: '2,3'
+                    stroke: 'rgba(15,31,47,0.07)'
                   }),
                   h('text', {
                     x: padL - 6, y: padT + p * chartH + 3,
@@ -4238,12 +4281,29 @@
                     fontSize:'9', fill:'#94a3b8', textAnchor:'start'
                   }, '0%')
                 ),
+              // Alan dolgusu — yalnızca tek seri seçiliyken (birden fazla
+              // seri üst üste binince gradyan karmaşıklaşırdı). Premium
+              // grafik dili: ekonbulten.html referansındaki yumuşak eğri +
+              // gradyan dolgu (2026-09-10).
+              series.length === 1 && (function(){
+                var pts0 = [];
+                series[0].values.forEach(function(v, i) {
+                  if (v == null) return;
+                  pts0.push({ x: padL + i * stepX, y: scale(v) });
+                });
+                if (pts0.length < 2) return null;
+                return h('path', {
+                  d: smoothAreaPath(pts0, padT + chartH),
+                  fill: 'url(#trendAreaGrad)', stroke: 'none'
+                });
+              })(),
               series.map(function(s, si) {
-                var path = '';
+                var pts = [];
                 s.values.forEach(function(v, i) {
                   if (v == null) return;
-                  path += (path === '' ? 'M' : 'L') + (padL + i * stepX) + ',' + scale(v) + ' ';
+                  pts.push({ x: padL + i * stepX, y: scale(v) });
                 });
+                var path = smoothPathFromPoints(pts);
 
                 return h('g', { key: s.name },
                   h('path', {
@@ -4251,29 +4311,38 @@
                     // açık modda marka renginin birebir kendisi. Yeni palette
                     // #0B2E63 gibi koyu tonlar var, koyu zeminde kaybolmasın.
                     d: path, fill:'none',
-                    stroke: s.textColor, strokeWidth:'2.2',
-                    strokeDasharray: s.dashed ? '6,3' : 'none'
+                    stroke: s.textColor, strokeWidth:'2.5',
+                    strokeDasharray: s.dashed ? '6,3' : 'none',
+                    strokeLinecap: 'round', strokeLinejoin: 'round'
                   }),
                   s.values.map(function(v, i) {
                     if (v == null) return null;
                     return h('circle', {
                       key: i,
                       cx: padL + i * stepX, cy: scale(v),
-                      r: 3, fill: s.textColor
+                      r: 3.5, fill: s.textColor,
+                      stroke: '#fff', strokeWidth: '1.5'
                     });
                   }),
                 );
               }),
-              // Çizgi sonu etiketleri: "Banka Adı  Değer" (2026-09-08).
+              // Çizgi sonu etiketleri: "Banka Adı  Değer" (2026-09-08),
+              // rozet (pill) arka planlı — premium grafik dili (2026-09-10).
               // Eskiden sol üstte ayrı bir lejant vardı ve grafiğin içini
               // kapatıyordu; artık ad, ait olduğu çizginin bittiği yerde.
               // endLabels yukarıda hesaplanır (dikey çakışmalar ayrıştırılmış).
               endLabels.map(function(L) {
+                var estW = L.label.length * 6.4 + 16;  // metin genişliği kaba tahmini
                 return h('g', { key: 'endlbl-' + L.name },
                   // Etiket kaydırıldıysa hangi noktaya ait olduğunu gösteren ince bağ
                   Math.abs(L.y - L.pointY) > 2 && h('path', {
                     d: 'M' + (L.x - 4) + ',' + L.pointY + ' L' + (L.x - 1) + ',' + L.y,
                     stroke: L.color, strokeWidth: '0.8', fill: 'none', opacity: '0.55'
+                  }),
+                  h('rect', {
+                    x: L.x - 6, y: L.y - 12, width: estW, height: 19, rx: 6,
+                    fill: '#fff', fillOpacity: 0.94,
+                    stroke: L.color, strokeWidth: '1', strokeOpacity: 0.5
                   }),
                   h('text', {
                     x: L.x, y: L.y + 4,
