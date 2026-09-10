@@ -1226,6 +1226,44 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   toolbarRight` (logo toolbar'dan sonra, eski konumunda) ve
   `menuBtnDisplay: 'none'` teyit edildi — regresyon yok. 78 test yeşil.
 
+### Dönem 23 — Orta genişlik masaüstünde toolbar "Rakip Analizi" ile çakışıyordu (2026-09-10)
+
+- **Tetikleyici:** kullanıcı, masaüstü görünümünde BDR/Admin gibi
+  toolbar butonlarının "Rakip Analizi" ortadaki başlığın ALTINDA
+  kaldığını (çakıştığını) bildirdi.
+- **Kök neden #1 — Dönem 22'nin yan etkisi:** `.topbar-brand`'in
+  `topbar-toolbar`'ın İÇİNDEN çıkarılıp bağımsız bir kardeş eleman
+  yapılması, `.topbar`'ın `justify-content:space-between`'inin artık
+  3 flex elemanı (topbar-left, topbar-brand, topbar-toolbar — eskiden
+  yalnızca 2: topbar-left ve toolbar) görmesine yol açtı.
+  `space-between` 3 öğeyi EŞİT ARALIKLA dağıtır — bu da toolbar'ı sağ
+  kenardan MERKEZE doğru kaydırıp ortadaki absolute-konumlu
+  "Rakip Analizi" bloğuyla çakıştırdı. Düzeltme: `.topbar`
+  `justify-content:space-between` → `flex-start` + `gap:14px`,
+  `.topbar-left`'e `margin-right:auto` — artık kaç flex öğesi olursa
+  olsun sol blok sabit kalıyor, geri kalanı (brand+menu-btn+toolbar)
+  tek grup halinde sağa yaslanıyor.
+- **Kök neden #2 — ÖNCEDEN VAR OLAN, bağımsız bir sorun:** yukarıdaki
+  düzeltmeden SONRA bile JS ile 1050px genişlikte gerçek bir piksel
+  çakışması ölçüldü (`overlap: true`, ~50px). Sebep: ortadaki
+  "Rakip Analizi" bloğu yalnızca ≤980px'te gizleniyordu, ama
+  toolbar'ın (6 buton + logo) gerçek genişliği bu eşiğin ÜZERİNDEKİ
+  genişliklerde (ör. 1000-1200px — yaygın bir laptop/yarı-ekran
+  masaüstü aralığı) hâlâ ortadaki bloğa değecek kadar büyüktü. Bu,
+  Dönem 22'den ÖNCE de var olan bir tasarım boşluğuydu (toolbar içeriği
+  o zaman da aynı toplam genişlikteydi, sadece STRATEJİ logosu
+  toolbar'ın kendi içindeydi) — kullanıcı bu turda fark edip bildirdi.
+  Düzeltme: iki `@media (max-width: 980px)` eşiği (ortadaki bloğu
+  gizleyen ve sol bloğa fazladan yer açan) `1200px`'e çıkarıldı.
+- **Doğrulama:** JS ile genişlik taraması yapıldı — 1050px'te önce
+  `overlap:true` ölçülüp düzeltmeden sonra ortadaki blok
+  `centerBrandVisible:false` olduğu (çakışma riski ortadan kalktı)
+  teyit edildi; 1210px'te (yeni eşiğin hemen üstü) `overlap:false`,
+  `gap:30px` güvenli boşluk ölçüldü; 1250px ve 1400px'te de çakışma
+  yok. 920px'te (mobil hamburger eşiğinin hemen üstü) toolbar satır içi
+  görünümde sorunsuz. Mobilde (375px) hamburger/logo davranışı ve 0
+  taşan element yeniden teyit edildi. 78 test yeşil.
+
 ---
 
 ## 7. Açık ve bekleyen konular

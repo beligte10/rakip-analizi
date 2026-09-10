@@ -194,7 +194,7 @@
     <p class="subtitle">Projenin ilk kuruluşundan bugüne ne yapıldığının kronolojisi, ve önümüzdeki fikirlerin öncelik sıralı listesi. <span class="mono" style="font-size:13px">docs/PROJE_EL_KITABI.md</span>'nin görsel özetidir.</p>
 
     <div class="stats">
-      <div class="stat"><div class="n tabnum">23</div><div class="l">dönem</div></div>
+      <div class="stat"><div class="n tabnum">24</div><div class="l">dönem</div></div>
       <div class="stat"><div class="n tabnum">160</div><div class="l">aktif ölçü</div></div>
       <div class="stat"><div class="n tabnum">7</div><div class="l">backlog maddesi</div></div>
       <div class="stat"><div class="n tabnum">13</div><div class="l">alınan karar</div></div>
@@ -622,12 +622,11 @@
         </div>
       </details>
 
-      <details class="era is-new" id="d22" open>
+      <details class="era" id="d22">
         <summary class="era-head">
           <span class="node">22</span>
           <span class="era-title">STRATEJİ logosu mobilde her zaman görünür</span>
           <span class="era-date">2026-09-10</span>
-          <span class="new-tag">yeni</span>
           <span class="era-chevron">›</span>
         </summary>
         <div class="era-body">
@@ -635,6 +634,24 @@
             <li>Dönem 20'de STRATEJİ logosu hamburger menünün İÇİNE (yalnızca açılınca görünen panele) yerleştirilmişti. Kullanıcı logonun mobilde hamburger'in hemen yanında, her zaman (menü kapalıyken de) görünmesini istedi.</li>
             <li><strong>Yapılan:</strong> logo JSX'i toolbar'ın İÇİNDEN çıkarılıp bağımsız bir kardeş eleman olarak hamburger'in hemen öncesine taşındı — artık menü durumundan bağımsız her zaman render ediliyor. Masaüstünde <span class="mono" style="font-size:13px">order:3</span> ile eskisi gibi toolbar'ın sonunda (en sağda) kalmaya devam ediyor; mobilde <span class="mono" style="font-size:13px">order:2</span> ile hamburger'in hemen solunda sabit duruyor.</li>
             <li><strong>Doğrulama:</strong> mobilde logo menü kapalıyken de görünür, hamburger'e tıklayınca aynı yerde kalıp dropdown'da TEKRARLANMADIĞI JS ile teyit edildi (her iki durumda da <span class="mono" style="font-size:13px">.topbar-brand</span> sayısı 1). Masaüstünde logo toolbar'dan sonra, eski konumunda — regresyon yok. 78 test yeşil.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="era is-new" id="d23" open>
+        <summary class="era-head">
+          <span class="node">23</span>
+          <span class="era-title">Orta genişlik masaüstünde toolbar "Rakip Analizi" ile çakışıyordu</span>
+          <span class="era-date">2026-09-10</span>
+          <span class="new-tag">yeni</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li>Kullanıcı, masaüstü görünümünde BDR/Admin gibi toolbar butonlarının "Rakip Analizi" ortadaki başlığın ALTINDA kaldığını (çakıştığını) bildirdi.</li>
+            <li><strong>Kök neden #1 — Dönem 22'nin yan etkisi:</strong> logo toolbar'dan çıkarılınca <span class="mono" style="font-size:13px">justify-content:space-between</span> artık 3 flex elemanı görüyordu (eskiden 2) — bu da toolbar'ı sağ kenardan merkeze kaydırıp "Rakip Analizi" ile çakıştırdı. Düzeltme: <span class="mono" style="font-size:13px">flex-start + gap:14px</span>, sol bloğa <span class="mono" style="font-size:13px">margin-right:auto</span> — kaç öğe olursa olsun geri kalanı tek grup halinde sağa yaslanıyor.</li>
+            <li><strong>Kök neden #2 — önceden var olan, bağımsız bir sorun:</strong> düzeltmeden sonra bile 1050px'te gerçek bir piksel çakışması ölçüldü. Ortadaki blok yalnızca ≤980px'te gizleniyordu, ama toolbar'ın gerçek genişliği yaygın laptop/yarı-ekran genişliklerinde (1000-1200px) hâlâ değiyordu — bu, Dönem 22'den önce de var olan bir tasarım boşluğuydu. İki gizleme eşiği 980px → 1200px'e çıkarıldı.</li>
+            <li><strong>Doğrulama:</strong> JS ile genişlik taraması — 1050px'te düzeltmeden önce <span class="mono" style="font-size:13px">overlap:true</span>, sonra ortadaki blok gizli; 1210px'te (yeni eşiğin hemen üstü) 30px güvenli boşluk; 1250px/1400px'te çakışma yok; 920px'te toolbar sorunsuz; mobilde (375px) 0 taşan element. 78 test yeşil.</li>
           </ul>
         </div>
       </details>
