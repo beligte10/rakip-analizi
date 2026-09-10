@@ -992,6 +992,40 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   element, ekran görüntüsüyle hem büyüklük hem mobil görünüm kontrol
   edildi. 78 test yeşil.
 
+### Dönem 16 — Başlık gri alanları eşitlendi, YtD grafiği küçültüldü (2026-09-10)
+
+- **Tetikleyici:** kullanıcı, "İlk 20 Banka Büyüklükleri" başlığının gri
+  alanının "İlk 20 Banka YtD Büyüme" başlığıyla aynı yükseklikte
+  olmadığını fark etti — panel gövdeleri hizalı olsa da (Dönem 13)
+  başlıklar değildi. Ayrıca Dönem 15'te satırlar uzayınca YtD grafiğinin
+  barları da orantılı büyümüştü; kullanıcı barların biraz küçültülüp
+  banka isim etiketlerinin daha net okunmasını istedi.
+- **Kök neden — başlık uyumsuzluğu:** sol başlıkta "Pazar Payı Değişimi
+  (Bps)" dar (82px) bir sütunda 2 satıra sarıyor, sağ başlıktaki tek
+  satırlık "İlk 20 Banka YtD Büyüme (%)" ise sarmıyor — doğal yükseklik
+  farkı (54,4px vs 43,2px) oluşuyordu.
+  Çözüm: `SnapshotView`'daki mevcut yükseklik-ölçüm deseni (Dönem 13)
+  genişletildi — artık `bank-ranking-header`'ın kendi yüksekliği de ayrı
+  bir `ref` ile ölçülüp `headerMatchHeight` olarak `YtDGrowthChart`'a
+  aktarılıyor; o da kendi `panel-header`'ına bu değeri `min-height` +
+  dikey ortalama (`display:flex;align-items:center`) olarak uyguluyor.
+  Panel gövde hizalaması (matchHeight) ayrı bir mekanizma olduğu için
+  etkilenmedi — ikisi paralel çalışıyor.
+- **YtD barlarını küçültme:** `.ytd-chart-container`'ın `flex:1`
+  (panelin tüm yüksekliğini dolduran) davranışı `flex:0 1 auto` +
+  `max-height:300px` (min 230px) ile sınırlandı; `.ytd-panel-body`'ye
+  `justify-content:center` eklendi — grafik artık uzun panelin İÇİNDE
+  ortalanmış, daha kompakt bir blok (gerçek yükseklik ~234px, önceki
+  ~500px+'den belirgin küçük). Banka etiket satırı (`.ytd-labels-row`)
+  70px → 80px, yazı boyutu 10px → 11px büyütülerek okunabilirlik ayrıca
+  artırıldı.
+- **Doğrulama:** masaüstünde JS ile `leftHeaderHeight === rightHeaderHeight`
+  (54,375px = 54,375px) VE `rankingHeight === ytdPanelHeight` (682,375px
+  = 682,375px) aynı anda teyit edildi — hem başlıklar hem panel tabanları
+  hizalı. `barsAreaHeight` 130px'e (min fallback'e yakın) düştüğü ölçüldü.
+  Rasyo modu ve mobil (375px, 0 taşan element) ekran görüntüsüyle kontrol
+  edildi. 78 test yeşil.
+
 ---
 
 ## 7. Açık ve bekleyen konular

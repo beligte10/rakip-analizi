@@ -194,7 +194,7 @@
     <p class="subtitle">Projenin ilk kuruluşundan bugüne ne yapıldığının kronolojisi, ve önümüzdeki fikirlerin öncelik sıralı listesi. <span class="mono" style="font-size:13px">docs/PROJE_EL_KITABI.md</span>'nin görsel özetidir.</p>
 
     <div class="stats">
-      <div class="stat"><div class="n tabnum">16</div><div class="l">dönem</div></div>
+      <div class="stat"><div class="n tabnum">17</div><div class="l">dönem</div></div>
       <div class="stat"><div class="n tabnum">160</div><div class="l">aktif ölçü</div></div>
       <div class="stat"><div class="n tabnum">7</div><div class="l">backlog maddesi</div></div>
       <div class="stat"><div class="n tabnum">13</div><div class="l">alınan karar</div></div>
@@ -500,12 +500,11 @@
         </div>
       </details>
 
-      <details class="era is-new" id="d15" open>
+      <details class="era" id="d15">
         <summary class="era-head">
           <span class="node">15</span>
           <span class="era-title">Banka sıralama barları "ekonbulten.html" tarzında</span>
           <span class="era-date">2026-09-10</span>
-          <span class="new-tag">yeni</span>
           <span class="era-chevron">›</span>
         </summary>
         <div class="era-body">
@@ -515,6 +514,24 @@
             <li><strong>Yapılan:</strong> satır yüksekliği 20px → 29px, bar yüksekliği 13px → 16px, bar sağ ucu belirgin yuvarlak (<span class="mono" style="font-size:13px">0 7px 7px 0</span>), değer sütunu 60px → 66px + daha fazla boşluk + kalın font. Başlık hücresi bir önceki dönemde sola yaslanmıştı — sağ paneldeki ("YtD Büyüme") ortalanmış başlıkla tutarlı olsun diye tekrar ortalandı.</li>
             <li><strong>Not:</strong> satırlar uzayınca ranking-panel'in yüksekliği ~576px → ~682px'e çıktı; Dönem 13'teki <span class="mono" style="font-size:13px">matchHeight</span> mekanizması sayesinde YtD grafiği otomatik aynı yüksekliğe büyüdü, panel hizalaması bozulmadı.</li>
             <li><strong>Doğrulama:</strong> masaüstünde <span class="mono" style="font-size:13px">rankingHeight === ytdPanelHeight</span> JS ile teyit edildi, mobilde 0 taşan element, 78 test yeşil.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="era is-new" id="d16" open>
+        <summary class="era-head">
+          <span class="node">16</span>
+          <span class="era-title">Başlık gri alanları eşitlendi, YtD grafiği küçültüldü</span>
+          <span class="era-date">2026-09-10</span>
+          <span class="new-tag">yeni</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li>Kullanıcı, "İlk 20 Banka Büyüklükleri" başlığının gri alanının "İlk 20 Banka YtD Büyüme" ile aynı yükseklikte olmadığını fark etti — panel gövdeleri hizalı olsa da (Dönem 13) başlıklar değildi. Ayrıca Dönem 15'te satırlar uzayınca YtD grafiğinin barları da orantılı büyümüştü; barların biraz küçültülüp banka isim etiketlerinin daha net okunması istendi.</li>
+            <li><strong>Kök neden:</strong> sol başlıkta "Pazar Payı Değişimi (Bps)" dar sütunda 2 satıra sarıyor, sağ başlıktaki tek satırlık başlık sarmıyor — doğal yükseklik farkı (54,4px vs 43,2px). Çözüm: mevcut yükseklik-ölçüm deseni (Dönem 13) genişletildi — <span class="mono" style="font-size:13px">bank-ranking-header</span>'ın kendi yüksekliği de ayrı ölçülüp <span class="mono" style="font-size:13px">headerMatchHeight</span> olarak aktarılıyor, YtD paneli kendi başlığına bunu <span class="mono" style="font-size:13px">min-height</span> + dikey ortalama olarak uyguluyor.</li>
+            <li><strong>YtD barlarını küçültme:</strong> <span class="mono" style="font-size:13px">.ytd-chart-container</span>'ın paneli tümüyle dolduran <span class="mono" style="font-size:13px">flex:1</span> davranışı <span class="mono" style="font-size:13px">flex:0 1 auto</span> + <span class="mono" style="font-size:13px">max-height:300px</span> ile sınırlandı, panel gövdesine <span class="mono" style="font-size:13px">justify-content:center</span> eklendi — grafik artık uzun panelin içinde ortalanmış, kompakt bir blok. Banka etiket satırı büyütüldü (70px → 80px, yazı 10px → 11px).</li>
+            <li><strong>Doğrulama:</strong> masaüstünde <span class="mono" style="font-size:13px">leftHeaderHeight === rightHeaderHeight</span> VE <span class="mono" style="font-size:13px">rankingHeight === ytdPanelHeight</span> aynı anda JS ile teyit edildi, rasyo modu ve mobil (0 taşan element) kontrol edildi, 78 test yeşil.</li>
           </ul>
         </div>
       </details>
