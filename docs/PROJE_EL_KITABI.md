@@ -933,6 +933,30 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   mobilde (375px) 0 taşan element, admin/login/signup'ta yeni renk görsel
   doğrulandı. 78 test yeşil (frontend-only).
 
+### Dönem 14 — Banka sıralama tablosu başlığı sadeleştirildi (2026-09-10)
+
+- **Tetikleyici:** kullanıcı bir önceki dönemin hizalama düzeltmesinden
+  sonra tabloya baktı, ekran görüntüsü gönderdi: "Değer" başlığı gereksiz
+  (bar zaten değeri temsil ediyor), "İlk 20 Banka Büyüklükleri" etiketi
+  bar sütununun sonuna kadar uzamalı, "Pazar Payı Değişimi" kendi
+  sütununda net durmalı.
+- **Yapılan:** `BankRanking`'in başlık satırı artık gövde satırlarından
+  (`.bank-row`, hâlâ 3 sütun: isim/bar/delta) FARKLI bir grid kullanıyor
+  — `headerGridCols` (`1fr 82px`, delta yoksa `1fr`) — "Değer" hücresi
+  tamamen kaldırıldı, kalan tek geniş başlık hücresi sola hizalandı ve
+  isim+bar bölgesinin tamamını kaplıyor. Rasyo modunda da aynı düzen
+  (sadece etiket metni değişiyor: "İlk N Banka Rasyo (...)").
+- **Unutulan detay:** mobil breakpoint'lerdeki (900px/560px)
+  `.bank-ranking-header, .bank-row { grid-template-columns: ... !important }`
+  kuralı İKİSİNE birden aynı 3-sütunlu şablonu `!important` ile
+  dayatıyordu — header artık 2 sütun olduğu için bu, mobilde eski 3
+  sütunlu boşluğu geri getirirdi. İki selector ayrıştırıldı: `.bank-row`
+  3 sütunda kaldı, `.bank-ranking-header` kendi 2-sütunlu (`minmax(0,1fr) 82px`
+  / mobilde `64px`) kuralını aldı.
+- **Doğrulama:** masaüstü (1400px) ve mobil (375px) ekran görüntüsüyle
+  hem büyüklük hem rasyo modu kontrol edildi, mobilde 0 taşan element,
+  78 test yeşil.
+
 ---
 
 ## 7. Açık ve bekleyen konular

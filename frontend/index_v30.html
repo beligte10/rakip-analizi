@@ -1365,14 +1365,16 @@
        ekranda gizlice yatay kaydırmaya zorluyordu — .panel görünüşte
        sığıyor gibi duruyor ama sağ sütun (Bps) kırpılıyordu. */
     .dashboard-grid > .panel, .comp-grid > .comp-panel { min-width: 0; }
-    .bank-ranking-header, .bank-row { grid-template-columns: 110px minmax(0,1fr) 82px !important; }
+    .bank-row { grid-template-columns: 110px minmax(0,1fr) 82px !important; }
+    .bank-ranking-header { grid-template-columns: minmax(0,1fr) 82px !important; }
     .bank-bar-cell { grid-template-columns: minmax(0,1fr) 60px; }
   }
 
   @media (max-width: 560px) {
     .topbar-icon-btn { width: 40px; min-height: 38px; }
     .pw-modal, .wn-modal { width: calc(100vw - 24px); }
-    .bank-ranking-header, .bank-row { grid-template-columns: 88px minmax(0,1fr) 64px !important; }
+    .bank-row { grid-template-columns: 88px minmax(0,1fr) 64px !important; }
+    .bank-ranking-header { grid-template-columns: minmax(0,1fr) 64px !important; }
     .bank-bar-cell { grid-template-columns: minmax(0,1fr) 48px; }
     .bank-row-name { font-size: 10.5px; padding: 4px 6px; }
     .bank-value { font-size: 10px; }
@@ -2569,15 +2571,20 @@
       : 100;
 
     var gridCols = hasDelta ? '110px 1fr 82px' : '110px 1fr';
+    // Başlık satırı gövde satırlarından farklı bir grid kullanır: "Değer"
+    // etiketi kaldırıldı, banka adı + bar sütunlarını tek bir geniş başlık
+    // hücresi kaplıyor (isim sütununun sonuna değil, bar'ın bittiği yere
+    // kadar uzanıyor) — kullanıcı isteği (2026-09-10).
+    var headerGridCols = hasDelta ? '1fr 82px' : '1fr';
 
     return h('div', { className: 'panel ranking-panel', ref: props.panelRef },
       h('div', {
         className: 'bank-ranking-header',
-        style: { gridTemplateColumns: gridCols }
+        style: { gridTemplateColumns: headerGridCols }
       },
-        h('div', null, isRasyo ? ('İlk ' + sortedTop20.length + ' Banka Rasyo (' + birimLabel(measure) + ')')
-                               : ('İlk ' + sortedTop20.length + ' Banka Büyüklükleri (' + buyuklukLabel(measure) + ')')),
-        h('div', null, 'Değer'),
+        h('div', { style: { textAlign: 'left' } },
+          isRasyo ? ('İlk ' + sortedTop20.length + ' Banka Rasyo (' + birimLabel(measure) + ')')
+                  : ('İlk ' + sortedTop20.length + ' Banka Büyüklükleri (' + buyuklukLabel(measure) + ')')),
         hasDelta && h('div', null,
           isMiktarDelta(measure)
             ? ('Çeyreklik Değişim (' + (measure.birim === 'bin_TL' ? 'TL' : 'adet') + ')')
