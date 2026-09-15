@@ -532,10 +532,10 @@
   }
   .bank-bar {
     height: 16px;
-    background: #1a2635;
+    background: var(--kt-green);
     border-radius: 0 7px 7px 0;
   }
-  body.dark .bank-bar { background: #3a5872; }
+  body.dark .bank-bar { background: var(--kt-green-dark); }
   .bank-bar.kt { background: #559D87 !important; }
   .bank-bar.outlier { background: #d98b8b; opacity: 0.45; }
   body.dark .bank-bar.outlier { background: #b06a6a; opacity: 0.5; }
@@ -1465,10 +1465,19 @@
     .competitor-grid { grid-template-columns: repeat(2, 1fr); }
     .group-grid { grid-template-columns: repeat(2, 1fr); }
     .rank-badge-row { padding: 8px; }
-    /* 20 banka tek satırda sığmadığı için değer etiketleri üst üste
-       biniyordu — barlar + etiketler yeterli, tam değer zaten "Anında
-       Görünüm" tablosunda var. */
-    .ytd-values-row { display: none; }
+    /* 20 banka tek satırda sığmadığı için yatay değer etiketleri üst üste
+       biniyordu (kullanıcı isteğiyle 2026-09-16'da geri getirildi) —
+       çözüm: bank-label satırındaki gibi dikey (writing-mode) yazı, dar
+       hücrelere üst üste binmeden sığıyor. */
+    .ytd-values-row { height: 42px; }
+    .ytd-value-cell {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-size: 8px;
+      justify-content: center;
+      align-items: flex-end;
+      display: flex;
+    }
   }
 </style>
 </head>
