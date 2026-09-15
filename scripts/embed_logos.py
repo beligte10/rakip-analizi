@@ -26,6 +26,7 @@ Desteklenen: .svg .png .jpg .jpeg .webp
 SVG tercih edilir (küçük, her ölçekte net). Logosu olmayan banka
 otomatik olarak renkli baş-harf rozetine düşer — hata vermez.
 """
+from __future__ import annotations
 import argparse
 import base64
 import json
