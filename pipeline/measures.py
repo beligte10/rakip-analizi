@@ -556,17 +556,34 @@ def m_roae(ctx, b, t):
 
 
 def m_nim(ctx, b, t):
+    """Net Faiz (Kar Payı) Marjı (NIM) — TTM Net Faiz Geliri/Gideri / Ortalama
+    (detaylı 13-bileşenli) Faiz Getirili Aktif.
+
+    ⚠️ EN İYİ TAHMİN, BİREBİR DOĞRULANMADI (2026-09-15, kullanıcı talebiyle
+    BASELINE_PASSTHROUGH'dan raw'a taşındı). 1057 tarihsel noktada v29
+    baseline'la karşılaştırıldı: medyan fark 0.24pp, %81.7'si ±0.5pp içinde
+    — 'faiz_getirili_aktif_getirisi' (%92.5) kadar temiz değil. Geri-çözme
+    analizinde payımın tutarlı şekilde ~%7-8 fazla çıktığını buldum ama tek
+    bir eksik kalemle açıklayamadım (bkz. docs/PROJE_EL_KITABI.md Dönem 25/26)
+    — orijinal PBI DAX'ı olmadan bu son farkı kapatamadım."""
     ttm = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Net Faiz Geliri/Gideri'))
-    avg = _avg(ctx, b, t, lambda bb, tt: faiz_getirili_aktif(ctx, bb, tt))
+    avg = _avg(ctx, b, t, lambda bb, tt: _faiz_getirili_aktif_detay(ctx, bb, tt))
     return safe_ratio(ttm, avg)
 
 
 def m_nim_bzk_sonrasi(ctx, b, t):
+    """BZK Sonrası Düzeltilmiş NIM — m_nim'in payından Kredi Ve Diğer
+    Alacaklar Değer Düşüş Karşılığı çıkarılmış hali.
+
+    ⚠️ EN İYİ TAHMİN, ZAYIF DOĞRULAMA (2026-09-15). 1057 noktada yalnız
+    %43'ü ±0.5pp içinde — nim'den bile düşük. Kullanıcının açık talebiyle
+    (orijinal DAX bulunamadığı için) yine de raw'a taşındı; bu ölçüye
+    diğerlerinden daha az güvenilmeli."""
     def nf_minus_prov(bb, tt):
         return (ctx.gelir(bb, tt, 'Net Faiz Geliri/Gideri')
               - ctx.gelir(bb, tt, 'Kredi Ve Diğer Alacaklar Değer Düşüş Karşılığı (-)'))
     ttm = _ttm(ctx, b, t, nf_minus_prov)
-    avg = _avg(ctx, b, t, lambda bb, tt: faiz_getirili_aktif(ctx, bb, tt))
+    avg = _avg(ctx, b, t, lambda bb, tt: _faiz_getirili_aktif_detay(ctx, bb, tt))
     return safe_ratio(ttm, avg)
 
 
@@ -625,9 +642,26 @@ def m_kaynak_pacal_maliyet(ctx, b, t):
     return m_faiz_maliyetli_pasif_maliyeti(ctx, b, t)
 
 
+def _faiz_maliyetli_pasif_maliyeti_detay(ctx, b, t):
+    """m_faiz_maliyetli_pasif_maliyeti'nin DETAYLI (9-bileşenli
+    _faiz_maliyetli_pasif_detay) paydalı hali — yalnız m_spread için,
+    'kaynak_pacal_maliyet' ölçüsünü etkilemez."""
+    ttm = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Faiz Giderleri'))
+    avg = _avg(ctx, b, t, lambda bb, tt: _faiz_maliyetli_pasif_detay(ctx, bb, tt))
+    return safe_ratio(ttm, avg)
+
+
 def m_spread(ctx, b, t):
+    """Spread = Faiz Getirili Aktiflerin Getirisi − Faiz Maliyetli
+    Pasiflerin Maliyeti (ikisi de detaylı 13/9-bileşenli tanımla).
+
+    ⚠️ EN İYİ TAHMİN, BİREBİR DOĞRULANMADI (2026-09-15). 1055 noktada
+    medyan fark 0.19pp, %78.3'ü ±0.5pp içinde. Getirisi tarafı ayrı ayrı
+    %92.5 doğru; maliyet tarafını da detaylı formüle geçirmek sonucu
+    DEĞİŞTİRMEDİ — kalan sapma muhtemelen nim'deki aynı açıklanamayan
+    ~%7-8'lik pay sapmasından geliyor."""
     a = m_faiz_getirili_aktif_getirisi(ctx, b, t)
-    p = m_faiz_maliyetli_pasif_maliyeti(ctx, b, t)
+    p = _faiz_maliyetli_pasif_maliyeti_detay(ctx, b, t)
     if a is None or p is None: return None
     return a - p
 
@@ -1408,6 +1442,9 @@ MEASURE_FUNCS: Dict[str, Callable] = {
     'net_faiz_ort_rav': m_net_faiz_ort_rav,
     'faiz_getirili_aktif_getirisi': m_faiz_getirili_aktif_getirisi,
     'gayrinakdi_komisyon_gayrinakdi': m_gayrinakdi_komisyon_gayrinakdi,
+    'nim': m_nim,
+    'nim_bzk_sonrasi': m_nim_bzk_sonrasi,
+    'spread': m_spread,
     'toplam_risk_tabani': m_toplam_risk_tabani,
     'kredi_riski_toplam_risk': m_kredi_riski_toplam_risk,
     'piyasa_riski_toplam_risk': m_piyasa_riski_toplam_risk,
@@ -1435,25 +1472,16 @@ MEASURE_FUNCS: Dict[str, Callable] = {
 # Ham veride bulunmayan veya v29 PBI hesabıyla raw'dan tam eşleşmeyen
 # measure'lar — base_data'dan (v29 baseline) olduğu gibi kopyalanır.
 BASELINE_PASSTHROUGH: Set[str] = {
-    # PBI özel düzeltmeli formüller — "düzeltme" mantığı belgelenmemiş,
-    # raw'dan güvenilir şekilde geri türetilemedi (2026-09-12'de denendi)
+    # PBI özel düzeltmeli formüller — "düzeltme" mantığı hiç belgelenmedi,
+    # denenecek bir formül adayı bile yok (2026-09-12'de arandı, bulunamadı)
     'maliyet_gelir_duzeltilmis',
     'nim_duzeltilmis',
-
-    # PBI özel akım formülleri (raw delta hesabıyla tam tutmuyor,
-    # 2026-09-12'de denendi: spread payda tarafı iyileşti ama medyan fark
-    # hâlâ ~0.19pp/%78 <0.5pp — 'faiz_getirili_aktif_getirisi' kadar temiz
-    # değil, bilinçli olarak passthrough'da bırakıldı)
-    'spread',
-
-    # IEA tanımı PBI'a özgü — raw'dan ~%2-5 fark (2026-09-12'de detaylı
-    # TCMB-bazlı payda ile yeniden denendi: nim %81.7 <0.5pp'e,
-    # nim_bzk_sonrasi sadece %43'e çıktı — ikisi de
-    # 'faiz_getirili_aktif_getirisi'nin (%92.5, artık raw'a taşındı)
-    # gerisinde kaldı, bilinçli olarak passthrough'da bırakıldı).
-    # NOT: 'maliyet_gelir' AYNI turda raw'a taşındı (bkz. m_maliyet_gelir
-    # docstring'i) — iki ayrı hata (eksik payda kalemi + yanlış TTM
-    # uygulaması) düzeltilince %92.4 <0.5pp'e çıktı.
-    'nim',
-    'nim_bzk_sonrasi',
 }
+
+# 2026-09-15: kullanıcı, birebir doğrulanmamış olsalar bile 'nim',
+# 'nim_bzk_sonrasi', 'spread' için elimdeki EN İYİ TAHMİN formülünün
+# (BASELINE_PASSTHROUGH'ta donmuş Mart değerini Haziran'a "ileri taşımak"
+# yerine) kullanılmasını istedi — bkz. m_nim/m_nim_bzk_sonrasi/m_spread
+# docstring'leri için doğruluk oranları (sırasıyla %81.7/%43/%78.3,
+# ±0.5pp). MEASURE_FUNCS'a taşındılar; 'maliyet_gelir_duzeltilmis' ve
+# 'nim_duzeltilmis' için hiç formül adayı olmadığından pasif kaldı.
