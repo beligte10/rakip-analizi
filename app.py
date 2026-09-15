@@ -1496,6 +1496,87 @@ def admin_upload(
 
 
 # ============================================================
+# Admin: BDR-Kısayol JSON test yükleme — Faz 1, destekleyici/test (2026-09-12)
+# ============================================================
+@app.post('/admin/cikti-test-upload')
+def admin_cikti_test_upload(
+    file: UploadFile = File(...),
+    user: str = Depends(heavy_op_guard),
+):
+    """
+    BDR-Kısayol'un `<DÖNEM>.json` çıktısını (bkz. VERI-FORMATI.md) test amaçlı
+    işler ve mevcut computed.json ile KALEM SEVİYESİNDE karşılaştırır.
+
+    FAZ 1 — DESTEKLEYİCİ/TEST: Bu endpoint `data/computed.json`,
+    `data/veriler.parquet` veya `data/raw/`'a HİÇBİR ŞEKİLDE yazmaz. JSON,
+    pipeline.cikti_ingest ile bellek-içi bir long-format DataFrame'e
+    çevrilir, pipeline.cikti_diagnostics.diagnose() ile (pipeline.measures
+    DEĞİŞTİRİLMEDEN) her (ölçü, banka, tarih) hücresi TEK TEK hesaplanır —
+    her hücrenin hangi ham kalem lookup'larını (ctx.bilanco/gelir/mvy/...)
+    tetiklediği de izlenir. Sonuç mevcut computed.json'daki gerçek
+    değerlerle karşılaştırılır ve İKİ seviyede rapor üretilir:
+    (1) hücre bazlı — hangi ölçü/banka/tarih farklı, hangi ham kalem
+        lookup'ı o hücrede eksikti;
+    (2) kalem bazlı (agregat) — tüm çalışma boyunca hangi ham kalem hiç/
+        kısmen bulunamadı, kaç ölçüyü etkiliyor — bu, `pipeline/
+        cikti_ingest.py`'de tam olarak NEREDE eşleme eksikliği olduğunu
+        doğrudan gösterir.
+    """
+    if not file.filename.lower().endswith('.json'):
+        raise HTTPException(status_code=400, detail='Sadece .json kabul edilir')
+
+    try:
+        content = file.file.read()
+    finally:
+        file.file.close()
+
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail=f'Geçersiz JSON: {exc}')
+
+    if 'kayitlar' not in data or 'donem' not in data:
+        raise HTTPException(status_code=400, detail="JSON'da 'donem'/'kayitlar' anahtarları yok")
+
+    from pipeline.cikti_ingest import cikti_to_dataframe, bankalar_ve_donemler
+    from pipeline.cikti_diagnostics import diagnose
+
+    if not DATA_CATALOG.exists():
+        raise HTTPException(status_code=500, detail='catalog.json yok')
+    with open(DATA_CATALOG, encoding='utf-8') as f:
+        catalog = json.load(f)
+
+    try:
+        df, banka_turu_map = cikti_to_dataframe(data)
+        banks, dates = bankalar_ve_donemler(data)
+        if df.empty or not banks or not dates:
+            raise HTTPException(status_code=400, detail='JSON boş veya tanınmayan formatta')
+
+        if not DATA_COMPUTED.exists():
+            raise HTTPException(status_code=500, detail='computed.json yok')
+        with open(DATA_COMPUTED, encoding='utf-8') as f:
+            base_bank_data = json.load(f)['bank_data']
+
+        rapor = diagnose(df, banka_turu_map, catalog['measures'], banks, dates, base_bank_data)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f'Dönüştürme/karşılaştırma hatası: {type(exc).__name__}: {exc}')
+
+    return JSONResponse({
+        'status': 'ok',
+        'donem': data.get('donem'),
+        'banka_sayisi': len(banks),
+        'satir_sayisi': int(len(df)),
+        'ozet': rapor['ozet'],
+        'satirlar': rapor['satirlar'],
+        'kalem_kapsama': rapor['kalem_kapsama'],
+        'not': 'Faz 1 — destekleyici/test: computed.json/veriler.parquet/data/raw hiçbir şekilde değiştirilmedi.',
+    })
+
+
+# ============================================================
 # Admin: ZIP upload — bulk replace raw + auto rebuild (Faz 3.6)
 # ============================================================
 @app.post('/admin/upload-zip')

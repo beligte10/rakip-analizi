@@ -505,20 +505,38 @@ def m_net_ucret_operasyonel(ctx, b, t):
 
 
 def m_maliyet_gelir(ctx, b, t):
-    """Operasyonel Gider TTM / Operasyonel Gelir TTM × 100."""
-    def maliyet(bb, tt):
-        return (ctx.gelir(bb, tt, 'Diğer Faaliyet Giderleri (-)')
-              + ctx.gelir(bb, tt, 'Personel Giderleri (-)'))
-    def gelir(bb, tt):
-        return (ctx.gelir(bb, tt, 'Net Faiz Geliri/Gideri')
-              + ctx.gelir(bb, tt, 'Net Ücret Ve Komisyon Gelirleri/Giderleri')
-              + ctx.gelir(bb, tt, 'Ticari Kar/Zarar (Net)'))
-    return safe_ratio(_ttm(ctx, b, t, maliyet), _ttm(ctx, b, t, gelir))
+    """Maliyet / Gelir Rasyosu (%) = (Diğer Faaliyet Giderleri + Personel
+    Giderleri) / Faaliyet Gelirleri/Giderleri Toplamı — YtD/YtD (TTM DEĞİL).
+
+    2026-09-12'de iki hata birden düzeltildi (BASELINE_PASSTHROUGH'dan
+    raw'a taşındı):
+    1. Payda eskiden yalnız Net Faiz+Net Ücret+Ticari K/Z topluyordu; ham
+       veride 'Faaliyet Gelirleri/Giderleri Toplamı' adlı hazır bir kalem
+       var (= Net Faiz Geliri/Gideri + Net Ücret ve Komisyon + Temettü
+       Gelirleri + Ticari Kar/Zarar (Net) + Diğer Faaliyet Gelirleri —
+       Akbank 2025-12-31'de 209.070.888.000 TL ile birebir doğrulandı) —
+       eski payda Temettü ve Diğer Faaliyet Gelirleri'ni atlıyordu.
+    2. TTM annualizasyonu YANLIŞ uygulanmıştı — bu rasyo PBI'da YtD/YtD
+       (yıl içinde YtD; yıllıklandırılmıyor). Akbank'ta 2025-06-30/09-30/
+       12-31 üçü de plain YtD ile prod'la BİREBİR eşleşti, TTM'li versiyon
+       ~1-1.5pp sistematik sapma veriyordu.
+    Sonuç: 1054 tarihsel noktadan %92.4'ü ±0.5pp içinde (medyan fark 0,
+    %88.6'sı ±0.01pp). Kalan sapma bilinen veri-kalitesi istisnalarında
+    (TOM Bank, Alternatif Bank, Odeabank — bu proje genelinde başka
+    ölçülerde de görülen bankalar) yoğunlaşıyor."""
+    maliyet = ctx.gelir(b, t, 'Diğer Faaliyet Giderleri (-)') + ctx.gelir(b, t, 'Personel Giderleri (-)')
+    gelir = ctx.gelir(b, t, 'Faaliyet Gelirleri/Giderleri Toplamı')
+    return safe_ratio(maliyet, gelir)
 
 
 def m_gayrinakdi_komisyon_gayrinakdi(ctx, b, t):
-    """Gayri Nakdi Komisyon Geliri / Gayri Nakdi Krediler — gayrinakdi PBI tanımına bağlı."""
-    return None  # formül belirsiz, hâlâ BASELINE_PASSTHROUGH'da (gayrinakdi_krediler'den farklı)
+    """Gayri Nakdi Kredilerden (komisyon geliri, TTM) / Gayrinakdi Krediler
+    (dönem SONU bakiyesi — ORTALAMA DEĞİL). 2026-09-12'de raw'a taşındı:
+    1022 noktadan %99.8'i v29 baseline'la ±0.5pp içinde (medyan fark 0) —
+    ortalama bakiye denendiğinde uyum %99.1'e düşüyordu, PBI'ın burada
+    dönem-sonu bakiye kullandığı bu şekilde ortaya çıktı."""
+    ttm = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Gayri Nakdi Kredilerden'))
+    return safe_ratio(ttm, m_gayrinakdi_krediler(ctx, b, t))
 
 
 # ============================================================
@@ -583,8 +601,17 @@ def m_net_ucret_ort_aktif(ctx, b, t):
 
 
 def m_faiz_getirili_aktif_getirisi(ctx, b, t):
+    """PBI [Faiz (Kar Payı) Getirili Aktiflerin Getirisi] = TTM Faiz
+    Gelirleri / Ortalama Faiz Getirili Aktif. 2026-09-12'de basit (4
+    bileşenli, lookup.faiz_getirili_aktif) paydadan DETAYLI (13 bileşenli,
+    _faiz_getirili_aktif_detay — TCMB tablosu dahil) paydaya geçildi: basit
+    payda ile 27 banka × tüm dönemlerde medyan fark 0.94pp, %30.3'ü ±0.5pp
+    içindeydi; detaylı payda ile medyan fark 0, %92.5'i ±0.5pp içinde —
+    kalan sapma küçük/yeni katılım bankalarında (Emlak Katılım, Dünya
+    Katılım, Hayat Finans) yoğunlaşıyor. BASELINE_PASSTHROUGH'dan raw'a
+    taşındı (bkz. MEASURE_FUNCS)."""
     ttm = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Faiz Gelirleri'))
-    avg = _avg(ctx, b, t, lambda bb, tt: faiz_getirili_aktif(ctx, bb, tt))
+    avg = _avg(ctx, b, t, lambda bb, tt: _faiz_getirili_aktif_detay(ctx, bb, tt))
     return safe_ratio(ttm, avg)
 
 
@@ -1062,6 +1089,41 @@ def m_rav(ctx, b, t):
     return ctx.sermaye(b, t, 'Kredi Riskine Esas Tutar: Toplam')
 
 
+def m_syr(ctx, b, t):
+    """Sermaye Yeterlilik Rasyosu (%) — BDDK'nın kendisi bu oranı zaten
+    hesaplayıp 'Kredilere İlişkin Olarak Ayrılan Özel Karşılıklar' adlı
+    (mislabeled/reused) tabloda 'Sermaye Yeterlilik Rasyosu (%)' kalemi
+    olarak raporluyor; RAV/Özkaynak'tan ayrıca türetmeye gerek yok.
+    2026-09-12'de BASELINE_PASSTHROUGH'dan raw'a taşındı — 1055 tarihsel
+    (banka,tarih) noktasından 1055'i v29 baseline'la ±0.01pp içinde
+    eşleşiyor (98.4%'ü tam sıfır fark)."""
+    return ctx.sermaye_orani(b, t, 'Sermaye Yeterlilik Rasyosu (%)')
+
+
+def m_cekirdek_syr(ctx, b, t):
+    """Çekirdek Sermaye Yeterliliği Oranı (%) — aynı tablo, aynı gerekçe
+    (bkz. m_syr). 1054/1054 noktadan 99.3%'ü tam sıfır fark ile eşleşti."""
+    return ctx.sermaye_orani(b, t, 'Çekirdek Sermaye Yeterliliği Oranı (%)')
+
+
+def m_rorwa(ctx, b, t):
+    """RORWA = TTM Net Dönem Karı / Ortalama RAV (%). Standart uluslararası
+    banka karlılık rasyosu (Return on Risk-Weighted Assets). 2026-09-12'de
+    doğrulandı: 950 noktadan %96.1'i v29 baseline'la ±0.5pp içinde (medyan
+    fark 0) — kalan sapma büyük ölçüde küçük/yeni katılım bankalarında."""
+    ttm = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Net Dönem Karı / Zararı'))
+    avg = _avg(ctx, b, t, lambda bb, tt: m_rav(ctx, bb, tt))
+    return safe_ratio(ttm, avg)
+
+
+def m_net_faiz_ort_rav(ctx, b, t):
+    """Net Faiz (Kar Payı) Geliri / Ortalama RAV (%). 2026-09-12'de
+    doğrulandı: 948 noktadan %95.0'i ±0.5pp içinde (medyan fark 0)."""
+    ttm = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Net Faiz Geliri/Gideri'))
+    avg = _avg(ctx, b, t, lambda bb, tt: m_rav(ctx, bb, tt))
+    return safe_ratio(ttm, avg)
+
+
 def _kredi_riski(ctx, b, t):
     return ctx.sermaye(b, t, 'Kredi Riskine Esas Tutar: Toplam')
 
@@ -1274,6 +1336,7 @@ MEASURE_FUNCS: Dict[str, Callable] = {
     'tp_mevduat_toplam_mevduat': m_tp_mevduat_toplam_mevduat,
 
     # Gelir Tablosu rasyolar (YtD)
+    'maliyet_gelir': m_maliyet_gelir,
     'komisyon_gid_gel': m_komisyon_gid_gel,
     'faiz_gideri_faiz_geliri': m_faiz_gideri_faiz_geliri,
     'personel_net_kar': m_personel_net_kar,
@@ -1339,6 +1402,12 @@ MEASURE_FUNCS: Dict[str, Callable] = {
     'toplam_pasifler': m_toplam_pasifler,
     'toplam_pasifler_ozkaynak_haric': m_toplam_pasifler_ozkaynak_haric,
     'rav': m_rav,
+    'syr': m_syr,
+    'cekirdek_syr': m_cekirdek_syr,
+    'rorwa': m_rorwa,
+    'net_faiz_ort_rav': m_net_faiz_ort_rav,
+    'faiz_getirili_aktif_getirisi': m_faiz_getirili_aktif_getirisi,
+    'gayrinakdi_komisyon_gayrinakdi': m_gayrinakdi_komisyon_gayrinakdi,
     'toplam_risk_tabani': m_toplam_risk_tabani,
     'kredi_riski_toplam_risk': m_kredi_riski_toplam_risk,
     'piyasa_riski_toplam_risk': m_piyasa_riski_toplam_risk,
@@ -1366,27 +1435,25 @@ MEASURE_FUNCS: Dict[str, Callable] = {
 # Ham veride bulunmayan veya v29 PBI hesabıyla raw'dan tam eşleşmeyen
 # measure'lar — base_data'dan (v29 baseline) olduğu gibi kopyalanır.
 BASELINE_PASSTHROUGH: Set[str] = {
-    # Sermaye Yeterliliği — BDDK ana raporlarında yok
-    'syr',
-    'cekirdek_syr',
-
-    # Risk Ağırlıklı Varlıklar (RWA) bağımlı rasyolar
-    'rorwa',
-    'net_faiz_ort_rav',
-
-    # PBI özel düzeltmeli formüller
+    # PBI özel düzeltmeli formüller — "düzeltme" mantığı belgelenmemiş,
+    # raw'dan güvenilir şekilde geri türetilemedi (2026-09-12'de denendi)
     'maliyet_gelir_duzeltilmis',
     'nim_duzeltilmis',
 
-    # Ham veride v29 ile eşleşmiyor / formül belirsiz
-    'gayrinakdi_komisyon_gayrinakdi',
-
-    # PBI özel akım formülleri (raw delta hesabıyla tam tutmuyor)
+    # PBI özel akım formülleri (raw delta hesabıyla tam tutmuyor,
+    # 2026-09-12'de denendi: spread payda tarafı iyileşti ama medyan fark
+    # hâlâ ~0.19pp/%78 <0.5pp — 'faiz_getirili_aktif_getirisi' kadar temiz
+    # değil, bilinçli olarak passthrough'da bırakıldı)
     'spread',
 
-    # IEA/operasyonel gelir tanımı PBI'a özgü — raw'dan ~%2-5 fark
-    'maliyet_gelir',
+    # IEA tanımı PBI'a özgü — raw'dan ~%2-5 fark (2026-09-12'de detaylı
+    # TCMB-bazlı payda ile yeniden denendi: nim %81.7 <0.5pp'e,
+    # nim_bzk_sonrasi sadece %43'e çıktı — ikisi de
+    # 'faiz_getirili_aktif_getirisi'nin (%92.5, artık raw'a taşındı)
+    # gerisinde kaldı, bilinçli olarak passthrough'da bırakıldı).
+    # NOT: 'maliyet_gelir' AYNI turda raw'a taşındı (bkz. m_maliyet_gelir
+    # docstring'i) — iki ayrı hata (eksik payda kalemi + yanlış TTM
+    # uygulaması) düzeltilince %92.4 <0.5pp'e çıktı.
     'nim',
     'nim_bzk_sonrasi',
-    'faiz_getirili_aktif_getirisi',
 }

@@ -638,12 +638,11 @@
         </div>
       </details>
 
-      <details class="era is-new" id="d23" open>
+      <details class="era" id="d23">
         <summary class="era-head">
           <span class="node">23</span>
           <span class="era-title">Orta genişlik masaüstünde toolbar "Rakip Analizi" ile çakışıyordu</span>
           <span class="era-date">2026-09-10</span>
-          <span class="new-tag">yeni</span>
           <span class="era-chevron">›</span>
         </summary>
         <div class="era-body">
@@ -652,6 +651,47 @@
             <li><strong>Kök neden #1 — Dönem 22'nin yan etkisi:</strong> logo toolbar'dan çıkarılınca <span class="mono" style="font-size:13px">justify-content:space-between</span> artık 3 flex elemanı görüyordu (eskiden 2) — bu da toolbar'ı sağ kenardan merkeze kaydırıp "Rakip Analizi" ile çakıştırdı. Düzeltme: <span class="mono" style="font-size:13px">flex-start + gap:14px</span>, sol bloğa <span class="mono" style="font-size:13px">margin-right:auto</span> — kaç öğe olursa olsun geri kalanı tek grup halinde sağa yaslanıyor.</li>
             <li><strong>Kök neden #2 — önceden var olan, bağımsız bir sorun:</strong> düzeltmeden sonra bile 1050px'te gerçek bir piksel çakışması ölçüldü. Ortadaki blok yalnızca ≤980px'te gizleniyordu, ama toolbar'ın gerçek genişliği yaygın laptop/yarı-ekran genişliklerinde (1000-1200px) hâlâ değiyordu — bu, Dönem 22'den önce de var olan bir tasarım boşluğuydu. İki gizleme eşiği 980px → 1200px'e çıkarıldı.</li>
             <li><strong>Doğrulama:</strong> JS ile genişlik taraması — 1050px'te düzeltmeden önce <span class="mono" style="font-size:13px">overlap:true</span>, sonra ortadaki blok gizli; 1210px'te (yeni eşiğin hemen üstü) 30px güvenli boşluk; 1250px/1400px'te çakışma yok; 920px'te toolbar sorunsuz; mobilde (375px) 0 taşan element. 78 test yeşil.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="era" id="d24">
+        <summary class="era-head">
+          <span class="node">24</span>
+          <span class="era-title">BDR-Kısayol JSON entegrasyonu — Faz 1 (destekleyici/test)</span>
+          <span class="era-date">2026-09-12</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li>Kullanıcı, ayrı bir araç olan <strong>bdr-kisayol-main</strong>'in (BDDK PDF'lerini ayrıştırıp <span class="mono" style="font-size:13px">&lt;DÖNEM&gt;.json</span> üreten proje) çıktısını, mevcut Rasyonet/xlsx abonelik maliyetinden kurtulmak için Rakip Analizi'nin veri kaynağı yapmak istedi.</li>
+            <li><strong>Kapsam kararı:</strong> Faz 1 = <strong>destekleyici/test</strong> — <span class="mono" style="font-size:13px">computed.json</span>/<span class="mono" style="font-size:13px">veriler.parquet</span>/<span class="mono" style="font-size:13px">data/raw/</span>'a HİÇBİR YAZMA yapılmaz; türetim mantığı <span class="mono" style="font-size:13px">pipeline/measures.py</span>'de kalır, yeni format yalnızca alternatif bir ham-veri kaynağı.</li>
+            <li><strong>Doğrulama metodolojisi:</strong> gerçek bir örnek dosya (27 banka, 2026-2Ç) Akbank/Kuveyt Türk için <span class="mono" style="font-size:13px">computed.json</span>'daki GERÇEK değerlerle birebir karşılaştırılarak ilerlendi — varsayımla değil, her tablo eşlemesi sayısal olarak doğrulandı.</li>
+            <li><strong>Eklenenler:</strong> <span class="mono" style="font-size:13px">pipeline/cikti_ingest.py</span> (JSON → mevcut long-format ara format dönüştürücü — alt katmanlar hiç değişmedi), <span class="mono" style="font-size:13px">pipeline/cikti_compare.py</span> (hücre-hücre karşılaştırma raporu), <span class="mono" style="font-size:13px">POST /admin/cikti-test-upload</span>, admin panelde "🧪 BDR JSON Test Yükleme" bölümü, 20 regresyon testi.</li>
+            <li><strong>Bulunan BDDK-şablonu tuzakları:</strong> üst-düzey (Roma rakamı) bilanço/gelir satırları çıktı'da BÜYÜK HARF geliyor; bazı kalemlerde bağlaç ("ve"/"ile") büyük/küçük harf tutarsız; <span class="mono" style="font-size:13px">_brut_krediler</span> ile <span class="mono" style="font-size:13px">grup_1_krediler</span>'in AYNI kalemi farklı anlamda beklediği (tek sentetik değer biri düzeltirken diğerini bozdu — regresyon testinde yakalandı, bu ölçü çifti bilinçli olarak kapsam dışı bırakıldı).</li>
+            <li><strong>Sonuç (tek çeyrek, 27 banka):</strong> 148 ölçünün ~%51'i birebir/tolerans dahilinde uyuşuyor — Toplam Aktifler, RAV, Toplam Özkaynaklar, Likidite Açığı ×7, Vadesiz/Vadeli Mevduat, Tüketici Kredileri, Şube/Personel Sayısı gibi kritik büyüklükler byte-exact. Kalan fark çoğunlukla TCMB-tablosu gerektiren detaylı formüller (kapsam dışı) ve tek-çeyrek yüklemenin ortalama-bakiye/TTM ölçülerini besleyememesi (yapısal, çok çeyrek yüklenince kendiliğinden düzelir).</li>
+            <li><strong>Doğrulama:</strong> <span class="mono" style="font-size:13px">pytest tests/</span> → 98/98 yeşil. Endpoint gerçek dosyayla uçtan uca çağrıldı; <span class="mono" style="font-size:13px">computed.json</span>/<span class="mono" style="font-size:13px">veriler.parquet</span>'in MD5'i çağrı öncesi/sonrası DEĞİŞMEDİ.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="era is-new" id="d25" open>
+        <summary class="era-head">
+          <span class="node">25</span>
+          <span class="era-title">12 passthrough ölçüden 7'si raw'a taşındı</span>
+          <span class="era-date">2026-09-12</span>
+          <span class="new-tag">yeni</span>
+          <span class="era-chevron">›</span>
+        </summary>
+        <div class="era-body">
+          <ul>
+            <li>Kullanıcı, kalan 12 <span class="mono" style="font-size:13px">BASELINE_PASSTHROUGH</span> ölçünün nasıl türetildiğini araştırıp, JSON'dan hesaplayıp geçmiş dönem verisiyle tutuyorsa Python koduna kaydetmemi istedi.</li>
+            <li><strong>Yöntem:</strong> standart bankacılık formülleri (RORWA, NIM, Net Interest Spread — web araması ile doğrulandı) ve kodda zaten yazılmış ama hiç bağlanmamış "taslak" fonksiyonlar incelendi; her aday, gerçek xlsx ham verisi + <span class="mono" style="font-size:13px">computed.json</span>'daki donmuş v29 baseline değerleriyle TÜM tarihsel noktalarda karşılaştırılarak test edildi.</li>
+            <li><strong>Beklenmeyen keşif:</strong> SYR/Çekirdek SYR hiç "türetilmiş" değil — BDDK'nın kendisi bu oranları zaten hesaplayıp ham veride (mislabeled bir sayfada) raporluyor. Yeni bir <span class="mono" style="font-size:13px">ctx.sermaye_orani()</span> erişimcisi eklendi.</li>
+            <li><strong>Taşınan 7 ölçü</strong> (±0.5pp uyum oranı): <span class="mono" style="font-size:13px">syr</span> %98.4, <span class="mono" style="font-size:13px">cekirdek_syr</span> %99.3, <span class="mono" style="font-size:13px">gayrinakdi_komisyon_gayrinakdi</span> %99.8 (payda ortalama değil dönem-sonu bakiye olunca düzeldi), <span class="mono" style="font-size:13px">maliyet_gelir</span> %92.4 (kullanıcının "neden problem yaşanıyor" sorusu üzerine derinleştirildi — payda eksikti + TTM yanlış uygulanmıştı, ikisi düzelince %5.1'den çıktı), <span class="mono" style="font-size:13px">rorwa</span> %96.1, <span class="mono" style="font-size:13px">net_faiz_ort_rav</span> %95.0, <span class="mono" style="font-size:13px">faiz_getirili_aktif_getirisi</span> %92.5 (detaylı TCMB-bazlı payda ile %30.3'ten çıktı). Kalan sapma küçük/yeni/veri-kalitesi-istisnalı bankalarda (Emlak Katılım, Dünya Katılım, Hayat Finans, TOM Bank, Alternatif Bank) yoğunlaşıyor.</li>
+            <li><strong>Bilinçli olarak passthrough'da bırakılan 5 ölçü</strong> (denendi, eşik altında kaldı): <span class="mono" style="font-size:13px">nim</span> (%81.7), <span class="mono" style="font-size:13px">nim_bzk_sonrasi</span> (%43), <span class="mono" style="font-size:13px">spread</span> (%78.3), <span class="mono" style="font-size:13px">maliyet_gelir_duzeltilmis</span>/<span class="mono" style="font-size:13px">nim_duzeltilmis</span> (PBI'ın "düzeltme" mantığı belgelenmemiş). Proje geçmişinin kendi standardı korundu — %85 altı uyum oranıyla üretime yazılmadı.</li>
+            <li><strong>Üretim etkisi:</strong> bu bir KOD değişikliği — <span class="mono" style="font-size:13px">computed.json</span> bu turda YAZILMADI. Değişiklik kullanıcının bir dahaki xlsx upload'ında veya rebuild'inde devreye girecek; o noktada bu 6 ölçünün donmuş (v29'dan hiç güncellenmemiş) değerleri güncel ham veriden taze hesaplanacak.</li>
+            <li><strong>Doğrulama:</strong> <span class="mono" style="font-size:13px">tests/test_baseline_promoted.py</span> (yeni, 7 test) + <span class="mono" style="font-size:13px">pytest tests/</span> → 105/105 yeşil.</li>
           </ul>
         </div>
       </details>

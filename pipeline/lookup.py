@@ -48,6 +48,7 @@ class LookupContext:
             ('tcmb', df['Tablo Adı'] == 'Nakit Değerler ve TCMB’ye İlişkin Bilgiler'),
             ('ozkaynak_detay', df['Tablo Adı'] == 'Özkaynak Kalemlerine İlişkin Bilgiler'),
             ('kalan_vade', df['Tablo Adı'] == 'Aktif ve Pasif Kalemlerin Kalan Vadelerine Göre Gösterimi'),
+            ('sermaye_orani', df['Tablo Adı'] == 'Kredilere İlişkin Olarak Ayrılan Özel Karşılıklar'),
         ]:
             self._idx[table_key] = self._index(df[mask])
 
@@ -153,6 +154,18 @@ class LookupContext:
         (Likidite Açığı, Nakit Değerler vb. vade dilimleri). NOT: ham veride
         'Likidite' 'Likitide' olarak yazılı — kalem adları birebir kopyalanmalı."""
         return self._lookup('kalan_vade', banka, tarih, kalem, pb)
+
+    def sermaye_orani(self, banka, tarih, kalem, pb='Toplam'):
+        """'Kredilere İlişkin Olarak Ayrılan Özel Karşılıklar' tablosu — BDDK
+        şablonunda mislabeled/reused bir sayfa adı (bu proje genelinde sıkça
+        görülen bir kalıp, bkz. tcmb/sermaye docstring'leri); gerçekte
+        Sermaye Yeterliliği Standart Oranına İlişkin Özet Bilgi'yi taşıyor
+        ('Sermaye Yeterlilik Rasyosu (%)', 'Çekirdek Sermaye Yeterliliği
+        Oranı (%)', 'Ana Sermaye Yeterliliği Oranı (%)'). 2026-09-12'de
+        BDR-Kısayol entegrasyonu sırasında keşfedildi — BDDK'nın kendisi bu
+        oranları zaten hesaplayıp raporluyor, ayrıca türetmeye gerek yok
+        (1055/1055 ve 1054/1054 tarihsel noktada ±0.01pp içinde doğrulandı)."""
+        return self._lookup('sermaye_orani', banka, tarih, kalem, pb)
 
     # Banka tipi farkındalı yardımcılar
     def vadesiz_mevduat(self, banka, tarih):

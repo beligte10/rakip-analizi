@@ -279,6 +279,7 @@ button.secondary:hover { background: var(--hover); }
 }
 .spot-check-table th { background: var(--bg); font-weight: 600; }
 .spot-check-table td.value { text-align: right; font-family: monospace; }
+.mono { font-family: monospace; }
 
 /* History */
 /* Dar ekranda tablo genişliği viewport'u aşabiliyor — body'nin
@@ -600,6 +601,35 @@ button.secondary:hover { background: var(--hover); }
     </label>
 
     <div id="rebuild-result"></div>
+  </div>
+
+  <!-- BDR-KISAYOL JSON TEST YÜKLEME - Faz 1, destekleyici/test (2026-09-12) -->
+  <div class="panel" style="border:2px dashed #7c3aed;background:#faf5ff">
+    <h2><span class="icon">🧪</span> BDR JSON Test Yükleme <span style="font-size:12px;font-weight:400;color:#7c3aed">(deneysel — üretime yazmaz)</span></h2>
+    <p style="color:var(--muted);margin:0 0 12px;font-size:13px">
+      BDR-Kısayol aracının ürettiği <code style="background:var(--hover);padding:2px 6px;border-radius:3px">&lt;DÖNEM&gt;.json</code> dosyasını
+      (örn. <code style="background:var(--hover);padding:2px 6px;border-radius:3px">2026-2C.json</code>) yükleyip, hesaplanan ölçüleri
+      mevcut <code style="background:var(--hover);padding:2px 6px;border-radius:3px">computed.json</code> ile karşılaştırır.
+    </p>
+    <p style="color:#7c3aed;margin:0 0 16px;font-size:13px;font-weight:600">
+      ✓ Bu işlem computed.json / veriler.parquet / data/raw'a HİÇBİR ŞEKİLDE yazmaz — sadece bir karşılaştırma raporu üretir.
+    </p>
+
+    <div class="upload-zone" id="ciktiDropZone">
+      <input type="file" id="ciktiFileInput" accept=".json" />
+      <div class="icon">🧪</div>
+      <p><strong>JSON dosyasını buraya sürükle</strong> veya tıkla</p>
+      <p class="small">Tek dosya, tek dönem — 27 bankanın tümünü içerir</p>
+    </div>
+
+    <div id="cikti-progress" style="display:none;margin-top:16px">
+      <div class="progress-bar">
+        <div class="progress-fill" id="cikti-fill" style="width:0%;background:linear-gradient(90deg,#7c3aed,#c084fc)"></div>
+      </div>
+      <p style="text-align:center;font-size:13px;color:var(--muted)" id="cikti-status">Hazırlanıyor…</p>
+    </div>
+
+    <div id="cikti-result"></div>
   </div>
 
   <!-- SUNUCU TAŞIMA - EXPORT/IMPORT (2026-08-25) -->
@@ -1205,6 +1235,219 @@ function showZipError(msg) {
   $('zip-result').innerHTML = `
     <div class="result-panel error">
       <h3>❌ ZIP yükleme başarısız</h3>
+      <pre style="white-space:pre-wrap;margin:0;font-size:12px;color:var(--error)">${msg}</pre>
+    </div>
+  `;
+}
+
+// ============================================================
+// BDR-KISAYOL JSON TEST YÜKLEME — Faz 1, destekleyici/test (üretime yazmaz)
+// ============================================================
+const ciktiDropZone = $('ciktiDropZone');
+const ciktiFileInput = $('ciktiFileInput');
+
+ciktiDropZone.onclick = () => ciktiFileInput.click();
+ciktiFileInput.onchange = (e) => { if (e.target.files[0]) handleCiktiUpload(e.target.files[0]); };
+
+ciktiDropZone.ondragover = (e) => { e.preventDefault(); ciktiDropZone.classList.add('dragover'); };
+ciktiDropZone.ondragleave = () => ciktiDropZone.classList.remove('dragover');
+ciktiDropZone.ondrop = (e) => {
+  e.preventDefault();
+  ciktiDropZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) handleCiktiUpload(e.dataTransfer.files[0]);
+};
+
+async function handleCiktiUpload(file) {
+  if (!file.name.toLowerCase().endsWith('.json')) {
+    alert('Sadece .json dosyaları kabul edilir');
+    return;
+  }
+
+  $('cikti-progress').style.display = 'block';
+  $('cikti-result').innerHTML = '';
+  $('cikti-fill').style.width = '10%';
+  $('cikti-status').textContent = `${file.name} işleniyor (dönüştürme + hesaplama + karşılaştırma)...`;
+
+  const fd = new FormData();
+  fd.append('file', file);
+
+  try {
+    const r = await fetch('/admin/cikti-test-upload', { method: 'POST', body: fd });
+    $('cikti-fill').style.width = '90%';
+
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ detail: 'Bilinmeyen hata' }));
+      throw new Error(err.detail || `HTTP ${r.status}`);
+    }
+
+    const data = await r.json();
+    $('cikti-fill').style.width = '100%';
+    $('cikti-status').textContent = 'Tamamlandı!';
+    showCiktiSuccess(data);
+  } catch (err) {
+    $('cikti-fill').style.width = '0%';
+    $('cikti-status').textContent = '';
+    showCiktiError(err.message);
+  } finally {
+    ciktiFileInput.value = '';
+  }
+}
+
+let ciktiLastData = null;   // son yükleme yanıtı (filtreleme yeniden fetch gerektirmesin)
+const CIKTI_DURUM_ETIKET = {
+  FARKLI: '❌ Farklı', YENI: '🆕 Yeni', KAYNAKTA_YOK: '⚪ JSON\'da yok', UYUSUYOR: '✅ Uyuşuyor',
+};
+
+function showCiktiSuccess(data) {
+  ciktiLastData = data;
+  const oz = data.ozet || {};
+  const toplam = (oz.uyusan || 0) + (oz.farkli || 0);
+  const oran = toplam ? ((oz.uyusan / toplam) * 100).toFixed(1) : '0.0';
+
+  const kapsamaRows = (data.kalem_kapsama || []).map(k => {
+    const eksik = k.aranan - k.bulunan;
+    const oranStr = (k.eksik_oran * 100).toFixed(0);
+    return `
+    <tr>
+      <td class="mono" style="font-size:12px">${k.tablo}</td>
+      <td class="mono" style="font-size:12px">${k.kalem}</td>
+      <td>${k.pb}</td>
+      <td class="value">${eksik}/${k.aranan}</td>
+      <td class="value">%${oranStr}</td>
+    </tr>`;
+  }).join('');
+
+  $('cikti-result').innerHTML = `
+    <div class="result-panel success">
+      <h3>✓ ${data.donem} işlendi — ${data.banka_sayisi} banka, ${data.satir_sayisi} ham satır</h3>
+      <p style="font-size:13px;color:var(--muted)">${data.not}</p>
+      <div class="summary-grid" style="margin-top:12px">
+        <div class="summary-card success">
+          <div class="label">Uyuşan</div>
+          <div class="value" style="font-size:18px">${oz.uyusan}</div>
+        </div>
+        <div class="summary-card warning">
+          <div class="label">Farklı</div>
+          <div class="value" style="font-size:18px">${oz.farkli}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Yeni (baseline'da yok)</div>
+          <div class="value" style="font-size:18px">${oz.yeni}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">JSON'da yok</div>
+          <div class="value" style="font-size:18px">${oz.kaynakta_yok}</div>
+        </div>
+        <div class="summary-card highlight">
+          <div class="label">Uyum Oranı</div>
+          <div class="value" style="font-size:18px">%${oran}</div>
+        </div>
+      </div>
+
+      <h4 style="margin:20px 0 6px;font-size:14px">📋 Ham Kalem Kapsama Özeti (${data.kalem_kapsama.length} kalem eksik/kısmi bulundu)</h4>
+      <p style="font-size:12px;color:var(--muted);margin:0 0 8px">
+        Bir kalemin burada listelenmesi HER ZAMAN hata anlamına gelmez — bazı ölçüler
+        (ör. <span class="mono" style="font-size:12px">Krediler Ve Alacaklar (Toplam)</span>)
+        legacy bir kaleme otomatik düşer (fallback) ve hücre sonucu yine doğru çıkar.
+        Aşağıdaki hücre tablosundaki "eksik kalemler" sütunu, hangi eksiğin GERÇEKTEN o
+        hücreyi bozduğunu gösterir.
+      </p>
+      <div style="max-height:280px;overflow:auto;border:1px solid var(--border);border-radius:6px">
+        <table class="spot-check-table"><thead>
+          <tr><th>Tablo</th><th>Kalem</th><th>P.Birimi</th><th style="text-align:right">Eksik/Aranan</th><th style="text-align:right">Eksik %</th></tr>
+        </thead><tbody>${kapsamaRows || '<tr><td colspan="5" style="text-align:center;color:var(--muted)">Hiç eksik kalem yok 🎉</td></tr>'}</tbody></table>
+      </div>
+
+      <h4 style="margin:20px 0 6px;font-size:14px">🔎 Hücre Detayları — kalem kalem tüm sonuçlar (${data.satirlar.length} hücre)</h4>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 10px">
+        <input type="text" id="cikti-search" placeholder="Ölçü veya banka adında ara…" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+        <select id="cikti-durum-filter" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+          <option value="problemli" selected>Sorunlu (Farklı+Yeni+JSON'da yok)</option>
+          <option value="FARKLI">Sadece Farklı</option>
+          <option value="YENI">Sadece Yeni</option>
+          <option value="KAYNAKTA_YOK">Sadece JSON'da yok</option>
+          <option value="tumu">Tümü (Uyuşanlar dahil)</option>
+        </select>
+        <button id="cikti-csv-btn" class="secondary" style="padding:6px 14px;font-size:13px">⬇️ CSV indir</button>
+        <span id="cikti-satir-sayaci" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+      <div id="cikti-satirlar-container" style="max-height:600px;overflow:auto;border:1px solid var(--border);border-radius:6px">
+      </div>
+    </div>
+  `;
+
+  $('cikti-search').oninput = renderCiktiSatirlar;
+  $('cikti-durum-filter').onchange = renderCiktiSatirlar;
+  $('cikti-csv-btn').onclick = downloadCiktiCsv;
+  renderCiktiSatirlar();
+}
+
+function ciktiFiltrelenmisSatirlar() {
+  if (!ciktiLastData) return [];
+  const arama = ($('cikti-search').value || '').toLowerCase().trim();
+  const durumSecim = $('cikti-durum-filter').value;
+  return ciktiLastData.satirlar.filter(r => {
+    if (durumSecim === 'problemli' && r.durum === 'UYUSUYOR') return false;
+    if (durumSecim !== 'problemli' && durumSecim !== 'tumu' && r.durum !== durumSecim) return false;
+    if (arama && !(`${r.measure} ${r.banka}`.toLowerCase().includes(arama))) return false;
+    return true;
+  });
+}
+
+function renderCiktiSatirlar() {
+  const rows = ciktiFiltrelenmisSatirlar();
+  $('cikti-satir-sayaci').textContent = `${rows.length} / ${ciktiLastData.satirlar.length} hücre gösteriliyor`;
+
+  const html = rows.slice(0, 3000).map(r => {
+    const eksik = (r.eksik_kalemler || []).map(e =>
+      `<span class="mono" style="font-size:11px;background:var(--hover);padding:1px 5px;border-radius:3px;margin:1px;display:inline-block">${e.tablo}: ${e.kalem}${e.pb !== 'Toplam' ? ' (' + e.pb + ')' : ''}</span>`
+    ).join(' ');
+    return `
+    <tr>
+      <td>${CIKTI_DURUM_ETIKET[r.durum] || r.durum}</td>
+      <td class="mono" style="font-size:12px">${r.measure}</td>
+      <td>${r.banka}</td>
+      <td>${r.tarih}</td>
+      <td class="value">${fmt.number(r.json_degeri)}</td>
+      <td class="value">${fmt.number(r.mevcut_degeri)}</td>
+      <td class="value">${r.fark_yuzde != null ? r.fark_yuzde.toFixed(2) + '%' : '—'}</td>
+      <td>${eksik || '—'}</td>
+    </tr>`;
+  }).join('');
+
+  $('cikti-satirlar-container').innerHTML = `
+    <table class="spot-check-table"><thead>
+      <tr><th>Durum</th><th>Ölçü</th><th>Banka</th><th>Tarih</th><th style="text-align:right">JSON</th><th style="text-align:right">Mevcut</th><th style="text-align:right">Fark %</th><th>Eksik ham kalemler</th></tr>
+    </thead><tbody>${html || '<tr><td colspan="8" style="text-align:center;color:var(--muted)">Filtreye uyan hücre yok</td></tr>'}</tbody></table>
+    ${rows.length > 3000 ? `<p style="text-align:center;font-size:12px;color:var(--muted);padding:8px">İlk 3000 satır gösteriliyor — daraltmak için filtre/arama kullanın veya CSV indirin (${rows.length} satırın tümü CSV'de olur).</p>` : ''}
+  `;
+}
+
+function downloadCiktiCsv() {
+  const rows = ciktiFiltrelenmisSatirlar();
+  const header = ['durum','measure','banka','tarih','json_degeri','mevcut_degeri','fark_yuzde','eksik_kalemler'];
+  const csvRows = [header.join(',')];
+  for (const r of rows) {
+    const eksik = (r.eksik_kalemler || []).map(e => `${e.tablo}:${e.kalem}`).join(' | ');
+    const line = [r.durum, r.measure, r.banka, r.tarih, r.json_degeri, r.mevcut_degeri, r.fark_yuzde, eksik]
+      .map(v => `"${String(v ?? '').replace(/"/g, '""')}"`);
+    csvRows.push(line.join(','));
+  }
+  const blob = new Blob(['﻿' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cikti-diagnostik-${ciktiLastData.donem}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function showCiktiError(msg) {
+  $('cikti-result').innerHTML = `
+    <div class="result-panel error">
+      <h3>❌ İşlem başarısız</h3>
       <pre style="white-space:pre-wrap;margin:0;font-size:12px;color:var(--error)">${msg}</pre>
     </div>
   `;

@@ -1266,6 +1266,130 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
 
 ---
 
+### Dönem 24 — BDR-Kısayol JSON entegrasyonu, Faz 1 (2026-09-12)
+
+- **Bağlam:** Kullanıcı, ayrı bir araç olan **bdr-kisayol-main**'in
+  (BDDK PDF'lerini ayrıştırıp `<DÖNEM>.json` üreten proje,
+  `/Users/farukkezer/Desktop/AI LAB/bdr-kisayol-main/VERI-FORMATI.md`)
+  çıktısını, mevcut Rasyonet/xlsx abonelik maliyetinden kurtulmak için
+  Rakip Analizi'nin veri kaynağı yapmak istiyor. Bu Dönem 24, §8.5'teki
+  "PDF fazı" FAZ 1'inin ilk somut adımı — ama PDF'i doğrudan parse etmek
+  yerine bdr-kisayol-main'in ZATEN ürettiği yapılandırılmış JSON'u tüketiyor.
+- **Kapsam kararı (kullanıcıdan):** Faz 1 = **destekleyici/test** — üretim
+  verisine (`computed.json`, `veriler.parquet`, `data/raw/`) HİÇBİR YAZMA
+  yapılmaz. Türetim/hesaplama mantığı `pipeline/measures.py`'de KALIR — yeni
+  format sadece alternatif bir ham-veri kaynağı.
+- **Doğrulama metodolojisi:** Varsayımla değil, gerçek bir örnek dosyayı
+  (`/Users/farukkezer/Desktop/BDR-Arsiv/cikti/2026-2C.json`, 27 banka)
+  Akbank/Kuveyt Türk için `data/computed.json`'daki GERÇEK değerlerle
+  birebir karşılaştırarak ilerlendi — her yeni tablo eşlemesi (mvy,
+  kalan_vade, sermaye_ozet+risk_agirlikli, tk_detay, grup12, donuk_akim,
+  faaliyet_gid_detay, olgular) sayısal olarak doğrulandı.
+- **Eklenenler:**
+  - `pipeline/cikti_ingest.py` — çıktı JSON → mevcut long-format ara formata
+    (Banka Adı/Tarih/Tablo Türü/Tablo Adı/Kalem Adı/Para Birimi/Tutar)
+    dönüştürücü. `pipeline/lookup.py`/`pipeline/measures.py` HİÇ değişmedi.
+  - `pipeline/cikti_compare.py` — hesaplanan hücreleri computed.json'la
+    karşılaştırıp uyuşan/farklı/yeni/kaynakta-yok özeti üretir.
+  - `POST /admin/cikti-test-upload` (`app.py`) — tek JSON dosyası kabul eder,
+    `heavy_op_guard` ile korunur, hiçbir dosyaya yazmaz.
+  - Admin panelde "🧪 BDR JSON Test Yükleme" bölümü (`frontend/admin.html`).
+  - `tests/test_cikti_ingest.py` — gerçek örnek dosyaya karşı 20 regresyon
+    testi (dosya bu makineye özel olduğu için yoksa otomatik skip edilir).
+- **Bulunan BDDK-şablonu tuzakları** (ileride benzer bir eşleme yapacak biri
+  için): (1) bilanço/gelir tablosunun üst-düzey (Roma rakamı) satırları
+  çıktı'da TÜMÜ BÜYÜK HARF geliyor, Rakip'in raw'ı Title Case — 20 kadar
+  satır için elle eşleme gerekti; (2) bazı kalemlerde bağlaç ("ve"/"ile")
+  büyük/küçük harf TUTARSIZ (`Alınan Ücret Ve Komisyonlar` vs çıktı'nın
+  `Alınan Ücret ve Komisyonlar`) — genel bir alias mekanizmasıyla çözüldü;
+  (3) `_brut_krediler` ile `grup_1_krediler`'in AYNI 'Donuk Alacaklar' kalemini
+  BEKLEDİĞİ ama farklı anlamlar taşıdığı ortaya çıktı — donuk_akim'den tek bir
+  sentetik değer üretmek biri düzeltirken diğerini bozdu (regresyon testinde
+  yakalandı), bu yüzden `grup_1_krediler`/`grup_1_krediler_toplam` bilinçli
+  olarak kapsam dışı bırakıldı; (4) `İtfa Edilmiş Maliyeti ile Ölçülen
+  Finansal Varlıklar` kod II'nin GRAND TOTAL'i değil alt kalemi 2.4'e karşılık
+  geliyor — `finansal_varliklar_net_ta`'nın %92 gibi anlamsız bir oran vermesi
+  bunu ele verdi.
+- **Sonuç (2026-2Ç, 27 banka, tek çeyrek):** 148 ölçünün (12
+  BASELINE_PASSTHROUGH hariç) ~1833/3571 hücresi (%51) birebir/tolerans
+  dahilinde uyuşuyor — büyük/kritik ölçüler (Toplam Aktifler, RAV, Toplam
+  Özkaynaklar, Likidite Açığı ×7, Vadesiz/Vadeli Mevduat, Tüketici Kredileri,
+  Grup 2 Krediler, Şube/Personel Sayısı, Reklam Giderleri) byte-exact.
+  Kalan fark, çoğunlukla (a) TCMB tablosu gerektiren detaylı faiz-getirili/
+  maliyetli-pasif formülleri (kapsam dışı bırakıldı), (b) tek çeyreklik
+  yüklemenin avg-balance/TTM ölçülerini (ROAA, NPL formasyonu vb.) tam
+  besleyememesi (yapısal — birden fazla çeyrek yüklenince kendiliğinden
+  düzelir), (c) `tfv` tablosunun bazı katılım bankalarında eksik gelmesi.
+  Bu üçü de `pipeline/cikti_ingest.py`'nin modül docstring'inde belgeli.
+- **Doğrulama:** `pytest tests/` → 98/98 yeşil (20 yenisi dahil). Endpoint
+  gerçek 2026-2C.json ile uçtan uca çağrıldı; `data/computed.json` ve
+  `data/veriler.parquet`'in MD5'i çağrı öncesi/sonrası DEĞİŞMEDİ (Faz 1'in
+  "üretime dokunmama" garantisi somut olarak doğrulandı).
+- **Sıradaki adım (kullanıcı onayı gerekir):** birkaç çeyrek boyunca bu
+  test-modunda kullanıp güven oluşunca Faz 2'ye (gerçek veri kaynağı değişimi)
+  karar vermek; ayrıca uzun kuyruklu kalan ölçülerin (yukarıdaki (a)/(c))
+  eşlemesini derinleştirmek istenirse ayrı bir oturumda ele alınabilir.
+
+---
+
+### Dönem 25 — 12 passthrough ölçüden 6'sı raw'a taşındı (2026-09-12)
+
+- **Tetikleyici:** kullanıcı, kalan 12 `BASELINE_PASSTHROUGH` ölçünün nasıl
+  türetildiğini araştırmamı, JSON'dan hesaplayıp geçmiş dönem verisiyle
+  tutuyorsa Python koduna kaydetmemi istedi.
+- **Yöntem:** önce standart bankacılık formülleri (RORWA, NIM, Net Interest
+  Spread — web araması ile doğrulandı) ve kodda zaten YAZILMIŞ ama hiç
+  MEASURE_FUNCS'a bağlanmamış "taslak" fonksiyonlar (`m_spread`, `m_nim`,
+  `m_maliyet_gelir`, `m_nim_bzk_sonrasi`, `m_faiz_getirili_aktif_getirisi`)
+  incelendi; her aday, `data/veriler.parquet` (GERÇEK xlsx ham verisi) +
+  `data/computed.json`'daki DONMUŞ v29 baseline değerleriyle TÜM tarihsel
+  (banka, tarih) noktalarında karşılaştırılarak test edildi.
+- **Beklenmeyen keşif — SYR/Çekirdek SYR hiç "türetilmiş" değil:** ham
+  xlsx verisinde ('Kredilere İlişkin Olarak Ayrılan Özel Karşılıklar' adlı,
+  BDDK şablonunda mislabeled bir sayfada) BDDK'nın KENDİSİ zaten
+  'Sermaye Yeterlilik Rasyosu (%)' ve 'Çekirdek Sermaye Yeterliliği Oranı
+  (%)'yi hesaplayıp raporluyor — RAV/Özkaynak'tan ayrıca formül kurmaya
+  hiç gerek yokmuş. `pipeline/lookup.py`'ye yeni bir `sermaye_orani` tablo
+  indeksi + `ctx.sermaye_orani()` erişimcisi eklendi.
+- **Taşınan 7 ölçü** (`pipeline/measures.py`, hepsi 1054-1055↔948 arası
+  tarihsel noktada test edildi):
+  | Ölçü | Uyum (±0.5pp) | Not |
+  |---|---|---|
+  | `syr` | %98.4 (medyan fark 0) | Doğrudan ham veri, formül değil |
+  | `cekirdek_syr` | %99.3 (medyan fark 0) | Doğrudan ham veri, formül değil |
+  | `gayrinakdi_komisyon_gayrinakdi` | %99.8 (medyan fark 0) | Payda ORTALAMA değil DÖNEM SONU bakiye olunca %99.1'den %99.8'e çıktı |
+  | `maliyet_gelir` | %92.4 (medyan fark 0, %88.6'sı ±0.01pp) | Kullanıcının "neden burada problem yaşanıyor" sorusu üzerine derinleştirildi — İKİ hata birden bulundu: (1) payda 3 kalemle sınırlıydı, ham veride hazır 'Faaliyet Gelirleri/Giderleri Toplamı' kalemi (Temettü+Diğer Faaliyet Gelirleri dahil, Akbank'ta birebir doğrulandı) kullanılmalıymış; (2) TTM yıllıklandırması YANLIŞ uygulanmıştı — bu rasyo PBI'da YtD/YtD (annualize edilmiyor). İkisi düzelince %5.1'den %92.4'e çıktı |
+  | `rorwa` | %96.1 (medyan fark 0) | TTM Net Dönem Karı / Ortalama RAV |
+  | `net_faiz_ort_rav` | %95.0 (medyan fark 0) | TTM Net Faiz Geliri / Ortalama RAV |
+  | `faiz_getirili_aktif_getirisi` | %92.5 (medyan fark 0) | Payda basit (4 bileşen) yerine DETAYLI (13 bileşen, TCMB tablolu) `_faiz_getirili_aktif_detay` kullanılınca %30.3'ten %92.5'e çıktı |
+
+  Kalan sapmanın büyük kısmı küçük/yeni/veri-kalitesi-istisnalı bankalarda
+  (Emlak Katılım, Dünya Katılım, Hayat Finans, TOM Bank, Alternatif Bank,
+  Odeabank) yoğunlaşıyor — bu bankalar projenin diğer ölçülerinde de
+  tarihsel olarak benzer istisnalar taşıyor.
+- **Bilinçli olarak passthrough'da BIRAKILAN 5 ölçü** (denendi, eşik
+  altında kaldı): `nim` (basit payda %52.5, detaylı payda %81.7 — hâlâ
+  yetersiz; YtD/TTM hipotezi de denendi, işe yaramadı — NIM'in gerçekten
+  yıllıklandırılması gerekiyor), `nim_bzk_sonrasi` (%43), `spread` (detaylı
+  bileşenlerle %78.3), `maliyet_gelir_duzeltilmis` ve `nim_duzeltilmis`
+  (PBI'ın "düzeltme" mantığı hiç belgelenmemiş, araştırılmadı). Bunlar için
+  proje geçmişinin kendi standardı ("gayrinakdi
+  krediler" 99.6% eşleşmeden önce taşınmamıştı) korundu — %85 altı uyum
+  oranıyla üretime yazılmadı.
+- **Üretim etkisi:** Bu bir KOD değişikliği — `data/computed.json` bu turda
+  YAZILMADI. Değişiklik, kullanıcı bir dahaki xlsx upload'ında veya
+  `/admin/rebuild` çalıştırdığında devreye girecek. O noktada: (a) bu 7
+  ölçünün DONMUŞ (v29'dan hiç güncellenmemiş) değerleri güncel ham veriden
+  taze hesaplanacak — dahil olmak üzere ŞU AN hiç değeri olmayan en güncel
+  çeyrekler (ör. SYR/Çekirdek SYR artık 2026-06-30 için de var), (b) küçük
+  bir azınlık (özellikle yukarıdaki veri-kalitesi-istisnalı bankalar)
+  hücresinde değer hafifçe değişecek (frozen v29 → taze hesap) — bu istenen
+  bir düzeltme, regresyon değil.
+- **Doğrulama:** `tests/test_baseline_promoted.py` (yeni, 7 test — gerçek
+  veriye bağımlı, yoksa skip) + `pytest tests/` → 105/105 yeşil.
+
+---
+
 ## 7. Açık ve bekleyen konular
 
 
