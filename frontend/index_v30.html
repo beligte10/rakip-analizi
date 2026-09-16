@@ -3408,7 +3408,11 @@
           )
         )
       ),
-      h('div', { className: 'bank-rows-scroll' }, sortedAll.map(function(row) {
+      h('div', {
+        className: 'bank-rows-scroll',
+        ref: props.scrollBoxRef,
+        style: props.extraHeight ? { maxHeight: (609 + props.extraHeight) + 'px' } : undefined
+      }, sortedAll.map(function(row) {
         var isKT = row.banka === KT_NAME;
         var rowOutlier = isValueOutlier(row.value);
         var isNeg = row.value != null && row.value < 0;
@@ -4332,15 +4336,22 @@
     // kendi doğal boyutunda kalır. Yalnız masaüstünde (>900px) — dar
     // ekranda dashboard-grid tek sütuna iniyor, eşleme anlamsız kalır.
     var rankingRef = useRef(null);
+    var scrollBoxRef = useRef(null);
     var matchHState = useState(0);
     var matchH = matchHState[0], setMatchH = matchHState[1];
-    // Sol panel sağ sütundan KISAYSA alta eklenecek boşluk (2026-09-17
-    // kullanıcı isteği: "bu baloncukların altını hizala" — sağ sütun
-    // [Banka Grupları/Rakip Bankalar kartları büyütülünce] artık sol
-    // sıralama panelinden UZUN olabiliyor, önceki mekanizma sadece
-    // "sağ < sol" varsayımıyla çalışıyordu). rankingRef/card1-3Ref'ler HER
-    // ZAMAN kendi DOĞAL (esnetilmemiş) yüksekliklerini ölçer — biri
-    // diğerinin ölçtüğü esnetilmiş değere bakmadığı için sonsuz döngü YOK.
+    // Sol panel sağ sütundan KISAYSA büyütülecek miktar (2026-09-17
+    // kullanıcı isteği: önce "altını hizala" için panelin ÖNÜNE boşluk
+    // eklenmişti — bu alt kenarı hizalar ama üst kenarı bozar. Kullanıcı
+    // sonra "üstten de hizala, alttan hizalamayı bozmadan" dedi. Çözüm:
+    // ÖNCE panelin kendi gövdesini büyüt (.bank-rows-scroll'un max-height'i
+    // — 21 satırlık taban yerine daha fazla banka satırı görünür olur,
+    // içerik zaten var/gerçek, boşluk değil) — panel üstü hiç kaymaz. Bu
+    // büyüme 27 bankanın tam içerik yüksekliğiyle (scrollBoxRef.scrollHeight)
+    // sınırlı; nadir bir durumda sağ sütun bundan da uzunsa, KALAN fark
+    // panelin ALTINA (extraGrow tükendiğinde) bir artık boşluk olarak
+    // eklenir — üst asla kaymaz, alt her zaman tam hizalı kalır.
+    var extraGrowState = useState(0);
+    var extraGrow = extraGrowState[0], setExtraGrow = extraGrowState[1];
     var leftExtraState = useState(0);
     var leftExtra = leftExtraState[0], setLeftExtra = leftExtraState[1];
     // Başlıkların gri alanı da yatayda hizalı kalsın diye AYRICA ölçülür —
@@ -4362,20 +4373,32 @@
           if (matchH !== 0) setMatchH(0);
           if (headerMatchH !== 0) setHeaderMatchH(0);
           if (leftExtra !== 0) setLeftExtra(0);
+          if (extraGrow !== 0) setExtraGrow(0);
           return;
         }
-        var leftH = rankingRef.current ? rankingRef.current.getBoundingClientRect().height : 0;
         var rightNatural = 0;
         if (rc1Ref.current && rc2Ref.current && rc3Ref.current) {
           rightNatural = rc1Ref.current.getBoundingClientRect().height +
             rc2Ref.current.getBoundingClientRect().height +
             rc3Ref.current.getBoundingClientRect().height + 28; // 2 × 14px gap
         }
-        if (leftH && rightNatural) {
-          var target = Math.max(leftH, rightNatural);
+        if (rankingRef.current && scrollBoxRef.current && rightNatural) {
+          // "chrome" = panelin scroll kutusu DIŞINDAKİ sabit kısımları
+          // (başlık+footer) — CANLI ölçümlerin farkı olduğu için mevcut
+          // extraGrow ne olursa olsun HER ZAMAN doğru (döngüsüz) çıkar.
+          var panelH = rankingRef.current.getBoundingClientRect().height;
+          var scrollClientH = scrollBoxRef.current.clientHeight;
+          var scrollFullH = scrollBoxRef.current.scrollHeight;
+          var chrome = panelH - scrollClientH;
+          var leftBaseH = chrome + 609; // 609 = 21 satırlık taban (bkz. CSS)
+          var contentCeiling = chrome + scrollFullH; // tüm bankalar görünürse ulaşılabilecek azami
+          var target = Math.max(leftBaseH, rightNatural);
           if (Math.abs(target - matchH) > 2) setMatchH(target);
-          var newExtra = Math.max(0, target - leftH);
-          if (Math.abs(newExtra - leftExtra) > 2) setLeftExtra(newExtra);
+          var neededGrow = Math.max(0, target - leftBaseH);
+          var growFromContent = Math.min(neededGrow, Math.max(0, contentCeiling - leftBaseH));
+          if (Math.abs(growFromContent - extraGrow) > 2) setExtraGrow(growFromContent);
+          var residual = neededGrow - growFromContent;
+          if (Math.abs(residual - leftExtra) > 2) setLeftExtra(residual);
         }
         if (headerRef.current) {
           var hHgt = headerRef.current.getBoundingClientRect().height;
@@ -4393,13 +4416,15 @@
     return h('div', null,
       h('div', { className: 'dashboard-grid' },
         h('div', { style: { alignSelf: 'start' } },
-          // Boşluk PANELDEN ÖNCE eklenir (üstte) — kullanıcı isteği
-          // (2026-09-17): "aşağıya doğru kaydır, sağdaki en alttaki
-          // baloncukla hizalı hale getir". Boşluk sondaysa (altta) grid
-          // hücresi hizalanır ama panelin GÖRÜNEN alt kenarı yine de sağ
-          // sütunun üstünde kalırdı — panel gerçekten aşağı kaymalı.
-          leftExtra > 0 && h('div', { style: { height: leftExtra + 'px' } }),
-          h(BankRanking, { measure: measure, tarih: tarih, panelRef: rankingRef, headerRef: headerRef })
+          // Panel üstü hiç kaymaz (yukarıdaki not) — önce panelin kendi
+          // gövdesi büyür (extraGrow → daha fazla banka satırı görünür).
+          // Sağ sütun bundan da uzunsa (nadir), kalan fark panelin
+          // ALTINA artık bir boşluk olarak eklenir — üst yine sabit kalır.
+          h(BankRanking, {
+            measure: measure, tarih: tarih, panelRef: rankingRef, headerRef: headerRef,
+            scrollBoxRef: scrollBoxRef, extraHeight: extraGrow
+          }),
+          leftExtra > 0 && h('div', { style: { height: leftExtra + 'px' } })
         ),
         h('div', { style: rightColStyle },
           h('div', { ref: rc1Ref },
