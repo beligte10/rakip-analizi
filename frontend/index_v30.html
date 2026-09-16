@@ -4393,8 +4393,13 @@
     return h('div', null,
       h('div', { className: 'dashboard-grid' },
         h('div', { style: { alignSelf: 'start' } },
-          h(BankRanking, { measure: measure, tarih: tarih, panelRef: rankingRef, headerRef: headerRef }),
-          leftExtra > 0 && h('div', { style: { height: leftExtra + 'px' } })
+          // Boşluk PANELDEN ÖNCE eklenir (üstte) — kullanıcı isteği
+          // (2026-09-17): "aşağıya doğru kaydır, sağdaki en alttaki
+          // baloncukla hizalı hale getir". Boşluk sondaysa (altta) grid
+          // hücresi hizalanır ama panelin GÖRÜNEN alt kenarı yine de sağ
+          // sütunun üstünde kalırdı — panel gerçekten aşağı kaymalı.
+          leftExtra > 0 && h('div', { style: { height: leftExtra + 'px' } }),
+          h(BankRanking, { measure: measure, tarih: tarih, panelRef: rankingRef, headerRef: headerRef })
         ),
         h('div', { style: rightColStyle },
           h('div', { ref: rc1Ref },
