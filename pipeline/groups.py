@@ -694,33 +694,53 @@ def _agg_size(bank_data, mid, members, tarih, first_date_map=None):
 
 
 def _agg_ratio(ctx, mid, members, tarih, first_date_map=None):
-    """Stok/akım rasyo: Σnum / Σden × 100. Aktif üyeler veri sağlamalı (bkz. _agg_size)."""
+    """Stok/akım rasyo: Σnum / Σden × 100.
+
+    Aktif üyelerden bu ölçüde verisi/uygulanabilirliği OLMAYANLAR (num/den
+    None — ör. bir üründen hiç işi olmayan bankada payda 0'a düşüp rasyo
+    None dönüyorsa) HARİÇ TUTULUR, kalan üyelerle hesaplanır — eskiden tek
+    bir böyle üye TÜM grubu None yapıyordu (kullanıcı kararı, 2026-09-17;
+    _agg_per_unit'teki 2026-08-15 düzeltmesiyle aynı ilke — bkz. o
+    fonksiyonun docstring'i). Banka bu ölçüde veri sağlamaya başladığında
+    (n/d artık None dönmediğinde) otomatik olarak tekrar dahil olur; ayrıca
+    bkz. bulundu.
+
+    NOT: Bu, _agg_size'daki (TOPLAM/sum) "kurulmuş ama bu tarihte veri
+    sağlamamış banka → grup None" kuralından BİLEREK farklı — orada bir
+    üyeyi sessizce dışlamak toplamı gerçekte olduğundan küçük gösterirdi;
+    burada (ORTALAMA/RASYO) kalan üyelerin ortalaması hâlâ temsil edici."""
     fn = RATIO_NUM_DEN.get(mid)
     if fn is None:
         return None
     active = _active_members(members, tarih, first_date_map)
     num_sum, den_sum = 0.0, 0.0
+    any_data = False
     for b in active:
         try:
             n, d = fn(ctx, b, tarih)
         except Exception:
-            return None
+            continue
         if n is None or d is None:
-            return None
+            continue
         num_sum += n
         den_sum += d
-    if den_sum == 0:
+        any_data = True
+    if not any_data or den_sum == 0:
         return None
     return (num_sum / den_sum) * RATIO_SCALE.get(mid, 100.0)
 
 
 def _agg_simple_avg(bank_data, mid, members, tarih, first_date_map=None):
-    """Basit ortalama. Aktif üyeler veri sağlamalı (bkz. _agg_size)."""
+    """Basit ortalama.
+
+    Aktif üyelerden bu ölçüde verisi/uygulanabilirliği OLMAYANLAR (None)
+    ortalamadan HARİÇ TUTULUR, kalan üyelerle hesaplanır — eskiden tek bir
+    böyle üye TÜM grubu None yapıyordu (kullanıcı kararı, 2026-09-17; bkz.
+    _agg_ratio'daki aynı değişikliğin docstring'i)."""
     series = bank_data.get(mid, {})
     active = _active_members(members, tarih, first_date_map)
     vals = [series.get(b, {}).get(tarih) for b in active]
-    if any(v is None for v in vals):
-        return None
+    vals = [v for v in vals if v is not None]
     return (sum(vals) / len(vals)) if vals else None
 
 

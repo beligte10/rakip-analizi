@@ -21,8 +21,19 @@ Gerçek veriye bağımlı değil — saf birim test.
    göstermiyordu (bkz. memory: kismi-ceyrek-grup-agregasyonu-bug.md,
    kullanıcı raporu: "Mevduat Bankaları... büyüme oranları neden
    yazmıyor").
+
+3. (2026-09-17) SADECE ORTALAMA/RASYO agregasyonlarında (_agg_simple_avg,
+   _agg_ratio — SUM/_agg_size'da DEĞİL): kurulmuş bir üyenin bu ÖLÇÜDE
+   verisi/uygulanabilirliği yoksa (ör. Enpara/TOM Bank gibi dijital
+   bankalarda "Gayrinakdi Krediler" hiç sunulmadığı için payda 0'a düşüp
+   rasyo None dönüyorsa) o üye HARİÇ TUTULUR, kalan üyelerle ortalama
+   hesaplanır — None DÖNMEMELİ. Kullanıcı kararı: "verisi olmayanları
+   exclude, veri yüklendikçe include" — bkz. pipeline/groups.py
+   _agg_ratio/_agg_simple_avg docstring'leri. _agg_size bundan MUAF: bir
+   SUM'da bir üyeyi sessizce dışlamak toplamı gerçekte olduğundan küçük
+   gösterir (kural 1'in gerekçesiyle aynı), o yüzden orada hâlâ None döner.
 """
-from pipeline.groups import _agg_size, _agg_simple_avg
+from pipeline.groups import _agg_size, _agg_simple_avg, _agg_ratio, RATIO_NUM_DEN
 
 
 def test_agg_size_full_coverage_sums():
@@ -78,7 +89,10 @@ def test_agg_simple_avg_full_coverage():
     assert result == 3.0
 
 
-def test_agg_simple_avg_returns_none_on_partial_coverage():
+def test_agg_simple_avg_excludes_member_without_this_measure():
+    """(2026-09-17 davranış değişikliği) BankB'de bu ölçü hiç yok (ör.
+    yapısal olarak uygulanamaz) — eskiden tüm grup None dönerdi, artık
+    BankB dışlanıp kalan üyenin (BankA) değeri döner, None DEĞİL."""
     bank_data = {
         'npl_rasyosu': {
             'BankA': {'2026-03-31': 2.0},
@@ -86,6 +100,38 @@ def test_agg_simple_avg_returns_none_on_partial_coverage():
         }
     }
     result = _agg_simple_avg(bank_data, 'npl_rasyosu', ['BankA', 'BankB'], '2026-03-31')
+    assert result == 2.0
+
+
+def test_agg_simple_avg_returns_none_when_all_members_missing():
+    bank_data = {'npl_rasyosu': {'BankA': {}, 'BankB': {}}}
+    result = _agg_simple_avg(bank_data, 'npl_rasyosu', ['BankA', 'BankB'], '2026-03-31')
+    assert result is None
+
+
+def test_agg_ratio_excludes_member_without_applicable_data():
+    """(2026-09-17) Gayrinakdi Komisyon/Gayrinakdi Krediler vakası: BankB bu
+    ürünü hiç sunmuyor (payda 0 → fn None, None döner) — dışlanır, kalan
+    üyenin (BankA) num/den'inden grup oranı hesaplanır."""
+    def fake_nd(ctx, b, t):
+        vals = {'BankA': (10.0, 100.0), 'BankB': (None, None)}
+        return vals[b]
+    RATIO_NUM_DEN['__test_ratio__'] = fake_nd
+    try:
+        result = _agg_ratio(None, '__test_ratio__', ['BankA', 'BankB'], '2026-06-30')
+    finally:
+        del RATIO_NUM_DEN['__test_ratio__']
+    assert result == 10.0  # (10/100) * 100
+
+
+def test_agg_ratio_returns_none_when_all_members_lack_data():
+    def fake_nd(ctx, b, t):
+        return (None, None)
+    RATIO_NUM_DEN['__test_ratio__'] = fake_nd
+    try:
+        result = _agg_ratio(None, '__test_ratio__', ['BankA', 'BankB'], '2026-06-30')
+    finally:
+        del RATIO_NUM_DEN['__test_ratio__']
     assert result is None
 
 
