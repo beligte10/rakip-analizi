@@ -1,5 +1,43 @@
 [
   {
+    "version": "v1.3",
+    "date": "2026-09-16",
+    "title": "Baloncuklar küçültüldü, sürüm takibi ve haftalık özet düzeni eklendi",
+    "items": [
+      "Rakip Bankalar baloncukları küçültüldü; artık ekran kenarına taşmayacak, her zaman tek ekranda tam görünecek şekilde konumlanıyor.",
+      "Üst menüdeki \"Yenilikler\" butonu artık güncel sürüm numarasını gösteriyor.",
+      "Bundan sonra yapılan işler, versiyon numarasıyla birlikte kısa madde listesi halinde burada takip edilecek."
+    ]
+  },
+  {
+    "version": "v1.2",
+    "date": "2026-09-16",
+    "title": "Grup hesaplamaları, tüm bankalar ve interaktif Rakip Bankalar kartları",
+    "items": [
+      "Banka grupları (Mevduat Bankaları, Katılım Bankaları vb.) artık bir üyede o ölçüde veri olmasa bile diğer üyelerle hesaplanıyor — veri yüklendikçe otomatik dahil oluyor.",
+      "Banka sıralama listeleri artık ilk 20 değil TÜM bankaları gösteriyor (ilk görünümde 20 banka, aşağı kaydırınca tümüne ulaşılıyor).",
+      "Rasyo bazlı Banka Grupları kartlarındaki boş alanlar azaltıldı.",
+      "Rakip Bankalar kartları tek sıraya alındı; üzerine gelince/tıklayınca detaylı grafik açan interaktif baloncuklara geçildi.",
+      "Rakip Bankalar trend grafiğine, diğer trend grafikleriyle tutarlı hover ipucu (tarih + değerler) eklendi.",
+      "Uygulama genelinde küçük yazılar büyütüldü, mobilde taşan değerler düzeltildi."
+    ]
+  },
+  {
+    "version": "v1.1",
+    "date": "2026-09-12",
+    "title": "Üyelik sistemi, mobil uyum ve formül düzeltmeleri (2026-08-25 → 2026-09-12 özeti)",
+    "items": [
+      "Üyeler artık kayıt olup admin onayıyla giriş yapabiliyor; adminler diğer üyelere rol atayabiliyor.",
+      "KT marka logosu/renkleri arayüze eklendi; \"Rakip Bankalar\" gibi banka grupları admin panelden düzenlenebiliyor.",
+      "Sermaye yeterliliği, maliyet/gelir, RORWA gibi bazı ölçüler ham veriyle daha isabetli hesaplanacak şekilde düzeltildi.",
+      "Dashboard mobil uyumlu hale getirildi (hamburger menü, kırpılan yazılar düzeltildi).",
+      "Banka sıralama listeleri ve trend grafikleri daha okunaklı, tutarlı bir tasarıma kavuştu.",
+      "Bazı bankalarda eksik görünen çeyreklik veriler ve grup toplamları düzeltildi.",
+      "BDR-Kısayol entegrasyonu eklendi (Faz 1)."
+    ]
+  },
+  {
+    "version": "v1.0",
     "date": "2026-08-25",
     "title": "Yeni ölçüler ve arayüz iyileştirmeleri",
     "items": [

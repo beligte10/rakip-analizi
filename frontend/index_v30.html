@@ -967,27 +967,32 @@
     font-size: 8.5px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.3px;
   }
 
-  /* Popover — kartın genişliğinden bağımsız, her zaman okunur sabit boyutta */
+  /* Popover — kartın genişliğinden bağımsız, her zaman okunur sabit boyutta.
+     2026-09-16: kullanıcı geri bildirimi "baloncuklar çok büyük" — 230px'ten
+     180px'e küçültüldü, iç fontlar/pad'ler orantılı azaltıldı; ayrıca
+     openFor() artık ekran sınırlarına göre left/openUp'ı clamp ediyor, bu
+     yüzden kart hangi konumda olursa olsun baloncuk her zaman tek ekranda
+     tam görünür (kesilmeden), üst/alt açılış tutarlı hizalanır. */
   .competitor-popover {
     position: fixed;
-    width: 230px;
+    width: 180px;
     background: #fff;
     border: 1px solid rgba(15,31,47,0.1);
-    border-radius: 10px;
-    padding: 10px 12px 12px;
-    box-shadow: 0 12px 32px rgba(15,31,47,0.22);
+    border-radius: 9px;
+    padding: 8px 10px 9px;
+    box-shadow: 0 10px 26px rgba(15,31,47,0.22);
     z-index: 70;
     pointer-events: auto;
   }
   body.dark .competitor-popover {
     background: #16232f; border-color: rgba(255,255,255,0.1);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 26px rgba(0,0,0,0.5);
   }
   .competitor-title {
-    font-size: 13px; font-weight: 700;
-    margin-bottom: 5px; color: #1a2635;
-    height: 22px;
-    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 700;
+    margin-bottom: 4px; color: #1a2635;
+    height: 18px;
+    display: flex; align-items: center; gap: 5px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -2652,7 +2657,8 @@
           entries.length === 0 ? h('div', { className: 'wn-empty' }, 'Henüz bir güncelleme notu yok.') :
           entries.map(function(entry, i){
             return h('div', { className: 'wn-entry', key: i },
-              h('div', { className: 'wn-entry-date' }, entry.date || ''),
+              h('div', { className: 'wn-entry-date' },
+                (entry.version ? entry.version + ' — ' : '') + (entry.date || '')),
               h('div', { className: 'wn-entry-title' }, entry.title || ''),
               h('ul', { className: 'wn-entry-items' },
                 (entry.items || []).map(function(item, j){ return h('li', { key: j }, item); })
@@ -3030,6 +3036,21 @@
     var pwOpenState = useState(false);
     var wnOpenState = useState(false);
     var mbOpenState = useState(false);
+    // Uygulama sürüm rozeti (2026-09-16 kullanıcı isteği: "versiyon
+    // adlandırmasını her seferinde unutuyorsun") — whats_new.json'daki EN
+    // ÜSTTEKİ (en yeni) girdinin "version" alanı tek kaynak; yeni bir
+    // sürüm eklendiğinde topbar rozeti otomatik güncellenir, ayrıca
+    // elle senkronize edilecek ikinci bir sabit YOK.
+    var versionState = useState(null);
+    useEffect(function() {
+      fetch('/api/whats-new', { credentials: 'same-origin' })
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(j){
+          var v = Array.isArray(j) && j.length ? j[0].version : null;
+          versionState[1](v || null);
+        })
+        .catch(function(){ versionState[1](null); });
+    }, []);
     // Mobilde BDR/Admin/Tema/Şifre/Çıkış/Yenilikler butonları tek tek satırı
     // kaplamasın diye hamburger menü arkasına alınır (kullanıcı isteği,
     // 2026-09-10) — masaüstünde etkisiz (CSS ile her zaman açık gösterilir).
@@ -3120,8 +3141,9 @@
           h('button', {
             className: 'topbar-icon-btn',
             onClick: function(){ wnOpenState[1](true); closeMenu(); },
-            title: 'Yenilikler'
-          }, h('span', { className: 'btn-icon' }, '🆕'), h('span', { className: 'btn-label' }, 'Yenilikler'))
+            title: versionState[0] ? 'Yenilikler (' + versionState[0] + ')' : 'Yenilikler'
+          }, h('span', { className: 'btn-icon' }, '🆕'),
+             h('span', { className: 'btn-label' }, 'Yenilikler' + (versionState[0] ? ' ' + versionState[0] : '')))
         )
       ),
       h(DateSelectorBar, { tarih: props.tarih, setTarih: props.setTarih, mode: props.mode, setMode: props.setMode }),
@@ -3889,15 +3911,15 @@
     },
       h('div', { className: 'competitor-title' }, bankMono(props.bank), h('span', null, props.bank)),
       props.data.noData
-        ? h('div', { style:{fontSize:'12px', color:'#94a3b8', textAlign:'center', padding:'10px'} }, 'veri yok')
+        ? h('div', { style:{fontSize:'11px', color:'#94a3b8', textAlign:'center', padding:'8px'} }, 'veri yok')
         : h(React.Fragment || 'div', null,
             h('svg', { viewBox: '0 0 ' + props.data.W + ' ' + props.data.H, style:{width:'100%', height: props.data.H + 'px'}},
               props.data.bars
             ),
             h('div', {
               style: {
-                textAlign:'center', fontSize:'16px', fontWeight:'700',
-                color: props.data.textColor, marginTop:'4px'
+                textAlign:'center', fontSize:'14px', fontWeight:'700',
+                color: props.data.textColor, marginTop:'3px'
               }
             }, props.data.cagr == null ? 'CAGR: —' : fmtPctPlain(props.data.cagr, 1))
           )
@@ -3930,12 +3952,23 @@
     function openFor(b, el) {
       clearCloseTimer();
       var rect = el.getBoundingClientRect();
+      // Baloncuk her zaman tek ekranda tam görünsün diye (2026-09-16
+      // geri bildirimi: "baloncuklar en altta/üstte hizalansın, tek
+      // sayfada görünür olsun") left ve openUp ekran sınırlarına göre
+      // clamp edilir — kart ekranın neresinde olursa olsun taşma yok.
+      var POPOVER_W = 180, POPOVER_H_EST = 130, margin = 8;
+      var left = rect.left + rect.width / 2;
+      left = Math.max(POPOVER_W / 2 + margin,
+        Math.min(window.innerWidth - POPOVER_W / 2 - margin, left));
+      var openUp = rect.top > window.innerHeight * 0.55;
+      if (openUp && rect.top - POPOVER_H_EST - margin < 0) openUp = false;
+      if (!openUp && rect.bottom + POPOVER_H_EST + margin > window.innerHeight) openUp = true;
       setHoverBank(b);
       setPos({
-        left: rect.left + rect.width / 2,
+        left: left,
         anchorTop: rect.top,
         anchorBottom: rect.bottom,
-        openUp: rect.top > window.innerHeight * 0.55
+        openUp: openUp
       });
     }
     function scheduleClose() {
@@ -3980,13 +4013,13 @@
       if (validVals.length < 1) return { noData: true, textColor: textColor, cagr: null };
 
       var maxV = Math.max.apply(null, validVals);
-      var W = 190, H = 78;
+      var W = 156, H = 60;
       var nBars = 3;
-      var topPad = 18, bottomPad = 16;
+      var topPad = 14, bottomPad = 13;
       var chartH = H - topPad - bottomPad;
-      var sidePad = 12;
+      var sidePad = 8;
       var groupW = W - sidePad * 2;
-      var gap = 8;
+      var gap = 6;
       var barW = (groupW - gap * (nBars - 1)) / nBars;
       var color = bankColor(b);
       var cagr = cagr2y(measure.id, b, tarih);
@@ -4007,8 +4040,8 @@
               strokeDasharray: '2,2'
             }),
             h('text', {
-              x: x + barW/2, y: H - 3,
-              fontSize:'10.5', fill: '#94a3b8',
+              x: x + barW/2, y: H - 2,
+              fontSize:'9.5', fill: '#94a3b8',
               textAnchor:'middle', fontWeight:'500'
             }, monthLabel + ' ' + yearLabel.slice(2))
           );
@@ -4018,13 +4051,13 @@
         return h('g', { key: i },
           h('rect', { x: x, y: barY, width: barW, height: barH, fill: color, rx: 1 }),
           h('text', {
-            x: x + barW/2, y: barY - 4,
-            fontSize:'11', fill: textColor,
+            x: x + barW/2, y: barY - 3,
+            fontSize:'10', fill: textColor,
             textAnchor:'middle', fontWeight:'700'
           }, fmtTL_tr(v)),
           h('text', {
-            x: x + barW/2, y: H - 3,
-            fontSize:'10.5', fill: '#64748b',
+            x: x + barW/2, y: H - 2,
+            fontSize:'9.5', fill: '#64748b',
             textAnchor:'middle', fontWeight:'500'
           }, monthLabel + ' ' + yearLabel.slice(2))
         );

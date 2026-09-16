@@ -309,8 +309,13 @@ Bunların her biri gerçekten yaşandı ve zaman kaybettirdi.
    worker'ları `app.py`'yi yeniden import ediyor; bu kontrol olmazsa her
    worker `users.json`'a yazmaya çalışıp `BrokenProcessPool` üretiyor.
 
-6. **Grup, eksik üyede `None` döner.** Yeni bir grup ölçüsü eklerken bunu
-   bekleyin; "0" veya kısmi toplam üretmeyin.
+6. **Grup, eksik üyede `None` döner — SADECE `_agg_size` (SUM) için.**
+   (2026-09-16 değişti, bkz. Dönem 26/v1.2) `_agg_ratio` ve
+   `_agg_simple_avg` artık bu ölçüde verisi/uygulanabilirliği olmayan
+   üyeyi HARİÇ TUTUP kalanlarla hesaplıyor, `None` dönmüyor — kullanıcı
+   kararı: "verisi olmayanları exclude, veri yüklendikçe include".
+   `_agg_size`'da hâlâ eski davranış geçerli (bir SUM'da sessizce
+   dışlamak toplamı gerçekte olduğundan küçük gösterir).
 
 7. **`data/` git'te değildir.** Bilinçli: `git pull` canlı veriyi ezmesin
    diye. Sonucu: kod ile veri ayrı taşınır (§4.3).
@@ -329,6 +334,12 @@ Bunların her biri gerçekten yaşandı ve zaman kaybettirdi.
 
 Projenin başından bugüne dönem dönem: ne yapıldı, hangi bug bulundu,
 hangi karar neden alındı. Bir davranışın nedenini ararken buraya bakın.
+
+> **Format notu (2026-09-16, kullanıcı kararı):** haftalık toplantılarda o
+> hafta ne yapıldığı belirsiz kalıyordu. **Dönem 26'dan itibaren** yeni
+> girdiler eski uzun/teknik anlatı yerine kısa madde listesi + ilgili
+> `whats_new.json` sürüm numarasıyla yazılır (bkz. altta). Eski Dönem
+> 0-25 girdileri (detaylı) değiştirilmedi — geçmiş referans olarak kalıyor.
 
 
 ### Dönem 0 — İlk kuruluş ("2025-05" etiketli, devir öncesi dönem)
@@ -1387,6 +1398,36 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   bir düzeltme, regresyon değil.
 - **Doğrulama:** `tests/test_baseline_promoted.py` (yeni, 7 test — gerçek
   veriye bağımlı, yoksa skip) + `pytest tests/` → 105/105 yeşil.
+
+### Dönem 26 — Grup hariç-tutma, tüm bankalar, interaktif Rakip Bankalar, sürüm takibi (2026-09-16)
+
+*(Bkz. format notu yukarıda — bundan sonraki girdiler bu kısa madde stilinde.)*
+
+- **v1.2:** grup agregasyonunda (`_agg_ratio`/`_agg_simple_avg`) veri/uygulanabilirliği
+  olmayan üye artık hariç tutulup kalanlarla hesaplanıyor (`_agg_size` hariç,
+  değişmedi — bkz. §5.6).
+- **v1.2:** banka sıralama listeleri sabit top-20'den tüm bankalara genişletildi
+  (kaydırılabilir liste, ilk görünüm yine ~20 satır).
+- **v1.2:** rasyo bazlı Banka Grupları/Çeyreklik Değişim kartları büyütülüp
+  aradaki boşluk azaltıldı.
+- **v1.2:** uygulama genelinde küçük yazı taraması yapıldı; Rakip Bankalar
+  kartları önce 3×2'ye çıkarıldı, sonra kullanıcı isteğiyle tek sıraya
+  geri alınıp hover/tık ile açılan popover'a çevrildi (okunabilirlik artık
+  statik büyütmeyle değil etkileşimle çözülüyor); Rakip Bankalar trend
+  grafiğine TrendView ile tutarlı hover-tooltip eklendi.
+- **v1.3:** kullanıcı geri bildirimi ("baloncuklar çok büyük") üzerine
+  popover 230px→180px küçültüldü, `openFor()` artık ekran sınırlarına göre
+  left/openUp clamp ediyor (taşma/kesilme yok, her zaman tek ekranda tam
+  görünür).
+- **v1.3:** `whats_new.json`'a `version` alanı eklendi, topbar'daki
+  "Yenilikler" butonu güncel sürümü gösteriyor (tek kaynak: en yeni
+  whats_new girdisi — ikinci, elle senkronize edilecek bir sabit yok).
+  Geçmiş tek whats_new girdisi retroaktif v1.0 sayıldı; 2026-08-25→
+  2026-09-12 arası (Dönem 3-25, o zaman whats_new'e hiç işlenmemişti) özet
+  olarak v1.1'e yazıldı.
+- **Testler:** `pytest tests/` → 111/111 yeşil (saf frontend + agregasyon
+  mantığı, veri şeması değişmedi).
+- **Commit'ler:** henüz push edilmedi (bu dönem + önceki oturumdaki 5 commit).
 
 ---
 
