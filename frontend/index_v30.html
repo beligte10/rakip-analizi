@@ -2631,9 +2631,10 @@
   }
 
   // "Yenilikler" modal'ı (2026-08-25) — whats_new.json'u açıldığında çeker
-  // (bkz. app.py::api_whats_new). İçerik elle güncellenen basit bir liste
-  // (KARAR 2026-08-19) — her yeni sürümde yeni bir { date, title, items }
-  // girdisi eklenir, en yeni en üstte.
+  // (bkz. app.py::api_whats_new). 2026-09-16 KARAR: üyeler SADECE en son
+  // sürümde ne yapıldığını görür — sürüm numarası/tarih GÖSTERİLMEZ, sade
+  // madde listesi. Backend zaten tek girdi döndürüyor (bkz. api_whats_new);
+  // fazlı/versiyonlu tam geçmiş artık admin panelde ("Backlog" sekmesi).
   function WhatsNewModal(props) {
     var entriesState = useState(null);   // null = yükleniyor
     useEffect(function() {
@@ -2643,6 +2644,7 @@
         .catch(function(){ entriesState[1]([]); });
     }, []);
     var entries = entriesState[0];
+    var latest = entries && entries.length ? entries[0] : null;
     return h('div', {
       className: 'pw-modal-overlay',
       onClick: function(e){ if (e.target.className === 'pw-modal-overlay') props.onClose(); }
@@ -2654,17 +2656,13 @@
         ),
         h('div', { className: 'wn-modal-body' },
           entries === null ? h('div', { className: 'wn-empty' }, 'Yükleniyor…') :
-          entries.length === 0 ? h('div', { className: 'wn-empty' }, 'Henüz bir güncelleme notu yok.') :
-          entries.map(function(entry, i){
-            return h('div', { className: 'wn-entry', key: i },
-              h('div', { className: 'wn-entry-date' },
-                (entry.version ? entry.version + ' — ' : '') + (entry.date || '')),
-              h('div', { className: 'wn-entry-title' }, entry.title || ''),
-              h('ul', { className: 'wn-entry-items' },
-                (entry.items || []).map(function(item, j){ return h('li', { key: j }, item); })
-              )
-            );
-          })
+          !latest ? h('div', { className: 'wn-empty' }, 'Henüz bir güncelleme notu yok.') :
+          h('div', { className: 'wn-entry' },
+            h('div', { className: 'wn-entry-title' }, latest.title || ''),
+            h('ul', { className: 'wn-entry-items' },
+              (latest.items || []).map(function(item, j){ return h('li', { key: j }, item); })
+            )
+          )
         )
       )
     );
@@ -3036,21 +3034,6 @@
     var pwOpenState = useState(false);
     var wnOpenState = useState(false);
     var mbOpenState = useState(false);
-    // Uygulama sürüm rozeti (2026-09-16 kullanıcı isteği: "versiyon
-    // adlandırmasını her seferinde unutuyorsun") — whats_new.json'daki EN
-    // ÜSTTEKİ (en yeni) girdinin "version" alanı tek kaynak; yeni bir
-    // sürüm eklendiğinde topbar rozeti otomatik güncellenir, ayrıca
-    // elle senkronize edilecek ikinci bir sabit YOK.
-    var versionState = useState(null);
-    useEffect(function() {
-      fetch('/api/whats-new', { credentials: 'same-origin' })
-        .then(function(r){ return r.ok ? r.json() : []; })
-        .then(function(j){
-          var v = Array.isArray(j) && j.length ? j[0].version : null;
-          versionState[1](v || null);
-        })
-        .catch(function(){ versionState[1](null); });
-    }, []);
     // Mobilde BDR/Admin/Tema/Şifre/Çıkış/Yenilikler butonları tek tek satırı
     // kaplamasın diye hamburger menü arkasına alınır (kullanıcı isteği,
     // 2026-09-10) — masaüstünde etkisiz (CSS ile her zaman açık gösterilir).
@@ -3141,9 +3124,8 @@
           h('button', {
             className: 'topbar-icon-btn',
             onClick: function(){ wnOpenState[1](true); closeMenu(); },
-            title: versionState[0] ? 'Yenilikler (' + versionState[0] + ')' : 'Yenilikler'
-          }, h('span', { className: 'btn-icon' }, '🆕'),
-             h('span', { className: 'btn-label' }, 'Yenilikler' + (versionState[0] ? ' ' + versionState[0] : '')))
+            title: 'Yenilikler'
+          }, h('span', { className: 'btn-icon' }, '🆕'), h('span', { className: 'btn-label' }, 'Yenilikler'))
         )
       ),
       h(DateSelectorBar, { tarih: props.tarih, setTarih: props.setTarih, mode: props.mode, setMode: props.setMode }),

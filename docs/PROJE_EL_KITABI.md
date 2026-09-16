@@ -1419,12 +1419,22 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   popover 230px→180px küçültüldü, `openFor()` artık ekran sınırlarına göre
   left/openUp clamp ediyor (taşma/kesilme yok, her zaman tek ekranda tam
   görünür).
-- **v1.3:** `whats_new.json`'a `version` alanı eklendi, topbar'daki
-  "Yenilikler" butonu güncel sürümü gösteriyor (tek kaynak: en yeni
-  whats_new girdisi — ikinci, elle senkronize edilecek bir sabit yok).
-  Geçmiş tek whats_new girdisi retroaktif v1.0 sayıldı; 2026-08-25→
-  2026-09-12 arası (Dönem 3-25, o zaman whats_new'e hiç işlenmemişti) özet
-  olarak v1.1'e yazıldı.
+- **v1.3:** `whats_new.json`'a `version` alanı eklendi. Geçmiş tek
+  whats_new girdisi retroaktif v1.0 sayıldı; 2026-08-25→2026-09-12 arası
+  (Dönem 3-25, o zaman whats_new'e hiç işlenmemişti) özet olarak v1.1'e
+  yazıldı.
+- **v1.3 (düzeltme, aynı gün):** kullanıcı "whats new'e versiyon/tarih
+  koyma, üyeler sadece en son sürümü görsün; aşama aşama versiyonlu
+  backlog SADECE admin panelde olsun" dedi. Buna göre: `/api/whats-new`
+  (üye) artık SADECE en son girdiyi, versiyon/tarih OLMADAN döndürüyor
+  (`api_whats_new`, app.py); tam geçmiş yeni bir admin-only endpoint'e
+  taşındı (`GET /api/admin/version-log`, `require_admin_access`). Admin
+  panelde yeni bir **"🗂️ Backlog"** sekmesi eklendi (`frontend/admin.html`)
+  — "📖 Proje El Kitabı" sekmesinden AYRI: Proje El Kitabı derin teknik
+  referans, Backlog sekmesi ise whats_new.json'daki sürüm+tarih+madde
+  listesini kısa/okunur biçimde gösteren, haftalık toplantılarda
+  kullanılacak özet. Topbar'daki "Yenilikler" butonundan sürüm rozeti
+  kaldırıldı (üyeler sürüm numarası görmemeli).
 - **Testler:** `pytest tests/` → 111/111 yeşil (saf frontend + agregasyon
   mantığı, veri şeması değişmedi).
 - **Commit'ler:** henüz push edilmedi (bu dönem + önceki oturumdaki 5 commit).

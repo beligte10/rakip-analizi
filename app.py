@@ -675,11 +675,42 @@ def api_whats_new(_: dict = Depends(require_member)):
     hataya düşmemek için data/ DEĞİL, kökte tutuluyor). İçerik elle
     güncellenen basit bir liste (KARAR 2026-08-19) — admin panelden
     düzenlenebilir bir UI yok, kasıtlı.
+
+    2026-09-16 KARAR: üyeler SADECE en son sürümde ne yapıldığını görür —
+    sürüm numarası/tarih göstermeden, tek girdi. Fazlı/versiyonlu tam
+    geçmiş artık sadece admin panelde (bkz. /api/admin/version-log) —
+    bilinçli olarak burada dönmüyor.
     """
     path = APP_ROOT / 'whats_new.json'
     if not path.exists():
         return []
-    return FileResponse(path, media_type='application/json', headers=NO_CACHE)
+    try:
+        entries = json.loads(path.read_text(encoding='utf-8'))
+    except Exception:
+        return []
+    if not entries:
+        return []
+    latest = entries[0]
+    return [{'title': latest.get('title', ''), 'items': latest.get('items', [])}]
+
+
+@app.get('/api/admin/version-log')
+def api_admin_version_log(_: str = Depends(require_admin_access)):
+    """
+    2026-09-16: admin panelindeki "Backlog" sekmesi için — whats_new.json'un
+    TAM içeriği (sürüm + tarih + madde listesi, en yeni en üstte). Üye
+    tarafındaki /api/whats-new'den BİLİNÇLİ olarak ayrı: kullanıcı kararı
+    "haftalık ne yapıldığı sadece adminlerin görebileceği, versiyon adıyla
+    aşama aşama" bir backlog istiyor — üyeler sadece en son sürümü,
+    sürüm/tarih olmadan görür (yukarıdaki endpoint).
+    """
+    path = APP_ROOT / 'whats_new.json'
+    if not path.exists():
+        return []
+    try:
+        return json.loads(path.read_text(encoding='utf-8'))
+    except Exception:
+        return []
 
 
 @app.get('/api/version')

@@ -443,6 +443,15 @@ button.secondary:hover { background: var(--hover); }
 .markdown-body table { border-collapse: collapse; width: 100%; margin: 0 0 14px; font-size: 13px; }
 .markdown-body th, .markdown-body td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
 .markdown-body th { background: var(--hover); font-weight: 600; }
+
+/* Backlog (sürüm günlüğü) — admin-only, 2026-09-16 */
+.version-log-entry { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; background: var(--panel); }
+.version-log-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+.version-log-badge { font-size: 12px; font-weight: 700; color: #fff; background: var(--kt-green); padding: 2px 9px; border-radius: 20px; }
+.version-log-date { font-size: 12px; color: var(--muted); }
+.version-log-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.version-log-items { margin: 0; padding-left: 20px; font-size: 13.5px; line-height: 1.6; color: var(--text); }
+.version-log-items li { margin-bottom: 4px; }
 .markdown-body hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
 .markdown-body a { color: var(--primary); }
 .markdown-body strong { font-weight: 600; }
@@ -479,6 +488,7 @@ button.secondary:hover { background: var(--hover); }
     <button class="tab-btn" data-tab="uyelik" onclick="switchTab('uyelik')">👥 Üyelik Başvuruları<span class="tab-badge" id="pending-badge" style="display:none"></span></button>
     <button class="tab-btn" data-tab="gruplar" onclick="switchTab('gruplar')">🏷️ Banka Grupları</button>
     <button class="tab-btn" data-tab="gecmis" onclick="switchTab('gecmis')">📜 Yükleme Geçmişi</button>
+    <button class="tab-btn" data-tab="surumler" onclick="switchTab('surumler')">🗂️ Backlog</button>
     <button class="tab-btn" data-tab="backlog" onclick="switchTab('backlog')">📖 Proje El Kitabı</button>
   </div>
 
@@ -733,6 +743,20 @@ button.secondary:hover { background: var(--hover); }
   <div class="panel">
     <h2><span class="icon">📜</span> Yükleme Geçmişi</h2>
     <div id="history-content">
+      <div class="loading">Yükleniyor…</div>
+    </div>
+  </div>
+  </div>
+
+  <!-- BACKLOG (sürüm günlüğü) -->
+  <div class="tab-panel" data-tab-panel="surumler" hidden>
+  <div class="panel">
+    <h2><span class="icon">🗂️</span> Backlog</h2>
+    <p style="margin:0 0 12px;font-size:13px;color:var(--muted)">
+      Sürüm sürüm, aşama aşama ne yapıldığı — kısa madde listesi halinde, sadece adminler görür.
+      Üyelere gösterilen "Yenilikler" penceresinde sadece en son sürüm (versiyon/tarih olmadan) görünür.
+    </p>
+    <div id="version-log-content">
       <div class="loading">Yükleniyor…</div>
     </div>
   </div>
@@ -2121,6 +2145,41 @@ function renderHistory(data, target) {
 }
 
 // ============================================================
+// BACKLOG (sürüm günlüğü) — 2026-09-16, admin-only
+// ============================================================
+async function loadVersionLog() {
+  const target = $('version-log-content');
+  try {
+    const r = await fetch('/api/admin/version-log');
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ detail: 'HTTP ' + r.status }));
+      throw new Error(err.detail || `HTTP ${r.status}`);
+    }
+    const entries = await r.json();
+    if (!Array.isArray(entries) || entries.length === 0) {
+      target.innerHTML = `<div class="empty">Henüz bir sürüm kaydı yok.</div>`;
+      return;
+    }
+    let html = '';
+    for (const e of entries) {
+      html += `<div class="version-log-entry">
+        <div class="version-log-head">
+          <span class="version-log-badge">${escapeHtml(e.version || '')}</span>
+          <span class="version-log-date">${escapeHtml(e.date || '')}</span>
+        </div>
+        <div class="version-log-title">${escapeHtml(e.title || '')}</div>
+        <ul class="version-log-items">
+          ${(e.items || []).map(item => `<li>${escapeHtml(item)}</li>`).join('')}
+        </ul>
+      </div>`;
+    }
+    target.innerHTML = html;
+  } catch (err) {
+    target.innerHTML = `<div class="result-panel error">Backlog yüklenemedi: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+// ============================================================
 // YOL HARİTASI / BACKLOG
 // ============================================================
 async function loadBacklog() {
@@ -2196,6 +2255,7 @@ loadCoverage();
 loadUsers();
 loadGroups();
 loadHistory();
+loadVersionLog();
 loadBacklog();
 </script>
 
