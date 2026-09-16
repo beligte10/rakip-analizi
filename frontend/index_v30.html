@@ -718,7 +718,11 @@
   .ytd-labels-row {
     display: flex;
     gap: 2px;
-    height: 150px;
+    /* En uzun banka adı (15 karakter, ör. "Garanti Bankası") dikey yazıda
+       ~90px tutuyor — 150px sabit yükseklik kısa adların altında (ör. "TEB"
+       33px'e karşı 150px boşluk) gereksiz boşluk bırakıyordu (kullanıcı
+       isteği, 2026-09-16). 100px, ölçülen maksimumun üstünde güvenli pay. */
+    height: 100px;
     margin-top: 6px;
   }
   .ytd-label-cell {
