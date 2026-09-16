@@ -530,6 +530,117 @@ def api_change_password(payload: ChangePasswordPayload,
 
 
 # ============================================================
+# Özel ölçüler ("Ölçü Oluştur") + kayıtlı görünümler ("Görünümlerim")
+# (2026-09-17) — SADECE oturum sahibinin kendi profiline özel (require_member,
+# başka üye/admin göremiyor). Formül SUNUCUDA hesaplanmıyor — sadece tanımı
+# (op/a/b/constant) saklanır; değerler frontend'de mevcut computed.json
+# ölçülerinden anlık türetilir (bkz. frontend/index_v30.html::
+# injectCustomMeasures). a/b burada GERÇEK bir catalog.json ölçüsü olmalı —
+# başka bir özel ölçüye referans YOK (zincir/döngü riskinden kaçınmak için,
+# bkz. plan). Görünümler ise düz bir id listesi olduğundan hem gerçek hem
+# özel ölçü id'lerini serbestçe karışık içerebilir.
+# ============================================================
+
+def _catalog_measures_by_id() -> Dict[str, dict]:
+    catalog = _load_catalog()
+    return {m['id']: m for m in catalog.get('measures', [])}
+
+
+def _validate_measure_refs(op: str, a: str, b: Optional[str]) -> None:
+    by_id = _catalog_measures_by_id()
+    if a not in by_id:
+        raise HTTPException(status_code=400, detail=f"'{a}' geçerli bir ölçü değil")
+    if op != 'scale':
+        if not b or b not in by_id:
+            raise HTTPException(status_code=400, detail=f"'{b}' geçerli bir ölçü değil")
+        if op in ('diff', 'sum') and by_id[a]['birim'] != by_id[b]['birim']:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Birimler uyuşmuyor ({by_id[a]['birim']} ≠ {by_id[b]['birim']}) — "
+                       f"fark/toplam için aynı birimde iki ölçü seçin.",
+            )
+
+
+class CustomMeasurePayload(BaseModel):
+    ad: str
+    op: str                       # ratio | diff | sum | scale
+    a: str
+    b: Optional[str] = None
+    constant: Optional[float] = None
+    sort_direction: str = 'desc'
+
+
+@app.get('/api/my/measures')
+def my_measures_list(user: dict = Depends(require_member)):
+    return {'measures': users_mod.list_custom_measures(DATA_USERS, user['id'])}
+
+
+@app.post('/api/my/measures')
+def my_measures_create(payload: CustomMeasurePayload, user: dict = Depends(require_member)):
+    _validate_measure_refs(payload.op, payload.a, payload.b)
+    ok, result = users_mod.add_custom_measure(
+        DATA_USERS, user['id'], payload.ad, payload.op, payload.a,
+        payload.b, payload.constant, payload.sort_direction,
+    )
+    if not ok:
+        raise HTTPException(status_code=400, detail=result)
+    return {'status': 'ok', 'measure': result}
+
+
+@app.put('/api/my/measures/{measure_id}')
+def my_measures_update(measure_id: str, payload: CustomMeasurePayload,
+                       user: dict = Depends(require_member)):
+    _validate_measure_refs(payload.op, payload.a, payload.b)
+    ok, result = users_mod.update_custom_measure(
+        DATA_USERS, user['id'], measure_id, payload.ad, payload.op, payload.a,
+        payload.b, payload.constant, payload.sort_direction,
+    )
+    if not ok:
+        raise HTTPException(status_code=400, detail=result)
+    return {'status': 'ok', 'measure': result}
+
+
+@app.delete('/api/my/measures/{measure_id}')
+def my_measures_delete(measure_id: str, user: dict = Depends(require_member)):
+    if not users_mod.delete_custom_measure(DATA_USERS, user['id'], measure_id):
+        raise HTTPException(status_code=404, detail='Özel ölçü bulunamadı')
+    return {'status': 'ok'}
+
+
+class SavedViewPayload(BaseModel):
+    ad: str
+    measure_ids: List[str]
+
+
+@app.get('/api/my/views')
+def my_views_list(user: dict = Depends(require_member)):
+    return {'views': users_mod.list_saved_views(DATA_USERS, user['id'])}
+
+
+@app.post('/api/my/views')
+def my_views_create(payload: SavedViewPayload, user: dict = Depends(require_member)):
+    ok, result = users_mod.add_saved_view(DATA_USERS, user['id'], payload.ad, payload.measure_ids)
+    if not ok:
+        raise HTTPException(status_code=400, detail=result)
+    return {'status': 'ok', 'view': result}
+
+
+@app.put('/api/my/views/{view_id}')
+def my_views_update(view_id: str, payload: SavedViewPayload, user: dict = Depends(require_member)):
+    ok, result = users_mod.update_saved_view(DATA_USERS, user['id'], view_id, payload.ad, payload.measure_ids)
+    if not ok:
+        raise HTTPException(status_code=400, detail=result)
+    return {'status': 'ok', 'view': result}
+
+
+@app.delete('/api/my/views/{view_id}')
+def my_views_delete(view_id: str, user: dict = Depends(require_member)):
+    if not users_mod.delete_saved_view(DATA_USERS, user['id'], view_id):
+        raise HTTPException(status_code=404, detail='Görünüm bulunamadı')
+    return {'status': 'ok'}
+
+
+# ============================================================
 # Veri okuma endpoint'leri — SADECE onaylı üyeler (2026-08-12'den önce
 # auth'suzdu, bkz. memory: guvenlik-sunucu-erisimi.md madde 2)
 # ============================================================

@@ -24,6 +24,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import secrets
 import threading
 import bcrypt
 from datetime import datetime
@@ -60,8 +61,12 @@ def _load(path: Path) -> dict:
         data = json.load(f)
     # Geriye dönük uyumluluk (2026-08-12 rol özelliği eklendi): eski
     # kayıtlarda 'role' alanı yok — okurken varsayılan 'member' atanır.
+    # (2026-09-17: aynı desenle custom_measures/saved_views eklendi —
+    # bkz. add_custom_measure/add_saved_view.)
     for u in data.get('users', []):
         u.setdefault('role', 'member')
+        u.setdefault('custom_measures', [])
+        u.setdefault('saved_views', [])
     return data
 
 
@@ -303,3 +308,192 @@ def set_role(path: Path, user_id: int, role: str) -> bool:
                 _save(path, data)
                 return True
     return False
+
+
+# ============================================================
+# Özel ölçüler (custom measures) + kayıtlı görünümler (saved views)
+# (2026-09-17) — kullanıcı mevcut 160 ölçüyü (catalog.json) birleştirerek
+# kendi ölçüsünü kurup profiline kaydedebiliyor, istediği ölçüleri seçip
+# adlandırılmış bir "Görünüm" olarak da saklayabiliyor. Her ikisi de
+# SADECE kendi kullanıcısına özel — app.py::require_member ile korunan
+# /api/my/* uçlarından erişiliyor, başka kullanıcı/admin göremiyor.
+#
+# Formül gövdesi (A/B, A-B, A+B, A×sabit) bilerek burada YOK — istemci
+# tarafında (frontend/index_v30.html::injectCustomMeasures) hesaplanıyor,
+# çünkü ölçü değerleri zaten computed.json'da hazır, sunucunun tekrar
+# hesaplamasına gerek yok. Burası sadece TANIMI (op/a/b/constant)
+# saklıyor — doğrulama da burada (app.py sadece a/b'nin gerçek bir
+# catalog id'si olup olmadığını ve birim uyumunu kontrol ediyor).
+# ============================================================
+CUSTOM_MEASURE_OPS = {'ratio', 'diff', 'sum', 'scale'}
+MAX_AD_LEN = 60
+
+
+def _find(items: list, item_id: str) -> Optional[dict]:
+    return next((x for x in items if x['id'] == item_id), None)
+
+
+def _validate_custom_measure(ad: str, op: str, a: str, b: Optional[str],
+                             constant, sort_direction: str) -> tuple[bool, str]:
+    ad = (ad or '').strip()
+    if not ad:
+        return False, 'Ölçü adı boş olamaz'
+    if len(ad) > MAX_AD_LEN:
+        return False, f'Ölçü adı en fazla {MAX_AD_LEN} karakter olabilir'
+    if op not in CUSTOM_MEASURE_OPS:
+        return False, f"Geçersiz işlem: '{op}'"
+    if not (a or '').strip():
+        return False, 'Ölçü A seçilmeli'
+    if op == 'scale':
+        if constant is None or not isinstance(constant, (int, float)):
+            return False, 'A×Sabit için sayısal bir sabit girilmeli'
+    else:
+        if not (b or '').strip():
+            return False, 'Ölçü B seçilmeli'
+    if sort_direction not in ('asc', 'desc'):
+        return False, "sort_direction 'asc' veya 'desc' olmalı"
+    return True, ''
+
+
+def add_custom_measure(path: Path, user_id: int, ad: str, op: str, a: str,
+                       b: Optional[str] = None, constant: Optional[float] = None,
+                       sort_direction: str = 'desc') -> tuple[bool, object]:
+    """Başarılıysa (True, yeni_kayit_dict), değilse (False, hata_mesaji)."""
+    ok, err = _validate_custom_measure(ad, op, a, b, constant, sort_direction)
+    if not ok:
+        return False, err
+    record = {
+        'id': 'custom_' + secrets.token_hex(4),
+        'ad': ad.strip(),
+        'op': op,
+        'a': a,
+        'b': None if op == 'scale' else b,
+        'constant': constant if op == 'scale' else None,
+        'sort_direction': sort_direction,
+        'created_at': datetime.now().isoformat(),
+    }
+    with _users_file_lock:
+        data = _load(path)
+        user = _find(data['users'], user_id)
+        if not user:
+            return False, 'Kullanıcı bulunamadı'
+        user['custom_measures'].append(record)
+        _save(path, data)
+    return True, record
+
+
+def update_custom_measure(path: Path, user_id: int, measure_id: str, ad: str,
+                          op: str, a: str, b: Optional[str] = None,
+                          constant: Optional[float] = None,
+                          sort_direction: str = 'desc') -> tuple[bool, object]:
+    ok, err = _validate_custom_measure(ad, op, a, b, constant, sort_direction)
+    if not ok:
+        return False, err
+    with _users_file_lock:
+        data = _load(path)
+        user = _find(data['users'], user_id)
+        if not user:
+            return False, 'Kullanıcı bulunamadı'
+        record = _find(user['custom_measures'], measure_id)
+        if not record:
+            return False, 'Özel ölçü bulunamadı'
+        record.update({
+            'ad': ad.strip(), 'op': op, 'a': a,
+            'b': None if op == 'scale' else b,
+            'constant': constant if op == 'scale' else None,
+            'sort_direction': sort_direction,
+        })
+        _save(path, data)
+        return True, record
+
+
+def delete_custom_measure(path: Path, user_id: int, measure_id: str) -> bool:
+    """Siler; ayrıca bu kullanıcının saved_views'larındaki measure_ids
+    listelerinden de temizler (2026-09-17) — aksi halde bir Görünüm,
+    artık var olmayan bir ölçüye sessizce referans vermeye devam ederdi."""
+    with _users_file_lock:
+        data = _load(path)
+        user = _find(data['users'], user_id)
+        if not user:
+            return False
+        before = len(user['custom_measures'])
+        user['custom_measures'] = [m for m in user['custom_measures'] if m['id'] != measure_id]
+        if len(user['custom_measures']) == before:
+            return False
+        for v in user['saved_views']:
+            v['measure_ids'] = [mid for mid in v['measure_ids'] if mid != measure_id]
+        _save(path, data)
+        return True
+
+
+def list_custom_measures(path: Path, user_id: int) -> list[dict]:
+    user = get_user_by_id(path, user_id)
+    return list(user['custom_measures']) if user else []
+
+
+def _validate_saved_view(ad: str, measure_ids: list) -> tuple[bool, str]:
+    ad = (ad or '').strip()
+    if not ad:
+        return False, 'Görünüm adı boş olamaz'
+    if len(ad) > MAX_AD_LEN:
+        return False, f'Görünüm adı en fazla {MAX_AD_LEN} karakter olabilir'
+    if not measure_ids or not isinstance(measure_ids, list):
+        return False, 'Görünüm en az 1 ölçü içermeli'
+    return True, ''
+
+
+def add_saved_view(path: Path, user_id: int, ad: str, measure_ids: list) -> tuple[bool, object]:
+    ok, err = _validate_saved_view(ad, measure_ids)
+    if not ok:
+        return False, err
+    record = {
+        'id': 'view_' + secrets.token_hex(4),
+        'ad': ad.strip(),
+        'measure_ids': list(measure_ids),
+        'created_at': datetime.now().isoformat(),
+    }
+    with _users_file_lock:
+        data = _load(path)
+        user = _find(data['users'], user_id)
+        if not user:
+            return False, 'Kullanıcı bulunamadı'
+        user['saved_views'].append(record)
+        _save(path, data)
+    return True, record
+
+
+def update_saved_view(path: Path, user_id: int, view_id: str, ad: str,
+                      measure_ids: list) -> tuple[bool, object]:
+    ok, err = _validate_saved_view(ad, measure_ids)
+    if not ok:
+        return False, err
+    with _users_file_lock:
+        data = _load(path)
+        user = _find(data['users'], user_id)
+        if not user:
+            return False, 'Kullanıcı bulunamadı'
+        record = _find(user['saved_views'], view_id)
+        if not record:
+            return False, 'Görünüm bulunamadı'
+        record.update({'ad': ad.strip(), 'measure_ids': list(measure_ids)})
+        _save(path, data)
+        return True, record
+
+
+def delete_saved_view(path: Path, user_id: int, view_id: str) -> bool:
+    with _users_file_lock:
+        data = _load(path)
+        user = _find(data['users'], user_id)
+        if not user:
+            return False
+        before = len(user['saved_views'])
+        user['saved_views'] = [v for v in user['saved_views'] if v['id'] != view_id]
+        if len(user['saved_views']) == before:
+            return False
+        _save(path, data)
+        return True
+
+
+def list_saved_views(path: Path, user_id: int) -> list[dict]:
+    user = get_user_by_id(path, user_id)
+    return list(user['saved_views']) if user else []
