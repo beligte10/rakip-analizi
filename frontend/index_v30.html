@@ -647,6 +647,24 @@
   .bank-bar.kt { background: var(--kt-green) !important; }
   .bank-bar.outlier { background: #d98b8b; opacity: 0.45; }
   body.dark .bank-bar.outlier { background: #b06a6a; opacity: 0.5; }
+  /* Negatif değer alabilen ölçüler (Likidite Açığı vb.) için 0 çizgisinden
+     iki yöne ayrılan bar (kullanıcı isteği, 2026-09-17) — pozitif sağa,
+     negatif sola. .bank-delta-bar'daki left/right:50% deseniyle aynı. */
+  .bank-bar-zero-line {
+    position: absolute; left: 50%; top: 0; bottom: 0; width: 1px;
+    background: rgba(0,0,0,0.18); z-index: 1;
+  }
+  body.dark .bank-bar-zero-line { background: rgba(255,255,255,0.22); }
+  .bank-bar.diverging {
+    position: absolute; top: 0; bottom: 0;
+    border-radius: 0 7px 7px 0;
+  }
+  .bank-bar.diverging.neg {
+    border-radius: 7px 0 0 7px;
+    background: #a84a4a;
+  }
+  body.dark .bank-bar.diverging.neg { background: #c46060; }
+  .bank-bar.diverging.neg.kt { background: var(--kt-green) !important; }
   .bank-value {
     font-size: 11px; color: #334155; font-weight: 700;
     text-align: right;
@@ -3265,6 +3283,12 @@
     var ktRank = ktRankAll(measure.id, tarih);
 
     var validVals = sortedAll.filter(function(r){return r.value != null;}).map(function(r){return r.value;});
+    // Negatif değer alabilen ölçüler (ör. Likidite Açığı, YP Net Genel
+    // Pozisyonu) için bar 0 çizgisinden İKİ YÖNE ayrılır — pozitif sağa,
+    // negatif sola (kullanıcı isteği, 2026-09-17). Veri odaklı: bu listede
+    // GERÇEKTEN negatif değer varsa devreye girer, sabit bir ölçü listesine
+    // gerek yok — "Likidite Açığı" ailesinin 7 üyesi de otomatik kapsanır.
+    var hasNegative = validVals.some(function(v){ return v < 0; });
     // Outlier- ve işaret-dayanıklı ölçekleme (yalnız RASYO'da; büyüklük aynen kalır):
     //  - Negatif değerli rasyolar (ör. YP Net Genel Pozisyonu) |değer| ile ölçeklenir.
     //  - Aşırı outlier (ör. NPL Karşılama'da HSBC %3932) ekseni bozmasın: dağılım-temelli
@@ -3329,6 +3353,7 @@
       h('div', { className: 'bank-rows-scroll' }, sortedAll.map(function(row) {
         var isKT = row.banka === KT_NAME;
         var rowOutlier = isValueOutlier(row.value);
+        var isNeg = row.value != null && row.value < 0;
         var widthPct;
         if (row.value == null) {
           widthPct = 0;
@@ -3338,6 +3363,13 @@
         } else {
           widthPct = (row.value / maxVal) * 100 * barScaleFactor;
         }
+        // hasNegative modunda bar 0 çizgisinden (track'in ortası) başlar,
+        // iki yöne de en fazla YARI genişliğe kadar uzanabilir — widthPct
+        // (tam track'e göre) yarıya bölünüp merkeze göre konumlanır.
+        var barStyle = hasNegative
+          ? (isNeg ? { right: '50%', width: (widthPct / 2) + '%' }
+                   : { left: '50%', width: (widthPct / 2) + '%' })
+          : { width: widthPct + '%' };
         var delta = (hasDelta && row.value != null)
           ? rowQoQDelta(measure, row.banka, tarih, deltaPeriod)
           : null;
@@ -3359,9 +3391,11 @@
           h('div', { className: 'bank-row-name', title: row.banka }, row.banka),
           h('div', { className: 'bank-bar-cell' },
             h('div', { className: 'bank-bar-track' },
+              hasNegative && h('div', { className: 'bank-bar-zero-line' }),
               h('div', {
-                className: 'bank-bar' + (isKT ? ' kt' : '') + (rowOutlier ? ' outlier' : ''),
-                style: { width: widthPct + '%' }
+                className: 'bank-bar' + (isKT ? ' kt' : '') + (rowOutlier ? ' outlier' : '')
+                  + (hasNegative ? (isNeg ? ' neg diverging' : ' diverging') : ''),
+                style: barStyle
               })
             ),
             h('div', { className: 'bank-value' + (rowOutlier ? ' outlier' : '') },
