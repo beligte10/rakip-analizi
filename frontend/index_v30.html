@@ -591,6 +591,15 @@
   body.dark .bank-ranking-delta-period-select { color: #7EBAA5; }
   body.dark .bank-ranking-delta-period-select option { background: #0f1f2f; color: #e8eef1; }
 
+  /* Kullanıcı isteği (2026-09-17): liste artık sabit top-20 değil TÜM
+     bankaları içeriyor — panel ilk görünüşte ~20 satır (580px ≈ 20×29px)
+     gösterecek şekilde sınırlanır, kalan bankalara bu kutunun İÇİNDE aşağı
+     kaydırarak ulaşılır (sayfanın tamamı değil — kart boyutu sabit kalsın
+     diye, bkz. SnapshotView'daki panel yükseklik eşleme mekanizması). */
+  .bank-rows-scroll {
+    max-height: 580px;
+    overflow-y: auto;
+  }
   .bank-row {
     display: grid;
     grid-template-columns: 110px 1fr 82px;
@@ -1922,6 +1931,18 @@
     return null;
   }
 
+  // KT'nin TÜM bankalar arasındaki rank'i — allBanksSortedByMeasure ile aynı
+  // sıralama yönünü kullanır (kullanıcı isteği, 2026-09-17: "İlk 20 Banka"
+  // artık tüm bankaları gösteriyor, rozet de buna göre "X / 27" olmalı).
+  function ktRankAll(mid, tarih) {
+    var rows = allBanksSortedByMeasure(mid, tarih);
+    if (!rows || rows.length === 0) return null;
+    for (var j = 0; j < rows.length; j++) {
+      if (rows[j].banka === KT_NAME) return [j + 1, rows.length];
+    }
+    return null;
+  }
+
   // Top20 sabit set içinde measure'a göre sıralama
   function top20SortedByMeasure(mid, tarih) {
     var top20Set = getFixedTop20(tarih);
@@ -1935,6 +1956,31 @@
       rows.push({ banka: b, value: v });
     }
     // Sort: null'lar her zaman sona; aksi durum sort_direction'a göre
+    rows.sort(function(a, b) {
+      if (a.value == null && b.value == null) return 0;
+      if (a.value == null) return 1;
+      if (b.value == null) return -1;
+      return sortAsc ? (a.value - b.value) : (b.value - a.value);
+    });
+    return rows;
+  }
+
+  // TÜM bankalar (sabit top-20 seti DEĞİL) measure'a göre sıralı — kullanıcı
+  // isteği (2026-09-17): "İlk 20 Banka" listesi artık ilk görünüşte 20
+  // banka gösterse de, aşağı kaydırınca TÜM bankalara ulaşılabiliyor
+  // (bkz. BankRanking + .bank-rows-scroll). top20SortedByMeasure ile aynı
+  // mantık, sadece kaynak set DATA.meta.banks (tüm bankalar).
+  function allBanksSortedByMeasure(mid, tarih) {
+    var allBanks = DATA.meta.banks.map(function(b){ return b.banka_adi; });
+    var measureMeta = DATA.catalog.filter(function(m){return m.id === mid;})[0];
+    var sortAsc = measureMeta && measureMeta.sort_direction === 'asc';
+    var rows = [];
+    for (var i = 0; i < allBanks.length; i++) {
+      var b = allBanks[i];
+      if (!bankShownForMeasure(mid, b, tarih)) continue;
+      var v = bankVal(mid, b, tarih);
+      rows.push({ banka: b, value: v });
+    }
     rows.sort(function(a, b) {
       if (a.value == null && b.value == null) return 0;
       if (a.value == null) return 1;
@@ -3212,10 +3258,13 @@
     var deltaPeriodState = useState('qoq');
     var deltaPeriod = deltaPeriodState[0], setDeltaPeriod = deltaPeriodState[1];
 
-    var sortedTop20 = top20SortedByMeasure(measure.id, tarih);
-    var ktRank = ktRankInTop20(measure.id, tarih);
+    // Kullanıcı isteği (2026-09-17): sabit top-20 seti yerine TÜM bankalar
+    // sıralanır; panel ilk görünüşte ~20 satır gösterir, kalanına
+    // .bank-rows-scroll ile aşağı kaydırarak ulaşılır (bkz. CSS).
+    var sortedAll = allBanksSortedByMeasure(measure.id, tarih);
+    var ktRank = ktRankAll(measure.id, tarih);
 
-    var validVals = sortedTop20.filter(function(r){return r.value != null;}).map(function(r){return r.value;});
+    var validVals = sortedAll.filter(function(r){return r.value != null;}).map(function(r){return r.value;});
     // Outlier- ve işaret-dayanıklı ölçekleme (yalnız RASYO'da; büyüklük aynen kalır):
     //  - Negatif değerli rasyolar (ör. YP Net Genel Pozisyonu) |değer| ile ölçeklenir.
     //  - Aşırı outlier (ör. NPL Karşılama'da HSBC %3932) ekseni bozmasın: dağılım-temelli
@@ -3235,7 +3284,7 @@
     var maxVal = validVals.length > 0 ? Math.max.apply(null, validVals) : 1;  // büyüklük için
     var barScaleFactor = isRasyo ? 0.72 : 0.92;
 
-    var deltaVals = hasDelta ? sortedTop20.map(function(row) {
+    var deltaVals = hasDelta ? sortedAll.map(function(row) {
       if (row.value == null) return null;
       return rowQoQDelta(measure, row.banka, tarih, deltaPeriod);
     }).filter(function(d){ return d != null; }) : [];
@@ -3257,8 +3306,8 @@
         ref: props.headerRef
       },
         h('div', null,
-          isRasyo ? ('İlk ' + sortedTop20.length + ' Banka Rasyo (' + birimLabel(measure) + ')')
-                  : ('İlk ' + sortedTop20.length + ' Banka Büyüklükleri (' + buyuklukLabel(measure) + ')')),
+          isRasyo ? ('Tüm ' + sortedAll.length + ' Banka Rasyo (' + birimLabel(measure) + ')')
+                  : ('Tüm ' + sortedAll.length + ' Banka Büyüklükleri (' + buyuklukLabel(measure) + ')')),
         hasDelta && h('div', { className: 'bank-ranking-header-delta' },
           h('div', { className: 'bank-ranking-header-delta-title' },
             (isMiktarDelta(measure) || isRasyo) ? 'Değişim' : 'Pazar Payı'
@@ -3277,7 +3326,7 @@
           )
         )
       ),
-      sortedTop20.map(function(row) {
+      h('div', { className: 'bank-rows-scroll' }, sortedAll.map(function(row) {
         var isKT = row.banka === KT_NAME;
         var rowOutlier = isValueOutlier(row.value);
         var widthPct;
@@ -3334,7 +3383,7 @@
             )
           )
         );
-      }),
+      })),
       h('div', { className: 'rank-badge-row' },
         h('div', { className: 'rank-label' }, 'Kuveyt Türk sırası:'),
         ktRank && h('div', { className: 'rank-badge' },
