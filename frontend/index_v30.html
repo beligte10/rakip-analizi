@@ -592,15 +592,12 @@
   body.dark .bank-ranking-delta-period-select option { background: #0f1f2f; color: #e8eef1; }
 
   /* Kullanıcı isteği (2026-09-17): liste artık sabit top-20 değil TÜM
-     bankaları içeriyor. Önce panel ilk görünüşte ~20 satır (580px) ile
-     sınırlıydı; kullanıcı sonradan "boyutunu artır, ilk 20'den fazlasını
-     da gösterebilir" dedi — 27 bankanın TAMAMI (27×29px ≈ 783px) artık
-     kaydırmadan sığıyor. 800px, mevcut 27 banka için scrollbar'ı
-     kaldırırken gelecekte birkaç banka daha eklenirse (bkz.
-     SnapshotView'daki panel yükseklik eşleme mekanizması, otomatik uyum
-     sağlar) güvenlik payı olarak iç scroll'u devreye sokar. */
+     bankaları içeriyor, ilk görünüşte bir kısmı gösterilip kalanına bu
+     kutunun İÇİNDE aşağı kaydırarak ulaşılır. Önce 20 satır (580px),
+     sonra tüm 27 (800px, scroll'suz) denendi; kullanıcı son kararında
+     21 satır istedi — 609px (21×29px, tam sınırda kesilmeden). */
   .bank-rows-scroll {
-    max-height: 800px;
+    max-height: 609px;
     overflow-y: auto;
   }
   .bank-row {
