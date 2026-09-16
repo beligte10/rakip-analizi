@@ -4334,6 +4334,15 @@
     var rankingRef = useRef(null);
     var matchHState = useState(0);
     var matchH = matchHState[0], setMatchH = matchHState[1];
+    // Sol panel sağ sütundan KISAYSA alta eklenecek boşluk (2026-09-17
+    // kullanıcı isteği: "bu baloncukların altını hizala" — sağ sütun
+    // [Banka Grupları/Rakip Bankalar kartları büyütülünce] artık sol
+    // sıralama panelinden UZUN olabiliyor, önceki mekanizma sadece
+    // "sağ < sol" varsayımıyla çalışıyordu). rankingRef/card1-3Ref'ler HER
+    // ZAMAN kendi DOĞAL (esnetilmemiş) yüksekliklerini ölçer — biri
+    // diğerinin ölçtüğü esnetilmiş değere bakmadığı için sonsuz döngü YOK.
+    var leftExtraState = useState(0);
+    var leftExtra = leftExtraState[0], setLeftExtra = leftExtraState[1];
     // Başlıkların gri alanı da yatayda hizalı kalsın diye AYRICA ölçülür —
     // "Pazar Payı Değişimi (Bps)" dar sütunda sarabildiği için sol başlık
     // sağdakinden doğal olarak daha uzun olabiliyor. Bu, kart gövdesinin
@@ -4342,16 +4351,31 @@
     var headerRef = useRef(null);
     var headerMatchHState = useState(0);
     var headerMatchH = headerMatchHState[0], setHeaderMatchH = headerMatchHState[1];
+    // Sağ sütunun 3 kartının DOĞAL (parent'ın minHeight/space-between'inden
+    // bağımsız — flex-direction:column'da justify-content sadece aralardaki
+    // boşluğu esnetir, çocukların kendi yüksekliğini değiştirmez) toplam
+    // yüksekliğini ölçmek için her kart kendi sarmalayıcısında.
+    var rc1Ref = useRef(null), rc2Ref = useRef(null), rc3Ref = useRef(null);
     useEffect(function() {
       function measureRanking() {
         if (window.innerWidth <= 900) {
           if (matchH !== 0) setMatchH(0);
           if (headerMatchH !== 0) setHeaderMatchH(0);
+          if (leftExtra !== 0) setLeftExtra(0);
           return;
         }
-        if (rankingRef.current) {
-          var hgt = rankingRef.current.getBoundingClientRect().height;
-          if (hgt && Math.abs(hgt - matchH) > 2) setMatchH(hgt);
+        var leftH = rankingRef.current ? rankingRef.current.getBoundingClientRect().height : 0;
+        var rightNatural = 0;
+        if (rc1Ref.current && rc2Ref.current && rc3Ref.current) {
+          rightNatural = rc1Ref.current.getBoundingClientRect().height +
+            rc2Ref.current.getBoundingClientRect().height +
+            rc3Ref.current.getBoundingClientRect().height + 28; // 2 × 14px gap
+        }
+        if (leftH && rightNatural) {
+          var target = Math.max(leftH, rightNatural);
+          if (Math.abs(target - matchH) > 2) setMatchH(target);
+          var newExtra = Math.max(0, target - leftH);
+          if (Math.abs(newExtra - leftExtra) > 2) setLeftExtra(newExtra);
         }
         if (headerRef.current) {
           var hHgt = headerRef.current.getBoundingClientRect().height;
@@ -4368,17 +4392,26 @@
 
     return h('div', null,
       h('div', { className: 'dashboard-grid' },
-        h(BankRanking, { measure: measure, tarih: tarih, panelRef: rankingRef, headerRef: headerRef }),
+        h('div', { style: { alignSelf: 'start' } },
+          h(BankRanking, { measure: measure, tarih: tarih, panelRef: rankingRef, headerRef: headerRef }),
+          leftExtra > 0 && h('div', { style: { height: leftExtra + 'px' } })
+        ),
         h('div', { style: rightColStyle },
-          isRasyo
-            ? h(GroupSummary, { measure: measure, tarih: tarih })
-            : h(YtDGrowthChart, { measure: measure, tarih: tarih, headerMatchHeight: headerMatchH }),
-          isRasyo
-            ? h(GroupBpsChange, { measure: measure, tarih: tarih })
-            : h(GroupSummary, { measure: measure, tarih: tarih }),
-          isRasyo
-            ? h(CompetitorTrendRatio, { measure: measure, tarih: tarih })
-            : h(CompetitorCardsGrowth, { measure: measure, tarih: tarih })
+          h('div', { ref: rc1Ref },
+            isRasyo
+              ? h(GroupSummary, { measure: measure, tarih: tarih })
+              : h(YtDGrowthChart, { measure: measure, tarih: tarih, headerMatchHeight: headerMatchH })
+          ),
+          h('div', { ref: rc2Ref },
+            isRasyo
+              ? h(GroupBpsChange, { measure: measure, tarih: tarih })
+              : h(GroupSummary, { measure: measure, tarih: tarih })
+          ),
+          h('div', { ref: rc3Ref },
+            isRasyo
+              ? h(CompetitorTrendRatio, { measure: measure, tarih: tarih })
+              : h(CompetitorCardsGrowth, { measure: measure, tarih: tarih })
+          )
         )
       ),
       h('div', { className: 'snapshot-footnote' },
