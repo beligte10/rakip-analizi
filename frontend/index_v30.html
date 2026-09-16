@@ -913,17 +913,23 @@
   .group-cell-value.neg { color: #a84a4a; }
 
   /* -------- Competitor cards -------- */
+  /* Kullanıcı isteği (2026-09-17): 6 sütun tek sırada kartları o kadar
+     daraltıyordu ki içindeki SVG grafik metni (viewBox 150×60, CSS'te
+     width:100%'e ölçekleniyor) fiilen ~5px'e düşüyordu — okunmuyordu.
+     3×2 düzene geçirilip kart genişliği ~2 katına çıkarıldı (SVG içeriği
+     otomatik büyür, viewBox aynı kalsa da), üstüne yazı boyutları da
+     ayrıca büyütüldü. */
   .competitor-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 5px;
-    padding: 8px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 10px;
   }
   .competitor-card {
     background: #fff;
     border: 1px solid rgba(15,31,47,0.06);
     border-radius: 8px;
-    padding: 8px;
+    padding: 10px;
     box-shadow: 0 1px 3px rgba(15,31,47,0.04);
   }
   body.dark .competitor-card {
@@ -931,10 +937,10 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.25);
   }
   .competitor-title {
-    font-size: 10.5px; font-weight: 700;
-    margin-bottom: 4px; color: #1a2635;
-    height: 18px;
-    display: flex; align-items: center; gap: 4px;
+    font-size: 13px; font-weight: 700;
+    margin-bottom: 5px; color: #1a2635;
+    height: 22px;
+    display: flex; align-items: center; gap: 6px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -943,17 +949,17 @@
 
   .rakip-trend-panel { padding: 12px; }
   .rakip-trend-legend {
-    display: flex; gap: 14px; justify-content: center;
-    font-size: 11px; margin-bottom: 6px; color: #334155;
+    display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+    font-size: 13px; margin-bottom: 8px; color: #334155;
   }
   body.dark .rakip-trend-legend { color: #c5d3dd; }
-  .rakip-legend-item { display: flex; align-items: center; gap: 5px; }
-  .rakip-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .rakip-legend-item { display: flex; align-items: center; gap: 6px; }
+  .rakip-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
 
   .bank-mono {
-    width: 18px; height: 18px; border-radius: 3px;
+    width: 22px; height: 22px; border-radius: 4px;
     display: inline-flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 9px; font-weight: 700;
+    color: #fff; font-size: 11px; font-weight: 700;
     flex-shrink: 0;
   }
   /* Gerçek logo varsa: beyaz zemin + orantı korunarak sığdır (logolar
@@ -3845,20 +3851,25 @@
           var validVals = values.filter(function(v){ return v != null; });
           if (validVals.length < 1) return h('div', { key: b, className: 'competitor-card' },
             h('div', { className: 'competitor-title' }, bankMono(b), h('span', null, b)),
-            h('div', { style:{fontSize:'10px', color:'#94a3b8', textAlign:'center', padding:'10px'} }, 'veri yok')
+            h('div', { style:{fontSize:'12px', color:'#94a3b8', textAlign:'center', padding:'10px'} }, 'veri yok')
           );
 
           var maxV = Math.max.apply(null, validVals);
           var minV = 0; // büyüklük kalemleri için 0 baseline anlamlı
 
-          var W = 150, H = 60;
+          // 2026-09-17: 3×2 düzene geçişle kartlar genişledi ama SVG'nin
+          // CSS height'ı SABİT px olduğundan (width:100% ile birlikte),
+          // preserveAspectRatio="xMidYMid meet" ölçeği height'a göre
+          // sınırlıyordu — sadece kart genişletmek yazıyı BÜYÜTMÜYORDU.
+          // viewBox + iç font boyutları birlikte büyütüldü (kullanıcı isteği).
+          var W = 190, H = 78;
           var nBars = 3;
-          var topPad = 14;     // değer label için yer
-          var bottomPad = 12;  // yıl label için yer
+          var topPad = 18;     // değer label için yer
+          var bottomPad = 16;  // yıl label için yer
           var chartH = H - topPad - bottomPad;
-          var sidePad = 10;
+          var sidePad = 12;
           var groupW = W - sidePad * 2;
-          var gap = 6;
+          var gap = 8;
           var barW = (groupW - gap * (nBars - 1)) / nBars;
 
           var color = bankColor(b);       // bar dolgusu — marka rengine sadık kalır
@@ -3881,8 +3892,8 @@
                   strokeDasharray: '2,2'
                 }),
                 h('text', {
-                  x: x + barW/2, y: H - 2,
-                  fontSize:'8.5', fill: '#94a3b8',
+                  x: x + barW/2, y: H - 3,
+                  fontSize:'10.5', fill: '#94a3b8',
                   textAnchor:'middle', fontWeight:'500'
                 }, monthLabel + ' ' + yearLabel.slice(2))
               );
@@ -3896,14 +3907,14 @@
               }),
               // Üstte değer etiketi
               h('text', {
-                x: x + barW/2, y: barY - 3,
-                fontSize:'9', fill: textColor,
+                x: x + barW/2, y: barY - 4,
+                fontSize:'11', fill: textColor,
                 textAnchor:'middle', fontWeight:'700'
               }, fmtTL_tr(v)),
               // Altta dönem etiketi
               h('text', {
-                x: x + barW/2, y: H - 2,
-                fontSize:'8.5', fill: '#64748b',
+                x: x + barW/2, y: H - 3,
+                fontSize:'10.5', fill: '#64748b',
                 textAnchor:'middle', fontWeight:'500'
               }, monthLabel + ' ' + yearLabel.slice(2))
             );
@@ -3918,8 +3929,8 @@
             ),
             h('div', {
               style: {
-                textAlign:'center', fontSize:'13px', fontWeight:'700',
-                color: textColor, marginTop:'2px'
+                textAlign:'center', fontSize:'16px', fontWeight:'700',
+                color: textColor, marginTop:'4px'
               }
             }, cagr == null ? 'CAGR: —' : fmtPctPlain(cagr, 1))
           );
@@ -3975,7 +3986,7 @@
     // düştüğünde etiketler üst üste biniyordu. Aşağıda etiketler ideal
     // y konumlarına göre sıralanıp aralarında en az LABEL_MIN_GAP kalacak
     // şekilde ayrıştırılır (önce aşağı it, taşarsa yukarı geri sıkıştır).
-    var LABEL_MIN_GAP = 11;   // fontSize 10 için okunur minimum aralık
+    var LABEL_MIN_GAP = 13;   // fontSize 11.5 için okunur minimum aralık (2026-09-17 büyütüldü)
     var labelItems = [];
     rakipler.forEach(function(b) {
       var vals = seriesByBank[b];
@@ -4040,7 +4051,7 @@
               key: 'xl' + i,
               x: padL + i * stepX,
               y: H - padB + 16,
-              fontSize:'9', fill:'#64748b', textAnchor:'middle'
+              fontSize:'10.5', fill:'#64748b', textAnchor:'middle'
             }, tarihLabelShort(d));
           }),
           rakipler.map(function(b) {
@@ -4082,7 +4093,7 @@
               }),
               h('text', {
                 x: L.x, y: L.y,
-                fontSize:'10', fill: L.color,
+                fontSize:'11.5', fill: L.color,
                 textAnchor:'start', fontWeight:'700'
               }, L.text)
             );
