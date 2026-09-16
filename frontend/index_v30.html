@@ -489,8 +489,26 @@
   .bank-ranking-header-delta {
     font-size: 10.5px !important; font-weight: 600 !important;
     color: #64748b !important;
+    display: flex !important; flex-direction: column; align-items: center; gap: 2px;
+    padding: 6px 4px !important;
   }
   body.dark .bank-ranking-header-delta { color: #94a3b8 !important; }
+  .bank-ranking-header-delta-title { line-height: 1.15; }
+  /* Dönem seçici (Çeyreklik/YoY/YtD) — kullanıcı isteği (2026-09-16):
+     "Pazar Payı Değişimi" artık tek başına çeyreklik değil, üç dönemden
+     biri seçilebiliyor; seçili dönem her zaman metinde açıkça yazıyor. */
+  .bank-ranking-delta-period-select {
+    font: inherit; font-size: 9.5px !important; font-weight: 700 !important;
+    color: var(--kt-green-dark, #457A2E);
+    background: transparent; border: none; border-radius: 4px;
+    padding: 1px 2px; max-width: 100%;
+    text-align: center; text-align-last: center;
+    cursor: pointer;
+  }
+  .bank-ranking-delta-period-select:hover,
+  .bank-ranking-delta-period-select:focus { background: rgba(98,174,65,0.12); outline: none; }
+  body.dark .bank-ranking-delta-period-select { color: #7EBAA5; }
+  body.dark .bank-ranking-delta-period-select option { background: #0f1f2f; color: #e8eef1; }
 
   .bank-row {
     display: grid;
@@ -1818,9 +1836,22 @@
     }
     return total > 0 ? (bv / total * 100) : null;
   }
-  function msDeltaBps(mid, banka, tarih) {
+  // period: 'qoq' (varsayılan) | 'yoy' | 'ytd' — karşılaştırma dönemini seçer
+  // (kullanıcı isteği, 2026-09-16: "Pazar Payı Değişimi" artık sadece
+  // çeyreklik değil, YoY/YtD de seçilebilir).
+  function deltaCmpTarih(period, tarih) {
+    if (period === 'yoy') return yoyTarih(tarih);
+    if (period === 'ytd') return ytdTarih(tarih);
+    return qoqTarih(tarih);
+  }
+  function deltaPeriodLabel(period) {
+    if (period === 'yoy') return 'YoY';
+    if (period === 'ytd') return 'YtD';
+    return 'Çeyreklik';
+  }
+  function msDeltaBps(mid, banka, tarih, period) {
     var cur = marketShare(mid, banka, tarih);
-    var prev = marketShare(mid, banka, qoqTarih(tarih));
+    var prev = marketShare(mid, banka, deltaCmpTarih(period, tarih));
     if (cur == null || prev == null) return null;
     return (cur - prev) * 100;
   }
@@ -1983,11 +2014,12 @@
   // Yüzde birimli measure  → iki yüzdenin farkı = BAZ PUAN (bps)
   // bin_TL / kat / adet    → baz puan anlamsız, YÜZDE değişim döner
   // İkinci dönüş değeri (bpsMi) çağıranın doğru formatı seçmesi içindir.
-  function measureQoQDelta(measure, isim, tarih, isGroup) {
+  function measureQoQDelta(measure, isim, tarih, isGroup, period) {
+    var cmpT = deltaCmpTarih(period, tarih);
     var cur  = isGroup ? groupVal(measure.id, isim, tarih)
                        : bankVal(measure.id, isim, tarih);
-    var prev = isGroup ? groupVal(measure.id, isim, qoqTarih(tarih))
-                       : bankVal(measure.id, isim, qoqTarih(tarih));
+    var prev = isGroup ? groupVal(measure.id, isim, cmpT)
+                       : bankVal(measure.id, isim, cmpT);
     if (cur == null || prev == null) return null;
     if (isPctBirim(measure)) return (cur - prev) * 100;
     return prev === 0 ? null : (cur - prev) / Math.abs(prev) * 100;
@@ -2004,11 +2036,12 @@
   function isMiktarDelta(measure) {
     return !!(measure && measure.kategori === 'Şube & Personel');
   }
-  function miktarDelta(measure, isim, tarih, isGroup) {
+  function miktarDelta(measure, isim, tarih, isGroup, period) {
+    var cmpT = deltaCmpTarih(period, tarih);
     var cur  = isGroup ? groupVal(measure.id, isim, tarih)
                        : bankVal(measure.id, isim, tarih);
-    var prev = isGroup ? groupVal(measure.id, isim, qoqTarih(tarih))
-                       : bankVal(measure.id, isim, qoqTarih(tarih));
+    var prev = isGroup ? groupVal(measure.id, isim, cmpT)
+                       : bankVal(measure.id, isim, cmpT);
     if (cur == null || prev == null) return null;
     return cur - prev;  // mutlak fark, ölçünün kendi biriminde
   }
@@ -2026,11 +2059,11 @@
   // Bir satır için gösterilecek çeyreklik delta değeri — kategori/tipe göre
   // kaynağı seçer: Şube&Personel → miktarsal fark; diğer rasyolar → bps/%;
   // Bilanço büyüklükleri → pazar payı bps.
-  function rowQoQDelta(measure, banka, tarih) {
-    if (isMiktarDelta(measure)) return miktarDelta(measure, banka, tarih, false);
+  function rowQoQDelta(measure, banka, tarih, period) {
+    if (isMiktarDelta(measure)) return miktarDelta(measure, banka, tarih, false, period);
     return (measure.tip === 'rasyo')
-      ? measureQoQDelta(measure, banka, tarih, false)
-      : msDeltaBps(measure.id, banka, tarih);
+      ? measureQoQDelta(measure, banka, tarih, false, period)
+      : msDeltaBps(measure.id, banka, tarih, period);
   }
 
   // YEŞİL TONU SADECE KT'YE AYRILMIŞ. Diğer bankalar farklı renk paletinden.
@@ -2658,6 +2691,11 @@
     var isRasyo = measure.tip === 'rasyo';
     var hasDelta = showDeltaColumn(measure);
 
+    // Delta sütununun karşılaştırma dönemi — Çeyreklik (varsayılan) / YoY / YtD
+    // arasında seçilebilir (kullanıcı isteği, 2026-09-16).
+    var deltaPeriodState = useState('qoq');
+    var deltaPeriod = deltaPeriodState[0], setDeltaPeriod = deltaPeriodState[1];
+
     var sortedTop20 = top20SortedByMeasure(measure.id, tarih);
     var ktRank = ktRankInTop20(measure.id, tarih);
 
@@ -2683,7 +2721,7 @@
 
     var deltaVals = hasDelta ? sortedTop20.map(function(row) {
       if (row.value == null) return null;
-      return rowQoQDelta(measure, row.banka, tarih);
+      return rowQoQDelta(measure, row.banka, tarih, deltaPeriod);
     }).filter(function(d){ return d != null; }) : [];
     var deltaMaxAbs = deltaVals.length > 0
       ? Math.max.apply(null, deltaVals.map(Math.abs))
@@ -2706,11 +2744,24 @@
           isRasyo ? ('İlk ' + sortedTop20.length + ' Banka Rasyo (' + birimLabel(measure) + ')')
                   : ('İlk ' + sortedTop20.length + ' Banka Büyüklükleri (' + buyuklukLabel(measure) + ')')),
         hasDelta && h('div', { className: 'bank-ranking-header-delta' },
-          isMiktarDelta(measure)
-            ? ('Çeyreklik Değişim (' + (measure.birim === 'bin_TL' ? 'TL' : 'adet') + ')')
-            : isRasyo
-              ? (isPctBirim(measure) ? 'Çeyreklik Değişim (Bps)' : 'Çeyreklik Değişim (%)')
-              : 'Pazar Payı Değişimi (Bps)')
+          h('div', { className: 'bank-ranking-header-delta-title' },
+            (isMiktarDelta(measure) || isRasyo)
+              ? 'Değişim'
+              : h(React.Fragment || 'span', null, 'Pazar Payı', h('br'), 'Değişimi')
+          ),
+          h('select', {
+            className: 'bank-ranking-delta-period-select',
+            value: deltaPeriod,
+            onChange: function(e) { setDeltaPeriod(e.target.value); }
+          },
+            ['qoq', 'yoy', 'ytd'].map(function(p) {
+              var unit = isMiktarDelta(measure) ? (measure.birim === 'bin_TL' ? 'TL' : 'adet')
+                       : isRasyo ? (isPctBirim(measure) ? 'Bps' : '%')
+                       : 'Bps';
+              return h('option', { key: p, value: p }, deltaPeriodLabel(p) + ' (' + unit + ')');
+            })
+          )
+        )
       ),
       sortedTop20.map(function(row) {
         var isKT = row.banka === KT_NAME;
@@ -2725,7 +2776,7 @@
           widthPct = (row.value / maxVal) * 100 * barScaleFactor;
         }
         var delta = (hasDelta && row.value != null)
-          ? rowQoQDelta(measure, row.banka, tarih)
+          ? rowQoQDelta(measure, row.banka, tarih, deltaPeriod)
           : null;
         // Sort_direction = 'asc' → düşmek iyi → eksiler yeşil, artılar kırmızı (renk ters)
         var sortAscBR = measure.sort_direction === 'asc';
