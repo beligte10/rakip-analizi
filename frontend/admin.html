@@ -444,14 +444,21 @@ button.secondary:hover { background: var(--hover); }
 .markdown-body th, .markdown-body td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
 .markdown-body th { background: var(--hover); font-weight: 600; }
 
-/* Backlog (sürüm günlüğü) — admin-only, 2026-09-16 */
-.version-log-entry { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; background: var(--panel); }
-.version-log-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
-.version-log-badge { font-size: 12px; font-weight: 700; color: #fff; background: var(--kt-green); padding: 2px 9px; border-radius: 20px; }
-.version-log-date { font-size: 12px; color: var(--muted); }
-.version-log-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-.version-log-items { margin: 0; padding-left: 20px; font-size: 13.5px; line-height: 1.6; color: var(--text); }
-.version-log-items li { margin-bottom: 4px; }
+/* Backlog (sürüm günlüğü) — admin-only, 2026-09-16.
+   2026-09-17 kullanıcı isteği: kartlar alttan/üstten hizalı ve hepsi tek
+   sayfada (kaydırmadan) görünebilecek bir formatta olsun — tek sütunlu
+   uzayan liste yerine grid'e çevrildi: aynı satırdaki kartlar CSS grid'in
+   varsayılan stretch'i ile eşit yükseklikte olup üstten/alttan hizalanır;
+   madde listesi max-height+scroll ile sınırlı, bir sürümün madde sayısı
+   artsa bile kart boyu (ve dolayısıyla sayfaya sığma) bozulmaz. */
+.version-log-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; align-items: stretch; }
+.version-log-entry { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: var(--panel); }
+.version-log-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+.version-log-badge { font-size: 11px; font-weight: 700; color: #fff; background: var(--kt-green); padding: 2px 8px; border-radius: 20px; }
+.version-log-date { font-size: 11px; color: var(--muted); }
+.version-log-title { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.version-log-items { margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.5; color: var(--text); overflow-y: auto; max-height: 220px; flex: 1; }
+.version-log-items li { margin-bottom: 3px; }
 .markdown-body hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
 .markdown-body a { color: var(--primary); }
 .markdown-body strong { font-weight: 600; }
@@ -2160,7 +2167,7 @@ async function loadVersionLog() {
       target.innerHTML = `<div class="empty">Henüz bir sürüm kaydı yok.</div>`;
       return;
     }
-    let html = '';
+    let html = '<div class="version-log-grid">';
     for (const e of entries) {
       html += `<div class="version-log-entry">
         <div class="version-log-head">
@@ -2173,6 +2180,7 @@ async function loadVersionLog() {
         </ul>
       </div>`;
     }
+    html += '</div>';
     target.innerHTML = html;
   } catch (err) {
     target.innerHTML = `<div class="result-panel error">Backlog yüklenemedi: ${escapeHtml(err.message)}</div>`;
