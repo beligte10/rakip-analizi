@@ -80,7 +80,27 @@
     .topbar-center-brand { display: none; }
   }
 
-  .topbar-toolbar { display: flex; gap: 8px; align-items: center; }
+  /* Toolbar butonları (BDR/Admin/Tema/Ölçü Oluştur/Şifre/Çıkış/Yenilikler)
+     artık ekran genişliğinden bağımsız her zaman hamburger arkasında açılır
+     bir panelde (kullanıcı isteği, 2026-09-17 — önceden sadece ≤900px'te
+     böyleydi, masaüstünde hepsi satırı kaplıyordu). */
+  .topbar-toolbar { display: none; }
+  .topbar-toolbar.open {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 12px;
+    width: 300px;
+    background: var(--kt-green-dark);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+    z-index: 100;
+  }
+  .topbar-toolbar.open .topbar-icon-btn { width: 100%; }
   .topbar-select {
     background: rgba(255,255,255,0.14); color: #fff; border: 1px solid rgba(255,255,255,0.3);
     padding: 6px 10px; border-radius: 6px;
@@ -106,12 +126,10 @@
     letter-spacing: 0.2px; color: rgba(255,255,255,0.85); white-space: nowrap;
   }
 
-  /* -------- Mobil hamburger menü (kullanıcı isteği, 2026-09-10) --------
-     Masaüstünde her zaman gizli — topbar-toolbar zaten tek satırda açık
-     duruyor. ≤900px'te görünür olur (bkz. mobil @media bloğu) ve
-     topbar-toolbar'ı açılır bir panele çevirir. */
+  /* -------- Hamburger menü (2026-09-10, tüm ekranlarda 2026-09-17'den
+     itibaren) — topbar-toolbar'ı her zaman açılır bir panele çevirir. */
   .topbar-menu-btn {
-    display: none;
+    display: flex;
     width: 40px; height: 40px; flex: none;
     background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.3);
     border-radius: 8px; cursor: pointer;
@@ -1480,30 +1498,14 @@
     .topbar-measure { font-size: 13px; }
     .topbar-divider { display: none; }
 
-    /* Toolbar butonları (BDR/Admin/Tema/Şifre/Çıkış/Yenilikler) hamburger
-       arkasında açılır bir panele toplanır (kullanıcı isteği, 2026-09-10) —
-       eskiden hepsi tek tek satırı kaplayıp dikey yer kaplıyordu. STRATEJİ
-       logosu ise hep görünür kalır, hamburger'in hemen solunda durur
-       (kullanıcı isteği: "açılınca gelmesin hep dursun"). */
+    /* STRATEJİ logosu hep görünür kalır, hamburger'in hemen solunda durur
+       (kullanıcı isteği: "açılınca gelmesin hep dursun") — toolbar paneli
+       kendisi artık her genişlikte açılır/kapanır (bkz. base .topbar-toolbar
+       kuralı), burada sadece mobildeki satır-kaydırma (flex-wrap) sırası ve
+       panelin kenardan-kenara (tam genişlik) yayılması override ediliyor. */
     .topbar-brand { order: 2; }
-    .topbar-menu-btn { display: flex; order: 3; }
-    .topbar-toolbar { display: none; }
-    .topbar-toolbar.open {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      position: absolute;
-      top: calc(100% + 8px);
-      right: 12px;
-      left: 12px;
-      background: var(--kt-green-dark);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 12px;
-      padding: 14px;
-      box-shadow: 0 12px 32px rgba(0,0,0,0.35);
-      z-index: 100;
-    }
-    .topbar-toolbar.open .topbar-icon-btn { width: 100%; }
+    .topbar-menu-btn { order: 3; }
+    .topbar-toolbar.open { left: 12px; width: auto; }
 
     .date-selector-bar { padding: 8px 12px; gap: 10px; }
     .date-selector-bar .mode-toggle { margin-left: 0; }
