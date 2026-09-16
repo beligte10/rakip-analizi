@@ -1679,7 +1679,7 @@
       "kategori": "Şube & Personel",
       "alt_kategori": null,
       "pazar_payi": false,
-      "sort_direction": "desc"
+      "sort_direction": "asc"
     },
     {
       "id": "personel_basina_krediler",

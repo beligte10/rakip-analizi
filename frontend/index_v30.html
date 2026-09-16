@@ -564,9 +564,12 @@
     line-height: 1.25;
   }
   body.dark .bank-ranking-header > div { color: #e8eef1; }
-  /* Delta sütunu (Pazar Payı Değişimi / Çeyreklik Değişim) dar (82px) bir
+  /* Delta sütunu (Pazar Payı Değişimi / Çeyreklik Değişim) dar (92px) bir
      kolonda — ana başlıkla aynı 13px'te çok büyük/sıkışık duruyordu
-     (kullanıcı isteği, 2026-09-10). */
+     (kullanıcı isteği, 2026-09-10). 82px→92px (2026-09-17): Şube/Personel
+     Başına ölçülerindeki "+455 bin TL" gibi miktar delta'ları 82px'te iki
+     satıra bölünüyordu (doğal metin genişliği ~74px, iç boşluk çıkınca
+     69px kalıyordu, sığmıyordu). */
   .bank-ranking-header-delta {
     font-size: 10.5px !important; font-weight: 600 !important;
     color: #64748b !important;
@@ -602,7 +605,7 @@
   }
   .bank-row {
     display: grid;
-    grid-template-columns: 110px 1fr 82px;
+    grid-template-columns: 110px 1fr 92px;
     align-items: center;
     min-height: 29px;
     padding: 0;
@@ -695,6 +698,7 @@
     position: relative; z-index: 2;
     font-size: 11.5px; font-weight: 600;
     padding: 0 3px;
+    white-space: nowrap;
   }
   .bank-delta-text.pos { color: #1a7a6b; }
   .bank-delta-text.neg { color: #a84a4a; }
@@ -3379,7 +3383,7 @@
     // etiketi kaldırıldı, banka adı + bar sütunlarını tek bir geniş başlık
     // hücresi kaplıyor (isim sütununun sonuna değil, bar'ın bittiği yere
     // kadar uzanıyor) — kullanıcı isteği (2026-09-10).
-    var headerGridCols = hasDelta ? '1fr 82px' : '1fr';
+    var headerGridCols = hasDelta ? '1fr 92px' : '1fr';
 
     return h('div', { className: 'panel ranking-panel', ref: props.panelRef },
       h('div', {
