@@ -877,15 +877,16 @@
   .group-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
-    padding: 8px;
+    gap: 10px;
+    padding: 14px;
   }
   .group-cell {
     background: #f7f9fb;
     border-radius: 8px;
-    padding: 10px 8px;
+    padding: 22px 10px;
     text-align: center;
     border: 1px solid rgba(15,31,47,0.06);
+    display: flex; flex-direction: column; justify-content: center;
   }
   body.dark .group-cell { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.06); }
   .group-cell.kt {
@@ -895,15 +896,15 @@
   }
   body.dark .group-cell.kt { background: rgba(85,157,135,0.14); }
   .group-cell-label {
-    font-size: 10px; font-weight: 600; color: #334155;
-    margin-bottom: 4px;
+    font-size: 11px; font-weight: 600; color: #334155;
+    margin-bottom: 8px;
     line-height: 1.2;
-    min-height: 24px;
+    min-height: 28px;
     display: flex; align-items: center; justify-content: center;
   }
   body.dark .group-cell-label { color: #c5d3dd; }
   .group-cell-value {
-    font-size: 17px; font-weight: 700;
+    font-size: 26px; font-weight: 700;
     color: #0f1f2f;
     line-height: 1;
   }
