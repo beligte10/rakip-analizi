@@ -122,7 +122,7 @@
   .topbar-icon-btn:hover { background: rgba(255,255,255,0.22); }
   .topbar-icon-btn .btn-icon { font-size: 14px; line-height: 1; }
   .topbar-icon-btn .btn-label {
-    font-size: 8.5px; font-weight: 600; line-height: 1;
+    font-size: 9.5px; font-weight: 600; line-height: 1;
     letter-spacing: 0.2px; color: rgba(255,255,255,0.85); white-space: nowrap;
   }
 
@@ -613,7 +613,7 @@
   body.dark .bank-row.kt { background: rgba(85,157,135,0.18); }
 
   .bank-row-name {
-    font-size: 11.5px; color: #334155; font-weight: 500;
+    font-size: 12.5px; color: #334155; font-weight: 500;
     padding: 4px 10px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     line-height: 15px;
@@ -666,7 +666,7 @@
   body.dark .bank-bar.diverging.neg { background: #c46060; }
   .bank-bar.diverging.neg.kt { background: var(--kt-green) !important; }
   .bank-value {
-    font-size: 11px; color: #334155; font-weight: 700;
+    font-size: 12px; color: #334155; font-weight: 700;
     text-align: right;
     white-space: nowrap;
   }
@@ -693,7 +693,7 @@
   .bank-delta-bar.neg { background: rgba(229,138,138,0.5); }
   .bank-delta-text {
     position: relative; z-index: 2;
-    font-size: 10.5px; font-weight: 600;
+    font-size: 11.5px; font-weight: 600;
     padding: 0 3px;
   }
   .bank-delta-text.pos { color: #1a7a6b; }
@@ -755,7 +755,7 @@
   .ytd-value-cell {
     flex: 1;
     text-align: center;
-    font-size: 9.5px;
+    font-size: 10.5px;
     font-weight: 700;
     color: #334155;
     white-space: nowrap;
@@ -847,8 +847,9 @@
     /* En uzun banka adı (15 karakter, ör. "Garanti Bankası") dikey yazıda
        ~90px tutuyor — 150px sabit yükseklik kısa adların altında (ör. "TEB"
        33px'e karşı 150px boşluk) gereksiz boşluk bırakıyordu (kullanıcı
-       isteği, 2026-09-16). 100px, ölçülen maksimumun üstünde güvenli pay. */
-    height: 100px;
+       isteği, 2026-09-16). 110px: 100px + font 11→12px büyütmesinin payı
+       (2026-09-17), ölçülen maksimumun üstünde güvenli pay korunuyor. */
+    height: 110px;
     margin-top: 6px;
   }
   .ytd-label-cell {
@@ -860,7 +861,7 @@
     overflow: visible;
   }
   .ytd-label-text {
-    font-size: 11px;
+    font-size: 12px;
     color: #334155;
     font-weight: 500;
     writing-mode: vertical-rl;
@@ -912,29 +913,75 @@
   .group-cell-value.pos { color: #1a7a6b; }
   .group-cell-value.neg { color: #a84a4a; }
 
-  /* -------- Competitor cards -------- */
-  /* Kullanıcı isteği (2026-09-17): 6 sütun tek sırada kartları o kadar
-     daraltıyordu ki içindeki SVG grafik metni (viewBox 150×60, CSS'te
-     width:100%'e ölçekleniyor) fiilen ~5px'e düşüyordu — okunmuyordu.
-     3×2 düzene geçirilip kart genişliği ~2 katına çıkarıldı (SVG içeriği
-     otomatik büyür, viewBox aynı kalsa da), üstüne yazı boyutları da
-     ayrıca büyütüldü. */
+  /* -------- Competitor cards (2026-09-17: hover/tık ile büyüyen kart) --------
+     Önce 6 sütun tek sırada kartlar o kadar daralıyordu ki içindeki SVG grafik
+     metni okunamaz oluyordu; sonra 3×2'ye geçirdik ama kullanıcı "tek sırada
+     yan yana" istedi — bu sefer okunabilirliği statik büyütmeyle değil
+     ETKİLEŞİMLE çözüyoruz: kollaps kart sade (logo+ad+CAGR, zaten büyük
+     punto), zengin 3-dönemlik mini grafik SADECE hover/tık'ta kartın
+     genişliğinden bağımsız sabit boyutlu bir popover'da açılıyor (TrendView'in
+     .trend-tooltip desenindeki aynı getBoundingClientRect+position:fixed
+     mantığı). */
   .competitor-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
     padding: 10px;
   }
-  .competitor-card {
+  .competitor-card-mini {
     background: #fff;
     border: 1px solid rgba(15,31,47,0.06);
     border-radius: 8px;
-    padding: 10px;
+    padding: 10px 6px;
     box-shadow: 0 1px 3px rgba(15,31,47,0.04);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
   }
-  body.dark .competitor-card {
+  body.dark .competitor-card-mini {
     background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.06);
     box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  }
+  .competitor-card-mini:hover, .competitor-card-mini:focus-visible, .competitor-card-mini.active {
+    background: rgba(98,174,65,0.08);
+    border-color: rgba(98,174,65,0.4);
+    box-shadow: 0 2px 8px rgba(15,31,47,0.1);
+  }
+  body.dark .competitor-card-mini:hover, body.dark .competitor-card-mini:focus-visible, body.dark .competitor-card-mini.active {
+    background: rgba(98,174,65,0.14);
+  }
+  .competitor-mini-title {
+    font-size: 10.5px; font-weight: 700;
+    color: #1a2635;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: center;
+  }
+  body.dark .competitor-mini-title { color: #e8eef1; }
+  .competitor-mini-cagr { font-size: 20px; font-weight: 700; line-height: 1; }
+  .competitor-mini-hint {
+    font-size: 8.5px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+
+  /* Popover — kartın genişliğinden bağımsız, her zaman okunur sabit boyutta */
+  .competitor-popover {
+    position: fixed;
+    width: 230px;
+    background: #fff;
+    border: 1px solid rgba(15,31,47,0.1);
+    border-radius: 10px;
+    padding: 10px 12px 12px;
+    box-shadow: 0 12px 32px rgba(15,31,47,0.22);
+    z-index: 70;
+    pointer-events: auto;
+  }
+  body.dark .competitor-popover {
+    background: #16232f; border-color: rgba(255,255,255,0.1);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
   }
   .competitor-title {
     font-size: 13px; font-weight: 700;
@@ -1016,7 +1063,7 @@
     background: #fff;
     border: 1px solid #d4dde3;
     border-radius: 99px;
-    font-size: 11px;
+    font-size: 12px;
     cursor: pointer;
     user-select: none;
     transition: all 0.12s;
@@ -1376,7 +1423,7 @@
     max-height: 160px; overflow-y: auto; padding: 4px 2px;
   }
   .export-chip {
-    font-size: 11px; padding: 4px 10px; border-radius: 12px;
+    font-size: 12px; padding: 4px 10px; border-radius: 12px;
     background: #e8eef1; cursor: pointer; user-select: none;
     border: 1px solid transparent; color: #1a2635;
   }
@@ -1474,7 +1521,7 @@
     border: 1px solid #e8eef1; border-radius: 4px;
   }
   body.dark .export-table-wrap { border-color: #2a3b4d; }
-  .export-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .export-table { width: 100%; border-collapse: collapse; font-size: 12px; }
   .export-table th, .export-table td {
     padding: 5px 8px; border-bottom: 1px solid #e8eef1;
     text-align: left; white-space: nowrap;
@@ -1482,7 +1529,7 @@
   body.dark .export-table th, body.dark .export-table td { border-color: #2a3b4d; }
   .export-table th {
     position: sticky; top: 0; background: #f0f5f7;
-    font-weight: 600; z-index: 1; font-size: 11px;
+    font-weight: 600; z-index: 1; font-size: 12px;
   }
   body.dark .export-table th { background: #1a2635; }
   .export-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
@@ -1580,9 +1627,9 @@
     .pw-modal, .wn-modal, .mb-modal { width: calc(100vw - 24px); }
     .bank-row { grid-template-columns: 88px minmax(0,1fr) 64px !important; }
     .bank-ranking-header { grid-template-columns: minmax(0,1fr) 64px !important; }
-    .bank-bar-cell { grid-template-columns: minmax(0,1fr) 48px; }
-    .bank-row-name { font-size: 10.5px; padding: 4px 6px; }
-    .bank-value { font-size: 10px; }
+    .bank-bar-cell { grid-template-columns: minmax(0,1fr) 58px; }
+    .bank-row-name { font-size: 11.5px; padding: 4px 6px; }
+    .bank-value { font-size: 11px; }
     .competitor-grid { grid-template-columns: repeat(2, 1fr); }
     .group-grid { grid-template-columns: repeat(2, 1fr); }
     .rank-badge-row { padding: 8px; }
@@ -3823,10 +3870,91 @@
   // ===============================================================
   // COMPETITOR CARDS (büyüklük)
   // ===============================================================
+  // Kart hover'dan çıkıp popover'a girerken (fare ikisi arasındaki boşluktan
+  // geçerken) yanıp sönmesin diye küçük bir gecikmeyle kapatılır — popover'a
+  // fare girerse bu zamanlayıcı iptal edilir (CompetitorPopover'ın kendi
+  // onMouseEnter'ı).
+  var COMPETITOR_CLOSE_DELAY_MS = 120;
+
+  function CompetitorPopover(props) {
+    var pos = props.pos;
+    var posStyle = pos.openUp
+      ? { left: pos.left + 'px', top: pos.anchorTop + 'px', transform: 'translate(-50%, calc(-100% - 10px))' }
+      : { left: pos.left + 'px', top: pos.anchorBottom + 'px', transform: 'translate(-50%, 10px)' };
+    return h('div', {
+      className: 'competitor-popover',
+      style: posStyle,
+      onMouseEnter: props.onMouseEnter,
+      onMouseLeave: props.onMouseLeave
+    },
+      h('div', { className: 'competitor-title' }, bankMono(props.bank), h('span', null, props.bank)),
+      props.data.noData
+        ? h('div', { style:{fontSize:'12px', color:'#94a3b8', textAlign:'center', padding:'10px'} }, 'veri yok')
+        : h(React.Fragment || 'div', null,
+            h('svg', { viewBox: '0 0 ' + props.data.W + ' ' + props.data.H, style:{width:'100%', height: props.data.H + 'px'}},
+              props.data.bars
+            ),
+            h('div', {
+              style: {
+                textAlign:'center', fontSize:'16px', fontWeight:'700',
+                color: props.data.textColor, marginTop:'4px'
+              }
+            }, props.data.cagr == null ? 'CAGR: —' : fmtPctPlain(props.data.cagr, 1))
+          )
+    );
+  }
+
   function CompetitorCardsGrowth(props) {
     var measure = props.measure;
     var tarih = props.tarih;
     var rakipler = [KT_NAME, 'Garanti Bankası', 'Yapı Kredi', 'Akbank', 'QNB Finansbank', 'Denizbank'];
+
+    // Kollaps kart → hover/tık ile büyüyen popover (kullanıcı isteği,
+    // 2026-09-17: "tek satırda yan yana + interaktif" — okunabilirlik
+    // statik büyütmeyle değil, TrendView'deki kanıtlanmış hover-tooltip
+    // desenini taklit eden bir popover ile çözülüyor; popover kartın
+    // genişliğinden bağımsız sabit boyutta olduğundan içerik hiç sıkışmaz).
+    var hoverState = useState(null);   // fare/klavye ile anlık açık banka
+    var hoverBank = hoverState[0], setHoverBank = hoverState[1];
+    var pinnedState = useState(null);  // tıkla pinlenmiş banka (dokunmatik/kalıcı)
+    var pinnedBank = pinnedState[0], setPinnedBank = pinnedState[1];
+    var posState = useState(null);
+    var pos = posState[0], setPos = posState[1];
+    var closeTimerRef = useRef(null);
+
+    var activeBank = pinnedBank || hoverBank;
+
+    function clearCloseTimer() {
+      if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; }
+    }
+    function openFor(b, el) {
+      clearCloseTimer();
+      var rect = el.getBoundingClientRect();
+      setHoverBank(b);
+      setPos({
+        left: rect.left + rect.width / 2,
+        anchorTop: rect.top,
+        anchorBottom: rect.bottom,
+        openUp: rect.top > window.innerHeight * 0.55
+      });
+    }
+    function scheduleClose() {
+      clearCloseTimer();
+      closeTimerRef.current = setTimeout(function(){ setHoverBank(null); }, COMPETITOR_CLOSE_DELAY_MS);
+    }
+
+    // Pinlenmişken kart/popover dışına tıklanınca kapat (dokunmatik ekranlar
+    // hover göndermediği için tık-pinleme şart).
+    useEffect(function() {
+      if (!pinnedBank) return;
+      function onDocClick(e) {
+        if (!e.target.closest('.competitor-card-mini, .competitor-popover')) {
+          setPinnedBank(null);
+        }
+      }
+      document.addEventListener('mousedown', onDocClick);
+      return function(){ document.removeEventListener('mousedown', onDocClick); };
+    }, [pinnedBank]);
 
     var allDates = DATA.meta.dates;
     // 3 yıllık snapshot tarihleri: aynı ay-gün, t-2y / t-1y / t
@@ -3841,101 +3969,105 @@
       return allDates.indexOf(d) >= 0 ? d : null;
     });
 
-    return h('div', { className: 'panel' },
+    // Bir bankanın tam kart verisini hesaplar — hem kollaps karttaki CAGR
+    // hem de popover'daki zengin grafik için TEK kaynak (kod tekrarı yok).
+    function computeBankData(b) {
+      var values = validSnapshotDates.map(function(d){
+        return d ? bankVal(measure.id, b, d) : null;
+      });
+      var validVals = values.filter(function(v){ return v != null; });
+      var textColor = bankTextColor(b);
+      if (validVals.length < 1) return { noData: true, textColor: textColor, cagr: null };
+
+      var maxV = Math.max.apply(null, validVals);
+      var W = 190, H = 78;
+      var nBars = 3;
+      var topPad = 18, bottomPad = 16;
+      var chartH = H - topPad - bottomPad;
+      var sidePad = 12;
+      var groupW = W - sidePad * 2;
+      var gap = 8;
+      var barW = (groupW - gap * (nBars - 1)) / nBars;
+      var color = bankColor(b);
+      var cagr = cagr2y(measure.id, b, tarih);
+
+      var bars = values.map(function(v, i) {
+        var x = sidePad + i * (barW + gap);
+        var labelDate = snapshotDates[i];
+        var yearLabel = labelDate ? labelDate.split('-')[0] : '—';
+        var monthLabel = labelDate ? tarihLabelShort(labelDate).split(' ')[0] : '';
+
+        if (v == null) {
+          return h('g', { key: i },
+            h('rect', {
+              x: x, y: topPad + chartH * 0.85,
+              width: barW, height: chartH * 0.15,
+              fill: 'rgba(148,163,184,0.15)',
+              stroke: 'rgba(148,163,184,0.3)',
+              strokeDasharray: '2,2'
+            }),
+            h('text', {
+              x: x + barW/2, y: H - 3,
+              fontSize:'10.5', fill: '#94a3b8',
+              textAnchor:'middle', fontWeight:'500'
+            }, monthLabel + ' ' + yearLabel.slice(2))
+          );
+        }
+        var barH = maxV > 0 ? (v / maxV) * chartH : 0;
+        var barY = topPad + (chartH - barH);
+        return h('g', { key: i },
+          h('rect', { x: x, y: barY, width: barW, height: barH, fill: color, rx: 1 }),
+          h('text', {
+            x: x + barW/2, y: barY - 4,
+            fontSize:'11', fill: textColor,
+            textAnchor:'middle', fontWeight:'700'
+          }, fmtTL_tr(v)),
+          h('text', {
+            x: x + barW/2, y: H - 3,
+            fontSize:'10.5', fill: '#64748b',
+            textAnchor:'middle', fontWeight:'500'
+          }, monthLabel + ' ' + yearLabel.slice(2))
+        );
+      });
+
+      return { noData: false, W: W, H: H, bars: bars, cagr: cagr, textColor: textColor };
+    }
+
+    return h('div', { className: 'panel', style: { position: 'relative' } },
       h('div', { className: 'panel-header' }, 'Rakip Bankalar Yıllık Görünüm (Son 3 Dönem) ve CAGR (Bileşik Yıllık Büyüme %)'),
       h('div', { className: 'competitor-grid' },
         rakipler.map(function(b) {
-          var values = validSnapshotDates.map(function(d){
-            return d ? bankVal(measure.id, b, d) : null;
-          });
-          var validVals = values.filter(function(v){ return v != null; });
-          if (validVals.length < 1) return h('div', { key: b, className: 'competitor-card' },
-            h('div', { className: 'competitor-title' }, bankMono(b), h('span', null, b)),
-            h('div', { style:{fontSize:'12px', color:'#94a3b8', textAlign:'center', padding:'10px'} }, 'veri yok')
-          );
-
-          var maxV = Math.max.apply(null, validVals);
-          var minV = 0; // büyüklük kalemleri için 0 baseline anlamlı
-
-          // 2026-09-17: 3×2 düzene geçişle kartlar genişledi ama SVG'nin
-          // CSS height'ı SABİT px olduğundan (width:100% ile birlikte),
-          // preserveAspectRatio="xMidYMid meet" ölçeği height'a göre
-          // sınırlıyordu — sadece kart genişletmek yazıyı BÜYÜTMÜYORDU.
-          // viewBox + iç font boyutları birlikte büyütüldü (kullanıcı isteği).
-          var W = 190, H = 78;
-          var nBars = 3;
-          var topPad = 18;     // değer label için yer
-          var bottomPad = 16;  // yıl label için yer
-          var chartH = H - topPad - bottomPad;
-          var sidePad = 12;
-          var groupW = W - sidePad * 2;
-          var gap = 8;
-          var barW = (groupW - gap * (nBars - 1)) / nBars;
-
-          var color = bankColor(b);       // bar dolgusu — marka rengine sadık kalır
-          var textColor = bankTextColor(b); // CAGR metni — karanlık modda kontrast-güvenli
           var cagr = cagr2y(measure.id, b, tarih);
-
-          var bars = values.map(function(v, i) {
-            var x = sidePad + i * (barW + gap);
-            var labelDate = snapshotDates[i];
-            var yearLabel = labelDate ? labelDate.split('-')[0] : '—';
-            var monthLabel = labelDate ? tarihLabelShort(labelDate).split(' ')[0] : '';
-
-            if (v == null) {
-              return h('g', { key: i },
-                h('rect', {
-                  x: x, y: topPad + chartH * 0.85,
-                  width: barW, height: chartH * 0.15,
-                  fill: 'rgba(148,163,184,0.15)',
-                  stroke: 'rgba(148,163,184,0.3)',
-                  strokeDasharray: '2,2'
-                }),
-                h('text', {
-                  x: x + barW/2, y: H - 3,
-                  fontSize:'10.5', fill: '#94a3b8',
-                  textAnchor:'middle', fontWeight:'500'
-                }, monthLabel + ' ' + yearLabel.slice(2))
-              );
+          var textColor = bankTextColor(b);
+          var isActive = activeBank === b;
+          return h('div', {
+            key: b,
+            className: 'competitor-card-mini' + (isActive ? ' active' : ''),
+            tabIndex: 0,
+            title: b,
+            onMouseEnter: function(e){ openFor(b, e.currentTarget); },
+            onMouseLeave: scheduleClose,
+            onFocus: function(e){ openFor(b, e.currentTarget); },
+            onBlur: scheduleClose,
+            onClick: function(e){
+              if (pinnedBank === b) { setPinnedBank(null); }
+              else { openFor(b, e.currentTarget); setPinnedBank(b); }
             }
-            var barH = maxV > 0 ? (v / maxV) * chartH : 0;
-            var barY = topPad + (chartH - barH);
-            return h('g', { key: i },
-              h('rect', {
-                x: x, y: barY, width: barW, height: barH,
-                fill: color, rx: 1
-              }),
-              // Üstte değer etiketi
-              h('text', {
-                x: x + barW/2, y: barY - 4,
-                fontSize:'11', fill: textColor,
-                textAnchor:'middle', fontWeight:'700'
-              }, fmtTL_tr(v)),
-              // Altta dönem etiketi
-              h('text', {
-                x: x + barW/2, y: H - 3,
-                fontSize:'10.5', fill: '#64748b',
-                textAnchor:'middle', fontWeight:'500'
-              }, monthLabel + ' ' + yearLabel.slice(2))
-            );
-          });
-
-          return h('div', { key: b, className: 'competitor-card' },
-            h('div', { className: 'competitor-title' },
-              bankMono(b), h('span', null, b)
-            ),
-            h('svg', { viewBox: '0 0 ' + W + ' ' + H, style:{width:'100%', height: H + 'px'}},
-              bars
-            ),
-            h('div', {
-              style: {
-                textAlign:'center', fontSize:'16px', fontWeight:'700',
-                color: textColor, marginTop:'4px'
-              }
-            }, cagr == null ? 'CAGR: —' : fmtPctPlain(cagr, 1))
+          },
+            h('div', { className: 'competitor-mini-title' }, bankMono(b), h('span', null, b)),
+            h('div', { className: 'competitor-mini-cagr', style:{ color: textColor } },
+              cagr == null ? '—' : fmtPctPlain(cagr, 1)),
+            h('div', { className: 'competitor-mini-hint' }, 'CAGR')
           );
         })
-      )
+      ),
+      activeBank && pos && h(CompetitorPopover, {
+        bank: activeBank,
+        data: computeBankData(activeBank),
+        pos: pos,
+        onMouseEnter: clearCloseTimer,
+        onMouseLeave: scheduleClose
+      })
     );
   }
 
@@ -3947,6 +4079,13 @@
     var tarih = props.tarih;
     // 5 rakip + KT sırası: KT, Garanti, Yapı Kredi, Akbank, QNB, Denizbank (2026-09-15)
     var rakipler = [KT_NAME, 'Garanti Bankası', 'Yapı Kredi', 'Akbank', 'QNB Finansbank', 'Denizbank'];
+
+    // Hover crosshair + tooltip — TrendView'deki (satır ~5123-5140, ~5278-5303)
+    // kanıtlanmış desenin birebir portu (kullanıcı isteği, 2026-09-17: "kardeş"
+    // çizgi grafiği neden farklı davransın — tutarlılık için). Aynı mantık:
+    // fare x'ini SVG viewBox uzayına çevir, en yakın veri index'ini bul.
+    var hoverState = useState(null);
+    var hoverIdx = hoverState[0], setHoverIdx = hoverState[1];
 
     var allDates = DATA.meta.dates;
     var curIdx = allDates.indexOf(tarih);
@@ -4037,6 +4176,22 @@
             );
           })
         ),
+        h('div', {
+          className: 'trend-svg-wrap',
+          onMouseMove: function(e) {
+            var rect = e.currentTarget.getBoundingClientRect();
+            var vbX = (e.clientX - rect.left) / rect.width * W;
+            var i = Math.round((vbX - padL) / stepX);
+            if (i < 0) i = 0;
+            if (i >= trendDates.length) i = trendDates.length - 1;
+            if (vbX < padL - 5 || vbX > W - padR + 5) {
+              setHoverIdx(null);
+            } else {
+              setHoverIdx({ i: i, mouseX: e.clientX - rect.left, mouseY: e.clientY - rect.top });
+            }
+          },
+          onMouseLeave: function(){ setHoverIdx(null); }
+        },
         h('svg', { viewBox: '0 0 '+W+' '+H, style:{width:'100%', height:'220px'}},
           [0, 0.25, 0.5, 0.75, 1].map(function(p, i) {
             return h('line', {
@@ -4097,7 +4252,46 @@
                 textAnchor:'start', fontWeight:'700'
               }, L.text)
             );
-          })
+          }),
+          // Hover crosshair — TrendView'deki aynı desen (satır ~5258-5275).
+          hoverIdx != null && h('g', { key: 'hover-cross' },
+            h('line', {
+              x1: padL + hoverIdx.i * stepX, x2: padL + hoverIdx.i * stepX,
+              y1: padT, y2: padT + chartH,
+              stroke: '#94a3b8', strokeWidth: '1', strokeDasharray: '3,3'
+            }),
+            rakipler.map(function(b) {
+              var v = seriesByBank[b][hoverIdx.i];
+              if (v == null) return null;
+              return h('circle', {
+                key: 'hov-' + b,
+                cx: padL + hoverIdx.i * stepX, cy: scale(v),
+                r: 5, fill: bankColor(b),
+                stroke: '#fff', strokeWidth: '2'
+              });
+            })
+          )
+        ),
+        // HTML overlay tooltip (SVG dışında) — TrendView'deki aynı desen
+        // (satır ~5278-5303), .trend-tooltip CSS sınıfları yeniden kullanılıyor.
+        hoverIdx != null && (function(){
+          var rows = rakipler.filter(function(b){ return seriesByBank[b][hoverIdx.i] != null; });
+          if (rows.length === 0) return null;
+          return h('div', {
+            className: 'trend-tooltip',
+            style: { left: hoverIdx.mouseX + 'px', top: hoverIdx.mouseY + 'px' }
+          },
+            h('div', { className: 'trend-tooltip-date' }, tarihLabel(trendDates[hoverIdx.i])),
+            rows.map(function(b){
+              return h('div', { key: b, className: 'trend-tooltip-row' },
+                h('div', { className:'trend-tooltip-dot', style:{background: bankColor(b)}}),
+                h('div', { className:'trend-tooltip-name' }, b),
+                h('div', { className:'trend-tooltip-value' },
+                  fmtMeasure(seriesByBank[b][hoverIdx.i], measure, 2))
+              );
+            })
+          );
+        })()
         )
       )
     );
