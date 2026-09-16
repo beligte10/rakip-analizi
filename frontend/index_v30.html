@@ -579,7 +579,7 @@
      "Pazar Payı Değişimi" artık tek başına çeyreklik değil, üç dönemden
      biri seçilebiliyor; seçili dönem her zaman metinde açıkça yazıyor. */
   .bank-ranking-delta-period-select {
-    font: inherit; font-size: 9.5px !important; font-weight: 700 !important;
+    font: inherit; font-size: 8.5px !important; font-weight: 700 !important;
     color: var(--kt-green-dark, #457A2E);
     background: transparent; border: none; border-radius: 4px;
     padding: 1px 2px; max-width: 100%;
@@ -3261,9 +3261,7 @@
                   : ('İlk ' + sortedTop20.length + ' Banka Büyüklükleri (' + buyuklukLabel(measure) + ')')),
         hasDelta && h('div', { className: 'bank-ranking-header-delta' },
           h('div', { className: 'bank-ranking-header-delta-title' },
-            (isMiktarDelta(measure) || isRasyo)
-              ? 'Değişim'
-              : h(React.Fragment || 'span', null, 'Pazar Payı', h('br'), 'Değişimi')
+            (isMiktarDelta(measure) || isRasyo) ? 'Değişim' : 'Pazar Payı'
           ),
           h('select', {
             className: 'bank-ranking-delta-period-select',
