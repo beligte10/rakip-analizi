@@ -2085,18 +2085,6 @@
     return null;
   }
 
-  // KT'nin TÜM bankalar arasındaki rank'i — allBanksSortedByMeasure ile aynı
-  // sıralama yönünü kullanır (kullanıcı isteği, 2026-09-17: "İlk 20 Banka"
-  // artık tüm bankaları gösteriyor, rozet de buna göre "X / 27" olmalı).
-  function ktRankAll(mid, tarih) {
-    var rows = allBanksSortedByMeasure(mid, tarih);
-    if (!rows || rows.length === 0) return null;
-    for (var j = 0; j < rows.length; j++) {
-      if (rows[j].banka === KT_NAME) return [j + 1, rows.length];
-    }
-    return null;
-  }
-
   // Top20 sabit set içinde measure'a göre sıralama
   function top20SortedByMeasure(mid, tarih) {
     var top20Set = getFixedTop20(tarih);
@@ -3421,13 +3409,12 @@
     // sıralanır; panel ilk görünüşte ~20 satır gösterir, kalanına
     // .bank-rows-scroll ile aşağı kaydırarak ulaşılır (bkz. CSS).
     var sortedAll = allBanksSortedByMeasure(measure.id, tarih);
-    var ktRank = ktRankAll(measure.id, tarih);
 
-    // Hızlı filtreler (kullanıcı isteği, 2026-09-18): Tümü/Katılım/İlk 10.
-    // KT'nin genel sırası (ktRank) ve panel başlığındaki "Tüm N Banka"
-    // metni her zaman TAM listeye göre kalır — sadece aşağıdaki satırlar
-    // filtrelenir. Ölçü/çeyrek değişince de seçim korunur (local state,
-    // component tab değişince remount olmuyor).
+    // Hızlı filtreler (kullanıcı isteği, 2026-09-18): Tümü/Katılım/İlk 20.
+    // Panel başlığındaki "Tüm N Banka" metni her zaman TAM listeye göre
+    // kalır — satırlar VE alttaki "Kuveyt Türk sırası" rozeti (kullanıcı
+    // isteği, 2026-09-18) filtreye göre güncellenir. Ölçü/çeyrek değişince
+    // de seçim korunur (local state, component tab değişince remount olmuyor).
     var filterModeState = useState('all');
     var filterMode = filterModeState[0], setFilterMode = filterModeState[1];
     var katilimSet = {};
@@ -3438,6 +3425,13 @@
       displayRows = sortedAll.filter(function(r){ return katilimSet[r.banka]; });
     } else if (filterMode === 'top20') {
       displayRows = sortedAll.slice(0, 20);
+    }
+    // KT'nin filtrelenmiş listedeki sırası — KT o alt kümede yoksa
+    // (ör. "İlk 20" filtresinde KT 20. sıranın dışında kalmışsa) null,
+    // rozet hiç gösterilmez.
+    var ktRankFiltered = null;
+    for (var _kri = 0; _kri < displayRows.length; _kri++) {
+      if (displayRows[_kri].banka === KT_NAME) { ktRankFiltered = [_kri + 1, displayRows.length]; break; }
     }
 
     var validVals = displayRows.filter(function(r){return r.value != null;}).map(function(r){return r.value;});
@@ -3595,8 +3589,8 @@
       })),
       h('div', { className: 'rank-badge-row' },
         h('div', { className: 'rank-label' }, 'Kuveyt Türk sırası:'),
-        ktRank && h('div', { className: 'rank-badge' },
-          ktRank[0] + ' / ' + ktRank[1]
+        ktRankFiltered && h('div', { className: 'rank-badge' },
+          ktRankFiltered[0] + ' / ' + ktRankFiltered[1]
         )
       )
     );
