@@ -5383,7 +5383,13 @@
               // kapatıyordu; artık ad, ait olduğu çizginin bittiği yerde.
               // endLabels yukarıda hesaplanır (dikey çakışmalar ayrıştırılmış).
               endLabels.map(function(L) {
-                var estW = L.label.length * 6.4 + 16;  // metin genişliği kaba tahmini
+                // Kullanıcı isteği (2026-09-17): "baloncuğun çerçevesini
+                // küçült" — iç boşluk biraz azaltıldı (16→11 yatay, 19→16
+                // dikey). Kutu boyutları tek yerde (rectX/Y/W/H) hesaplanıp
+                // hem rect hem text (merkez = rectX+rectW/2, rectY+rectH/2)
+                // bundan türetiliyor — ikisi asla birbirinden kopmaz.
+                var estW = L.label.length * 6.4 + 11;  // metin genişliği kaba tahmini
+                var rectX = L.x - 4, rectY = L.y - 10.5, rectW = estW, rectH = 16;
                 return h('g', { key: 'endlbl-' + L.name },
                   // Etiket kaydırıldıysa hangi noktaya ait olduğunu gösteren ince bağ
                   Math.abs(L.y - L.pointY) > 2 && h('path', {
@@ -5391,18 +5397,15 @@
                     stroke: L.color, strokeWidth: '0.8', fill: 'none', opacity: '0.55'
                   }),
                   h('rect', {
-                    x: L.x - 6, y: L.y - 12, width: estW, height: 19, rx: 6,
+                    x: rectX, y: rectY, width: rectW, height: rectH, rx: 5,
                     fill: '#fff', fillOpacity: 0.94,
                     stroke: L.color, strokeWidth: '1', strokeOpacity: 0.5
                   }),
                   h('text', {
-                    // Kullanıcı isteği (2026-09-17): veri etiketi baloncuğun
-                    // TAM ortasında (yatay VE dikey) dursun. Yatay: x = rozet
-                    // merkezi + textAnchor:'middle'. Dikey: y = rozet merkezi
-                    // (L.y-12+19/2) + dominantBaseline:'central' — eskiden
-                    // y:L.y+4 elle ayarlanmış bir taban çizgisi tahminiydi,
-                    // gerçek dikey ortalama değildi.
-                    x: L.x - 6 + estW / 2, y: L.y - 12 + 19 / 2,
+                    // Veri etiketi baloncuğun TAM ortasında (yatay VE dikey)
+                    // durur: x/y = kutunun merkezi + textAnchor:'middle' +
+                    // dominantBaseline:'central' (font metriklerinden bağımsız).
+                    x: rectX + rectW / 2, y: rectY + rectH / 2,
                     fontSize: '11.5', fill: L.color,
                     fontWeight: '700', textAnchor: 'middle', dominantBaseline: 'central'
                   }, L.label)
