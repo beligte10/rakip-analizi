@@ -66,10 +66,12 @@
     display: flex; align-items: center; gap: 12px;
     pointer-events: none;
   }
-  .topbar-center-brand img { height: 26px; width: auto; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15)); }
-  .topbar-center-brand .center-divider { width: 1.5px; height: 20px; background: rgba(255,255,255,0.35); }
+  /* Boyutlar büyütüldü (kullanıcı isteği, 2026-09-17): logo 26→32px,
+     "Rakip Analizi" yazısı 18→22px — ayırıcı çizgi orantılı büyüdü. */
+  .topbar-center-brand img { height: 32px; width: auto; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15)); }
+  .topbar-center-brand .center-divider { width: 1.5px; height: 24px; background: rgba(255,255,255,0.35); }
   .topbar-center-brand .center-text {
-    font-size: 18px; font-weight: 700; letter-spacing: 0.4px; color: #fff;
+    font-size: 22px; font-weight: 700; letter-spacing: 0.4px; color: #fff;
     white-space: nowrap;
   }
   /* Dar ekranlarda sol (tarih+ölçüt) ve sağ (araçlar) blok, ortadaki
