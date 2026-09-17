@@ -64,6 +64,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from pydantic import BaseModel
 
 import users as users_mod
+from pipeline.measure_info import get_measure_info_cards
 
 
 # ============================================================
@@ -84,6 +85,9 @@ DATA_CATALOG = DATA_DIR / 'catalog.json'
 # data/catalog.json'a merge edilir (runtime `groups` korunarak). Bkz.
 # _sync_catalog_from_seed (2026-08-15 denetimi #7 — kod↔config uyumsuzluğu).
 SEED_CATALOG = APP_ROOT / 'catalog.seed.json'
+# Ölçü bilgi kartları (Tanım/Formül/Kaynak vb.) — git-tracked doküman,
+# frontend ÖLÇÜ seçicisinin yanındaki info kartı buradan parse edilir.
+MEASURE_INFO_MD = APP_ROOT / 'docs' / 'olcu_info_kartlari.md'
 DATA_HISTORY = DATA_DIR / 'upload_history.json'
 DATA_USERS = DATA_DIR / 'users.json'
 SESSION_SECRET_PATH = DATA_DIR / '.session_secret'
@@ -677,6 +681,12 @@ def api_catalog(_: dict = Depends(require_member)):
     if not DATA_CATALOG.exists():
         raise HTTPException(status_code=503, detail='catalog.json yok')
     return FileResponse(DATA_CATALOG, media_type='application/json', headers=NO_CACHE)
+
+
+@app.get('/api/measure-info')
+def api_measure_info(_: dict = Depends(require_member)):
+    """Ölçü bilgi kartları (Tanım/Formül/Kaynak/Terimler) — docs/olcu_info_kartlari.md'den."""
+    return JSONResponse(get_measure_info_cards(MEASURE_INFO_MD))
 
 
 @app.get('/api/whats-new')

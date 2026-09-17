@@ -251,6 +251,79 @@
   }
   body.dark .mb-checklist-item { color: #c5d3dd; }
 
+  /* -------- Ölçü info kartı (2026-09-18) -------- */
+  .mi-info-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%; border: 1px solid #cbd5e1;
+    background: #fff; color: #64748b; font-size: 12px; font-weight: 700;
+    cursor: pointer; flex: none; margin-left: 4px; line-height: 1;
+  }
+  .mi-info-btn:hover { border-color: var(--kt-green); color: var(--kt-green); }
+  body.dark .mi-info-btn { background: #0f1a24; border-color: #2a3b4d; color: #94a3b8; }
+  body.dark .mi-info-btn:hover { border-color: #7EBAA5; color: #7EBAA5; }
+  /* Baloncuk (popover) — tam ekranı kaplayan modal DEĞİL, "i" butonunun
+     üstüne gelince/tıklayınca açılan, butona göre konumlanan küçük kart
+     (2026-09-18, kullanıcı isteği: "ekranı kaplayan bir baloncuktan
+     ziyade üstüne gelince baloncuk olarak gözüksün" — CompetitorCardsGrowth
+     popover'ıyla (openFor/scheduleClose, ~satır 4145) AYNI desen). */
+  .mi-popover {
+    position: fixed; width: 340px; max-width: 92vw; max-height: 70vh;
+    overflow-y: auto; background: #fff; color: #1a2b3c;
+    border-radius: 12px; box-shadow: 0 12px 34px rgba(15,31,47,0.28);
+    border: 1px solid rgba(15,31,47,0.08);
+    padding: 14px 16px 16px; z-index: 70;
+  }
+  body.dark .mi-popover {
+    background: #16232f; color: #e2e8f0; border-color: rgba(255,255,255,0.1);
+    box-shadow: 0 12px 34px rgba(0,0,0,0.5);
+  }
+  .mi-popover-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .mi-popover-title { font-size: 14.5px; font-weight: 700; color: var(--kt-green); line-height: 1.3; }
+  body.dark .mi-popover-title { color: #7EBAA5; }
+  .mi-popover-close {
+    background: none; border: none; cursor: pointer; font-size: 15px;
+    color: #94a3b8; line-height: 1; padding: 2px; flex: none;
+  }
+  .mi-popover-close:hover { color: #1a2b3c; }
+  body.dark .mi-popover-close:hover { color: #e2e8f0; }
+  .mi-cat { font-size: 11.5px; color: #94a3b8; margin-bottom: 2px; }
+  .mi-row { margin-bottom: 14px; }
+  .mi-row-label {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.4px; color: #94a3b8; margin-bottom: 4px;
+  }
+  .mi-row-value { font-size: 13px; line-height: 1.5; color: #2a3b4a; }
+  body.dark .mi-row-value { color: #c5d3dd; }
+  .mi-formula {
+    font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 12.5px;
+    background: #f4f7f9; border-radius: 7px; padding: 8px 10px; line-height: 1.5;
+    color: #1a2b3c; white-space: pre-wrap; word-break: break-word;
+  }
+  body.dark .mi-formula { background: rgba(255,255,255,0.05); color: #e2e8f0; }
+  .mi-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: #64748b; }
+  body.dark .mi-meta { color: #94a3b8; }
+  .mi-meta b { color: #2a3b4a; font-weight: 600; }
+  body.dark .mi-meta b { color: #c5d3dd; }
+  .mi-term { margin-bottom: 8px; }
+  .mi-term:last-child { margin-bottom: 0; }
+  .mi-term-name { font-size: 12.5px; font-weight: 700; color: #2a3b4a; }
+  body.dark .mi-term-name { color: #c5d3dd; }
+  .mi-term-def { font-size: 12.5px; color: #64748b; line-height: 1.5; }
+  body.dark .mi-term-def { color: #94a3b8; }
+  .mi-note {
+    font-size: 12.5px; line-height: 1.5; padding: 8px 10px; border-radius: 7px;
+    margin-top: 6px;
+  }
+  .mi-note.info { background: rgba(63,184,168,0.12); color: #1a7a6b; }
+  body.dark .mi-note.info { background: rgba(126,186,165,0.12); color: #7EBAA5; }
+  .mi-note.warning { background: rgba(229,166,74,0.16); color: #92600e; }
+  body.dark .mi-note.warning { background: rgba(229,166,74,0.14); color: #e0ab5a; }
+  .mi-badge {
+    display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px;
+    border-radius: 999px; background: rgba(229,166,74,0.18); color: #92600e;
+  }
+  body.dark .mi-badge { background: rgba(229,166,74,0.16); color: #e0ab5a; }
+
   .myview-header {
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     padding: 12px; background: #fff; border-radius: 10px; margin-bottom: 12px;
@@ -536,6 +609,44 @@
   .trend-tooltip-name { color: #c5d3dd; flex: 1; }
   .trend-tooltip-value { font-weight: 700; color: #fff; margin-left: 8px; }
 
+  /* -------- Grafik animasyonları (2026-09-18, kullanıcı isteği:
+     "grafikleri animasyonlu hale getir") --------
+     Çizgi grafikler: pathLength=1 trick ile stroke-dasharray/dashoffset
+     çizim (draw-in) efekti — gerçek path uzunluğundan bağımsız, her zaman
+     TAM 0→1 oynuyor. Kesikli (tahmini/dashed) çizgilerde bu trick gerçek
+     kesik-çizgi deseniyle çakışacağı için onun yerine sade opacity fade
+     kullanılır (.trend-line-fade). Bar grafikler (BankRanking, YtD,
+     Kompozisyon) zaten div+CSS width/height % kullandığından ayrı bir
+     "transition" eklemesi yeterli (bkz. .bank-bar/.ytd-bar-fill/
+     .comp-bar-segment) — burada sadece SVG tabanlı grafikler (Trend,
+     Rakip Bankalar Trend, Rakip Bankalar popover mini-bar) var. Veri
+     (tarih/ölçü/mod) değişince animasyonun YENİDEN oynaması için ilgili
+     elemanların `key`'i veriye bağlanmış durumda (React'i remount'a
+     zorluyor) — salt CSS `transition` aksine `animation` sadece mount'ta
+     bir kez oynar. */
+  .trend-line-draw {
+    stroke-dasharray: 1; stroke-dashoffset: 1;
+    animation: chartLineDraw 1s cubic-bezier(.16,.8,.24,1) both;
+  }
+  @keyframes chartLineDraw { to { stroke-dashoffset: 0; } }
+  .trend-line-fade { animation: chartFadeIn .5s ease both; }
+  .trend-area-fade { animation: chartFadeIn .7s ease both; animation-delay: .15s; }
+  .trend-dot-fade { animation: chartFadeIn .35s ease both; }
+  @keyframes chartFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .chart-bar-grow {
+    transform-box: fill-box; transform-origin: bottom;
+    animation: chartBarGrow .5s cubic-bezier(.16,.8,.24,1) both;
+  }
+  @keyframes chartBarGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  @media (prefers-reduced-motion: reduce) {
+    .trend-line-draw, .trend-line-fade, .trend-area-fade, .trend-dot-fade, .chart-bar-grow {
+      animation: none !important;
+    }
+    .bank-bar, .bank-delta-bar, .ytd-bar-fill, .comp-bar-segment {
+      transition: none !important;
+    }
+  }
+
   /* -------- Bank ranking -------- */
   .bank-ranking-header {
     display: grid;
@@ -661,6 +772,8 @@
     height: 16px;
     background: #1a2635;
     border-radius: 0 7px 7px 0;
+    transition: width .6s cubic-bezier(.16,.8,.24,1), left .6s cubic-bezier(.16,.8,.24,1),
+      right .6s cubic-bezier(.16,.8,.24,1);
   }
   body.dark .bank-bar { background: #3a5872; }
   .bank-bar.kt { background: var(--kt-green) !important; }
@@ -707,6 +820,7 @@
     height: 11px;
     top: 50%; transform: translateY(-50%);
     pointer-events: none;
+    transition: width .6s cubic-bezier(.16,.8,.24,1);
   }
   .bank-delta-bar.pos { background: rgba(63,184,168,0.5); }
   .bank-delta-bar.neg { background: rgba(229,138,138,0.5); }
@@ -842,6 +956,7 @@
     max-width: 26px;
     background: #1a2635;
     min-height: 0;
+    transition: height .6s cubic-bezier(.16,.8,.24,1);
   }
   .ytd-bars-pos .ytd-bar-fill { border-radius: 2px 2px 0 0; }
   .ytd-bars-neg .ytd-bar-fill {
@@ -1262,7 +1377,7 @@
   .comp-bar-segment {
     position: relative; width: 100%;
     display: flex; align-items: center; justify-content: center;
-    transition: opacity 0.15s;
+    transition: opacity 0.15s, height .6s cubic-bezier(.16,.8,.24,1);
   }
   .comp-bar-segment:hover { opacity: 0.85; }
   .comp-bar-segment-label {
@@ -2728,6 +2843,73 @@
   }
 
   // ===============================================================
+  // ÖLÇÜ INFO KARTI — Tanım/Formül/Kaynak/Terimler (2026-09-18,
+  // docs/olcu_info_kartlari.md'den /api/measure-info ile geliyor)
+  // ===============================================================
+  function MeasureInfoPopover(props) {
+    var card = (DATA.measureInfo || {})[props.measureId];
+    var measure = DATA.catalog.filter(function(m){ return m.id === props.measureId; })[0];
+    var titleText = (card && card.baslik) || (measure && measure.ad) || props.measureId;
+    var pos = props.pos;
+    var posStyle = pos.openUp
+      ? { left: pos.left + 'px', top: pos.anchorTop + 'px', transform: 'translate(-50%, calc(-100% - 10px))' }
+      : { left: pos.left + 'px', top: pos.anchorBottom + 'px', transform: 'translate(-50%, 10px)' };
+    return h('div', {
+      className: 'mi-popover',
+      style: posStyle,
+      onMouseEnter: props.onMouseEnter,
+      onMouseLeave: props.onMouseLeave
+    },
+      h('div', { className: 'mi-popover-head' },
+        h('div', null,
+          h('div', { className: 'mi-popover-title' }, titleText),
+          measure && h('div', { className: 'mi-cat' },
+            measure.kategori + (measure.alt_kategori ? ' › ' + measure.alt_kategori : ''))
+        ),
+        h('button', { className: 'mi-popover-close', onClick: props.onClose, title: 'Kapat' }, '✕')
+      ),
+      !card
+        ? h('div', { className: 'wn-empty' }, 'Bu ölçü için henüz bir bilgi kartı yok.')
+        : h(React.Fragment || 'div', null,
+            card.durum && h('div', { className: 'mi-row' },
+              h('span', { className: 'mi-badge' }, card.durum)),
+
+            card.tanim && h('div', { className: 'mi-row' },
+              h('div', { className: 'mi-row-label' }, 'Tanım'),
+              h('div', { className: 'mi-row-value' }, card.tanim)),
+
+            card.formul && h('div', { className: 'mi-row' },
+              h('div', { className: 'mi-row-label' }, 'Formül'),
+              h('div', { className: 'mi-formula' }, card.formul)),
+
+            h('div', { className: 'mi-row' },
+              h('div', { className: 'mi-row-label' }, 'Detaylar'),
+              h('div', { className: 'mi-meta' },
+                card.donem && h('span', null, h('b', null, 'Dönem: '), card.donem),
+                card.kaynak && h('span', null, h('b', null, 'Kaynak: '), card.kaynak),
+                card.birim && h('span', null, h('b', null, 'Birim: '), card.birim),
+                card.tip && h('span', null, h('b', null, 'Tip: '), card.tip)
+              )
+            ),
+
+            card.terimler && card.terimler.length > 0 && h('div', { className: 'mi-row' },
+              h('div', { className: 'mi-row-label' }, 'Terimler'),
+              card.terimler.map(function(t, i){
+                return h('div', { key: i, className: 'mi-term' },
+                  h('div', { className: 'mi-term-name' }, t.term),
+                  h('div', { className: 'mi-term-def' }, t.aciklama)
+                );
+              })
+            ),
+
+            card.notlar && card.notlar.map(function(n, i){
+              return h('div', { key: i, className: 'mi-note ' + n.type }, n.text);
+            })
+          )
+    );
+  }
+
+  // ===============================================================
   // ÖLÇÜ OLUŞTUR — kullanıcı tanımlı özel ölçü modal'ı (2026-09-17)
   // ===============================================================
   var CUSTOM_MEASURE_OPS = [
@@ -3218,6 +3400,51 @@
   // CONTROL BAR: Mode toggle + 3 cascade dropdowns
   // ===============================================================
   function ControlBar(props) {
+    // Ölçü info baloncuğu — CompetitorCardsGrowth'taki hover/tık-pinleme
+    // desenin AYNISI (openFor/scheduleClose, ~satır 4145): üstüne gelince
+    // anlık açılır, fareyle ayrılınca kısa gecikmeyle kapanır; dokunmatik
+    // ekranlar için tıklayınca pinlenir (dışına tıklayana kadar açık kalır).
+    var miHoverState = useState(false);
+    var miPinnedState = useState(false);
+    var miPosState = useState(null);
+    var miCloseTimerRef = useRef(null);
+    var miOpen = miHoverState[0] || miPinnedState[0];
+
+    function miClearCloseTimer() {
+      if (miCloseTimerRef.current) { clearTimeout(miCloseTimerRef.current); miCloseTimerRef.current = null; }
+    }
+    function miOpenFor(el) {
+      miClearCloseTimer();
+      var rect = el.getBoundingClientRect();
+      var POPOVER_W = 340, POPOVER_H_EST = 220, margin = 8;
+      var left = rect.left + rect.width / 2;
+      left = Math.max(POPOVER_W / 2 + margin,
+        Math.min(window.innerWidth - POPOVER_W / 2 - margin, left));
+      var openUp = rect.top > window.innerHeight * 0.55;
+      if (openUp && rect.top - POPOVER_H_EST - margin < 0) openUp = false;
+      if (!openUp && rect.bottom + POPOVER_H_EST + margin > window.innerHeight) openUp = true;
+      miHoverState[1](true);
+      miPosState[1]({ left: left, anchorTop: rect.top, anchorBottom: rect.bottom, openUp: openUp });
+    }
+    function miScheduleClose() {
+      miClearCloseTimer();
+      miCloseTimerRef.current = setTimeout(function(){ miHoverState[1](false); }, COMPETITOR_CLOSE_DELAY_MS);
+    }
+    function miCloseNow() {
+      miClearCloseTimer();
+      miHoverState[1](false);
+      miPinnedState[1](false);
+    }
+    var miPinned = miPinnedState[0];
+    useEffect(function() {
+      if (!miPinned) return;
+      function onDocClick(e) {
+        if (!e.target.closest('.mi-info-btn, .mi-popover')) { miPinnedState[1](false); }
+      }
+      document.addEventListener('mousedown', onDocClick);
+      return function(){ document.removeEventListener('mousedown', onDocClick); };
+    }, [miPinned]);
+
     // Measure arama durumu (2026-08-17) — tüm kategorilerde ölçü adına göre ara,
     // seçince aktif ölçü değişir (kategori/alt-kategori ondan türediği için
     // dropdown'lar da otomatik güncellenir).
@@ -3298,7 +3525,8 @@
       if (ms.length > 0) props.setActiveMeasure(ms[0].id);
     }
 
-    return h('div', { className: 'control-bar' },
+    return h(React.Fragment || 'div', null,
+      h('div', { className: 'control-bar' },
       props.mode === 'export'
         ? h('div', { className: 'control-label', style: { color: '#94a3b8', fontStyle: 'italic' } },
             'Filtreler aşağıda — banka, tarih, kalem seçimi')
@@ -3379,8 +3607,27 @@
                 key: m.id, value: m.id,
                 disabled: !isAvail
               }, m.ad + (m.tip === 'rasyo' ? '  (' + birimLabel(m) + ')' : '  (#)') + (isAvail ? '' : ' — veri yok'));
-            }))
+            })),
+            h('button', {
+              type: 'button', className: 'mi-info-btn', title: 'Ölçü hakkında bilgi',
+              onMouseEnter: function(e){ miOpenFor(e.currentTarget); },
+              onFocus: function(e){ miOpenFor(e.currentTarget); },
+              onMouseLeave: miScheduleClose,
+              onBlur: miScheduleClose,
+              onClick: function(e){
+                if (miPinnedState[0]) { miCloseNow(); }
+                else { miOpenFor(e.currentTarget); miPinnedState[1](true); }
+              }
+            }, 'i')
           )
+      ),
+      miOpen && miPosState[0] && h(MeasureInfoPopover, {
+        measureId: props.activeMeasure,
+        pos: miPosState[0],
+        onMouseEnter: miClearCloseTimer,
+        onMouseLeave: miScheduleClose,
+        onClose: miCloseNow
+      })
     );
   }
 
@@ -4163,7 +4410,10 @@
         var barH = maxV > 0 ? (v / maxV) * chartH : 0;
         var barY = topPad + (chartH - barH);
         return h('g', { key: i },
-          h('rect', { x: x, y: barY, width: barW, height: barH, fill: color, rx: 1 }),
+          h('rect', {
+            x: x, y: barY, width: barW, height: barH, fill: color, rx: 1,
+            className: 'chart-bar-grow', style: { animationDelay: (i * 70) + 'ms' }
+          }),
           h('text', {
             x: x + barW/2, y: barY - 3,
             fontSize:'10', fill: textColor,
@@ -4356,7 +4606,7 @@
               fontSize:'10.5', fill:'#64748b', textAnchor:'middle'
             }, tarihLabelShort(d));
           }),
-          rakipler.map(function(b) {
+          rakipler.map(function(b, bi) {
             var color = bankColor(b);
             var vals = seriesByBank[b];
             var path = '';
@@ -4365,14 +4615,23 @@
               path += (path === '' ? 'M' : 'L') + (padL + i * stepX) + ',' + scale(v) + ' ';
             });
 
-            return h('g', { key: b },
-              h('path', { d: path, fill:'none', stroke: color, strokeWidth:'2.2' }),
+            // Çizim animasyonu tarih/ölçü değişince tekrar oynasın diye
+            // key veriye bağlı (2026-09-18) — pathLength trick: gerçek path
+            // uzunluğundan bağımsız, her zaman TAM stroke-dashoffset:1→0.
+            return h('g', { key: b + '_' + tarih + '_' + measure.id },
+              h('path', {
+                d: path, fill:'none', stroke: color, strokeWidth:'2.2',
+                pathLength: 1, className: 'trend-line-draw',
+                style: { animationDelay: (bi * 60) + 'ms' }
+              }),
               vals.map(function(v, i) {
                 if (v == null) return null;
                 return h('circle', {
                   key: i,
                   cx: padL + i * stepX, cy: scale(v),
-                  r: 3, fill: color
+                  r: 3, fill: color,
+                  className: 'trend-dot-fade',
+                  style: { animationDelay: (bi * 60 + 500) + 'ms' }
                 });
               })
             );
@@ -5473,8 +5732,10 @@
                 });
                 if (pts0.length < 2) return null;
                 return h('path', {
+                  key: 'area_' + props.tarih + '_' + effectiveMode + '_' + measure.id,
                   d: smoothAreaPath(pts0, padT + chartH),
-                  fill: 'url(#trendAreaGrad)', stroke: 'none'
+                  fill: 'url(#trendAreaGrad)', stroke: 'none',
+                  className: 'trend-area-fade'
                 });
               })(),
               series.map(function(s, si) {
@@ -5485,7 +5746,11 @@
                 });
                 var path = smoothPathFromPoints(pts);
 
-                return h('g', { key: s.name },
+                // Çizim animasyonu tarih/mod değişince tekrar oynasın diye
+                // key veriye bağlı (2026-09-18). Kesikli (dashed/tahmini)
+                // çizgilerde pathLength çizim efekti kesikli deseni bozacağı
+                // için onun yerine düz opacity fade kullanılır.
+                return h('g', { key: s.name + '_' + props.tarih + '_' + effectiveMode + '_' + measure.id },
                   h('path', {
                     // textColor = koyu modda açılmış ton (bkz. darkSafeColor);
                     // açık modda marka renginin birebir kendisi. Yeni palette
@@ -5493,7 +5758,10 @@
                     d: path, fill:'none',
                     stroke: s.textColor, strokeWidth:'2.5',
                     strokeDasharray: s.dashed ? '6,3' : 'none',
-                    strokeLinecap: 'round', strokeLinejoin: 'round'
+                    strokeLinecap: 'round', strokeLinejoin: 'round',
+                    pathLength: s.dashed ? undefined : 1,
+                    className: s.dashed ? 'trend-line-fade' : 'trend-line-draw',
+                    style: { animationDelay: (si * 90) + 'ms' }
                   }),
                   s.values.map(function(v, i) {
                     if (v == null) return null;
@@ -5501,7 +5769,9 @@
                       key: i,
                       cx: padL + i * stepX, cy: scale(v),
                       r: 3.5, fill: s.textColor,
-                      stroke: '#fff', strokeWidth: '1.5'
+                      stroke: '#fff', strokeWidth: '1.5',
+                      className: 'trend-dot-fade',
+                      style: { animationDelay: (si * 90 + 550) + 'ms' }
                     });
                   }),
                 );
@@ -6500,10 +6770,12 @@
       }
       return Promise.all([
         safeJson('/api/my/measures', {measures: []}),
-        safeJson('/api/my/views', {views: []})
+        safeJson('/api/my/views', {views: []}),
+        safeJson('/api/measure-info', {})
       ]).then(function(results) {
         DATA.__customMeasures = results[0].measures || [];
         DATA.__savedViews = results[1].views || [];
+        DATA.measureInfo = results[2] || {};
         injectCustomMeasures(DATA, DATA.__customMeasures);
         bootstrapApp(DATA);
       });

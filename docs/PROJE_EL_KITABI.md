@@ -1441,6 +1441,95 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
 
 ---
 
+### Dönem 27 — Ölçü info kartları (2026-09-18)
+
+- **v1.4:** `docs/olcu_info_kartlari.md`'de elle derlenmiş 161 ölçünün
+  Tanım/Formül/Hesaplama Dönemi/Kaynak/Kategori/Terimler/Not bilgileri
+  artık dashboard'da doğrudan görünüyor. Yeni `pipeline/measure_info.py`
+  bu markdown'ı regex'le parse edip `id:` alanına göre bir sözlüğe
+  dönüştürüyor (dosya mtime'ına göre cache'leniyor); yeni
+  `GET /api/measure-info` endpoint'i (üye girişi gerekir) bunu JSON
+  olarak servis ediyor.
+- **v1.4:** Frontend, `/api/data` ile aynı bootstrap adımında
+  `/api/measure-info`'yu da çekip `DATA.measureInfo`'ya koyuyor. ÖLÇÜ
+  seçicisinin yanına küçük bir "i" butonu eklendi (`ControlBar`).
+- **v1.4 (düzeltme, aynı gün):** İlk sürüm tıklanınca açılan, ekranı
+  kaplayan bir modal'dı (`pw-modal-overlay`) — kullanıcı "ekranı kaplayan
+  bir baloncuktan ziyade üstüne gelince baloncuk olarak gözüksün" dedi.
+  `MeasureInfoModal` kaldırılıp `MeasureInfoPopover`'a çevrildi:
+  `CompetitorCardsGrowth`'taki (Dönem 26) hover/tık-pinleme deseninin
+  AYNISI (`openFor`/`scheduleClose`, buton `getBoundingClientRect()`'ine
+  göre `position:fixed` konumlanan, ekran sınırına göre üst/alt clamp
+  edilen 340px'lik baloncuk) — üstüne gelince anında açılıyor, fareyle
+  ayrılınca kısa gecikmeyle kapanıyor, dokunmatik için tıklayınca pinleniyor
+  (dışına tıklayana/× 'e kadar açık kalıyor). İçerik aynı: Tanım, Formül,
+  Dönem/Kaynak/Birim/Tip, Terimler sözlüğü, varsa "PBI baseline" gibi durum
+  rozeti ve ℹ️/⚠️ notlar.
+- **Doğrulama:** `docs/olcu_info_kartlari.md`'deki 161 kart, canlı
+  `catalog.seed.json`'daki 161 ölçünün TAMAMIYLA birebir eşleşiyor (id
+  karşılaştırmasıyla doğrulandı, eksik yok). Tarayıcıda "Toplam Aktifler"
+  (basit kart), "Düzeltilmiş Net Faiz (Kar Payı) Marjı (NIM)" (Terimler +
+  ℹ️ not içeren kart) ve "Düzeltilmiş Maliyet / Gelir Rasyosu" (Durum
+  rozeti + ⚠️ uyarı içeren kart) manuel test edildi — hem masaüstü hem
+  mobil (375px) genişlikte doğru render edildi.
+- **Yan doğrulama:** Bu test sırasında Dönem 26 sonrası (henüz bu dosyaya
+  işlenmemiş) NIM formül düzeltmesinin (`nim`/`nim_duzeltilmis`/
+  `nim_bzk_sonrasi`) canlıda gerçek, mantıklı değerler ürettiği de teyit
+  edildi (ör. Kuveyt Türk Düzeltilmiş NIM %8,06 — "veri yok" değil).
+- **Testler:** `pytest tests/` → 111/111 yeşil.
+- **Commit'ler:** henüz commit edilmedi.
+
+> ⚠️ **Not:** `docs/backlog-visual.html` görsel artifact'ı Dönem 26'dan
+> beri (bu dönem dahil) güncellenmedi — standing talimat gereği senkron
+> tutulması gerekiyor, ayrı bir turda yapılmalı.
+
+---
+
+### Dönem 28 — Grafikler animasyonlu hale getirildi (2026-09-18)
+
+- **v1.5:** Kullanıcı isteği ("grafikleri animasyonlu hale getir") üzerine
+  `frontend/index_v30.html`'deki tüm grafik türlerine saf CSS animasyon
+  eklendi — yeni bir kütüphane/bağımlılık YOK:
+  - **Çizgi grafikler** (`TrendView` ana grafik, `CompetitorTrendRatio`):
+    `pathLength="1"` trick'i ile `stroke-dasharray:1; stroke-dashoffset:1`
+    → `0` animasyonu — gerçek path uzunluğundan bağımsız, her zaman TAM
+    soldan-sağa "çizim" efekti (`.trend-line-draw`, `@keyframes
+    chartLineDraw`). Kesikli (tahmini/dashed) çizgilerde bu trick gerçek
+    kesik-çizgi deseniyle çakışacağından onun yerine sade opacity fade
+    kullanıldı (`.trend-line-fade`). Alan dolgusu ayrı fade
+    (`.trend-area-fade`), noktalar gecikmeli fade (`.trend-dot-fade`).
+  - **Bar grafikler** (`BankRanking`, `YtDGrowthChart`, `CompositionView`
+    yığın barları): bunlar zaten div + CSS `width`/`height` yüzdesiyle
+    çiziliyordu (SVG değil) — sadece `transition` eklendi (`.bank-bar`,
+    `.bank-delta-bar`, `.ytd-bar-fill`, `.comp-bar-segment`). Değer
+    değişince (ölçü/tarih/filtre) DOM node'u AYNI kaldığı için (key sabit,
+    ör. banka adı) tarayıcı otomatik yumuşak geçiş yapıyor — ayrı bir
+    "0'dan başlat" orkestrasyonuna gerek yok.
+  - **Rakip Bankalar popover mini-grafiği** (`CompetitorCardsGrowth`):
+    SVG `rect` barlarına `transform-box:fill-box; transform-origin:bottom`
+    + `scaleY(0)→scaleY(1)` (`.chart-bar-grow`), index'e göre 70ms
+    gecikmeli (staggered) — popover her açılışta (hover/tık) yeniden
+    mount olduğu için animasyon her seferinde oynuyor.
+  - **Animasyonun veri değişince TEKRAR oynaması:** CSS `animation`
+    (transition'ın aksine) sadece DOM mount'ta bir kez oynar. Çizgi
+    grafiklerdeki `<g>`/`<path>` elemanlarının `key`'i bu yüzden veriye
+    bağlandı (`s.name + '_' + tarih + '_' + mod + '_' + measure.id` gibi)
+    — React'i o node'u remount etmeye zorlayıp animasyonu her tarih/ölçü/
+    mod değişiminde tekrar tetikliyor.
+  - **Erişilebilirlik:** `@media (prefers-reduced-motion: reduce)` bloğu
+    tüm bu animasyon/transition'ları `none`'a çeviriyor.
+- **Doğrulama:** Tarayıcıda Trend moduna geçilip canlı olarak çizgilerin
+  soldan sağa çizildiği (ekran görüntüsü animasyon ORTASINDA yakalandı),
+  çeyrek değiştirilince (Haziran→Mart 2026) animasyonun TEKRAR oynadığı,
+  ölçü değiştirilince (Toplam Aktifler→Krediler) bar genişliklerinin
+  güncellendiği, Rakip Bankalar kartına hover'da mini-grafiğin doğru
+  render edildiği doğrulandı. Konsol hatası yok.
+- **Testler:** `pytest tests/` → 111/111 yeşil (saf CSS/frontend
+  değişikliği, backend/veri şeması dokunulmadı).
+- **Commit'ler:** henüz commit edilmedi.
+
+---
+
 ## 7. Açık ve bekleyen konular
 
 

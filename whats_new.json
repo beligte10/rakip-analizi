@@ -1,5 +1,24 @@
 [
   {
+    "version": "v1.5",
+    "date": "2026-09-18",
+    "title": "Grafikler animasyonlu hale getirildi",
+    "items": [
+      "Trend grafiklerindeki çizgiler artık soldan sağa \"çizilerek\" beliriyor; ölçü/tarih/dönem değiştirildiğinde animasyon tekrar oynuyor.",
+      "Banka sıralaması, YtD Büyüme ve Kompozisyon bar grafiklerinde değerler değiştiğinde barlar anlık zıplamak yerine yumuşakça yeni boyutuna geçiyor.",
+      "Rakip Bankalar kartlarının üstüne gelince açılan mini grafikte barlar sırayla aşağıdan yukarı büyüyerek beliriyor."
+    ]
+  },
+  {
+    "version": "v1.4",
+    "date": "2026-09-18",
+    "title": "Ölçü info baloncukları eklendi",
+    "items": [
+      "ÖLÇÜ seçicisinin yanına bir bilgi (i) butonu eklendi; üzerine gelince (veya dokunmatikte tıklayınca) seçili ölçünün Tanımı, Formülü, hesaplama dönemi, kaynağı ve ilgili terimlerin açıklaması küçük bir baloncukta açılıyor.",
+      "Baseline/placeholder gibi özel durumdaki ölçülerde bunu belirten bir rozet ve uyarı notu da gösteriliyor."
+    ]
+  },
+  {
     "version": "v1.3",
     "date": "2026-09-16",
     "title": "Baloncuklar küçültüldü, sürüm takibi ve haftalık özet düzeni eklendi",
