@@ -5392,9 +5392,13 @@
                     stroke: L.color, strokeWidth: '1', strokeOpacity: 0.5
                   }),
                   h('text', {
-                    x: L.x, y: L.y + 4,
+                    // Kullanıcı isteği (2026-09-17): veri etiketi baloncuğun
+                    // ortasında dursun — textAnchor:'start' rozetin SOLUNA
+                    // yaslıyordu (sol boşluk 6px, sağ boşluk 10px). Artık
+                    // rozetin tam yatay ortasına 'middle' ile hizalanıyor.
+                    x: L.x - 6 + estW / 2, y: L.y + 4,
                     fontSize: '11.5', fill: L.color,
-                    fontWeight: '700', textAnchor: 'start'
+                    fontWeight: '700', textAnchor: 'middle'
                   }, L.label)
                 );
               }),
