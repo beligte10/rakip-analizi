@@ -3158,7 +3158,9 @@
             onClick: function(){ props.setTheme(props.theme === 'light' ? 'dark' : 'light'); closeMenu(); },
             title: 'Tema değiştir'
           }, h('span', { className: 'btn-icon' }, props.theme === 'light' ? '🌙' : '☀️'), h('span', { className: 'btn-label' }, 'Tema')),
-          h('button', {
+          // Kullanıcı kararı (2026-09-18): özel ölçü oluşturma sadece
+          // adminlere açık — bkz. app.py::require_admin_member.
+          props.isAdmin && h('button', {
             className: 'topbar-icon-btn',
             onClick: function(){ mbOpenState[1](true); closeMenu(); },
             title: 'Özel ölçü oluştur / yönet'

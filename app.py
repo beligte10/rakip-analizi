@@ -570,13 +570,26 @@ class CustomMeasurePayload(BaseModel):
     sort_direction: str = 'desc'
 
 
+def require_admin_member(user: dict = Depends(require_member)) -> dict:
+    """
+    "Ölçü Oluştur" (özel ölçü) özelliği kullanıcı isteğiyle (2026-09-18)
+    role='admin' ile sınırlandı. require_admin_access'ten (Basic Auth da
+    kabul eder) BİLİNÇLİ olarak FARKLI — özel ölçüler user['id']'ye bağlı
+    kayıtlı bir üye hesabı gerektirir, Basic Auth'un böyle bir hesabı yok.
+    Bu yüzden önce require_member (gerçek üye oturumu) sonra role kontrolü.
+    """
+    if user.get('role') != 'admin':
+        raise HTTPException(status_code=403, detail='Bu özellik sadece adminler içindir')
+    return user
+
+
 @app.get('/api/my/measures')
-def my_measures_list(user: dict = Depends(require_member)):
+def my_measures_list(user: dict = Depends(require_admin_member)):
     return {'measures': users_mod.list_custom_measures(DATA_USERS, user['id'])}
 
 
 @app.post('/api/my/measures')
-def my_measures_create(payload: CustomMeasurePayload, user: dict = Depends(require_member)):
+def my_measures_create(payload: CustomMeasurePayload, user: dict = Depends(require_admin_member)):
     _validate_measure_refs(payload.op, payload.a, payload.b)
     ok, result = users_mod.add_custom_measure(
         DATA_USERS, user['id'], payload.ad, payload.op, payload.a,
@@ -589,7 +602,7 @@ def my_measures_create(payload: CustomMeasurePayload, user: dict = Depends(requi
 
 @app.put('/api/my/measures/{measure_id}')
 def my_measures_update(measure_id: str, payload: CustomMeasurePayload,
-                       user: dict = Depends(require_member)):
+                       user: dict = Depends(require_admin_member)):
     _validate_measure_refs(payload.op, payload.a, payload.b)
     ok, result = users_mod.update_custom_measure(
         DATA_USERS, user['id'], measure_id, payload.ad, payload.op, payload.a,
@@ -601,7 +614,7 @@ def my_measures_update(measure_id: str, payload: CustomMeasurePayload,
 
 
 @app.delete('/api/my/measures/{measure_id}')
-def my_measures_delete(measure_id: str, user: dict = Depends(require_member)):
+def my_measures_delete(measure_id: str, user: dict = Depends(require_admin_member)):
     if not users_mod.delete_custom_measure(DATA_USERS, user['id'], measure_id):
         raise HTTPException(status_code=404, detail='Özel ölçü bulunamadı')
     return {'status': 'ok'}
