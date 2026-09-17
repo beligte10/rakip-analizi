@@ -1693,6 +1693,16 @@
     Object.keys(DATA.bank_data).forEach(function(mid){
       if (mid.indexOf('custom_') === 0) delete DATA.bank_data[mid];
     });
+    // (2026-09-18 bug düzeltmesi) Özel ölçüler eskiden SADECE bank_data
+    // üretiyordu — group_data hiç yoktu, bu yüzden "Banka Grupları"
+    // kartları/trend çizgileri özel ölçülerde her zaman boş/"—" kalıyordu
+    // (bkz. groupVal() — DATA.group_data[mid] yoksa null döner). Aşağıda
+    // bank_data'nın hemen yanında group_data de üretiliyor.
+    if (DATA.group_data) {
+      Object.keys(DATA.group_data).forEach(function(mid){
+        if (mid.indexOf('custom_') === 0) delete DATA.group_data[mid];
+      });
+    }
 
     var byId = {};
     DATA.catalog.forEach(function(m){ byId[m.id] = m; });
@@ -1728,6 +1738,37 @@
         });
       });
       DATA.bank_data[c.id] = out;
+
+      // Grup toplamları: TEKRAR banka-banka aggregate ETMİYORUZ — a/b'nin
+      // zaten sunucu tarafında doğru hesaplanmış grup değerlerini (KT
+      // Hariç Katılım gibi kurulmamış-üye/kısmi-veri istisnalarıyla
+      // birlikte, bkz. pipeline/groups.py) alıp AYNI calc() işlemini grup
+      // seviyesinde uyguluyoruz — "ratio" için Σa/Σb, "sum/diff/scale"
+      // için grup toplamları üzerinden aynı işlem. groupVal()'ın beklediği
+      // {value: ...} sarmalayıcısıyla yazılıyor (bkz. groupVal, ~satır 1923).
+      if (DATA.group_data) {
+        var groupOut = {};
+        var groupDataA = DATA.group_data[c.a] || {};
+        var groupDataB = c.op === 'scale' ? {} : (DATA.group_data[c.b] || {});
+        var groups = {};
+        Object.keys(groupDataA).forEach(function(g){ groups[g] = true; });
+        Object.keys(groupDataB).forEach(function(g){ groups[g] = true; });
+        Object.keys(groups).forEach(function(grup) {
+          var datesA = groupDataA[grup] || {};
+          var datesB = groupDataB[grup] || {};
+          var dates = {};
+          Object.keys(datesA).forEach(function(d){ dates[d] = true; });
+          Object.keys(datesB).forEach(function(d){ dates[d] = true; });
+          groupOut[grup] = {};
+          Object.keys(dates).forEach(function(tarih) {
+            var va = datesA[tarih] ? datesA[tarih].value : null;
+            var vb = datesB[tarih] ? datesB[tarih].value : null;
+            var result = calc(c.op, va, vb, c.constant);
+            groupOut[grup][tarih] = result == null ? null : { value: result };
+          });
+        });
+        DATA.group_data[c.id] = groupOut;
+      }
 
       DATA.catalog.push({
         id: c.id, ad: c.ad,
