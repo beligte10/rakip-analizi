@@ -30,12 +30,18 @@
     gap: 14px;
     padding: 0 24px; color: #fff;
   }
-  /* Sol blok: SADECE KT logosu (kullanıcı isteği, 2026-09-18). */
+  /* Sol blok: KT logosu + "Rakip Analizi" yan yana (kullanıcı isteği,
+     2026-09-18, son karar — önce ortadaydı, sonra logo/yazı ayrılmıştı,
+     şimdi tekrar bir arada ama SOLDA). */
   .topbar-left {
-    display: flex; align-items: center;
+    display: flex; align-items: center; gap: 12px;
     flex: none; margin-right: auto;
   }
   .topbar-left img { height: 32px; width: auto; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15)); }
+  .topbar-left-text {
+    font-size: 20px; font-weight: 700; letter-spacing: 0.4px; color: #fff;
+    white-space: nowrap;
+  }
   .topbar-brand {
     display: flex; align-items: center; gap: 8px;
     font-size: 15px; font-weight: 600;
@@ -43,21 +49,23 @@
   }
   .topbar-brand img { height: 20px; width: auto; display: block; }
 
-  /* Ortadaki ana marka bloğu — "Rakip Analizi" tek satır (kullanıcı isteği,
-     2026-09-18: ölçüt adı/tarih artık burada değil, date-selector-bar'da —
-     bkz. .date-selector-title, "measure ve tarih Anında Görünüm'le aynı
-     hizada olsun"). Masaüstünde topbar'ın tam ortasında, sol/sağ içerik
-     miktarından bağımsız gerçek merkez için absolute + translate
-     kullanılıyor; ≤1200px'te normal akışa dönüp ortalanıyor. */
+  /* Ortadaki blok — ölçüt adı + tarih (kullanıcı isteği, 2026-09-18, son
+     karar: "measure ve tarih üste çıksın ama her kalemde hizalı dursun").
+     absolute+translate(-50%) KASITLI olarak korunuyor — bu, içeriğin
+     genişliğinden BAĞIMSIZ gerçek bir merkez noktası garanti eder (bir
+     önceki denemede date-selector-bar'da flex margin:auto kullanılmıştı,
+     o içerik genişliğine göre kayabilirdi — "her kalemde hizalı" isteği
+     tam olarak bunu önlemek için absolute'e geri dönmeyi gerektirdi).
+     ≤1200px'te normal akışa dönüp ortalanıyor. */
   .topbar-center-brand {
     position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
     display: flex; align-items: center;
     pointer-events: none;
-    max-width: calc(100% - 160px);
+    max-width: calc(100% - 320px);
   }
   .topbar-center-brand .center-text {
-    font-size: 22px; font-weight: 700; letter-spacing: 0.4px; color: #fff;
-    white-space: nowrap;
+    font-weight: 600; color: rgba(255,255,255,0.92);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
   }
   @media (max-width: 1200px) {
     .topbar-center-brand { position: static; transform: none; max-width: none; order: 1; }
@@ -270,15 +278,6 @@
     flex-wrap: wrap;
   }
   .date-selector-group { display: flex; align-items: center; gap: 6px; }
-  /* Ölçüt adı + tarih (kullanıcı isteği, 2026-09-18) — mode-toggle ile aynı
-     satırda, ikisi arasındaki boşluk margin:0 auto ile paylaşılıp ortaya
-     yakın bir konuma oturur (mode-toggle kendi margin-left:auto'suyla sağda
-     sabit kalır). */
-  .date-selector-title {
-    color: #fff; font-weight: 600;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    margin: 0 auto;
-  }
   .date-selector-label {
     font-size: 10.5px; font-weight: 700; color: rgba(255,255,255,0.55);
     text-transform: uppercase; letter-spacing: 0.6px; margin-right: 4px;
@@ -1602,8 +1601,7 @@
       flex-wrap: wrap; padding: 10px 12px; min-height: 0; row-gap: 8px;
     }
     .topbar-left { order: 1; }
-    .topbar-center-brand .center-text { font-size: 18px; }
-    .date-selector-title { font-size: 12px !important; }
+    .topbar-left-text { font-size: 16px; }
 
     /* STRATEJİ logosu hep görünür kalır, hamburger'in hemen solunda durur
        (kullanıcı isteği: "açılınca gelmesin hep dursun") — toolbar paneli
@@ -2622,13 +2620,6 @@
           }, q.label);
         })
       ),
-      // Ölçüt adı + tarih (kullanıcı isteği, 2026-09-18): "measure ve tarih
-      // kısmı Anında Görünüm'le aynı hizada olsun" — topbar'daki 2. satırdan
-      // buraya taşındı, mode-toggle ile AYNI SATIRDA (bkz. CSS: iki tarafı
-      // da margin:auto ile ortalanmaya çalışır, mode-toggle sağda sabit kalır).
-      props.titleText && h('div', { className: 'date-selector-title', style: { fontSize: props.titleFont } },
-        props.titleText + '  ·  ' + tarihLabel(props.tarih)
-      ),
       props.setMode && h('div', { className: 'mode-toggle' },
         MODES.map(function(m) {
           return h('button', {
@@ -3122,15 +3113,21 @@
                   : titleLen > 26 ? '17px' : '20px';
     return h(React.Fragment || 'div', null,
       h('div', { className: 'topbar' },
-        // Kullanıcı isteği (2026-09-18): KT logosu en sola alındı, "Rakip
-        // Analizi" ortada kaldı. Ölçüt adı + tarih artık burada değil —
-        // "Anında Görünüm'le aynı hizada olsun" isteğiyle date-selector-bar'a
-        // taşındı (bkz. .date-selector-title).
+        // Kullanıcı isteği (2026-09-18, son karar): "Rakip Analizi" KT
+        // logosunun YANINA (sola) döndü; ölçüt adı + tarih ortaya çıktı
+        // (date-selector-bar'dan geri taşındı — "üste çıksın"). Ortadaki
+        // blok absolute+translate(-50%) ile TRUE-center — bu yüzden hangi
+        // ölçüt seçili olursa olsun (kısa/uzun ad) merkez noktası HİÇ
+        // KAYMAZ, "her kalemde hizalı" isteği buradan garanti edilir (flex
+        // margin:auto tabanlı bir önceki deneme content genişliğine göre
+        // kayabiliyordu, o yüzden tekrar absolute'e dönüldü).
         h('div', { className: 'topbar-left' },
-          h('img', { src: KT_GRI_LOGO, alt: 'Kuveyt Türk' })
+          h('img', { src: KT_GRI_LOGO, alt: 'Kuveyt Türk' }),
+          h('div', { className: 'topbar-left-text' }, 'Rakip Analizi')
         ),
         h('div', { className: 'topbar-center-brand' },
-          h('div', { className: 'center-text' }, 'Rakip Analizi')
+          h('div', { className: 'center-text', style: { fontSize: titleFont } },
+            titleText + '  ·  ' + tarihLabel(props.tarih))
         ),
         // STRATEJİ logosu artık hamburger menünün İÇİNDE değil, her zaman
         // görünür (kullanıcı isteği, 2026-09-10) — mobilde hamburger'in
@@ -3205,10 +3202,7 @@
           }, h('span', { className: 'btn-icon' }, '🆕'), h('span', { className: 'btn-label' }, 'Yenilikler'))
         )
       ),
-      h(DateSelectorBar, {
-        tarih: props.tarih, setTarih: props.setTarih, mode: props.mode, setMode: props.setMode,
-        titleText: titleText, titleFont: titleFont
-      }),
+      h(DateSelectorBar, { tarih: props.tarih, setTarih: props.setTarih, mode: props.mode, setMode: props.setMode }),
       pwOpenState[0] && h(PasswordModal, { onClose: function(){ pwOpenState[1](false); } }),
       wnOpenState[0] && h(WhatsNewModal, { onClose: function(){ wnOpenState[1](false); } }),
       mbOpenState[0] && h(MeasureBuilderModal, {
