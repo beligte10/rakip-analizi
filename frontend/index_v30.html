@@ -609,7 +609,7 @@
      İlk 10. Liste içeriğini filtreler; panel başlığındaki "Tüm N Banka"
      metni ve KT'nin genel sırası HER ZAMAN tam listeye göre kalır. */
   .bank-filter-tabs {
-    display: flex; gap: 6px;
+    display: flex; flex-wrap: wrap; gap: 6px;
     padding: 8px 10px 6px;
     border-bottom: 1px solid #e4e9ed;
   }
@@ -3410,19 +3410,35 @@
     // .bank-rows-scroll ile aşağı kaydırarak ulaşılır (bkz. CSS).
     var sortedAll = allBanksSortedByMeasure(measure.id, tarih);
 
-    // Hızlı filtreler (kullanıcı isteği, 2026-09-18): Tümü/Katılım/İlk 20.
-    // Panel başlığındaki "Tüm N Banka" metni her zaman TAM listeye göre
-    // kalır — satırlar VE alttaki "Kuveyt Türk sırası" rozeti (kullanıcı
-    // isteği, 2026-09-18) filtreye göre güncellenir. Ölçü/çeyrek değişince
-    // de seçim korunur (local state, component tab değişince remount olmuyor).
+    // Hızlı filtreler (kullanıcı isteği, 2026-09-18): Tümü/Katılım/Mevduat/
+    // Rakip Bankalar/İlk 20. Grup bazlı filtreler DATA.meta.groups'tan
+    // (admin panelden düzenlenebilen GERÇEK grup üyelikleri — "Banka
+    // Grupları" kartlarının kullandığı KAYNAKLA aynı) okunur; tur==='...'
+    // gibi ham bir alan kontrolü DEĞİL, çünkü grup üyeliği admin'ce
+    // özelleştirilebilir. Panel başlığındaki "Tüm N Banka" metni her zaman
+    // TAM listeye göre kalır — satırlar VE alttaki "Kuveyt Türk sırası"
+    // rozeti filtreye göre güncellenir. Ölçü/çeyrek değişince de seçim
+    // korunur (local state, component tab değişince remount olmuyor).
     var filterModeState = useState('all');
     var filterMode = filterModeState[0], setFilterMode = filterModeState[1];
-    var katilimSet = {};
-    DATA.meta.banks.forEach(function(b){ if (b.tur === 'Katılım') katilimSet[b.banka_adi] = true; });
+    function groupMemberSet(groupName) {
+      var set = {};
+      (((DATA.meta.groups || {})[groupName]) || []).forEach(function(b){ set[b] = true; });
+      return set;
+    }
+    var katilimSet = groupMemberSet('Katılım Bankaları');
+    var mevduatSet = groupMemberSet('Mevduat Bankaları');
+    var rakipSet = groupMemberSet('Rakip Bankalar');
     var katilimCount = Object.keys(katilimSet).length;
+    var mevduatCount = Object.keys(mevduatSet).length;
+    var rakipCount = Object.keys(rakipSet).length;
     var displayRows = sortedAll;
     if (filterMode === 'katilim') {
       displayRows = sortedAll.filter(function(r){ return katilimSet[r.banka]; });
+    } else if (filterMode === 'mevduat') {
+      displayRows = sortedAll.filter(function(r){ return mevduatSet[r.banka]; });
+    } else if (filterMode === 'rakip') {
+      displayRows = sortedAll.filter(function(r){ return rakipSet[r.banka]; });
     } else if (filterMode === 'top20') {
       displayRows = sortedAll.slice(0, 20);
     }
@@ -3506,6 +3522,8 @@
         [
           ['all', 'Tümü (' + sortedAll.length + ')'],
           ['katilim', 'Katılım (' + katilimCount + ')'],
+          ['mevduat', 'Mevduat (' + mevduatCount + ')'],
+          ['rakip', 'Rakip Bankalar (' + rakipCount + ')'],
           ['top20', 'İlk 20 Banka'],
         ].map(function(t) {
           return h('button', {
