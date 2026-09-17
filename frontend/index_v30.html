@@ -3435,7 +3435,10 @@
     } else if (filterMode === 'mevduat') {
       displayRows = sortedAll.filter(function(r){ return mevduatSet[r.banka]; });
     } else if (filterMode === 'rakip') {
-      displayRows = sortedAll.filter(function(r){ return rakipSet[r.banka]; });
+      // Kullanıcı isteği (2026-09-18): "Rakip Bankalar" grubunun kendisi
+      // KT'yi içermez (tanım gereği) ama karşılaştırma yaparken KT'nin de
+      // aynı listede görünmesi gerekiyor — grup üyeliğine KT ayrıca eklenir.
+      displayRows = sortedAll.filter(function(r){ return rakipSet[r.banka] || r.banka === KT_NAME; });
     } else if (filterMode === 'top20') {
       displayRows = sortedAll.slice(0, 20);
     }
