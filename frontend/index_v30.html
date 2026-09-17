@@ -2546,7 +2546,11 @@
 
     // Mode butonları (Snapshot/Trend/Kompozisyon/Export) — yıl-çeyrek satırında,
     // sağa yaslı (2026-08-17). Eskiden ayrı control-bar'daydı.
-    var MODES = [['snapshot','Anında Görünüm'], ['trend','Trend'], ['composition','Kompozisyon'], ['export','Dışa Aktar'], ['my-view','Görünümlerim']];
+    // "Görünümlerim" (my-view) kullanıcı isteğiyle (2026-09-17) GEÇİCİ olarak
+    // butonlardan kaldırıldı — özellik/kod tamamen duruyor (arka planda),
+    // sadece şu an üyelere gösterilmiyor. Geri açmak için alttaki satırı
+    // MODES'a eklemek yeterli: ['my-view','Görünümlerim']
+    var MODES = [['snapshot','Anında Görünüm'], ['trend','Trend'], ['composition','Kompozisyon'], ['export','Dışa Aktar']];
 
     return h('div', { className: 'date-selector-bar' },
       h('div', { className: 'date-selector-group' },
