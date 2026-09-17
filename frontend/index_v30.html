@@ -1221,6 +1221,7 @@
   .comp-panel-title {
     font-size: 16px; font-weight: 700; text-align: center;
     margin-bottom: 16px; color: #1a2635;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
   }
   body.dark .comp-panel-title { color: #e6edf3; }
   .comp-panel-title.kt { color: var(--kt-green); }
@@ -4620,6 +4621,7 @@
 
       return h('div', { key: entity.type + ':' + entity.name, className: 'comp-panel' },
         h('div', { className: 'comp-panel-title' + (entity.isKT ? ' kt' : '') },
+          entity.isKT && bankMono(entity.name),
           entity.name + (entity.type === 'group' ? ' (grup toplamı)' : '')),
         !anyData
           ? h('div', { className: 'empty-state', style:{padding:'40px 0'} },
@@ -4690,6 +4692,7 @@
 
       return h('div', { key: entity.type + ':' + entity.name, className: 'comp-panel' },
         h('div', { className: 'comp-panel-title' + (entity.isKT ? ' kt' : '') },
+          entity.isKT && bankMono(entity.name),
           entity.name + (entity.type === 'group' ? ' (grup toplamı)' : '')),
         !anyData
           ? h('div', { className: 'empty-state', style:{padding:'40px 0'} },
