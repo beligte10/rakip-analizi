@@ -37,6 +37,7 @@ from .measures import (
     _KUR_KREDI_USD, _KUR_KREDI_EURO, _KUR_KREDI_TOPLAM,
     _faiz_getirili_aktif_detay,
     _faiz_maliyetli_pasif_detay,
+    _duzeltilmis_net_faiz_geliri,
     _yp_net_genel_pozisyon,
     _kredi_riski, _piyasa_riski, _operasyonel_risk,
     _LIKIDITE_ACIGI_KALEM, _birikimli_vadeli_mevduat,
@@ -243,17 +244,32 @@ def _nd_roae(ctx, b, t):
 
 
 def _nd_nim(ctx, b, t):
+    """(2026-09-18 düzeltmesi) Kullanıcının verdiği orijinal PBI DAX'ıyla
+    measures.py::m_nim ile TUTARLI hale getirildi — payda Ortalama TOPLAM
+    Aktif (önceden yanlışlıkla basit 4-bileşenli faiz getirili aktifti,
+    bkz. eski faiz_getirili_aktif importu)."""
     nfg = ttm_flow(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Net Faiz Geliri/Gideri'))
-    avg_iea = avg_balance(ctx, b, t, lambda bb, tt: faiz_getirili_aktif(ctx, bb, tt))
+    avg_ta = avg_balance(ctx, b, t, lambda bb, tt: ctx.bilanco(bb, tt, 'Toplam Aktifler'))
+    return nfg, avg_ta
+
+
+def _nd_nim_duzeltilmis(ctx, b, t):
+    """measures.py::m_nim_duzeltilmis ile tutarlı (2026-09-18, ilk kez)."""
+    nfg = ttm_flow(ctx, b, t, lambda bb, tt: _duzeltilmis_net_faiz_geliri(ctx, bb, tt))
+    avg_iea = avg_balance(ctx, b, t, lambda bb, tt: _faiz_getirili_aktif_detay(ctx, bb, tt))
     return nfg, avg_iea
 
 
 def _nd_nim_bzk_sonrasi(ctx, b, t):
+    """(2026-09-18 düzeltmesi) measures.py::m_nim_bzk_sonrasi ile TUTARLI
+    hale getirildi — pay artık Düzeltilmiş Net Faiz Geliri (Net Ticari
+    Kar/Zarar dahil) eksi BZK; payda detaylı (13-bileşenli) faiz getirili
+    aktif (önceden basit 4-bileşenliydi)."""
     def f(bb, tt):
-        return (ctx.gelir(bb, tt, 'Net Faiz Geliri/Gideri')
+        return (_duzeltilmis_net_faiz_geliri(ctx, bb, tt)
               - ctx.gelir(bb, tt, 'Kredi Ve Diğer Alacaklar Değer Düşüş Karşılığı (-)'))
     nfg = ttm_flow(ctx, b, t, f)
-    avg_iea = avg_balance(ctx, b, t, lambda bb, tt: faiz_getirili_aktif(ctx, bb, tt))
+    avg_iea = avg_balance(ctx, b, t, lambda bb, tt: _faiz_getirili_aktif_detay(ctx, bb, tt))
     return nfg, avg_iea
 
 
@@ -570,6 +586,7 @@ RATIO_NUM_DEN: Dict[str, NumDenFn] = {
     'roaa': _nd_roaa,
     'roae': _nd_roae,
     'nim': _nd_nim,
+    'nim_duzeltilmis': _nd_nim_duzeltilmis,
     'nim_bzk_sonrasi': _nd_nim_bzk_sonrasi,
     'faiz_getirili_aktif_getirisi': _nd_iea_getiri,
     'faiz_maliyetli_pasif_maliyeti': _nd_mp_maliyet,

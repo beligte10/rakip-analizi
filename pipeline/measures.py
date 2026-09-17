@@ -559,34 +559,60 @@ def m_roae(ctx, b, t):
     return safe_ratio(ttm, avg)
 
 
-def m_nim(ctx, b, t):
-    """Net Faiz (Kar Payı) Marjı (NIM) — TTM Net Faiz Geliri/Gideri / Ortalama
-    (detaylı 13-bileşenli) Faiz Getirili Aktif.
+def _duzeltilmis_net_faiz_geliri(ctx, b, t):
+    """PBI [Düzeltilmiş Net Faiz (Kar Payı) Geliri] = [Net Faiz Geliri/Gideri]
+    + [Net Ticari Kar/Zarar] (bkz. m_net_ticari_kar — 'Ticari Kar/Zarar
+    (Net)' ham kalemi). Kullanıcının verdiği orijinal PBI DAX'ından
+    (2026-09-18) — önceden bu düzeltme hiç uygulanmıyordu."""
+    return (ctx.gelir(b, t, 'Net Faiz Geliri/Gideri')
+          + ctx.gelir(b, t, 'Ticari Kar/Zarar (Net)'))
 
-    ⚠️ EN İYİ TAHMİN, BİREBİR DOĞRULANMADI (2026-09-15, kullanıcı talebiyle
-    BASELINE_PASSTHROUGH'dan raw'a taşındı). 1057 tarihsel noktada v29
-    baseline'la karşılaştırıldı: medyan fark 0.24pp, %81.7'si ±0.5pp içinde
-    — 'faiz_getirili_aktif_getirisi' (%92.5) kadar temiz değil. Geri-çözme
-    analizinde payımın tutarlı şekilde ~%7-8 fazla çıktığını buldum ama tek
-    bir eksik kalemle açıklayamadım (bkz. docs/PROJE_EL_KITABI.md Dönem 25/26)
-    — orijinal PBI DAX'ı olmadan bu son farkı kapatamadım."""
+
+def m_nim(ctx, b, t):
+    """PBI [Net Faiz (Kar Payı) Marjı] = TTM [Net Faiz Geliri/Gideri] /
+    [Ortalama Aktifler] (Ortalama TOPLAM aktif, detaylı faiz getirili aktif
+    DEĞİL).
+
+    Kullanıcının verdiği orijinal PBI DAX'ıyla (2026-09-18) düzeltildi —
+    önceki formül (2026-09-15, ⚠️ EN İYİ TAHMİN) payda olarak yanlışlıkla
+    detaylı (13-bileşenli) Faiz Getirili Aktif kullanıyordu; bu, "Net Faiz
+    (Kar Payı) Marjı 2" adlı AYRI bir PBI ölçüsüymüş (katalogda karşılığı
+    yok) — 1057 noktalık doğrulamada payımın tutarlı ~%7-8 fazla çıkmasının
+    (bkz. eski docstring, docs/PROJE_EL_KITABI.md Dönem 25/26) kök nedeni
+    buydu: küçük paydaya (faiz getirili aktif < toplam aktif) bölünce oran
+    yapay şekilde şişiyordu."""
     ttm = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Net Faiz Geliri/Gideri'))
+    avg = _avg(ctx, b, t, lambda bb, tt: ctx.bilanco(bb, tt, 'Toplam Aktifler'))
+    return safe_ratio(ttm, avg)
+
+
+def m_nim_duzeltilmis(ctx, b, t):
+    """PBI [Düzeltilmiş Net Faiz (Kar Payı) Marjı] = TTM [Düzeltilmiş Net
+    Faiz (Kar Payı) Geliri] / [Ortalama Faiz (Kar Payı) Getirili Aktifler]
+    (detaylı 13-bileşenli payda — m_nim'den FARKLI, bkz. orada).
+
+    Kullanıcının verdiği orijinal PBI DAX'ıyla (2026-09-18) ilk kez
+    uygulandı — önceden (2026-09-12) hiç formül adayı bulunamadığı için
+    BASELINE_PASSTHROUGH'ta donmuş kalıyordu (bkz. docs/PROJE_EL_KITABI.md)."""
+    ttm = _ttm(ctx, b, t, lambda bb, tt: _duzeltilmis_net_faiz_geliri(ctx, bb, tt))
     avg = _avg(ctx, b, t, lambda bb, tt: _faiz_getirili_aktif_detay(ctx, bb, tt))
     return safe_ratio(ttm, avg)
 
 
 def m_nim_bzk_sonrasi(ctx, b, t):
-    """BZK Sonrası Düzeltilmiş NIM — m_nim'in payından Kredi Ve Diğer
-    Alacaklar Değer Düşüş Karşılığı çıkarılmış hali.
+    """PBI [BZK Sonrası Düzeltilmiş Net Faiz (Kar Payı) Marjı] = TTM
+    ([Düzeltilmiş Net Faiz (Kar Payı) Geliri] − BZK) / [Ortalama Faiz
+    (Kar Payı) Getirili Aktifler]. BZK = 'Kredi Ve Diğer Alacaklar Değer
+    Düşüş Karşılığı (-)' ham kalemi (m_cost_of_risk'te de aynı kalem).
 
-    ⚠️ EN İYİ TAHMİN, ZAYIF DOĞRULAMA (2026-09-15). 1057 noktada yalnız
-    %43'ü ±0.5pp içinde — nim'den bile düşük. Kullanıcının açık talebiyle
-    (orijinal DAX bulunamadığı için) yine de raw'a taşındı; bu ölçüye
-    diğerlerinden daha az güvenilmeli."""
-    def nf_minus_prov(bb, tt):
-        return (ctx.gelir(bb, tt, 'Net Faiz Geliri/Gideri')
+    Kullanıcının verdiği orijinal PBI DAX'ıyla (2026-09-18) düzeltildi —
+    önceki formül (2026-09-15, ⚠️ EN İYİ TAHMİN, sadece %43 ±0.5pp uyum)
+    ölçü ADI "Düzeltilmiş" dese de Net Ticari Kar/Zarar ayarlamasını hiç
+    uygulamıyordu; payı sadece ham Net Faiz Geliri − BZK'ydı."""
+    def duzeltilmis_minus_bzk(bb, tt):
+        return (_duzeltilmis_net_faiz_geliri(ctx, bb, tt)
               - ctx.gelir(bb, tt, 'Kredi Ve Diğer Alacaklar Değer Düşüş Karşılığı (-)'))
-    ttm = _ttm(ctx, b, t, nf_minus_prov)
+    ttm = _ttm(ctx, b, t, duzeltilmis_minus_bzk)
     avg = _avg(ctx, b, t, lambda bb, tt: _faiz_getirili_aktif_detay(ctx, bb, tt))
     return safe_ratio(ttm, avg)
 
@@ -1448,6 +1474,7 @@ MEASURE_FUNCS: Dict[str, Callable] = {
     'faiz_getirili_aktif_getirisi': m_faiz_getirili_aktif_getirisi,
     'gayrinakdi_komisyon_gayrinakdi': m_gayrinakdi_komisyon_gayrinakdi,
     'nim': m_nim,
+    'nim_duzeltilmis': m_nim_duzeltilmis,
     'nim_bzk_sonrasi': m_nim_bzk_sonrasi,
     'spread': m_spread,
     'toplam_risk_tabani': m_toplam_risk_tabani,
@@ -1477,10 +1504,11 @@ MEASURE_FUNCS: Dict[str, Callable] = {
 # Ham veride bulunmayan veya v29 PBI hesabıyla raw'dan tam eşleşmeyen
 # measure'lar — base_data'dan (v29 baseline) olduğu gibi kopyalanır.
 BASELINE_PASSTHROUGH: Set[str] = {
-    # PBI özel düzeltmeli formüller — "düzeltme" mantığı hiç belgelenmedi,
-    # denenecek bir formül adayı bile yok (2026-09-12'de arandı, bulunamadı)
+    # PBI özel düzeltmeli formül — "düzeltme" mantığı hiç belgelenmedi,
+    # denenecek bir formül adayı bile yok (2026-09-12'de arandı, bulunamadı).
+    # 'nim_duzeltilmis' 2026-09-18'de kullanıcının verdiği orijinal PBI
+    # DAX'ıyla raw'a taşındı (bkz. m_nim_duzeltilmis) — burada KALMADI.
     'maliyet_gelir_duzeltilmis',
-    'nim_duzeltilmis',
 }
 
 # 2026-09-15: kullanıcı, birebir doğrulanmamış olsalar bile 'nim',
