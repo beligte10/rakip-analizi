@@ -30,27 +30,14 @@
     gap: 14px;
     padding: 0 24px; color: #fff;
   }
-  /* Sol blok (tarih + ölçüt adı) ortadaki absolute-konumlu logo bloğuna
-     GİRMEMELİ. max-width ile sol içerik logonun sol kenarından önce biter;
-     uzun ölçüt adları JS'te metin uzunluğuna göre küçültülür (font-size
-     inline) ve gerekirse 2 satıra sarılır (aşağıdaki -webkit-line-clamp). */
+  /* Sol blok: SADECE KT logosu (kullanıcı isteği, 2026-09-18 — önceden
+     tarih+ölçüt buradaydı, artık ortadaki marka bloğunun ikinci satırına
+     taşındı, bkz. .topbar-center-brand .center-sub). */
   .topbar-left {
-    display: flex; align-items: center; gap: 20px;
-    min-width: 0; max-width: calc(50% - 160px);
-    margin-right: auto;
+    display: flex; align-items: center;
+    flex: none; margin-right: auto;
   }
-  .topbar-date { font-size: 20px; font-weight: 600; letter-spacing: 0.3px; flex: none; }
-  .topbar-measure {
-    font-size: 20px; font-weight: 500; color: #fff;
-    min-width: 0; line-height: 1.15;
-    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
-    overflow: hidden;
-  }
-  .topbar-divider { width: 2px; height: 24px; background: #2a4358; flex: none; }
-  /* Orta logo gizlendiğinde (dar ekran) sol blok daha fazla yer kullanabilir. */
-  @media (max-width: 1200px) {
-    .topbar-left { max-width: calc(100% - 210px); }
-  }
+  .topbar-left img { height: 32px; width: auto; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15)); }
   .topbar-brand {
     display: flex; align-items: center; gap: 8px;
     font-size: 15px; font-weight: 600;
@@ -58,28 +45,29 @@
   }
   .topbar-brand img { height: 20px; width: auto; display: block; }
 
-  /* Ortadaki ana marka bloğu: gri logo + "Rakip Analizi" — topbar'ın tam
-     ortasında, sol/sağ içerik miktarından bağımsız gerçek merkez için
-     absolute + translate kullanılıyor. */
+  /* Ortadaki ana marka bloğu — artık İKİ SATIR (kullanıcı isteği,
+     2026-09-18): "Rakip Analizi" başlığı + altında ölçüt adı/tarih. Logo
+     sol bloğa taşındığı için burada sadece metin var. Masaüstünde topbar'ın
+     tam ortasında, sol/sağ içerik miktarından bağımsız gerçek merkez için
+     absolute + translate kullanılıyor; ≤1200px'te (STRATEJİ/hamburger'e
+     çakışma riski azaldığı için artık gizlenmiyor, sadece normal akışa
+     dönüp ortalanıyor — bkz. media query). */
   .topbar-center-brand {
     position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-    display: flex; align-items: center; gap: 12px;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
     pointer-events: none;
+    max-width: calc(100% - 160px);
   }
-  /* Boyutlar büyütüldü (kullanıcı isteği, 2026-09-17): logo 26→32px,
-     "Rakip Analizi" yazısı 18→22px — ayırıcı çizgi orantılı büyüdü. */
-  .topbar-center-brand img { height: 32px; width: auto; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15)); }
-  .topbar-center-brand .center-divider { width: 1.5px; height: 24px; background: rgba(255,255,255,0.35); }
   .topbar-center-brand .center-text {
     font-size: 22px; font-weight: 700; letter-spacing: 0.4px; color: #fff;
     white-space: nowrap;
   }
-  /* Dar ekranlarda sol (tarih+ölçüt) ve sağ (araçlar) blok, ortadaki
-     absolute-positioned marka bloğuyla çakışabilir — yer yoksa tamamen
-     gizle (küçültülmüş/mobil bir logo göstermek yerine, okunurluk önceliği
-     sol/sağ bloklarda kalmalı). */
+  .topbar-center-brand .center-sub {
+    font-weight: 500; color: rgba(255,255,255,0.85);
+    max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
   @media (max-width: 1200px) {
-    .topbar-center-brand { display: none; }
+    .topbar-center-brand { position: static; transform: none; max-width: none; order: 1; }
   }
 
   /* Toolbar butonları (BDR/Admin/Tema/Ölçü Oluştur/Şifre/Çıkış/Yenilikler)
@@ -1611,10 +1599,9 @@
     .topbar {
       flex-wrap: wrap; padding: 10px 12px; min-height: 0; row-gap: 8px;
     }
-    .topbar-left { max-width: calc(100% - 118px); order: 1; }
-    .topbar-date { font-size: 16px; }
-    .topbar-measure { font-size: 13px; }
-    .topbar-divider { display: none; }
+    .topbar-left { order: 1; }
+    .topbar-center-brand .center-text { font-size: 18px; }
+    .topbar-center-brand .center-sub { font-size: 12px !important; }
 
     /* STRATEJİ logosu hep görünür kalır, hamburger'in hemen solunda durur
        (kullanıcı isteği: "açılınca gelmesin hep dursun") — toolbar paneli
@@ -2611,7 +2598,10 @@
     // butonlardan kaldırıldı — özellik/kod tamamen duruyor (arka planda),
     // sadece şu an üyelere gösterilmiyor. Geri açmak için alttaki satırı
     // MODES'a eklemek yeterli: ['my-view','Görünümlerim']
-    var MODES = [['snapshot','Anında Görünüm'], ['trend','Trend'], ['composition','Kompozisyon'], ['export','Dışa Aktar']];
+    // "Dışa Aktar" (export) kullanıcı isteğiyle (2026-09-18) buradan
+    // kaldırılıp topbar'ın hamburger menüsüne taşındı — bkz. TopBar'daki
+    // 📤 Dışa Aktar butonu (props.setMode('export')).
+    var MODES = [['snapshot','Anında Görünüm'], ['trend','Trend'], ['composition','Kompozisyon']];
 
     return h('div', { className: 'date-selector-bar' },
       h('div', { className: 'date-selector-group' },
@@ -3123,15 +3113,16 @@
                   : titleLen > 26 ? '17px' : '20px';
     return h(React.Fragment || 'div', null,
       h('div', { className: 'topbar' },
+        // Kullanıcı isteği (2026-09-18): KT logosu en sola alındı, "Rakip
+        // Analizi" ortada kaldı, altına ölçüt adı + tarih taşındı (bkz.
+        // topbar-center-brand .center-sub).
         h('div', { className: 'topbar-left' },
-          h('div', { className: 'topbar-date' }, tarihLabel(props.tarih)),
-          h('div', { className: 'topbar-divider' }),
-          h('div', { className: 'topbar-measure', style: { fontSize: titleFont } }, titleText)
+          h('img', { src: KT_GRI_LOGO, alt: 'Kuveyt Türk' })
         ),
         h('div', { className: 'topbar-center-brand' },
-          h('img', { src: KT_GRI_LOGO, alt: 'Kuveyt Türk' }),
-          h('div', { className: 'center-divider' }),
-          h('div', { className: 'center-text' }, 'Rakip Analizi')
+          h('div', { className: 'center-text' }, 'Rakip Analizi'),
+          h('div', { className: 'center-sub', style: { fontSize: titleFont } },
+            titleText + '  ·  ' + tarihLabel(props.tarih))
         ),
         // STRATEJİ logosu artık hamburger menünün İÇİNDE değil, her zaman
         // görünür (kullanıcı isteği, 2026-09-10) — mobilde hamburger'in
@@ -3159,6 +3150,13 @@
             style: { textDecoration: 'none' },
             onClick: closeMenu
           }, h('span', { className: 'btn-icon' }, '📑'), h('span', { className: 'btn-label' }, 'BDR')),
+          // "Dışa Aktar" artık mode-toggle satırında değil, hamburger içinde
+          // (kullanıcı isteği, 2026-09-18) — bkz. DateSelectorBar MODES.
+          h('button', {
+            className: 'topbar-icon-btn',
+            onClick: function(){ props.setMode('export'); closeMenu(); },
+            title: 'Dışa Aktar'
+          }, h('span', { className: 'btn-icon' }, '📤'), h('span', { className: 'btn-label' }, 'Dışa Aktar')),
           props.isAdmin && h('a', {
             className: 'topbar-icon-btn',
             href: '/admin',
