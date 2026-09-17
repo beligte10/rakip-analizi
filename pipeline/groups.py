@@ -221,6 +221,10 @@ def _nd_vadesiz_mevduat_mev(ctx, b, t):
     return ctx.vadesiz_mevduat(b, t), ctx.bilanco(b, t, 'Mevduat')
 
 
+def _nd_kiymetli_maden_mevduat(ctx, b, t):
+    return ctx.kiymetli_maden(b, t), ctx.bilanco(b, t, 'Mevduat')
+
+
 def _nd_tp_mevduat(ctx, b, t):
     return ctx.bilanco(b, t, 'Mevduat', 'TP'), ctx.bilanco(b, t, 'Mevduat')
 
@@ -560,6 +564,7 @@ RATIO_NUM_DEN: Dict[str, NumDenFn] = {
     # Pasif basit
     'krediler_mevduat': _nd_krediler_mevduat,
     'vadesiz_mevduat_toplam_mevduat': _nd_vadesiz_mevduat_mev,
+    'kiymetli_maden_toplam_mevduat': _nd_kiymetli_maden_mevduat,
     'tp_mevduat_toplam_mevduat': _nd_tp_mevduat,
     # Akım/TTM
     'roaa': _nd_roaa,

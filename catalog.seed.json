@@ -1011,6 +1011,17 @@
       "sort_direction": "desc"
     },
     {
+      "id": "kiymetli_maden_toplam_mevduat",
+      "ad": "Kıymetli Maden Mevduatı / Toplam Mevduat",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
       "id": "vadesiz_mevduat_toplam_kaynak",
       "ad": "Vadesiz Mevduat / Toplam Kaynak",
       "tip": "rasyo",

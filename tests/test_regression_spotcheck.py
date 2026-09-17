@@ -43,7 +43,9 @@ GOLDEN = {
 # base_data olarak verilmezse sessizce kaybolur (bkz. 2026-08-09 bug).
 # 2026-08-14: measures.docx tam DAX taraması ile 127→160 (33 yeni ölçü:
 # RAV, Toplam Risk, Likidite Açığı×7, vade dilimleri vb.). Bilinçli artış.
-EXPECTED_MEASURE_COUNT = 160
+# 2026-09-18: 160→161 — "Kıymetli Maden Mevduatı / Toplam Mevduat" eklendi
+# (kullanıcı isteği). Bilinçli artış.
+EXPECTED_MEASURE_COUNT = 161
 EXPECTED_BANK_COUNT = 27
 
 

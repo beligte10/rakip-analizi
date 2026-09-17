@@ -466,6 +466,10 @@ def m_vadesiz_mevduat_toplam_mevduat(ctx, b, t):
     return safe_ratio(ctx.vadesiz_mevduat(b, t), ctx.bilanco(b, t, 'Mevduat'))
 
 
+def m_kiymetli_maden_toplam_mevduat(ctx, b, t):
+    return safe_ratio(ctx.kiymetli_maden(b, t), ctx.bilanco(b, t, 'Mevduat'))
+
+
 def m_tp_mevduat_toplam_mevduat(ctx, b, t):
     return safe_ratio(ctx.bilanco(b, t, 'Mevduat', 'TP'), ctx.bilanco(b, t, 'Mevduat'))
 
@@ -1367,6 +1371,7 @@ MEASURE_FUNCS: Dict[str, Callable] = {
 
     # Bilanço Pasifler rasyolar
     'vadesiz_mevduat_toplam_mevduat': m_vadesiz_mevduat_toplam_mevduat,
+    'kiymetli_maden_toplam_mevduat': m_kiymetli_maden_toplam_mevduat,
     'tp_mevduat_toplam_mevduat': m_tp_mevduat_toplam_mevduat,
 
     # Gelir Tablosu rasyolar (YtD)
