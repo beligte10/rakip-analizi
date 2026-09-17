@@ -5393,12 +5393,14 @@
                   }),
                   h('text', {
                     // Kullanıcı isteği (2026-09-17): veri etiketi baloncuğun
-                    // ortasında dursun — textAnchor:'start' rozetin SOLUNA
-                    // yaslıyordu (sol boşluk 6px, sağ boşluk 10px). Artık
-                    // rozetin tam yatay ortasına 'middle' ile hizalanıyor.
-                    x: L.x - 6 + estW / 2, y: L.y + 4,
+                    // TAM ortasında (yatay VE dikey) dursun. Yatay: x = rozet
+                    // merkezi + textAnchor:'middle'. Dikey: y = rozet merkezi
+                    // (L.y-12+19/2) + dominantBaseline:'central' — eskiden
+                    // y:L.y+4 elle ayarlanmış bir taban çizgisi tahminiydi,
+                    // gerçek dikey ortalama değildi.
+                    x: L.x - 6 + estW / 2, y: L.y - 12 + 19 / 2,
                     fontSize: '11.5', fill: L.color,
-                    fontWeight: '700', textAnchor: 'middle'
+                    fontWeight: '700', textAnchor: 'middle', dominantBaseline: 'central'
                   }, L.label)
                 );
               }),
