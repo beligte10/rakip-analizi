@@ -1551,14 +1551,12 @@ entegrasyonu yok — bu, alt-görev olarak eklenmeli (bkz. üyelik sistemi,
 `users.py`/`app.py`).
 **Durum:** 📋 Backlog'da, uygulanmayı bekliyor.
 
-#### 4. Chat LLM entegrasyonu (2 fazlı)
-**KARAR (2026-08-19):** Aşamalı yaklaşım:
-- **Faz 1 (önce):** Dar kapsamlı — sadece bu dashboard'un verisini (computed.json/
-  ölçüler) yorumlayan bir asistan. Daha ucuz, kullanıcının role-bazlı ölçü
-  erişimine (bkz. madde 2) saygı gösterebilir.
-- **Faz 2 (sonra):** Genel amaçlı, geniş kapsamlı bir asistana genişletilecek.
-**Açık soru (Faz 1 için):** Hangi LLM/API, kim ödeyecek?
-**Durum:** 📋 Backlog'da, Faz 1 kapsamı netleşince başlanabilir.
+#### 4. Chat LLM entegrasyonu — TAŞINDI
+2026-08-19'da buraya eklenmiş dar kapsamlı fikir, 2026-09-17'de detaylı bir
+uygulama planına dönüştü ve büyüklüğü nedeniyle **"🟣 Büyük R&D projesi"**
+bölümüne taşındı (bkz. aşağıda madde 6 — "AI Chatbot Asistanı"). O zamanki
+açık soru ("hangi LLM/API, kim ödeyecek?") orada cevaplandı: **Qwen 3.5,
+self-hosted** (dışarıya veri gönderilmiyor, API maliyeti yok).
 
 ---
 
@@ -1782,9 +1780,82 @@ FAZ 5 (etiketler) ──► FAZ 6 (kullanıcı formülleri, bayrak arkasında)
    Excel yükleme ekranı acil durum yedeği olarak kalsın mı?
 
 
+#### 6. AI Chatbot Asistanı (Qwen 3.5 ile veri yorumlama)
+
+**Ne:** Kullanıcı isteği (2026-09-17): "bankalar özelinde veriler ne anlama
+geliyor, bu çeyrekte öne çıkanlar neler tarzında ya da daha önceki verileri
+de bilerek bu verilerle alakalı bir şey sorunca bilgi getirecek bir ai chat
+bot" — Qwen 3.5 dil modeliyle çalışan, dashboard'daki sayısal veriyi doğal
+dilde yorumlayabilen bir sohbet asistanı. Bu madde 2026-08-19'da Sprint
+2'ye "Chat LLM entegrasyonu" olarak eklenmiş dar kapsamlı fikrin detaylı
+uygulama planı — o zamanki Faz 1/Faz 2 aşamalı yaklaşım kararı (önce dar
+kapsamlı, sonra genel amaçlı asistan) ve "kullanıcının role-bazlı ölçü
+erişimine saygı göstermeli" prensibi burada da geçerli (bkz. Sprint 1
+madde 2 ile bağımlılık, açık sorular altında).
+
+**Temel mimari kararlar (neden bu şekilde kurgulanmalı):**
+1. **Model yerel/self-hosted olmalı, hosted API değil.** Veri hassas rakip
+   analiz verisi — üçüncü parti bir API'ye göndermek istenmiyor. Qwen 3.5,
+   vLLM ya da Ollama üzerinden OpenAI-uyumlu bir `/v1/chat/completions`
+   endpoint'i olarak kendi sunucumuzda/ağımızda çalıştırılır.
+2. **RAG değil, tool-calling (fonksiyon çağırma).** Veri zaten yapılandırılmış
+   (banka × ölçü × çeyrek sayısal tablo) — ham metin olarak modele dökmek
+   hem bağlam sınırına takılır hem halüsinasyon (yanlış sayı üretme) riski
+   yaratır. Bunun yerine model, tanımlı fonksiyonları (ör.
+   `get_measure_value`, `get_measure_series`, `compare_banks`,
+   `list_top_movers`) çağırıp GERÇEK sayıyı `pipeline`'dan çeker, sonra
+   yorumlar — sayısal doğruluk garantilenir.
+3. **Mevcut veri erişim katmanı (`pipeline/`) yeniden kullanılır.**
+   `LookupContext`, `bank_data`/`group_data` sözlükleri zaten var —
+   chatbot'un tool'ları bunların ince bir sarmalayıcısı olur, veri
+   hesaplama mantığı TEKRARLANMAZ.
+
+**Önerilen fazlar:**
+- **Faz 0 — Model seçimi ve barındırma (spike):** Qwen 3.5'in hangi boyutu
+  (7B/14B/32B?) kullanılacak, hangi donanımda (GPU var mı, yoksa CPU-only mı)
+  çalışacak, vLLM mi Ollama mı — karar noktası. Basit bir "merhaba dünya"
+  tool-calling testiyle doğrulanır.
+- **Faz 1 — Temel sayısal soru-cevap:** `POST /api/chat` endpoint'i
+  (`require_member` ile korunur, `heavy_op_guard` deseniyle eşzamanlı istek
+  sınırlanabilir — tek GPU'da aynı anda birden fazla üretim istem
+  kuyruklamayı gerektirir), tool tanımları: tekil değer sorgulama, banka
+  karşılaştırma, çoklu-çeyrek serisi. Konuşma geçmişi YOK (stateless, her
+  istek bağımsız) — kapsam küçük tutulur. Frontend'de basit bir chat paneli
+  (mevcut modal deseniyle: `.pw-modal-overlay` + mesaj listesi + input).
+- **Faz 2 — "Bu çeyrekte öne çıkanlar":** Backend'de yeni bir "highlight/
+  outlier" fonksiyonu — verilen çeyrekte tüm ölçüler için QoQ değişimini
+  hesaplayıp en büyük artış/azalışları döndürür (frontend'deki
+  `isValueOutlier` mantığının backend eşdeğeri). Bu bir tool olarak modele
+  sunulur.
+- **Faz 3 — Konuşma geçmişi + bağlamsal farkındalık:** Kullanıcının
+  dashboard'da o an baktığı ölçü/banka/çeyrek otomatik olarak chat
+  bağlamına eklenir ("şu an X ölçüsü, Y çeyreği açık" — kullanıcı tekrar
+  belirtmeden sorabilir). Basit konuşma geçmişi (oturum bazlı, v1'de kalıcı
+  olmayabilir).
+- **Faz 4 (opsiyonel, ileride):** Niteliksel bağlam için hafif bir RAG
+  katmanı — `whats_new.json`, PROJE_EL_KITABI kronolojisi gibi metin
+  içerikleri embed edilip semantik arama ile modele sunulur (ör. "bu ölçü
+  neden değişti" gibi anlatısal sorular için).
+
+**Açık sorular (karara bağlanmadan başlanamaz):**
+1. Qwen 3.5'in hangi boyutu, hangi donanımda? Mevcut sunucuda GPU var mı?
+2. vLLM mi Ollama mı — throughput mu kolaylık mı öncelik?
+3. Chat, ayrı bir sekme mi (MODES dizisine eklenir — "Görünümlerim"in
+   gizlendiği/eklendiği desenle aynı) yoksa floating widget mı?
+4. Konuşma geçmişi kalıcı olacak mı (`data/chat_history/` gibi) yoksa
+   oturum bazlı mı kalacak?
+5. Rol bazlı ölçü erişimi (yukarıdaki madde 2, Sprint 2) hayata geçerse
+   chatbot'u da kapsayacak mı — yoksa tüm üyeler tüm ölçüleri chat
+   üzerinden de mi sorgulayabilecek?
+
+**Durum:** 💡 Fikir aşaması, plan hazır — Faz 0 (model/donanım kararı) ile
+başlanmalı.
+
+---
+
 ### 🔵 v2'ye ertelenmiş konular (daha önce karara bağlanmış, unutulmasın)
 
-#### 6. Konfigüre edilebilir odak banka
+#### 7. Konfigüre edilebilir odak banka
 **Ne:** Kuveyt Türk yerine başka bir bankayı "odak" yapabilme.
 **Neden ertelendi:** Grup katmanının kırılgan geçmişi (bkz. Dönem 2'deki
 grup agregasyon bug'ları) nedeniyle riskli bulundu.
@@ -1794,7 +1865,7 @@ bağlanacak, `PROTECTED_GROUPS` ve varsayılan grup üyeliği odağa göre
 güncellenecek.
 **Durum:** ⏸️ v2'ye ertelendi.
 
-#### 7. Screenshot / PDF-öncesi PNG indirme
+#### 8. Screenshot / PDF-öncesi PNG indirme
 **Ne:** Bulunduğun görünümü PNG olarak indirme butonu.
 **Neden ertelendi:** Kullanıcı v2'de yapmaya karar verdi.
 **Durum:** ⏸️ Kod `feature/v2-screenshot` branch'inde hazır (2 commit),
