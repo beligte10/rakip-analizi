@@ -3436,8 +3436,8 @@
     var displayRows = sortedAll;
     if (filterMode === 'katilim') {
       displayRows = sortedAll.filter(function(r){ return katilimSet[r.banka]; });
-    } else if (filterMode === 'top10') {
-      displayRows = sortedAll.slice(0, 10);
+    } else if (filterMode === 'top20') {
+      displayRows = sortedAll.slice(0, 20);
     }
 
     var validVals = displayRows.filter(function(r){return r.value != null;}).map(function(r){return r.value;});
@@ -3512,7 +3512,7 @@
         [
           ['all', 'Tümü (' + sortedAll.length + ')'],
           ['katilim', 'Katılım (' + katilimCount + ')'],
-          ['top10', 'İlk 10 Banka'],
+          ['top20', 'İlk 20 Banka'],
         ].map(function(t) {
           return h('button', {
             key: t[0],
