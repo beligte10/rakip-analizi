@@ -605,6 +605,31 @@
     max-height: 609px;
     overflow-y: auto;
   }
+  /* Hızlı filtre sekmeleri (kullanıcı isteği, 2026-09-18) — Tümü/Katılım/
+     İlk 10. Liste içeriğini filtreler; panel başlığındaki "Tüm N Banka"
+     metni ve KT'nin genel sırası HER ZAMAN tam listeye göre kalır. */
+  .bank-filter-tabs {
+    display: flex; gap: 6px;
+    padding: 8px 10px 6px;
+    border-bottom: 1px solid #e4e9ed;
+  }
+  body.dark .bank-filter-tabs { border-bottom-color: #2a3b4d; }
+  .bank-filter-tab {
+    font-size: 11.5px; font-weight: 600;
+    color: #64748b;
+    background: transparent;
+    border: 1px solid rgba(15,31,47,0.1);
+    border-radius: 20px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  body.dark .bank-filter-tab { color: #94a3b8; border-color: rgba(255,255,255,0.12); }
+  .bank-filter-tab:hover { border-color: rgba(98,174,65,0.4); color: #334155; }
+  body.dark .bank-filter-tab:hover { color: #e8eef1; }
+  .bank-filter-tab.active {
+    background: var(--kt-green); border-color: var(--kt-green); color: #fff;
+  }
   .bank-row {
     display: grid;
     grid-template-columns: 110px 1fr 92px;
@@ -3398,7 +3423,24 @@
     var sortedAll = allBanksSortedByMeasure(measure.id, tarih);
     var ktRank = ktRankAll(measure.id, tarih);
 
-    var validVals = sortedAll.filter(function(r){return r.value != null;}).map(function(r){return r.value;});
+    // Hızlı filtreler (kullanıcı isteği, 2026-09-18): Tümü/Katılım/İlk 10.
+    // KT'nin genel sırası (ktRank) ve panel başlığındaki "Tüm N Banka"
+    // metni her zaman TAM listeye göre kalır — sadece aşağıdaki satırlar
+    // filtrelenir. Ölçü/çeyrek değişince de seçim korunur (local state,
+    // component tab değişince remount olmuyor).
+    var filterModeState = useState('all');
+    var filterMode = filterModeState[0], setFilterMode = filterModeState[1];
+    var katilimSet = {};
+    DATA.meta.banks.forEach(function(b){ if (b.tur === 'Katılım') katilimSet[b.banka_adi] = true; });
+    var katilimCount = Object.keys(katilimSet).length;
+    var displayRows = sortedAll;
+    if (filterMode === 'katilim') {
+      displayRows = sortedAll.filter(function(r){ return katilimSet[r.banka]; });
+    } else if (filterMode === 'top10') {
+      displayRows = sortedAll.slice(0, 10);
+    }
+
+    var validVals = displayRows.filter(function(r){return r.value != null;}).map(function(r){return r.value;});
     // Negatif değer alabilen ölçüler (ör. Likidite Açığı, YP Net Genel
     // Pozisyonu) için bar 0 çizgisinden İKİ YÖNE ayrılır — pozitif sağa,
     // negatif sola (kullanıcı isteği, 2026-09-17). Veri odaklı: bu listede
@@ -3424,7 +3466,7 @@
     var maxVal = validVals.length > 0 ? Math.max.apply(null, validVals) : 1;  // büyüklük için
     var barScaleFactor = isRasyo ? 0.72 : 0.92;
 
-    var deltaVals = hasDelta ? sortedAll.map(function(row) {
+    var deltaVals = hasDelta ? displayRows.map(function(row) {
       if (row.value == null) return null;
       return rowQoQDelta(measure, row.banka, tarih, deltaPeriod);
     }).filter(function(d){ return d != null; }) : [];
@@ -3466,11 +3508,24 @@
           )
         )
       ),
+      h('div', { className: 'bank-filter-tabs' },
+        [
+          ['all', 'Tümü (' + sortedAll.length + ')'],
+          ['katilim', 'Katılım (' + katilimCount + ')'],
+          ['top10', 'İlk 10 Banka'],
+        ].map(function(t) {
+          return h('button', {
+            key: t[0],
+            className: 'bank-filter-tab' + (filterMode === t[0] ? ' active' : ''),
+            onClick: function(){ setFilterMode(t[0]); }
+          }, t[1]);
+        })
+      ),
       h('div', {
         className: 'bank-rows-scroll',
         ref: props.scrollBoxRef,
         style: props.extraHeight ? { maxHeight: (609 + props.extraHeight) + 'px' } : undefined
-      }, sortedAll.map(function(row) {
+      }, displayRows.map(function(row) {
         var isKT = row.banka === KT_NAME;
         var rowOutlier = isValueOutlier(row.value);
         var isNeg = row.value != null && row.value < 0;
@@ -4593,9 +4648,12 @@
         ? tarihLabelShort(tarih) : '';
     }
 
+    // (2026-09-18 bug düzeltmesi) meta.banks'ta alan adı 'banka_turu' değil
+    // 'tur', değer 'Katılım Bankası' değil 'Katılım' — bu yüzden bu fonksiyon
+    // her zaman false dönüyordu (bkz. pipeline/datatable.py::build_meta).
     var bankTypeMap = {};
-    DATA.meta.banks.forEach(function(b){ bankTypeMap[b.banka_adi] = b.banka_turu || ''; });
-    function isKatilimBank(b){ return bankTypeMap[b] === 'Katılım Bankası'; }
+    DATA.meta.banks.forEach(function(b){ bankTypeMap[b.banka_adi] = b.tur || ''; });
+    function isKatilimBank(b){ return bankTypeMap[b] === 'Katılım'; }
 
     function toggleBank(b) {
       var banks = selection.banks.slice();
@@ -4985,13 +5043,14 @@
     var hoverIdx = hoverState[0];
     var setHoverIdx = hoverState[1];
 
-    // Banka türü lookup (Katılım Bankası mı?)
+    // Banka türü lookup (Katılım Bankası mı?) — (2026-09-18 bug düzeltmesi)
+    // alan adı 'tur', değer 'Katılım' (bkz. pipeline/datatable.py::build_meta).
     var bankTypeMap = {};
     DATA.meta.banks.forEach(function(b) {
-      bankTypeMap[b.banka_adi] = b.banka_turu || '';
+      bankTypeMap[b.banka_adi] = b.tur || '';
     });
     function isKatilimBank(b) {
-      return bankTypeMap[b] === 'Katılım Bankası';
+      return bankTypeMap[b] === 'Katılım';
     }
 
     // 2026-09-08: seçimler App'te tutuluyor (props.ui) — sekme değiştirip
