@@ -3429,9 +3429,6 @@
     var katilimSet = groupMemberSet('Katılım Bankaları');
     var mevduatSet = groupMemberSet('Mevduat Bankaları');
     var rakipSet = groupMemberSet('Rakip Bankalar');
-    var katilimCount = Object.keys(katilimSet).length;
-    var mevduatCount = Object.keys(mevduatSet).length;
-    var rakipCount = Object.keys(rakipSet).length;
     var displayRows = sortedAll;
     if (filterMode === 'katilim') {
       displayRows = sortedAll.filter(function(r){ return katilimSet[r.banka]; });
@@ -3520,10 +3517,10 @@
       ),
       h('div', { className: 'bank-filter-tabs' },
         [
-          ['all', 'Tümü (' + sortedAll.length + ')'],
-          ['katilim', 'Katılım (' + katilimCount + ')'],
-          ['mevduat', 'Mevduat (' + mevduatCount + ')'],
-          ['rakip', 'Rakip Bankalar (' + rakipCount + ')'],
+          ['all', 'Tümü'],
+          ['katilim', 'Katılım'],
+          ['mevduat', 'Mevduat'],
+          ['rakip', 'Rakip Bankalar'],
           ['top20', 'İlk 20 Banka'],
         ].map(function(t) {
           return h('button', {
