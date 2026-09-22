@@ -49,6 +49,13 @@ class LookupContext:
             ('ozkaynak_detay', df['Tablo Adı'] == 'Özkaynak Kalemlerine İlişkin Bilgiler'),
             ('kalan_vade', df['Tablo Adı'] == 'Aktif ve Pasif Kalemlerin Kalan Vadelerine Göre Gösterimi'),
             ('sermaye_orani', df['Tablo Adı'] == 'Kredilere İlişkin Olarak Ayrılan Özel Karşılıklar'),
+            # tp_spread/yp_spread için (2026-09-21, kullanıcının verdiği DAX
+            # formülüne göre) — kaynak şablonda başında fazladan bir boşluk
+            # var (' Kredilerden...'), bu proje genelinde sık görülen bir
+            # BDDK şablon tuhaflığı (bkz. sermaye_orani docstring'i).
+            ('kredi_faiz_tpyp', df['Tablo Adı'] == ' Kredilerden Alınan Faiz Gelirlerine İlişkin Bilgiler'),
+            ('mevduat_faiz_vade', df['Tablo Adı'] == 'Mevduata Ödenen Faizin Vade Yapısına Göre Gösterimi'),
+            ('katilma_kar_payi_vade', df['Tablo Adı'] == 'Katılma Hesaplarına Ödenen Kar Paylarının Vade Yapısına Göre Gösterimi'),
         ]:
             self._idx[table_key] = self._index(df[mask])
 
@@ -105,6 +112,15 @@ class LookupContext:
 
     def tfv(self, banka, tarih, kalem, pb='Toplam'):
         return self._lookup('tfv', banka, tarih, kalem, pb)
+
+    def kredi_faiz_tpyp(self, banka, tarih, kalem, pb='Toplam'):
+        return self._lookup('kredi_faiz_tpyp', banka, tarih, kalem, pb)
+
+    def mevduat_faiz_vade(self, banka, tarih, kalem, pb='Toplam'):
+        return self._lookup('mevduat_faiz_vade', banka, tarih, kalem, pb)
+
+    def katilma_kar_payi_vade(self, banka, tarih, kalem, pb='Toplam'):
+        return self._lookup('katilma_kar_payi_vade', banka, tarih, kalem, pb)
 
     def sube(self, banka, tarih, kalem, pb='Toplam'):
         return self._lookup('sube', banka, tarih, kalem, pb)
@@ -166,6 +182,62 @@ class LookupContext:
         oranları zaten hesaplayıp raporluyor, ayrıca türetmeye gerek yok
         (1055/1055 ve 1054/1054 tarihsel noktada ±0.01pp içinde doğrulandı)."""
         return self._lookup('sermaye_orani', banka, tarih, kalem, pb)
+
+    # tp_spread/yp_spread için (2026-09-21, kullanıcının verdiği PBI DAX
+    # formülüne göre): "[TP/YP Vadeli Mevduatın Maliyeti]" ölçüsünün PAYI —
+    # gerçek vadeli (vadesiz hariç) TP/YP faiz/kâr payı gideri.
+    # - Mevduat bankası: 'Mevduata Ödenen Faizin Vade Yapısına Göre
+    #   Gösterimi' tablosunda (TP/YP, Toplam, Toplam) − (TP/YP, Toplam,
+    #   Vadesiz) — Toplam maturity kırılımı vadesizi de içeriyor.
+    # - Katılım bankası: 'Katılma Hesaplarına Ödenen Kar Paylarının Vade
+    #   Yapısına Göre Gösterimi' tablosunda 'Toplam -TP/YP Toplam' zaten
+    #   SADECE katılma hesaplarını kapsıyor (vadesiz eşleniği olan Özel Cari
+    #   Hesaplar bu tabloda hiç yok — ayrı bir tabloda, kâr payı almaz) —
+    #   çıkarma gerekmiyor.
+    def vadeli_mevduat_faizi(self, banka, tarih, pb):
+        if self.bank_turu.get(banka) == 'Katılım':
+            return self.katilma_kar_payi_vade(banka, tarih, 'Toplam -' + pb + ' Toplam')
+        toplam = self.mevduat_faiz_vade(banka, tarih, 'Mevduata Ödenen Faiz (' + pb + ', Toplam, Toplam)')
+        vadesiz = self.mevduat_faiz_vade(banka, tarih, 'Mevduata Ödenen Faiz (' + pb + ', Toplam, Vadesiz)')
+        return toplam - vadesiz
+
+    # tp_spread/yp_spread PAYDASI (2026-09-21, kullanıcı: gerçek PBI ekran
+    # görüntüsüyle karşılaştırınca değerler ~100-250bps yüksek çıkıyordu —
+    # kök neden: payda "TOPLAM TP/YP Mevduat" (vadesiz dahil) kullanılıyordu,
+    # bu maliyeti olduğundan düşük gösterip spread'i şişiriyordu).
+    #
+    # Mevduat bankası: TP/YP kırılımlı "Vadeli Mevduat" bakiyesi hiçbir
+    # tabloda DOĞRUDAN yok ama 'Mevduatın Vade Yapısına İlişkin Bilgiler'
+    # tablosundaki "Döviz Tevdiat Hesabı" (DTH) + "Kıymetli Maden Depo
+    # Hesabı" segmentleri YP mevduatın neredeyse TAMAMINI kapsıyor
+    # (doğrulandı: DTH+KM toplamı bilançodaki YP Mevduat'a %1 içinde
+    # yaklaşıyor) — ikisinin "Vadesiz" alt kırılımı YP vadesiz'e iyi bir
+    # yaklaşıklık. TP vadesiz = Toplam(blended) vadesiz − YP vadesiz.
+    # Vadeli = bilançodaki TOPLAM TP/YP Mevduat − bu şekilde türetilen
+    # vadesiz. v29 PBI ekran görüntüsüyle (Haziran 2026) karşılaştırıldı:
+    # ortalama sapma ~36bps (önceden 100-250bps'ti) — Şekerbank gibi tek
+    # tük banka hâlâ sapıyor.
+    #
+    # Katılım bankası: bu düzeyde bir TP/YP+vade kırılımı YP tarafında GÜVENİLİR
+    # değil ('Toplanan Fonların Vade Yapısına İlişkin Bilgiler' tablosunda
+    # YP katılma hesabı segmentleri bilançodaki YP Mevduat'ın küçük bir
+    # kesrini kapsıyor, muhtemelen eksik/kısmi raporlanıyor) — bu yüzden
+    # Katılım bankalarında hâlâ TOPLAM bakiye (vadesiz dahil) kullanılıyor,
+    # önceki (kabaca yaklaşık) davranış korunuyor.
+    def vadeli_mevduat_bakiyesi(self, banka, tarih, pb):
+        toplam_pb = self.bilanco(banka, tarih, 'Mevduat', pb)
+        if self.bank_turu.get(banka) == 'Katılım':
+            return toplam_pb
+        dth_vadesiz = self.mvy(banka, tarih, 'Döviz Tevdiat Hesabı, Vadesiz')
+        km_vadesiz = self.mvy(banka, tarih, 'Kıym. Mad. Depo Hesabı, Vadesiz')
+        yp_vadesiz = dth_vadesiz + km_vadesiz
+        if pb == 'YP':
+            return toplam_pb - yp_vadesiz
+        if pb == 'TP':
+            toplam_vadesiz = self.mvy(banka, tarih, 'Toplam, Vadesiz')
+            tp_vadesiz = toplam_vadesiz - yp_vadesiz
+            return toplam_pb - tp_vadesiz
+        return toplam_pb - self.vadesiz_mevduat(banka, tarih)
 
     # Banka tipi farkındalı yardımcılar
     def vadesiz_mevduat(self, banka, tarih):

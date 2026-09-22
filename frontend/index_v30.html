@@ -267,59 +267,63 @@
      ziyade üstüne gelince baloncuk olarak gözüksün" — CompetitorCardsGrowth
      popover'ıyla (openFor/scheduleClose, ~satır 4145) AYNI desen). */
   .mi-popover {
-    position: fixed; width: 340px; max-width: 92vw; max-height: 70vh;
+    /* Büyütüldü (2026-09-18, kullanıcı isteği: "info kartı daha büyük hale
+       gelsin") — 340px/70vh → 480px/84vh, iç fontlar/pad'ler orantılı
+       büyütüldü; hâlâ tam ekranı kaplayan bir modal DEĞİL, "i" butonuna
+       göre konumlanan bir baloncuk (bkz. yukarıdaki not). */
+    position: fixed; width: 480px; max-width: 94vw; max-height: 84vh;
     overflow-y: auto; background: #fff; color: #1a2b3c;
-    border-radius: 12px; box-shadow: 0 12px 34px rgba(15,31,47,0.28);
+    border-radius: 14px; box-shadow: 0 16px 44px rgba(15,31,47,0.3);
     border: 1px solid rgba(15,31,47,0.08);
-    padding: 14px 16px 16px; z-index: 70;
+    padding: 18px 22px 22px; z-index: 70;
   }
   body.dark .mi-popover {
     background: #16232f; color: #e2e8f0; border-color: rgba(255,255,255,0.1);
-    box-shadow: 0 12px 34px rgba(0,0,0,0.5);
+    box-shadow: 0 16px 44px rgba(0,0,0,0.5);
   }
-  .mi-popover-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
-  .mi-popover-title { font-size: 14.5px; font-weight: 700; color: var(--kt-green); line-height: 1.3; }
+  .mi-popover-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .mi-popover-title { font-size: 17px; font-weight: 700; color: var(--kt-green); line-height: 1.3; }
   body.dark .mi-popover-title { color: #7EBAA5; }
   .mi-popover-close {
-    background: none; border: none; cursor: pointer; font-size: 15px;
+    background: none; border: none; cursor: pointer; font-size: 17px;
     color: #94a3b8; line-height: 1; padding: 2px; flex: none;
   }
   .mi-popover-close:hover { color: #1a2b3c; }
   body.dark .mi-popover-close:hover { color: #e2e8f0; }
-  .mi-cat { font-size: 11.5px; color: #94a3b8; margin-bottom: 2px; }
-  .mi-row { margin-bottom: 14px; }
+  .mi-cat { font-size: 12.5px; color: #94a3b8; margin-bottom: 2px; }
+  .mi-row { margin-bottom: 17px; }
   .mi-row-label {
-    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.4px; color: #94a3b8; margin-bottom: 4px;
+    font-size: 11.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.4px; color: #94a3b8; margin-bottom: 5px;
   }
-  .mi-row-value { font-size: 13px; line-height: 1.5; color: #2a3b4a; }
+  .mi-row-value { font-size: 14.5px; line-height: 1.6; color: #2a3b4a; }
   body.dark .mi-row-value { color: #c5d3dd; }
   .mi-formula {
-    font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 12.5px;
-    background: #f4f7f9; border-radius: 7px; padding: 8px 10px; line-height: 1.5;
+    font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 13.5px;
+    background: #f4f7f9; border-radius: 8px; padding: 10px 12px; line-height: 1.6;
     color: #1a2b3c; white-space: pre-wrap; word-break: break-word;
   }
   body.dark .mi-formula { background: rgba(255,255,255,0.05); color: #e2e8f0; }
-  .mi-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: #64748b; }
+  .mi-meta { display: flex; flex-wrap: wrap; gap: 7px 20px; font-size: 13.5px; color: #64748b; }
   body.dark .mi-meta { color: #94a3b8; }
   .mi-meta b { color: #2a3b4a; font-weight: 600; }
   body.dark .mi-meta b { color: #c5d3dd; }
-  .mi-term { margin-bottom: 8px; }
+  .mi-term { margin-bottom: 10px; }
   .mi-term:last-child { margin-bottom: 0; }
-  .mi-term-name { font-size: 12.5px; font-weight: 700; color: #2a3b4a; }
+  .mi-term-name { font-size: 13.5px; font-weight: 700; color: #2a3b4a; }
   body.dark .mi-term-name { color: #c5d3dd; }
-  .mi-term-def { font-size: 12.5px; color: #64748b; line-height: 1.5; }
+  .mi-term-def { font-size: 13.5px; color: #64748b; line-height: 1.6; }
   body.dark .mi-term-def { color: #94a3b8; }
   .mi-note {
-    font-size: 12.5px; line-height: 1.5; padding: 8px 10px; border-radius: 7px;
-    margin-top: 6px;
+    font-size: 13.5px; line-height: 1.6; padding: 10px 12px; border-radius: 8px;
+    margin-top: 8px;
   }
   .mi-note.info { background: rgba(63,184,168,0.12); color: #1a7a6b; }
   body.dark .mi-note.info { background: rgba(126,186,165,0.12); color: #7EBAA5; }
   .mi-note.warning { background: rgba(229,166,74,0.16); color: #92600e; }
   body.dark .mi-note.warning { background: rgba(229,166,74,0.14); color: #e0ab5a; }
   .mi-badge {
-    display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px;
+    display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 10px;
     border-radius: 999px; background: rgba(229,166,74,0.18); color: #92600e;
   }
   body.dark .mi-badge { background: rgba(229,166,74,0.16); color: #e0ab5a; }
@@ -444,6 +448,13 @@
     white-space: nowrap;
   }
   body.dark .control-label { color: #94a3b8; }
+  /* Kategori/Alt Kategori/Ölçü — her biri kendi etiketinin ALTINDA duran
+     bir "alan" (kullanıcı isteği, 2026-09-18: "yukarıdan aşağıya hizalı
+     olsun" — eskiden etiket+kutu çiftleri control-bar'ın düz flex
+     akışında ayrı ayrı sarıyordu, dar ekranda dağınık görünüyordu). */
+  .control-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .control-field-row { display: flex; align-items: center; gap: 6px; }
+  .control-field-measure .control-select.measure { flex: 1 1 auto; }
   .control-select {
     background: #fff; color: #1a2635; border: 1px solid #d4dde3;
     padding: 7px 10px;
@@ -543,6 +554,13 @@
     text-align: center; letter-spacing: 0.15px;
   }
   body.dark .panel-header { background: rgba(255,255,255,0.02); color: #e8eef1; border-color: rgba(255,255,255,0.06); }
+  /* YtD Büyüme başlığı + dönem seçici (YtD/YoY/QoQ) yan yana (2026-09-18,
+     kullanıcı isteği — bkz. YtDGrowthChart). */
+  .ytd-header-row { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
+  .ytd-period-select {
+    border: 1px solid rgba(98,174,65,0.35) !important;
+    border-radius: 5px !important; padding: 2px 5px !important;
+  }
 
   /* Trend grafik hover tooltip ve dikey crosshair */
   .trend-svg-wrap { position: relative; }
@@ -872,6 +890,10 @@
        aşağıdaki max-height ile boyu ayrıca sınırlanır. */
     justify-content: center;
   }
+  /* Banka sayısı fazla olunca ("İlk 20 Banka" kısıtı kalktı, tüm 27 banka
+     gösterilebilir hale geldi) sütunlar okunmaz hale gelmesin diye grafik
+     alanı yatay kayabiliyor (2026-09-18, bkz. YtDGrowthChart MIN_COL_PX). */
+  .ytd-scroll-wrap { overflow-x: auto; width: 100%; }
   .ytd-chart-container {
     display: flex;
     flex-direction: column;
@@ -1713,10 +1735,15 @@
     .export-wrap { padding: 12px; }
 
     .topbar {
-      flex-wrap: wrap; padding: 10px 12px; min-height: 0; row-gap: 8px;
+      flex-wrap: wrap; padding: 8px 12px; min-height: 0; row-gap: 4px;
     }
     .topbar-left { order: 1; }
     .topbar-left-text { font-size: 16px; }
+    /* Ortadaki "Ölçü · Tarih" başlığı mobilde kaldırılıyor (kullanıcı
+       isteği, 2026-09-18) — kendi satırını kaplayıp üst şeridi
+       şişiriyordu; aynı bilgi zaten aşağıdaki ÖLÇÜ seçicisinde ve
+       YIL/ÇEYREK pillerinde var. */
+    .topbar-center-brand { display: none; }
 
     /* STRATEJİ logosu hep görünür kalır, hamburger'in hemen solunda durur
        (kullanıcı isteği: "açılınca gelmesin hep dursun") — toolbar paneli
@@ -1727,12 +1754,21 @@
     .topbar-menu-btn { order: 3; }
     .topbar-toolbar.open { left: 12px; width: auto; }
 
-    .date-selector-bar { padding: 8px 12px; gap: 10px; }
+    .date-selector-bar { padding: 6px 12px; gap: 8px; }
     .date-selector-bar .mode-toggle { margin-left: 0; }
+    /* "YIL"/"ÇEYREK" etiket yazıları mobilde kaldırılıyor (kullanıcı
+       isteği, 2026-09-18) — pill/dropdown'ların kendisi zaten ne
+       olduklarını gösteriyor, etiket sadece yer kaplıyordu. */
+    .date-selector-label { display: none; }
 
-    .control-bar { flex-wrap: wrap; padding: 10px 12px; gap: 8px; }
-    .control-select.measure { min-width: 0; max-width: none; flex: 1 1 100%; }
-    .control-select.cat, .control-select.subcat { min-width: 0; flex: 1 1 auto; }
+    .control-bar { flex-wrap: wrap; padding: 10px 12px; gap: 10px; }
+    /* Her control-field (Kategori/Alt Kategori/Ölçü) kendi tam satırını
+       kaplar — üç ayrı kutu artık aynı hizada, etiket her zaman kutusunun
+       hemen üstünde (bkz. .control-field, madde 5). */
+    .control-field { flex: 1 1 100%; }
+    .control-select.cat, .control-select.subcat, .control-select.measure {
+      min-width: 0; max-width: none; width: 100%;
+    }
     .measure-search-wrap { flex: 1 1 100%; }
     .measure-search-input, .measure-search-input:focus { width: 100%; }
     .measure-search-results { min-width: 0; width: 100%; max-width: 100%; }
@@ -2234,6 +2270,19 @@
     return rows;
   }
 
+  // Banka hızlı filtre grupları (Katılım/Mevduat/Rakip Bankalar) —
+  // DATA.meta.groups'tan (admin panelden düzenlenebilen GERÇEK grup
+  // üyelikleri, "Banka Grupları" kartlarının kullandığı KAYNAKLA aynı)
+  // okur. Eskiden BankRanking içinde local'di, YtDGrowthChart'ın da aynı
+  // hızlı filtreleri kullanması için (2026-09-18, kullanıcı isteği: "İlk
+  // 20 banka olmasın aynı sınıflandırma burada da olsun") paylaşılan
+  // scope'a taşındı.
+  function groupMemberSet(groupName) {
+    var set = {};
+    (((DATA.meta.groups || {})[groupName]) || []).forEach(function(b){ set[b] = true; });
+    return set;
+  }
+
   // Bir tarih pazar payı (marketShare/Bps) hesabı için GÜVENİLİR mi?
   // date_coverage (o tarihte toplam_aktifler raporlayan gerçek banka sayısı)
   // normalde zamanla artar (yeni banka kuruluşları). Ama bir çeyrek admin
@@ -2307,39 +2356,69 @@
     if (cur == null || prev == null || prev === 0) return null;
     return (cur - prev) / prev * 100;
   }
-  // Akım kalem (Gelir Tablosu vb.) için YoY, stok kalem için YtD
-  function growthMetric(measure, banka, tarih) {
-    if (measure.akim_stok === 'akim') return yoyGrowth(measure.id, banka, tarih);
+  // QoQ: bir önceki çeyrek (2026-09-18, kullanıcı isteği — YtD Büyüme
+  // grafiğine YoY/QoQ seçeneği eklendi, bkz. YtDGrowthChart).
+  function qoqGrowth(mid, banka, tarih) {
+    var cur = bankVal(mid, banka, tarih);
+    var prev = bankVal(mid, banka, qoqTarih(tarih));
+    if (cur == null || prev == null || prev === 0) return null;
+    return (cur - prev) / prev * 100;
+  }
+  function qoqGrowthGroup(mid, grupName, tarih) {
+    var cur = groupVal(mid, grupName, tarih);
+    var prev = groupVal(mid, grupName, qoqTarih(tarih));
+    if (cur == null || prev == null || prev === 0) return null;
+    return (cur - prev) / prev * 100;
+  }
+  // Baz dönem tarihini seçilen periyoda göre döndürür.
+  function growthPeriodTarih(period, tarih) {
+    if (period === 'yoy') return yoyTarih(tarih);
+    if (period === 'qoq') return qoqTarih(tarih);
+    return ytdTarih(tarih);
+  }
+  // period verilmezse eski davranış korunur: Akım kalem (Gelir Tablosu vb.)
+  // için YoY, stok kalem için YtD (2026-09-18: artık `period` ile YtD/YoY/QoQ
+  // arasında elle de seçilebiliyor — bkz. YtDGrowthChart'taki period toggle).
+  function growthMetric(measure, banka, tarih, period) {
+    var p = period || (measure.akim_stok === 'akim' ? 'yoy' : 'ytd');
+    if (p === 'yoy') return yoyGrowth(measure.id, banka, tarih);
+    if (p === 'qoq') return qoqGrowth(measure.id, banka, tarih);
     return ytdGrowth(measure.id, banka, tarih);
   }
-  function growthMetricGroup(measure, grupName, tarih) {
-    if (measure.akim_stok === 'akim') return yoyGrowthGroup(measure.id, grupName, tarih);
+  function growthMetricGroup(measure, grupName, tarih, period) {
+    var p = period || (measure.akim_stok === 'akim' ? 'yoy' : 'ytd');
+    if (p === 'yoy') return yoyGrowthGroup(measure.id, grupName, tarih);
+    if (p === 'qoq') return qoqGrowthGroup(measure.id, grupName, tarih);
     return ytdGrowthGroup(measure.id, grupName, tarih);
   }
-  function growthMetricLabel(measure) {
-    return measure.akim_stok === 'akim' ? 'YoY' : 'YtD';
+  function growthMetricLabel(measure, period) {
+    var p = period || (measure.akim_stok === 'akim' ? 'yoy' : 'ytd');
+    return p === 'yoy' ? 'YoY' : p === 'qoq' ? 'QoQ' : 'YtD';
   }
   // Büyümenin hesaplandığı BAZ dönem değeri (payda).
   // Baz ≤ 0 ise yüzde değişim matematiksel olarak anlamsızdır: zarardan
   // kâra geçen banka (−215 → +240) "%−211,6" gibi işareti ters bir sonuç
   // üretir. Bu tür satırlar anomali sayılıp grafikten dışlanır.
-  function growthBase(measure, banka, tarih) {
-    var d = measure.akim_stok === 'akim' ? yoyTarih(tarih) : ytdTarih(tarih);
-    return bankVal(measure.id, banka, d);
+  function growthBase(measure, banka, tarih, period) {
+    var p = period || (measure.akim_stok === 'akim' ? 'yoy' : 'ytd');
+    return bankVal(measure.id, banka, growthPeriodTarih(p, tarih));
   }
 
   // Büyümenin MİKTARSAL (mutlak) hali — % yerine ölçünün kendi biriminde fark.
   // Şube&Personel grup büyüme kartlarında kullanılır (kullanıcı isteği). Baz
-  // dönem stok→YtD (yıl başı), akım→YoY (geçen yıl aynı çeyrek).
-  function growthMiktar(measure, banka, tarih) {
-    var d = measure.akim_stok === 'akim' ? yoyTarih(tarih) : ytdTarih(tarih);
+  // dönem stok→YtD (yıl başı), akım→YoY (geçen yıl aynı çeyrek); period
+  // verilirse elle seçilen YtD/YoY/QoQ kullanılır.
+  function growthMiktar(measure, banka, tarih, period) {
+    var p = period || (measure.akim_stok === 'akim' ? 'yoy' : 'ytd');
+    var d = growthPeriodTarih(p, tarih);
     var cur = bankVal(measure.id, banka, tarih);
     var prev = bankVal(measure.id, banka, d);
     if (cur == null || prev == null) return null;
     return cur - prev;
   }
-  function growthMiktarGroup(measure, grupName, tarih) {
-    var d = measure.akim_stok === 'akim' ? yoyTarih(tarih) : ytdTarih(tarih);
+  function growthMiktarGroup(measure, grupName, tarih, period) {
+    var p = period || (measure.akim_stok === 'akim' ? 'yoy' : 'ytd');
+    var d = growthPeriodTarih(p, tarih);
     var cur = groupVal(measure.id, grupName, tarih);
     var prev = groupVal(measure.id, grupName, d);
     if (cur == null || prev == null) return null;
@@ -2421,6 +2500,20 @@
     var two = bankVal(mid, banka, twoYearsAgoTarih(tarih));
     if (cur == null || two == null || two <= 0) return null;
     return (Math.pow(cur / two, 1/2) - 1) * 100;
+  }
+  // cagr2y'nin genel hali — "Son 3 Dönem" panelindeki dönemler artık elle
+  // seçilebildiği için (2026-09-18, kullanıcı isteği) aradaki süre her
+  // zaman 2 yıl olmayabilir; gerçek tarih farkına göre yıllıklandırır.
+  function cagrBetween(mid, banka, fromDate, toDate) {
+    if (!fromDate || !toDate) return null;
+    var from = bankVal(mid, banka, fromDate);
+    var to = bankVal(mid, banka, toDate);
+    // from/to ikisi de pozitif olmalı — negatif taban (zarar) kesirli üste
+    // yükseltilince NaN üretir (ör. Net Dönem Karı zarara dönerse).
+    if (from == null || to == null || from <= 0 || to <= 0) return null;
+    var years = (new Date(toDate) - new Date(fromDate)) / (365.25 * 24 * 3600 * 1000);
+    if (years <= 0) return null;
+    return (Math.pow(to / from, 1 / years) - 1) * 100;
   }
 
   function ratioQoQBps(mid, banka, tarih) {
@@ -3416,7 +3509,12 @@
     function miOpenFor(el) {
       miClearCloseTimer();
       var rect = el.getBoundingClientRect();
-      var POPOVER_W = 340, POPOVER_H_EST = 220, margin = 8;
+      // CSS'teki max-width:94vw ile TUTARLI olmalı — dar ekranda popover
+      // 480px değil, viewport'un %94'üne küçülüyor (bkz. .mi-popover).
+      // Sabit 480 kullanılsaydı clamp yanlış merkezleyip sağ kenardan taşırdı
+      // (2026-09-18'de büyütme sırasında fark edildi — mobilde ~49px taşma).
+      var POPOVER_W = Math.min(480, window.innerWidth * 0.94);
+      var POPOVER_H_EST = 320, margin = 8;
       var left = rect.left + rect.width / 2;
       left = Math.max(POPOVER_W / 2 + margin,
         Math.min(window.innerWidth - POPOVER_W / 2 - margin, left));
@@ -3544,7 +3642,9 @@
             )
           )
         : h(React.Fragment || 'div', null,
-            h('div', { className: 'measure-search-wrap' },
+            h('div', { className: 'control-field' },
+              h('div', { className: 'control-label' }, 'Ölçü Ara'),
+              h('div', { className: 'measure-search-wrap' },
               h('input', {
                 className: 'measure-search-input',
                 type: 'text',
@@ -3579,46 +3679,55 @@
                       );
                     })
               )
+              )
             ),
-            h('div', { className: 'control-label' }, 'Kategori'),
-            h('select', {
-              className: 'control-select cat',
-              value: curKategori,
-              onChange: function(e){ onKategoriChange(e.target.value); }
-            }, kategoriList.map(function(k){
-              return h('option', { key: k, value: k }, k);
-            })),
-            h('div', { className: 'control-label' }, 'Alt Kategori'),
-            h('select', {
-              className: 'control-select subcat',
-              value: curAltKategori,
-              onChange: function(e){ onAltKategoriChange(e.target.value); }
-            }, altKategoriList.map(function(s){
-              return h('option', { key: s, value: s }, s);
-            })),
-            h('div', { className: 'control-label' }, 'Ölçü'),
-            h('select', {
-              className: 'control-select measure',
-              value: props.activeMeasure,
-              onChange: function(e){ props.setActiveMeasure(e.target.value); }
-            }, measureList.map(function(m){
-              var isAvail = !!available[m.id];
-              return h('option', {
-                key: m.id, value: m.id,
-                disabled: !isAvail
-              }, m.ad + (m.tip === 'rasyo' ? '  (' + birimLabel(m) + ')' : '  (#)') + (isAvail ? '' : ' — veri yok'));
-            })),
-            h('button', {
-              type: 'button', className: 'mi-info-btn', title: 'Ölçü hakkında bilgi',
-              onMouseEnter: function(e){ miOpenFor(e.currentTarget); },
-              onFocus: function(e){ miOpenFor(e.currentTarget); },
-              onMouseLeave: miScheduleClose,
-              onBlur: miScheduleClose,
-              onClick: function(e){
-                if (miPinnedState[0]) { miCloseNow(); }
-                else { miOpenFor(e.currentTarget); miPinnedState[1](true); }
-              }
-            }, 'i')
+            h('div', { className: 'control-field' },
+              h('div', { className: 'control-label' }, 'Kategori'),
+              h('select', {
+                className: 'control-select cat',
+                value: curKategori,
+                onChange: function(e){ onKategoriChange(e.target.value); }
+              }, kategoriList.map(function(k){
+                return h('option', { key: k, value: k }, k);
+              }))
+            ),
+            h('div', { className: 'control-field' },
+              h('div', { className: 'control-label' }, 'Alt Kategori'),
+              h('select', {
+                className: 'control-select subcat',
+                value: curAltKategori,
+                onChange: function(e){ onAltKategoriChange(e.target.value); }
+              }, altKategoriList.map(function(s){
+                return h('option', { key: s, value: s }, s);
+              }))
+            ),
+            h('div', { className: 'control-field control-field-measure' },
+              h('div', { className: 'control-label' }, 'Ölçü'),
+              h('div', { className: 'control-field-row' },
+                h('select', {
+                  className: 'control-select measure',
+                  value: props.activeMeasure,
+                  onChange: function(e){ props.setActiveMeasure(e.target.value); }
+                }, measureList.map(function(m){
+                  var isAvail = !!available[m.id];
+                  return h('option', {
+                    key: m.id, value: m.id,
+                    disabled: !isAvail
+                  }, m.ad + (m.tip === 'rasyo' ? '  (' + birimLabel(m) + ')' : '  (#)') + (isAvail ? '' : ' — veri yok'));
+                })),
+                h('button', {
+                  type: 'button', className: 'mi-info-btn', title: 'Ölçü hakkında bilgi',
+                  onMouseEnter: function(e){ miOpenFor(e.currentTarget); },
+                  onFocus: function(e){ miOpenFor(e.currentTarget); },
+                  onMouseLeave: miScheduleClose,
+                  onBlur: miScheduleClose,
+                  onClick: function(e){
+                    if (miPinnedState[0]) { miCloseNow(); }
+                    else { miOpenFor(e.currentTarget); miPinnedState[1](true); }
+                  }
+                }, 'i')
+              )
+            )
           )
       ),
       miOpen && miPosState[0] && h(MeasureInfoPopover, {
@@ -3671,11 +3780,6 @@
     // korunur (local state, component tab değişince remount olmuyor).
     var filterModeState = useState('all');
     var filterMode = filterModeState[0], setFilterMode = filterModeState[1];
-    function groupMemberSet(groupName) {
-      var set = {};
-      (((DATA.meta.groups || {})[groupName]) || []).forEach(function(b){ set[b] = true; });
-      return set;
-    }
     var katilimSet = groupMemberSet('Katılım Bankaları');
     var mevduatSet = groupMemberSet('Mevduat Bankaları');
     var rakipSet = groupMemberSet('Rakip Bankalar');
@@ -3890,21 +3994,43 @@
       return function(){ window.removeEventListener('resize', measureBarsArea); };
     });
 
-    var top20Set = getFixedTop20(tarih);
-    var metricLabel = growthMetricLabel(measure); // 'YtD' veya 'YoY'
+    // Hızlı filtreler (kullanıcı isteği, 2026-09-18: "İlk 20 banka olmasın
+    // aynı sınıflandırma burada da olsun") — BankRanking'deki AYNI beş
+    // sekme (Tümü/Katılım/Mevduat/Rakip Bankalar/İlk 20 Banka), aynı
+    // DATA.meta.groups kaynağı. Eskiden bu grafik SABİT top20_by_date
+    // (toplam aktife göre en büyük 20) setiyle sınırlıydı; artık TÜM
+    // bankalar arasından filtrelenebiliyor.
+    var filterModeState = useState('all');
+    var filterMode = filterModeState[0], setFilterMode = filterModeState[1];
+    var katilimSet = groupMemberSet('Katılım Bankaları');
+    var mevduatSet = groupMemberSet('Mevduat Bankaları');
+    var rakipSet = groupMemberSet('Rakip Bankalar');
+    var allBankNames = DATA.meta.banks.map(function(b){ return b.banka_adi; });
+    // Dönem seçici (YtD/YoY/QoQ) — kullanıcı isteği (2026-09-18): eskiden
+    // ölçü tipine göre otomatik sabitti (akım→YoY, stok→YtD), artık elle de
+    // değiştirilebiliyor (BankRanking'deki Değişim dönem seçiciyle aynı
+    // desen). Akım ölçülerde YtD karşılaştırması matematiksel olarak
+    // anlamsız (bir yıl içi kümülatif değer, yıl başı bakiyesiyle
+    // kıyaslanamaz) — bu yüzden seçenek listesinden çıkarılıyor; kullanıcının
+    // önceki YtD seçimi hafızada kalır, stok ölçüye dönünce geri gelir.
+    var periodState = useState('ytd');
+    var period = periodState[0], setPeriod = periodState[1];
+    var availablePeriods = measure.akim_stok === 'akim' ? ['yoy', 'qoq'] : ['ytd', 'yoy', 'qoq'];
+    var effectivePeriod = availablePeriods.indexOf(period) >= 0 ? period : availablePeriods[0];
+    var metricLabel = growthMetricLabel(measure, effectivePeriod); // 'YtD' / 'YoY' / 'QoQ'
     // Şube&Personel büyüklük ölçüleri (Şube/Personel Sayısı): banka büyümeleri
     // % yerine MİKTARSAL (adet) — kullanıcı isteği (2026-08-15). Bu modda oran
     // yok, dolayısıyla log-uzayı anomali tespiti de devre dışı.
     var miktar = isMiktarDelta(measure);
     var birimEtiket = miktar ? (measure.birim === 'adet' ? 'adet' : 'TL') : '%';
 
-    var bars = top20Set.filter(function(banka) {
+    var bars = allBankNames.filter(function(banka) {
       return bankShownForMeasure(measure.id, banka, tarih);  // şubesiz banka + şube ölçüsü → gösterme
     }).map(function(banka) {
       var coverage = DATA.meta.bank_coverage[banka] || 0;
-      var growth = miktar ? growthMiktar(measure, banka, tarih)
-                          : growthMetric(measure, banka, tarih);
-      var baz = growthBase(measure, banka, tarih);
+      var growth = miktar ? growthMiktar(measure, banka, tarih, effectivePeriod)
+                          : growthMetric(measure, banka, tarih, effectivePeriod);
+      var baz = growthBase(measure, banka, tarih, effectivePeriod);
       return { banka: banka, growth: growth, coverage: coverage, baz: baz };
     });
 
@@ -3992,9 +4118,61 @@
       return sortAsc ? (a.growth - b.growth) : (b.growth - a.growth);
     });
 
-    var cleanBars = bars.filter(function(b){ return b.growth != null && !b.isAnomalous; });
+    // Filtre uygulanmış görünen set — anomali/referans hesaplaması ve
+    // sıralama HER ZAMAN tam sette (bars) yapılır (istatistiksel referansın
+    // dar bir alt kümeye göre zayıflamaması için), filtre sadece HANGİ
+    // barların GÖSTERİLECEĞİNİ belirler (BankRanking'deki displayRows'la
+    // aynı desen). "İlk 20 Banka" — kullanıcı isteği (2026-09-18): büyüme
+    // değerine göre ilk 20 DEĞİL, TOPLAM AKTİF büyüklüğüne göre en büyük 20
+    // banka (bu grafiğin eski/legacy anlamı, top20_by_date — bkz.
+    // getFixedTop20) — "İlk 20 Banka" adı zaten bunu ima ediyor.
+    var fixedTop20ByAsset = getFixedTop20(tarih);
+    var displayBars = bars;
+    if (filterMode === 'katilim') {
+      displayBars = bars.filter(function(b){ return katilimSet[b.banka]; });
+    } else if (filterMode === 'mevduat') {
+      displayBars = bars.filter(function(b){ return mevduatSet[b.banka]; });
+    } else if (filterMode === 'rakip') {
+      displayBars = bars.filter(function(b){ return rakipSet[b.banka] || b.banka === KT_NAME; });
+    } else if (filterMode === 'top20') {
+      displayBars = bars.filter(function(b){ return fixedTop20ByAsset.indexOf(b.banka) >= 0; });
+    }
+
+    var periodLabels = { ytd: 'YtD', yoy: 'YoY', qoq: 'QoQ' };
+    var periodSelectEl = h('select', {
+      className: 'bank-ranking-delta-period-select ytd-period-select',
+      value: effectivePeriod,
+      onClick: function(e){ e.stopPropagation(); },
+      onChange: function(e){ setPeriod(e.target.value); }
+    }, availablePeriods.map(function(p){
+      return h('option', { key: p, value: p }, periodLabels[p]);
+    }));
+    function headerTitle() {
+      return h('div', { className: 'ytd-header-row' },
+        h('span', null, 'Tüm ' + bars.length + ' Banka ' + metricLabel + ' Büyüme (' + birimEtiket + ')'),
+        periodSelectEl
+      );
+    }
+    var filterTabsEl = h('div', { className: 'bank-filter-tabs' },
+      [
+        ['all', 'Tümü'],
+        ['katilim', 'Katılım'],
+        ['mevduat', 'Mevduat'],
+        ['rakip', 'Rakip Bankalar'],
+        ['top20', 'İlk 20 Banka'],
+      ].map(function(t) {
+        return h('button', {
+          key: t[0],
+          className: 'bank-filter-tab' + (filterMode === t[0] ? ' active' : ''),
+          onClick: function(){ setFilterMode(t[0]); }
+        }, t[1]);
+      })
+    );
+
+    var cleanBars = displayBars.filter(function(b){ return b.growth != null && !b.isAnomalous; });
     if (cleanBars.length === 0) return h('div', { className: 'panel' },
-      h('div', { className: 'panel-header' }, 'İlk ' + bars.length + ' Banka ' + metricLabel + ' Büyüme (' + birimEtiket + ')'),
+      h('div', { className: 'panel-header' }, headerTitle()),
+      filterTabsEl,
       h('div', { className: 'empty-state' }, 'Veri yok')
     );
 
@@ -4031,14 +4209,25 @@
       headerStyle.justifyContent = 'center';
     }
 
+    // Sayılar/barlar okunmaz hale gelmesin diye (kullanıcı isteği,
+    // 2026-09-18: "sayılar birbirine çok yakın okunmuyor" — madde 7'de
+    // "İlk 20 Banka" kısıtı kalkıp TÜM 27 banka gösterilebilir hale
+    // gelince sütunlar aşırı daraldı) her banka için en az MIN_COL_PX
+    // genişlik garanti edilir; sığmadığında grafik alanı YATAY KAYAR
+    // (üç satır — değer/bar/isim — aynı .ytd-chart-container içinde
+    // birlikte kaydığı için hizalama bozulmaz).
+    var MIN_COL_PX = 34;
+    var chartMinWidth = displayBars.length * MIN_COL_PX;
+
     return h('div', { className: 'panel', style: panelStyle },
-      h('div', { className: 'panel-header', style: headerStyle },
-        'İlk ' + bars.length + ' Banka ' + metricLabel + ' Büyüme (' + birimEtiket + ')'),
+      h('div', { className: 'panel-header', style: headerStyle }, headerTitle()),
+      filterTabsEl,
       h('div', { className: 'ytd-panel-body' },
-        h('div', { className: 'ytd-chart-container' },
+        h('div', { className: 'ytd-scroll-wrap' },
+        h('div', { className: 'ytd-chart-container', style: { minWidth: chartMinWidth + 'px' } },
           // Satır 1: değer etiketleri
           h('div', { className: 'ytd-values-row' },
-            bars.map(function(b) {
+            displayBars.map(function(b) {
               var isKT = b.banka === KT_NAME;
               var cls = 'ytd-value-cell';
               if (b.isAnomalous) cls += ' anomaly';
@@ -4083,7 +4272,7 @@
               className: 'ytd-bars-pos',
               style: { height: posHeight + 'px' }
             },
-              bars.map(function(b) {
+              displayBars.map(function(b) {
                 var isKT = b.banka === KT_NAME;
                 // Bar yüksekliği px — global ölçek (totalRange üzerinden)
                 var heightPx = 0;
@@ -4115,7 +4304,7 @@
               className: 'ytd-bars-neg',
               style: { height: negHeight + 'px' }
             },
-              bars.map(function(b) {
+              displayBars.map(function(b) {
                 var isKT = b.banka === KT_NAME;
                 var heightPx = 0;
                 if (b.growth != null && !b.isAnomalous && b.growth < 0 && totalRange > 0) {
@@ -4135,7 +4324,7 @@
           ),
           // Satır 3: banka isimleri (dikey)
           h('div', { className: 'ytd-labels-row' },
-            bars.map(function(b) {
+            displayBars.map(function(b) {
               var isKT = b.banka === KT_NAME;
               return h('div', { key: b.banka, className: 'ytd-label-cell' },
                 h('div', {
@@ -4145,6 +4334,7 @@
               );
             })
           )
+        )
         )
       )
     );
@@ -4352,7 +4542,7 @@
 
     var allDates = DATA.meta.dates;
     // 3 yıllık snapshot tarihleri: aynı ay-gün, t-2y / t-1y / t
-    // Örn. Eylül 2025 seçili ise: Eylül 2023, Eylül 2024, Eylül 2025
+    // (örn. Haziran 2026 seçiliyse Haziran 2024, Haziran 2025, Haziran 2026).
     function yearOffset(t, n) {
       var p = t.split('-');
       return (parseInt(p[0]) - n) + '-' + p[1] + '-' + p[2];
@@ -4383,7 +4573,7 @@
       var gap = 6;
       var barW = (groupW - gap * (nBars - 1)) / nBars;
       var color = bankColor(b);
-      var cagr = cagr2y(measure.id, b, tarih);
+      var cagr = cagrBetween(measure.id, b, validSnapshotDates[0], validSnapshotDates[2]);
 
       var bars = values.map(function(v, i) {
         var x = sidePad + i * (barW + gap);
@@ -4434,7 +4624,7 @@
       h('div', { className: 'panel-header' }, 'Rakip Bankalar Yıllık Görünüm (Son 3 Dönem) ve CAGR (Bileşik Yıllık Büyüme %)'),
       h('div', { className: 'competitor-grid' },
         rakipler.map(function(b) {
-          var cagr = cagr2y(measure.id, b, tarih);
+          var cagr = cagrBetween(measure.id, b, validSnapshotDates[0], validSnapshotDates[2]);
           var textColor = bankTextColor(b);
           var isActive = activeBank === b;
           return h('div', {
@@ -4446,9 +4636,24 @@
             onMouseLeave: scheduleClose,
             onFocus: function(e){ openFor(b, e.currentTarget); },
             onBlur: scheduleClose,
+            // Dokunmatik ekranlarda ilk dokunuş genelde :hover'ı simüle edip
+            // (onMouseEnter → openFor, ama pinnedBank HÂLÂ null) click'i
+            // AYRI bir "dokunuş" gibi ele alır — eski `pinnedBank === b`
+            // kontrolü bu yüzden mobilde hep "else" dalına düşüp kartı asla
+            // kapatmıyordu (kullanıcı isteği, 2026-09-18: "kartların üstüne
+            // basılınca kapanma özelliği de gelsin"). `activeBank` (pin VEYA
+            // hover, hangisiyse) üzerinden kontrol etmek bu ayrımı ortadan
+            // kaldırıyor: kart AÇIKSA (nedeni ne olursa olsun) dokunuş
+            // kapatır, değilse açıp pinler.
             onClick: function(e){
-              if (pinnedBank === b) { setPinnedBank(null); }
-              else { openFor(b, e.currentTarget); setPinnedBank(b); }
+              if (activeBank === b) {
+                clearCloseTimer();
+                setHoverBank(null);
+                setPinnedBank(null);
+              } else {
+                openFor(b, e.currentTarget);
+                setPinnedBank(b);
+              }
             }
           },
             h('div', { className: 'competitor-mini-title' }, bankMono(b), h('span', null, b)),

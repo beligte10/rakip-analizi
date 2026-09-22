@@ -2085,21 +2085,23 @@
 
 `id: cost_of_risk`
 
-**Tanım:** Kredi riski maliyeti.
+**Tanım:** Kredi riski maliyeti (PBI adı: "Brüt CoR").
 
-**Formül:** TTM Karşılık Giderleri / Ortalama Krediler (net)
+**Formül:** TTM Karşılık Giderleri / Ortalama Brüt Krediler
 
 **Hesaplama dönemi:** Pay: son 12 ay (TTM) · Payda: 12 aylık ortalama bakiye
 
-**Kaynak:** Gelir Tablosu; Bilanço
+**Kaynak:** Gelir Tablosu; Bilanço; Grup 1-2 Krediler tablosu
 
 **Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
 
 **Terimler:**
 
-- *Krediler (net):* Bilanço 'Krediler ve Alacaklar (Toplam)'; eski TMS 39 dönemlerinde 'Krediler'. Donuk alacaklar ve karşılıklar netleştirilmiş haliyle.
+- *Toplam Brüt Krediler:* Krediler ve Alacaklar + Faktoring Alacakları + Kiralama İşlemlerinden Alacaklar + Donuk Alacaklar + Takipteki Krediler (NPL dahil). TP/YP kırılımı aynı kalemlerin TP/YP kolonlarıyla.
 - *TTM (son 12 ay):* BDDK gelir tablosu YtD olduğundan: TTM(t) = YtD(t) + (Önceki yıl sonu − YtD(t − 12 ay)). 4. çeyrekte doğrudan yıllık tutar. Geçmiş dönem yoksa YtD × 12 / ay sayısı.
 - *Ortalama bakiye:* (Bakiye(t) + Bakiye(t − 12 ay)) / 2. Bir yıl önceki dönem yoksa dönem sonu bakiye.
+
+> ℹ️ Kullanıcının verdiği orijinal PBI DAX'ıyla (2026-09-21) düzeltildi — payda önceden yanlışlıkla NET krediler kullanıyordu (pratikte çoğu bankada sonucu neredeyse değiştirmiyor, ama artık DAX'a birebir sadık: v29 baseline'la %96,7 ±0,5pp uyum, medyan fark 0).
 
 ---
 
@@ -2107,22 +2109,25 @@
 
 `id: kredi_mevduat_spread`
 
-**Tanım:** Kredi getirisi ile mevduat maliyeti arasındaki fark.
+**Tanım:** Kredi getirisi ile mevduat maliyeti arasındaki bileşik spread'i.
 
-**Formül:** Kredilerin Paçal Getirisi − (TTM Mevduata Verilen Faizler / Ortalama Mevduat)
+**Formül:** ((1 + Kredilerin Paçal Getirisi) / (1 + Mevduatın Paçal Maliyeti) − 1) × 100
 
-**Hesaplama dönemi:** İki yıllıklandırılmış oranın farkı (TTM / ortalama bakiye)
+**Hesaplama dönemi:** İki yıllıklandırılmış oranın bileşik farkı (TTM / ortalama bakiye)
 
 **Kaynak:** Gelir Tablosu; Bilanço
 
 **Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
 
+**Durum:** Kısmen en iyi tahmin
+
 **Terimler:**
 
+- *Mevduatın Paçal Maliyeti:* TTM Mevduata Verilen Faizler / Ortalama Mevduat.
 - *TTM (son 12 ay):* BDDK gelir tablosu YtD olduğundan: TTM(t) = YtD(t) + (Önceki yıl sonu − YtD(t − 12 ay)). 4. çeyrekte doğrudan yıllık tutar. Geçmiş dönem yoksa YtD × 12 / ay sayısı.
 - *Ortalama bakiye:* (Bakiye(t) + Bakiye(t − 12 ay)) / 2. Bir yıl önceki dönem yoksa dönem sonu bakiye.
 
-> ℹ️ Puan cinsinden fark.
+> ℹ️ Kullanıcının verdiği orijinal PBI DAX'ıyla (2026-09-21) düzeltildi — önceki formül basit FARK (getiri − maliyet) kullanıyordu, PBI'ın gerçek formülü bileşik (ratio-of-ratios). Dış formül artık DAX'a birebir sadık; iç "Mevduatın Paçal Maliyeti" alt-formülü henüz ayrıca doğrulanmadı (v29 baseline'la %79,5 ±0,5pp uyum). DAX orijinali ×10000 (baz puan) döner, kardeş ölçülerle (spread, tp_spread, yp_spread) birim tutarlılığı için ×100 (yüzde puanı) kullanılıyor.
 
 ---
 
@@ -2130,17 +2135,15 @@
 
 `id: spread`
 
-**Tanım:** Getirili aktif getirisi ile maliyetli pasif maliyeti farkı.
+**Tanım:** Getirili aktif getirisi ile maliyetli pasif maliyeti arasındaki bileşik spread'i.
 
-**Formül:** Faiz Getirili Aktiflerin Getirisi − (TTM Faiz Giderleri / Ort. Faiz Maliyetli Pasifler (detaylı))
+**Formül:** ((1 + Faiz Getirili Aktiflerin Getirisi) / (1 + Faiz Maliyetli Pasiflerin Maliyeti) − 1) × 100
 
-**Hesaplama dönemi:** İki yıllıklandırılmış oranın farkı (TTM / ortalama bakiye)
+**Hesaplama dönemi:** İki yıllıklandırılmış oranın bileşik farkı (TTM / ortalama bakiye)
 
 **Kaynak:** Gelir Tablosu; Bilanço; TCMB tablosu
 
 **Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
-
-**Durum:** Ham veri — en iyi tahmin
 
 **Terimler:**
 
@@ -2148,7 +2151,7 @@
 - *TTM (son 12 ay):* BDDK gelir tablosu YtD olduğundan: TTM(t) = YtD(t) + (Önceki yıl sonu − YtD(t − 12 ay)). 4. çeyrekte doğrudan yıllık tutar. Geçmiş dönem yoksa YtD × 12 / ay sayısı.
 - *Ortalama bakiye:* (Bakiye(t) + Bakiye(t − 12 ay)) / 2. Bir yıl önceki dönem yoksa dönem sonu bakiye.
 
-> ⚠️ En iyi tahmin; PBI ile ±0,5 puan içinde uyum %78.
+> ℹ️ Kullanıcının verdiği orijinal PBI DAX'ıyla (2026-09-21) düzeltildi — önceki formül basit FARK kullanıyordu ("en iyi tahmin", %78 uyum); bileşik formülle v29 baseline'la %92,8 ±0,5pp uyum, medyan fark 0.
 
 ---
 
@@ -2156,17 +2159,24 @@
 
 `id: tp_spread`
 
-**Tanım:** TL kredi-mevduat spread'i.
+**Tanım:** TL kredi-mevduat spread'i (kullanıcının verdiği orijinal PBI DAX'ına göre, 2026-09-21'de hesaplanır hale getirildi).
 
-**Formül:** Henüz hesaplanmıyor
+**Formül:** ((1 + TP Kredilerin Getirisi) / (1 + TP Vadeli Mevduatın Maliyeti) − 1) × 100
 
-**Kaynak:** —
+**Hesaplama dönemi:** Pay ve payda: son 12 ay (TTM) / 12 aylık ortalama bakiye
+
+**Kaynak:** Gelir Tablosu; Bilanço; Kredilerden Alınan Faiz Gelirleri dipnotu; Mevduata Ödenen Faizin Vade Yapısı dipnotu (Katılım bankasında: Katılma Hesaplarına Ödenen Kar Paylarının Vade Yapısı dipnotu)
 
 **Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
 
-**Durum:** Hesaplanmıyor (placeholder)
+**Terimler:**
 
-> ⚠️ Placeholder: değer boş döner.
+- *TP Kredilerin Getirisi:* TTM Kredilerden Faizler (Toplam, TP) / Ortalama Krediler (TP).
+- *TP Vadeli Mevduatın Maliyeti:* TTM gerçek vadeli (vadesiz hariç) TP faiz/kâr payı gideri / Ortalama TP VADELİ Mevduat bakiyesi (mevduat bankasında `Döviz Tevdiat Hesabı`+`Kıymetli Maden Depo Hesabı` segmentlerinden türetilen YP vadesiz payı çıkarılarak; Katılım bankasında hâlâ TOPLAM bakiye — bkz. not).
+- *TTM (son 12 ay):* BDDK gelir tablosu YtD olduğundan: TTM(t) = YtD(t) + (Önceki yıl sonu − YtD(t − 12 ay)). 4. çeyrekte doğrudan yıllık tutar. Geçmiş dönem yoksa YtD × 12 / ay sayısı.
+- *Ortalama bakiye:* (Bakiye(t) + Bakiye(t − 12 ay)) / 2. Bir yıl önceki dönem yoksa dönem sonu bakiye.
+
+> ℹ️ 2026-09-21'de kullanıcı gerçek PBI ekran görüntüsüyle karşılaştırdı — payda TOPLAM TP Mevduat (vadesiz dahil) kullanıldığında değerler ~100-250bps yüksek çıkıyordu. Mevduat bankalarında artık gerçek TP Vadeli bakiye türetiliyor (v29 ekran görüntüsüyle ortalama sapma ~36bps'e düştü). ⚠️ Katılım bankalarında (KT, Albaraka, Türkiye Finans, Ziraat/Vakıf/Emlak Katılım) YP katılma hesabı segmentleri dipnotta güvenilir görünmediği için hâlâ TOPLAM bakiye kullanılıyor — bu alt kümede hâlâ olduğundan yüksek çıkabilir.
 
 ---
 
@@ -2174,17 +2184,24 @@
 
 `id: yp_spread`
 
-**Tanım:** YP kredi-mevduat spread'i.
+**Tanım:** YP kredi-mevduat spread'i (kullanıcının verdiği orijinal PBI DAX'ına göre, 2026-09-21'de hesaplanır hale getirildi).
 
-**Formül:** Henüz hesaplanmıyor
+**Formül:** ((1 + YP Kredilerin Getirisi) / (1 + YP Vadeli Mevduatın Maliyeti) − 1) × 100
 
-**Kaynak:** —
+**Hesaplama dönemi:** Pay ve payda: son 12 ay (TTM) / 12 aylık ortalama bakiye
+
+**Kaynak:** Gelir Tablosu; Bilanço; Kredilerden Alınan Faiz Gelirleri dipnotu; Mevduata Ödenen Faizin Vade Yapısı dipnotu (Katılım bankasında: Katılma Hesaplarına Ödenen Kar Paylarının Vade Yapısı dipnotu)
 
 **Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
 
-**Durum:** Hesaplanmıyor (placeholder)
+**Terimler:**
 
-> ⚠️ Placeholder: değer boş döner.
+- *YP Kredilerin Getirisi:* TTM Kredilerden Faizler (Toplam, YP) / Ortalama Krediler (YP).
+- *YP Vadeli Mevduatın Maliyeti:* TTM gerçek vadeli (vadesiz hariç) YP faiz/kâr payı gideri / Ortalama YP VADELİ Mevduat bakiyesi (mevduat bankasında `Döviz Tevdiat Hesabı`+`Kıymetli Maden Depo Hesabı` segmentlerinin vadesiz kısmı çıkarılarak türetilir — bu iki segmentin toplamı bilançodaki YP Mevduat'a ~%1 içinde yaklaşıyor; Katılım bankasında hâlâ TOPLAM bakiye — bkz. not).
+- *TTM (son 12 ay):* BDDK gelir tablosu YtD olduğundan: TTM(t) = YtD(t) + (Önceki yıl sonu − YtD(t − 12 ay)). 4. çeyrekte doğrudan yıllık tutar. Geçmiş dönem yoksa YtD × 12 / ay sayısı.
+- *Ortalama bakiye:* (Bakiye(t) + Bakiye(t − 12 ay)) / 2. Bir yıl önceki dönem yoksa dönem sonu bakiye.
+
+> ℹ️ 2026-09-21'de kullanıcı gerçek PBI ekran görüntüsüyle (Haziran 2026) karşılaştırdı — payda TOPLAM YP Mevduat (vadesiz dahil) kullanıldığında değerler ~100-250bps yüksek çıkıyordu (ör. Kuveyt Türk 640 vs gerçek 512bps). Mevduat bankalarında artık gerçek YP Vadeli bakiye türetiliyor — v29 ekran görüntüsüyle ortalama sapma ~36bps'e düştü (Enpara 1259 vs gerçek 1261, TEB 601 vs 599 gibi neredeyse birebir örnekler dahil; Şekerbank hâlâ ~170bps sapıyor, bilinen veri kalitesi istisnası). ⚠️ Katılım bankalarında (KT, Albaraka, Türkiye Finans, Ziraat/Vakıf/Emlak Katılım) YP katılma hesabı segmentleri dipnotta güvenilir görünmediği için (bilançodaki YP Mevduat'ın küçük bir kesrini kapsıyor) hâlâ TOPLAM bakiye kullanılıyor — bu alt kümede hâlâ olduğundan yüksek çıkıyor.
 
 ---
 

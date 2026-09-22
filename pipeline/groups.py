@@ -357,8 +357,10 @@ def _nd_kredi_pacal(ctx, b, t):
 
 
 def _nd_cost_of_risk(ctx, b, t):
+    # Payda düzeltmesi (2026-09-21, kullanıcının verdiği PBI DAX'ı):
+    # NET krediler değil BRÜT krediler — bkz. measures.py::m_cost_of_risk.
     cr = ttm_flow(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Kredi Ve Diğer Alacaklar Değer Düşüş Karşılığı (-)'))
-    avg_kred = avg_balance(ctx, b, t, lambda bb, tt: krediler(ctx, bb, tt))
+    avg_kred = avg_balance(ctx, b, t, lambda bb, tt: _brut_krediler(ctx, bb, tt))
     return cr, avg_kred
 
 

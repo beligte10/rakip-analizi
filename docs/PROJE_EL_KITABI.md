@@ -1530,6 +1530,138 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
 
 ---
 
+### Dönem 29 — tp_spread/yp_spread placeholder'dan çıkarıldı (2026-09-21)
+
+- **Tetikleyici:** kullanıcı "TP Kredi Mevduat Spread'i" ve "YP Kredi
+  Mevduat Spread'i" ölçülerinin hiç hesaplanmadığını bildirip orijinal PBI
+  DAX formülünü verdi: `((1+[TP/YP Kredilerin Getirisi]) /
+  (1+[TP/YP Vadeli Mevduatın Maliyeti]) − 1) × 10000`. Önceden
+  `m_tp_spread`/`m_yp_spread` (`pipeline/measures.py`) doğrudan `None`
+  dönen placeholder'dı — ham veride TP/YP kırılımlı karşılığı
+  bulunamadığı için 2026-09-09'da (Dönem 9 civarı) hiç ele alınmamıştı.
+- **Keşif:** Gelir Tablosu'nun ANA tablosunda ('Kredilerden Alınan
+  Faizler'/'Mevduata Verilen Faizler') TP/YP kırılımı YOK — ama iki
+  DİPNOT tablosunda var, önceden `pipeline/lookup.py`'de HİÇ
+  indekslenmemişti:
+  - `' Kredilerden Alınan Faiz Gelirlerine İlişkin Bilgiler'` (başında
+    kasıtsız boşluklu BDDK şablon tuhaflığı) → `'Kredilerden Faizler
+    (Toplam, TP/YP)'` — kredi faiz geliri TP/YP kırılımlı.
+  - `'Mevduata Ödenen Faizin Vade Yapısına Göre Gösterimi'` → `'Mevduata
+    Ödenen Faiz (TP/YP, Toplam, Toplam/Vadesiz)'` — mevduat bankası için
+    ödenen faiz, TP/YP VE vade kırılımlı (Vadeli = Toplam − Vadesiz).
+  - Katılım bankaları "Mevduata Ödenen Faiz" hiç raporlamıyor (Kuveyt
+    Türk'te bu kalemler hep 0) — onlar için PARALEL bir dipnot tablosu
+    var: `'Katılma Hesaplarına Ödenen Kar Paylarının Vade Yapısına Göre
+    Gösterimi'` → `'Toplam -TP/YP Toplam'` (bu tabloda zaten vadesiz
+    eşleniği — Özel Cari Hesaplar — hiç yok, çıkarma gerekmiyor). Aynı
+    bank-type-aware dallanma deseni `ctx.vadesiz_mevduat`/`tuzel_mevduat`
+    ile birebir tutarlı (`pipeline/lookup.py`, yeni
+    `ctx.vadeli_mevduat_faizi(banka, tarih, pb)`).
+- **Bilinen yaklaşıklık (kullanıcıyla karara bağlandı):** payda için TP/YP
+  kırılımlı "Vadeli Mevduat BAKİYESİ" (stok) hiçbir tabloda raporlanmıyor
+  — sadece TP/YP kırılımlı TOPLAM Mevduat bakiyesi var (bilanço, vadesiz
+  dahil). Kullanıcı onayıyla payda için bu TOPLAM TP/YP Mevduat bakiyesi
+  kullanıldı; pay yine de GERÇEK vadeli-only faiz/kâr payı — maliyeti
+  hafifçe olduğundan düşük gösterebilir, docs/olcu_info_kartlari.md'de
+  ⚠️ ile belgelendi.
+- **Birim:** DAX ×10000 (baz puan) döner; kardeş ölçü
+  `kredi_mevduat_spread` ile tutarlılık için (catalog'da 'bps' birimi
+  desteklenmiyor) ×100 (yüzde puanı) kullanıldı.
+- **Doğrulama:** Kuveyt Türk/Ziraat/Akbank için Python'da elle hesaplanan
+  değerler (getiri/maliyet/spread) canlı arayüzdeki değerlerle BİREBİR
+  eşleşti (ör. KT TP spread %6,49, YP spread %6,40). 27 banka × son 8
+  dönem üzerinde hatasız çalıştı (2 (banka,tarih) çifti veri yokluğundan
+  None — beklenen). `scripts/recompute.py` sonrası tam diff: SADECE
+  `tp_spread`/`yp_spread` `bank_data`/`group_data`'sı değişti, başka
+  hiçbir ölçü etkilenmedi. `meta.available_measures` artık 161/161
+  (önceden bu ikisi eksikti). `pytest tests/` → 111/111 yeşil.
+- **Commit'ler:** henüz commit edilmedi. `data/computed.json` canlıda ayrı
+  güncellendi (git-ignored, bu commit'in parçası değil) — yedeği
+  `data/backups/computed_20260921_144016_pre_tpyp_spread.json`.
+
+---
+
+### Dönem 30 — spread/kredi_mevduat_spread/cost_of_risk düzeltildi (2026-09-21)
+
+- **Tetikleyici:** Dönem 29'un hemen ardından kullanıcı "Rasyolar (bps)"
+  SWITCH() ölçüsünün TAM DAX kodunu verdi — bu, `spread`/
+  `kredi_mevduat_spread`/`tp_spread`/`yp_spread`'i tek bir slicer'da
+  birleştiren PBI ölçüsüydü, ayrıca "Brüt CoR (bps)" ve "Kredi Mevduat
+  Spread'i" formüllerini de içeriyordu: "hesaplamalar yanlış geliyor."
+- **Kök neden (spread/kredi_mevduat_spread):** PBI'ın gerçek formülü
+  BİLEŞİK (`((1+getiri)/(1+maliyet)-1)×10000`), ama bu iki ölçü
+  ÖNCEDEN basit FARK (`getiri − maliyet`) ile hesaplanıyordu —
+  `m_spread` zaten "⚠️ EN İYİ TAHMİN, %78,3 uyum" diye işaretliydi,
+  `m_kredi_mevduat_spread` hiç işaretli bile değildi. Yeni ortak
+  `_compound_spread_pct()` helper'ı yazılıp `m_spread`,
+  `m_kredi_mevduat_spread`, `m_tp_spread`, `m_yp_spread` (Dönem 29)
+  hepsi bu TEK fonksiyonu kullanacak şekilde birleştirildi (kod tekrarı
+  önlendi).
+- **Kök neden (cost_of_risk / "Brüt CoR"):** DAX paydası "Ortalama Brüt
+  Krediler" diyor ama `m_cost_of_risk` NET krediler (`krediler()`)
+  kullanıyordu — hem bank-level (`measures.py`) hem grup-level
+  (`groups.py::_nd_cost_of_risk`) düzeltildi (`_brut_krediler`).
+  Pratikte çoğu bankada net≈brüt olduğundan sonuç neredeyse
+  DEĞİŞMEDİ (%96,7 uyum hem eski hem yeni formülle) — ama artık DAX'a
+  birebir sadık, yüksek-NPL bankalarda ayrışabilir.
+- **Doğrulama (v29 baseline'la, `data/computed_backup_2026-08-11.json`):**
+  spread %78,3→%92,8 (medyan fark 0), cost_of_risk %96,7 (değişmedi),
+  kredi_mevduat_spread %79,5 (iç "Mevduatın Paçal Maliyeti"
+  alt-formülü henüz doğrulanmadı — Durum: "Kısmen en iyi tahmin").
+  `scripts/recompute.py` sonrası tam diff: SADECE bu 3 ölçünün
+  `bank_data`/`group_data`'sı değişti. `tests/test_baseline_promoted.py`
+  güncellendi: nim/nim_duzeltilmis/nim_bzk_sonrasi/spread/cost_of_risk
+  artık YÜKSEK GÜVEN (PROMOTED) grubunda (gerçek ölçümlerle, "en iyi
+  tahmin" değil); kredi_mevduat_spread EN İYİ TAHMİN (BEST_EFFORT)
+  grubunda kaldı. `pytest tests/` → 114/114 yeşil (111→114, 3 yeni
+  parametrized test noktası).
+- **Commit'ler:** henüz commit edilmedi. `data/computed.json` canlıda
+  ayrı güncellendi — yedeği
+  `data/backups/computed_20260921_153546_pre_spread_costofrisk_fix.json`.
+
+---
+
+### Dönem 31 — tp_spread/yp_spread paydası düzeltildi (2026-09-21)
+
+- **Tetikleyici:** kullanıcı, PBI'ın kendi "YP Kredi Mevduat Spread'i"
+  ekranının bir fotoğrafını gönderip "veriler hala yanlış" dedi. Gerçek
+  değerler (Haziran 2026, bps): Kuveyt Türk 512, Enpara 1261, TEB 599...
+  — uygulamadaki değerler tutarlı şekilde ~100-250bps YÜKSEK çıkıyordu
+  (ör. KT 640 vs gerçek 512).
+- **Kök neden:** Dönem 29'da payda için TOPLAM TP/YP Mevduat (vadesiz
+  dahil) kullanılmıştı ("ham veride Vadeli bakiye TP/YP kırılımlı yok"
+  diye not düşülmüştü) — bu, maliyeti olduğundan düşük gösterip
+  spread'i şişiriyordu. Enpara'da hata payı neredeyse sıfırdı (vadesiz
+  payı ihmal edilebilir seviyede, dijital banka) — bu ipucuyla asıl
+  sorunun DENOMİNATÖR olduğu teyit edildi.
+- **Çözüm (mevduat bankası):** `Mevduatın Vade Yapısına İlişkin
+  Bilgiler` dipnotunda "Döviz Tevdiat Hesabı" (DTH) + "Kıymetli Maden
+  Depo Hesabı" segmentlerinin TOPLAM'ı bilançodaki YP Mevduat'a ~%1
+  içinde yaklaştığı doğrulandı — bu iki segmentin "Vadesiz" alt kırılımı
+  YP vadesizin iyi bir yaklaşıklığı. TP vadesiz = Toplam(blended, tüm
+  müşteri segmentleri) vadesiz − YP vadesiz. Yeni `ctx.
+  vadeli_mevduat_bakiyesi(banka, tarih, pb)` (`pipeline/lookup.py`)
+  bunu hesaplayıp bilanço TOPLAM bakiyeden çıkarıyor.
+- **Katılım bankası:** `Toplanan Fonların Vade Yapısına İlişkin
+  Bilgiler` dipnotunda YP katılma hesabı segmentleri denendi ama
+  bilançodaki YP Mevduat'ın sadece ~%8'ini kapsıyordu (muhtemelen eksik/
+  kısmi raporlama) — güvenilmez bulunup KATILIM BANKALARI İÇİN TOPLAM
+  bakiye (Dönem 29'daki davranış) KORUNDU. Bilinen, belgelenmiş bir
+  sınır — KT/Albaraka/Türkiye Finans/Ziraat-Vakıf-Emlak Katılım hâlâ
+  olduğundan yüksek spread gösterebilir.
+- **Doğrulama (v29 PBI ekran görüntüsüyle, Haziran 2026, mevduat
+  bankaları):** ortalama sapma ~36bps (önceden ~150-250bps) — Enpara
+  1259 vs 1261, TEB 601 vs 599, Ziraat Bankası 606 vs 594 gibi
+  neredeyse birebir örnekler dahil. Şekerbank tek istisna (~170bps
+  sapma, bilinen veri kalitesi sorunu deseniyle tutarlı). Tam diff:
+  SADECE `tp_spread`/`yp_spread` değişti. `pytest tests/` → 114/114
+  yeşil.
+- **Commit'ler:** henüz commit edilmedi. `data/computed.json` canlıda
+  ayrı güncellendi — yedeği
+  `data/backups/computed_20260921_155348_pre_tpyp_vadeli_bakiye_fix.json`.
+
+---
+
 ## 7. Açık ve bekleyen konular
 
 

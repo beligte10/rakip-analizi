@@ -1,5 +1,31 @@
 [
   {
+    "version": "v1.8",
+    "date": "2026-09-21",
+    "title": "TP/YP Kredi Mevduat Spread'i daha isabetli",
+    "items": [
+      "\"TP/YP Kredi Mevduat Spread'i\" ölçülerinin hesabı gerçek PBI raporuyla karşılaştırılarak düzeltildi; değerler artık çok daha yakın (önceden ~100-250 baz puan yüksek çıkıyordu).",
+      "Katılım bankalarında (Kuveyt Türk dahil) bu ölçü hâlâ bir yaklaşıklık kullanıyor — ham veri kısıtı nedeniyle mevduat bankalarındaki kadar isabetli değil."
+    ]
+  },
+  {
+    "version": "v1.7",
+    "date": "2026-09-21",
+    "title": "Spread ölçüleri düzeltildi",
+    "items": [
+      "\"Spread\", \"Kredi Mevduat Spread'i\" ve \"Kredi Riski Maliyeti (Cost of Risk)\" ölçülerinin hesaplama formülleri düzeltildi — değerler artık daha isabetli."
+    ]
+  },
+  {
+    "version": "v1.6",
+    "date": "2026-09-21",
+    "title": "TP/YP Kredi Mevduat Spread'i hesaplanır hale geldi",
+    "items": [
+      "\"TP Kredi Mevduat Spread'i\" ve \"YP Kredi Mevduat Spread'i\" ölçüleri artık gerçek değer gösteriyor (önceden hep boştu).",
+      "Değerler, kredi getirisi ile vadeli mevduat maliyeti arasındaki farkı TP ve YP ayrı ayrı gösteriyor."
+    ]
+  },
+  {
     "version": "v1.5",
     "date": "2026-09-18",
     "title": "Grafikler animasyonlu hale getirildi",

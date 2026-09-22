@@ -618,8 +618,16 @@ def m_nim_bzk_sonrasi(ctx, b, t):
 
 
 def m_cost_of_risk(ctx, b, t):
+    """PBI [Brüt CoR (bps)] = TTM [Beklenen Kredi Zararı Karşılıkları
+    (Brüt)] / [Ortalama Brüt Krediler] × 10000. Kullanıcının verdiği
+    orijinal PBI DAX'ıyla (2026-09-21) düzeltildi — payda önceden yanlışlıkla
+    NET Krediler (krediler()) kullanıyordu, DAX açıkça BRÜT (_brut_krediler)
+    istiyor. Pay tarafında ayrı bir "Brüt" ham kalem yok — Gelir Tablosu'nda
+    tek karşılık kalemi ('Kredi Ve Diğer Alacaklar Değer Düşüş Karşılığı
+    (-)') zaten değişmedi. Birim ×10000 (bps) yerine bu projenin '%'
+    biriminde kalması için ×100 (safe_ratio) kullanılıyor."""
     ttm = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Kredi Ve Diğer Alacaklar Değer Düşüş Karşılığı (-)'))
-    avg = _avg(ctx, b, t, lambda bb, tt: krediler(ctx, bb, tt))
+    avg = _avg(ctx, b, t, lambda bb, tt: _brut_krediler(ctx, bb, tt))
     return safe_ratio(ttm, avg)
 
 
@@ -681,19 +689,38 @@ def _faiz_maliyetli_pasif_maliyeti_detay(ctx, b, t):
     return safe_ratio(ttm, avg)
 
 
-def m_spread(ctx, b, t):
-    """Spread = Faiz Getirili Aktiflerin Getirisi − Faiz Maliyetli
-    Pasiflerin Maliyeti (ikisi de detaylı 13/9-bileşenli tanımla).
+# PBI'daki ortak "spread" deseni: ((1+getiri)/(1+maliyet)-1)×10000 (bps).
+# Kullanıcının verdiği orijinal DAX'larla (2026-09-21) doğrulandı — spread
+# ölçüleri ÖNCEDEN hep basit FARK (getiri − maliyet) ile hesaplanıyordu, bu
+# ise PBI'ın kullandığı BİLEŞİK (compounding) formülden farklı sonuç verir
+# (iki oran da küçükken fark küçük ama TL faiz oranlarının yüksek olduğu
+# dönemlerde ikisi arasındaki sapma anlamlı büyüyebilir — kullanıcı "hesap-
+# lamalar yanlış geliyor" diye bildirdi). tp_spread/yp_spread (2026-09-21,
+# bkz. yukarıda) ile AYNI desen — o ikisi de bu helper'ı kullanacak şekilde
+# yeniden yazıldı, tekrar önlemek için.
+def _compound_spread_pct(getiri_pct, maliyet_pct):
+    """getiri_pct/maliyet_pct YÜZDE olarak verilir (ör. 15.3 = %15,3).
+    Sonuç YÜZDE PUANI (DAX'ın ×10000/bps'inin /100'ü) — bu projede rasyo
+    ölçüler '%' biriminde olduğu için (catalog'da 'bps' desteklenmiyor)."""
+    if getiri_pct is None or maliyet_pct is None:
+        return None
+    y, c = getiri_pct / 100.0, maliyet_pct / 100.0
+    if (1 + c) == 0:
+        return None
+    return ((1 + y) / (1 + c) - 1) * 100
 
-    ⚠️ EN İYİ TAHMİN, BİREBİR DOĞRULANMADI (2026-09-15). 1055 noktada
-    medyan fark 0.19pp, %78.3'ü ±0.5pp içinde. Getirisi tarafı ayrı ayrı
-    %92.5 doğru; maliyet tarafını da detaylı formüle geçirmek sonucu
-    DEĞİŞTİRMEDİ — kalan sapma muhtemelen nim'deki aynı açıklanamayan
-    ~%7-8'lik pay sapmasından geliyor."""
+
+def m_spread(ctx, b, t):
+    """PBI [Spread (bps)] = ((1 + [Faiz (Kar Payı) Getirili Aktiflerin
+    Getirisi]) / (1 + [Faiz (Kar Payı) Maliyetli Pasiflerin Maliyeti]) − 1)
+    × 10000 (ikisi de detaylı 13/9-bileşenli tanımla).
+
+    Kullanıcının verdiği orijinal PBI DAX'ıyla (2026-09-21) düzeltildi —
+    önceki formül (2026-09-15, ⚠️ EN İYİ TAHMİN) basit FARK (a − p)
+    kullanıyordu; PBI'ın gerçek formülü bileşik (ratio-of-ratios)."""
     a = m_faiz_getirili_aktif_getirisi(ctx, b, t)
     p = _faiz_maliyetli_pasif_maliyeti_detay(ctx, b, t)
-    if a is None or p is None: return None
-    return a - p
+    return _compound_spread_pct(a, p)
 
 
 def m_kredi_pacal_getiri(ctx, b, t):
@@ -702,13 +729,21 @@ def m_kredi_pacal_getiri(ctx, b, t):
     return safe_ratio(ttm, avg)
 
 
-def m_kredi_mevduat_spread(ctx, b, t):
-    kg = m_kredi_pacal_getiri(ctx, b, t)
+def _mevduatin_pacal_maliyeti(ctx, b, t):
     ttm = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Mevduata Verilen Faizler'))
     avg = _avg(ctx, b, t, lambda bb, tt: ctx.bilanco(bb, tt, 'Mevduat'))
-    mm = safe_ratio(ttm, avg)
-    if kg is None or mm is None: return None
-    return kg - mm
+    return safe_ratio(ttm, avg)
+
+
+def m_kredi_mevduat_spread(ctx, b, t):
+    """PBI [Kredi Mevduat Spread'i] = ((1 + [Kredilerin Paçal Getirisi]) /
+    (1 + [Mevduatın Paçal Maliyeti]) − 1) × 10000.
+
+    Kullanıcının verdiği orijinal PBI DAX'ıyla (2026-09-21) düzeltildi —
+    önceki formül basit FARK (kg − mm) kullanıyordu."""
+    kg = m_kredi_pacal_getiri(ctx, b, t)
+    mm = _mevduatin_pacal_maliyeti(ctx, b, t)
+    return _compound_spread_pct(kg, mm)
 
 
 def m_donuk_intikal_ort_krediler(ctx, b, t):
@@ -1067,9 +1102,65 @@ def m_serbest_sermaye_ta(ctx, b, t):
     return safe_ratio(serbest, ctx.bilanco(b, t, 'Toplam Aktifler'))
 
 
-# tp_spread / yp_spread placeholder
-def m_tp_spread(ctx, b, t): return None
-def m_yp_spread(ctx, b, t): return None
+# ============================================================
+# TP/YP Kredi Mevduat Spread'i (2026-09-21, kullanıcının verdiği orijinal
+# PBI DAX'ına göre): önceden placeholder'dı (hep None dönüyordu, ham veride
+# karşılığı bulunamadığı için).
+#
+# DAX: [TP/YP Kredi Mevduat Spread'i] =
+#   ((1 + [TP/YP Kredilerin Getirisi]) / (1 + [TP/YP Vadeli Mevduatın
+#   Maliyeti]) − 1) × 10000  (yani baz puan)
+#
+# [TP/YP Kredilerin Getirisi]: TTM 'Kredilerden Faizler (Toplam, TP/YP)'
+#   (' Kredilerden Alınan Faiz Gelirlerine İlişkin Bilgiler' dipnot
+#   tablosu — Gelir Tablosu'nun kendisinde TP/YP kırılımı YOK) / Ortalama
+#   Krediler (TP/YP, bilanço zaten kırılımlı) — genel `kredi_pacal_getiri`
+#   ölçüsünün TP/YP'ye ayrılmış hali.
+#
+# [TP/YP Vadeli Mevduatın Maliyeti]: TTM gerçek VADELİ (vadesiz hariç)
+#   TP/YP faiz/kâr payı gideri (bkz. ctx.vadeli_mevduat_faizi — mevduat
+#   bankasında 'Mevduata Ödenen Faizin Vade Yapısına Göre Gösterimi'
+#   dipnotundan Toplam−Vadesiz, Katılım bankasında 'Katılma Hesaplarına
+#   Ödenen Kar Paylarının Vade Yapısına Göre Gösterimi' dipnotundan zaten
+#   vadesiz içermeyen 'Toplam -TP/YP Toplam') / Ortalama TP/YP Vadeli
+#   Mevduat bakiyesi (bkz. ctx.vadeli_mevduat_bakiyesi).
+#
+#   DÜZELTME (2026-09-21, kullanıcı gerçek PBI ekran görüntüsüyle
+#   karşılaştırdı — "veriler hala yanlış"): payda ÖNCEDEN TOPLAM TP/YP
+#   Mevduat (vadesiz dahil) kullanıyordu, bu maliyeti olduğundan düşük
+#   gösterip spread'i ~100-250bps şişiriyordu. Artık mevduat bankasında
+#   ctx.vadeli_mevduat_bakiyesi ile TP/YP'ye özel gerçek vadeli bakiye
+#   türetiliyor ('Döviz Tevdiat Hesabı'+'Kıymetli Maden Depo Hesabı'
+#   segmentleri YP vadesizin iyi bir yaklaşıklığı — v29 ekran
+#   görüntüsüyle ortalama sapma ~36bps'e düştü, önceden 100-250bps'ti).
+#   ⚠️ Katılım bankasında (YP katılma hesabı segmentleri dipnotta güvenilir
+#   görünmediği için) hâlâ TOPLAM bakiye kullanılıyor — bu alt küme için
+#   yaklaşıklık aynen sürüyor.
+#
+# Birim: DAX ×10000 (baz puan) döndürür; bu projede rasyo ölçüler '%'
+# biriminde (safe_ratio gibi ×100), o yüzden burada ×100 kullanılıp
+# sonuç YÜZDE PUANI (bps/100) olarak döndürülüyor — kardeş ölçü
+# `kredi_mevduat_spread` ile birim tutarlılığı için.
+def _tp_yp_kredi_getirisi(ctx, b, t, pb):
+    ttm = _ttm(ctx, b, t, lambda bb, tt: ctx.kredi_faiz_tpyp(bb, tt, 'Kredilerden Faizler (Toplam, ' + pb + ')'))
+    avg = _avg(ctx, b, t, lambda bb, tt: krediler(ctx, bb, tt, pb))
+    return safe_ratio(ttm, avg)
+
+
+def _tp_yp_mevduat_maliyeti(ctx, b, t, pb):
+    ttm = _ttm(ctx, b, t, lambda bb, tt: ctx.vadeli_mevduat_faizi(bb, tt, pb))
+    avg = _avg(ctx, b, t, lambda bb, tt: ctx.vadeli_mevduat_bakiyesi(bb, tt, pb))
+    return safe_ratio(ttm, avg)
+
+
+def _tp_yp_spread(ctx, b, t, pb):
+    y = _tp_yp_kredi_getirisi(ctx, b, t, pb)
+    c = _tp_yp_mevduat_maliyeti(ctx, b, t, pb)
+    return _compound_spread_pct(y, c)
+
+
+def m_tp_spread(ctx, b, t): return _tp_yp_spread(ctx, b, t, 'TP')
+def m_yp_spread(ctx, b, t): return _tp_yp_spread(ctx, b, t, 'YP')
 
 
 # ============================================================
