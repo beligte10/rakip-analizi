@@ -56,6 +56,7 @@ class LookupContext:
             ('kredi_faiz_tpyp', df['Tablo Adı'] == ' Kredilerden Alınan Faiz Gelirlerine İlişkin Bilgiler'),
             ('mevduat_faiz_vade', df['Tablo Adı'] == 'Mevduata Ödenen Faizin Vade Yapısına Göre Gösterimi'),
             ('katilma_kar_payi_vade', df['Tablo Adı'] == 'Katılma Hesaplarına Ödenen Kar Paylarının Vade Yapısına Göre Gösterimi'),
+            ('karsilik_gid', df['Tablo Adı'] == 'Bankaların Kredi ve Diğer Alacaklarına İlişkin Karşılık Giderleri'),
         ]:
             self._idx[table_key] = self._index(df[mask])
 
@@ -121,6 +122,9 @@ class LookupContext:
 
     def katilma_kar_payi_vade(self, banka, tarih, kalem, pb='Toplam'):
         return self._lookup('katilma_kar_payi_vade', banka, tarih, kalem, pb)
+
+    def karsilik_gid(self, banka, tarih, kalem, pb='Toplam'):
+        return self._lookup('karsilik_gid', banka, tarih, kalem, pb)
 
     def sube(self, banka, tarih, kalem, pb='Toplam'):
         return self._lookup('sube', banka, tarih, kalem, pb)
@@ -257,16 +261,25 @@ class LookupContext:
         return self.mvy(banka, tarih, 'Resmi Kur. Mevduatı, Toplam')
 
     def tuzel_mevduat(self, banka, tarih):
+        """PBI [Tüzel Mevduat] — Resmi Kuruluşlar HARİÇ (2026-09-23, PBI
+        datatable'ıyla doğrulandı: Akbank 2025-12 Ticari 529.855 + Diğer
+        15.310 = 545.165 mn, PBI 545.165). Katılım'da fon tablosu tüzel
+        kişileri birden çok segmentte veriyor: Ticari + Diğer (her segmentte,
+        index aynı adlı satırları topluyor) + YP özel cari hesaplardaki
+        yurtiçi/yurtdışı yerleşik tüzel kişiler + 'Ticari ve Diğer Kur.'
+        (KT 2025-12: 187.316 mn, PBI 187.316). Kalem adlarındaki çift/üçlü
+        boşluklar BDDK şablonunda böyle."""
         if self.bank_turu.get(banka) == 'Katılım':
             return (
                 self.tfv(banka, tarih, 'Ticari Kuruluşlar  Toplam')
                 + self.tfv(banka, tarih, 'Diğer Kuruluşlar  Toplam')
-                + self.tfv(banka, tarih, 'Resmi Kuruluşlar  Toplam')
+                + self.tfv(banka, tarih, 'Yurtiçinde Yer. Tüz. K   Toplam')
+                + self.tfv(banka, tarih, 'Yurtdışında Yer. Tüz. K.  Toplam')
+                + self.tfv(banka, tarih, 'Ticari ve Diğer Kur.  Toplam')
             )
         return (
             self.mvy(banka, tarih, 'Tic. Kur. Mevduatı, Toplam')
             + self.mvy(banka, tarih, 'Diğ. Kur. Mevduatı, Toplam')
-            + self.mvy(banka, tarih, 'Resmi Kur. Mevduatı, Toplam')
         )
 
     # Zaman serisi yardımcıları

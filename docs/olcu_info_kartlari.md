@@ -355,9 +355,9 @@
 
 **Tanım:** Dönemde oluşan net yeni NPL'in kredilere oranı.
 
-**Formül:** (Σ Dönem İçi İntikal + Diğer Giriş + Σ Dönem İçi Tahsilat + Diğer Çıkış) / Ortalama Toplam Brüt Krediler
+**Formül:** (Σ Dönem İçi İntikal + Diğer Giriş + Σ Dönem İçi Tahsilat + Diğer Çıkış) × 12 / ay sayısı / Ortalama Toplam Brüt Krediler
 
-**Hesaplama dönemi:** Pay: yılbaşından kümülatif (YtD) · Payda: 12 aylık ortalama bakiye
+**Hesaplama dönemi:** Pay: yılbaşından kümülatif (YtD), yıllıklandırılmış (×12/ay) · Payda: 12 aylık ortalama bakiye
 
 **Kaynak:** Donuk Alacak Hareket tablosu; Bilanço
 
@@ -611,13 +611,17 @@
 
 **Tanım:** Tüzel kredilerde Aşama 2 oranı.
 
-**Formül:** (Grup 2 Toplam − Grup 2 Kredi Kartları − Grup 2 Tüketici − Grup 2 Mali Kesim) / Tüzel Krediler
+**Formül:** (Grup 2 Toplam − Grup 2 Kredi Kartları − Grup 2 Tüketici − Grup 2 Mali Kesim) / Tüzel Krediler (Kredi Kartları Hariç)
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
 **Kaynak:** Grup 1-2 Krediler; Bilanço
 
 **Kategori:** Bilanço › Aktifler · **Tip:** Rasyo (Stok) · **Birim:** %
+
+**Terimler:**
+
+- *Tüzel Krediler (Kredi Kartları Hariç):* Tüzel Krediler − Tüzel Kredi Kartları (toplam kredi kartı − bireysel kredi kartları).
 
 ---
 
@@ -808,7 +812,7 @@
 
 ---
 
-## Faiz (Kar Payı) Getirili Aktifler / Özkaynaklar
+## Ortalama Faiz (Kar Payı) Getirili Aktifler / Ortalama Özkaynaklar
 
 `id: faiz_getirili_ozkaynak`
 
@@ -1053,6 +1057,10 @@
 
 **Kategori:** Bilanço › Pasifler · **Tip:** Rasyo (Stok) · **Birim:** %
 
+**Terimler:**
+
+- *Tüzel Mevduat:* Ticari Kuruluşlar + Diğer Kuruluşlar mevduatı (Resmi Kuruluşlar hariç). Katılım bankalarında ayrıca özel cari hesaplardaki yurtiçi/yurtdışı yerleşik tüzel kişiler.
+
 ---
 
 ## Krediler / Altındışı Mevduat
@@ -1266,9 +1274,9 @@
 
 `id: tp_pasifler_toplam_pasifler_ozkaynak_haric`
 
-**Tanım:** TL pasiflerin yabancı kaynaklara oranı.
+**Tanım:** TL pasiflerin toplam pasiflere oranı.
 
-**Formül:** TP Toplam Pasifler / (Toplam Pasifler − Özkaynaklar)
+**Formül:** TP Toplam Pasifler / Toplam Pasifler
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
@@ -1276,7 +1284,7 @@
 
 **Kategori:** Bilanço › Pasifler · **Tip:** Rasyo (Stok) · **Birim:** %
 
-> ⚠️ Pay özkaynak DAHİL, payda HARİÇ; %100'ü aşabilir.
+> ⚠️ Adı "Özkaynaklar Hariç" olsa da PBI DAX'ı paydayı Toplam Pasifler (özkaynak dahil) alıyor; birebir uyuldu.
 
 ---
 
@@ -1554,9 +1562,9 @@
 
 `id: diger_faaliyet_giderleri`
 
-**Tanım:** Personel dışı faaliyet giderleri.
+**Tanım:** Toplam operasyonel giderler (PBI adı: "Diğer Faaliyet Giderleri (OPEX)").
 
-**Formül:** Diğer Faaliyet Giderleri (−)
+**Formül:** Personel Giderleri + Diğer Faaliyet Giderleri
 
 **Hesaplama dönemi:** Yılbaşından kümülatif (YtD)
 
@@ -1746,17 +1754,15 @@
 
 **Tanım:** Faiz gelirinin ne kadarının faiz giderine gittiği.
 
-**Formül:** TTM Faiz Giderleri / TTM Faiz Gelirleri
+**Formül:** Faiz Giderleri / Faiz Gelirleri
 
-**Hesaplama dönemi:** Pay ve payda: son 12 ay (TTM)
+**Hesaplama dönemi:** Pay ve payda: yılbaşından kümülatif (YtD)
 
 **Kaynak:** Gelir Tablosu
 
 **Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
 
-**Terimler:**
-
-- *TTM (son 12 ay):* BDDK gelir tablosu YtD olduğundan: TTM(t) = YtD(t) + (Önceki yıl sonu − YtD(t − 12 ay)). 4. çeyrekte doğrudan yıllık tutar. Geçmiş dönem yoksa YtD × 12 / ay sayısı.
+> ℹ️ PBI raporundaki gibi yılbaşından bugüne (YtD) oran; yıllıklandırılmaz. Aralık dışındaki çeyreklerde TTM oranından farklıdır.
 
 ---
 
@@ -1766,7 +1772,7 @@
 
 **Tanım:** Operasyonel verimlilik: aktif başına faaliyet gideri.
 
-**Formül:** TTM Diğer Faaliyet Giderleri / Ortalama Toplam Aktifler
+**Formül:** TTM Operasyonel Giderler (OPEX) / Ortalama Toplam Aktifler
 
 **Hesaplama dönemi:** Pay: son 12 ay (TTM) · Payda: 12 aylık ortalama bakiye
 
@@ -1778,8 +1784,9 @@
 
 - *TTM (son 12 ay):* BDDK gelir tablosu YtD olduğundan: TTM(t) = YtD(t) + (Önceki yıl sonu − YtD(t − 12 ay)). 4. çeyrekte doğrudan yıllık tutar. Geçmiş dönem yoksa YtD × 12 / ay sayısı.
 - *Ortalama bakiye:* (Bakiye(t) + Bakiye(t − 12 ay)) / 2. Bir yıl önceki dönem yoksa dönem sonu bakiye.
+- *Operasyonel Giderler (OPEX):* Personel Giderleri + Diğer Faaliyet Giderleri.
 
-> ℹ️ Personel giderleri dahil değil.
+> ℹ️ Personel giderleri dahil (PBI tanımı).
 
 ---
 
@@ -1789,7 +1796,7 @@
 
 **Tanım:** Maliyetli pasiflerin ortalama maliyeti.
 
-**Formül:** TTM Faiz Giderleri / Ortalama Maliyetli Pasif (basit, 5 bileşen)
+**Formül:** TTM Faiz Giderleri / Ortalama Faiz (Kar Payı) Maliyetli Pasifler (detaylı, 9 bileşen)
 
 **Hesaplama dönemi:** Pay: son 12 ay (TTM) · Payda: 12 aylık ortalama bakiye
 
@@ -1799,11 +1806,11 @@
 
 **Terimler:**
 
-- *Maliyetli Pasif (basit, 5 bileşen):* Mevduat (tamamı) + Alınan Krediler + Para Piyasalarına Borçlar + İhraç Edilen MK (Net) + Sermaye Benzeri Krediler. Yalnız "Faiz Maliyetli Pasiflerin Maliyeti" ve "Kaynağın Paçal Maliyeti" paydasında.
+- *Faiz (Kar Payı) Maliyetli Pasifler (detaylı, 9 bileşen):* Vadeli Mevduat + Alınan Krediler + Para Piyasalarına Borçlar + İhraç Edilen MK (Net) + GUD K/Z Finansal Yükümlülükler + Türev Finansal Yükümlülükler + Faktoring Borçları + Kiralama Borçları + Sermaye Benzeri Krediler.
 - *TTM (son 12 ay):* BDDK gelir tablosu YtD olduğundan: TTM(t) = YtD(t) + (Önceki yıl sonu − YtD(t − 12 ay)). 4. çeyrekte doğrudan yıllık tutar. Geçmiş dönem yoksa YtD × 12 / ay sayısı.
 - *Ortalama bakiye:* (Bakiye(t) + Bakiye(t − 12 ay)) / 2. Bir yıl önceki dönem yoksa dönem sonu bakiye.
 
-> ℹ️ Spread hesabında 9 bileşenli detaylı payda kullanılır; bu ölçüde değil.
+> ℹ️ Spread hesabındaki payda ile aynı (PBI tanımı).
 
 ---
 
@@ -1906,17 +1913,15 @@
 
 **Tanım:** Komisyon gelirinin ne kadarının komisyon giderine gittiği.
 
-**Formül:** TTM Verilen Ücret ve Komisyonlar / TTM Alınan Ücret ve Komisyonlar
+**Formül:** Verilen Ücret ve Komisyonlar / Alınan Ücret ve Komisyonlar
 
-**Hesaplama dönemi:** Pay ve payda: son 12 ay (TTM)
+**Hesaplama dönemi:** Pay ve payda: yılbaşından kümülatif (YtD)
 
 **Kaynak:** Gelir Tablosu
 
 **Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
 
-**Terimler:**
-
-- *TTM (son 12 ay):* BDDK gelir tablosu YtD olduğundan: TTM(t) = YtD(t) + (Önceki yıl sonu − YtD(t − 12 ay)). 4. çeyrekte doğrudan yıllık tutar. Geçmiş dönem yoksa YtD × 12 / ay sayısı.
+> ℹ️ PBI raporundaki gibi yılbaşından bugüne (YtD) oran; yıllıklandırılmaz. Aralık dışındaki çeyreklerde TTM oranından farklıdır.
 
 ---
 
@@ -1947,9 +1952,9 @@
 
 **Tanım:** Net komisyon gelirinin faaliyet giderlerini karşılama oranı.
 
-**Formül:** TTM Net Ücret ve Komisyonlar / TTM Diğer Faaliyet Giderleri
+**Formül:** Net Ücret ve Komisyonlar / Operasyonel Giderler (OPEX)
 
-**Hesaplama dönemi:** Pay ve payda: son 12 ay (TTM)
+**Hesaplama dönemi:** Pay ve payda: yılbaşından kümülatif (YtD)
 
 **Kaynak:** Gelir Tablosu
 
@@ -1957,7 +1962,9 @@
 
 **Terimler:**
 
-- *TTM (son 12 ay):* BDDK gelir tablosu YtD olduğundan: TTM(t) = YtD(t) + (Önceki yıl sonu − YtD(t − 12 ay)). 4. çeyrekte doğrudan yıllık tutar. Geçmiş dönem yoksa YtD × 12 / ay sayısı.
+- *Operasyonel Giderler (OPEX):* Personel Giderleri + Diğer Faaliyet Giderleri.
+
+> ℹ️ PBI raporundaki gibi yılbaşından bugüne (YtD) oran; yıllıklandırılmaz. Aralık dışındaki çeyreklerde TTM oranından farklıdır.
 
 ---
 
@@ -1988,19 +1995,17 @@
 
 **Tanım:** Reklam giderinin net kâra oranı.
 
-**Formül:** TTM Reklam Giderleri / TTM Net Dönem Karı
+**Formül:** Reklam Giderleri / Net Dönem Karı
 
-**Hesaplama dönemi:** Pay ve payda: son 12 ay (TTM)
+**Hesaplama dönemi:** Pay ve payda: yılbaşından kümülatif (YtD)
 
 **Kaynak:** Faaliyet Giderleri dipnotu; Gelir Tablosu
 
 **Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
 
-**Terimler:**
-
-- *TTM (son 12 ay):* BDDK gelir tablosu YtD olduğundan: TTM(t) = YtD(t) + (Önceki yıl sonu − YtD(t − 12 ay)). 4. çeyrekte doğrudan yıllık tutar. Geçmiş dönem yoksa YtD × 12 / ay sayısı.
-
 > ℹ️ Zarar eden bankada negatif/anlamsız.
+
+> ℹ️ PBI raporundaki gibi yılbaşından bugüne (YtD) oran; yıllıklandırılmaz. Aralık dışındaki çeyreklerde TTM oranından farklıdır.
 
 ---
 
@@ -2031,19 +2036,17 @@
 
 **Tanım:** Personel giderinin net kâra oranı.
 
-**Formül:** TTM Personel Giderleri / TTM Net Dönem Karı
+**Formül:** Personel Giderleri / Net Dönem Karı
 
-**Hesaplama dönemi:** Pay ve payda: son 12 ay (TTM)
+**Hesaplama dönemi:** Pay ve payda: yılbaşından kümülatif (YtD)
 
 **Kaynak:** Gelir Tablosu
 
 **Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
 
-**Terimler:**
-
-- *TTM (son 12 ay):* BDDK gelir tablosu YtD olduğundan: TTM(t) = YtD(t) + (Önceki yıl sonu − YtD(t − 12 ay)). 4. çeyrekte doğrudan yıllık tutar. Geçmiş dönem yoksa YtD × 12 / ay sayısı.
-
 > ℹ️ Zarar eden bankada negatif/anlamsız.
+
+> ℹ️ PBI raporundaki gibi yılbaşından bugüne (YtD) oran; yıllıklandırılmaz. Aralık dışındaki çeyreklerde TTM oranından farklıdır.
 
 ---
 
@@ -2067,17 +2070,19 @@
 
 `id: maliyet_gelir_duzeltilmis`
 
-**Tanım:** Düzeltilmiş maliyet/gelir oranı (PBI özel).
+**Tanım:** Kredi karşılık giderlerini de maliyete katan maliyet/gelir oranı.
 
-**Formül:** Formül belgelenmemiş — PBI baseline değeri kopyalanıyor
+**Formül:** (Operasyonel Giderler + Kredi ve Diğer Alacaklar Değer Düşüş Karşılığı) / Faaliyet Gelirleri/Giderleri Toplamı
 
-**Kaynak:** PBI baseline
+**Hesaplama dönemi:** Pay ve payda: yılbaşından kümülatif (YtD)
+
+**Kaynak:** Gelir Tablosu
 
 **Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
 
-**Durum:** PBI baseline (kopya)
+**Terimler:**
 
-> ⚠️ Ham veriden hesaplanmıyor; yeni dönemlerde güncellenmeyebilir. DAX tanımı temin edilmeli.
+- *Operasyonel Giderler (OPEX):* Personel Giderleri + Diğer Faaliyet Giderleri.
 
 ---
 
@@ -2087,11 +2092,11 @@
 
 **Tanım:** Kredi riski maliyeti (PBI adı: "Brüt CoR").
 
-**Formül:** TTM Karşılık Giderleri / Ortalama Brüt Krediler
+**Formül:** TTM Beklenen Kredi Zararı / Özel Karşılık Giderleri / Ortalama Brüt Krediler
 
 **Hesaplama dönemi:** Pay: son 12 ay (TTM) · Payda: 12 aylık ortalama bakiye
 
-**Kaynak:** Gelir Tablosu; Bilanço; Grup 1-2 Krediler tablosu
+**Kaynak:** Kredi ve Diğer Alacaklara İlişkin Karşılık Giderleri dipnotu; Bilanço
 
 **Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
 
@@ -2586,6 +2591,27 @@
 
 ---
 
+## Ortalama RAV / Ortalama Özkaynaklar
+
+`id: ort_rav_ort_ozkaynak`
+
+**Tanım:** Özkaynak başına risk ağırlıklı varlık (risk kaldıracı).
+
+**Formül:** Ortalama RAV / Ortalama Özkaynaklar
+
+**Hesaplama dönemi:** Pay ve payda: 12 aylık ortalama bakiye
+
+**Kaynak:** Sermaye Yeterliliği tablosu; Bilanço
+
+**Kategori:** Bilanço › Pasifler · **Tip:** Rasyo (Stok) · **Birim:** Kat
+
+**Terimler:**
+
+- *RAV:* Kredi Riskine Esas Tutar: Toplam (PBI tanımı; piyasa ve operasyonel risk dahil değil).
+- *Ortalama bakiye:* (Bakiye(t) + Bakiye(t − 12 ay)) / 2. Bir yıl önceki dönem yoksa dönem sonu bakiye.
+
+---
+
 ## Toplam Risk
 
 `id: toplam_risk_tabani`
@@ -2784,6 +2810,10 @@
 **Kaynak:** Bilanço; Mevduat detay
 
 **Kategori:** Bilanço › Pasifler · **Tip:** Rasyo (Stok) · **Birim:** %
+
+**Terimler:**
+
+- *Tüzel Mevduat:* Ticari Kuruluşlar + Diğer Kuruluşlar mevduatı (Resmi Kuruluşlar hariç). Katılım bankalarında ayrıca özel cari hesaplardaki yurtiçi/yurtdışı yerleşik tüzel kişiler.
 
 ---
 

@@ -17,7 +17,7 @@ from __future__ import annotations
 from typing import Callable, Dict, Set
 from .lookup import (
     LookupContext, safe_ratio,
-    krediler, faiz_getirili_aktif, maliyetli_pasif,
+    krediler,
     ttm_flow, avg_balance,
 )
 
@@ -303,7 +303,18 @@ def m_verilen_ucret_komisyonlar(ctx, b, t): return ctx.gelir(b, t, 'Verilen Ücr
 def m_net_ucret_komisyonlar(ctx, b, t):    return ctx.gelir(b, t, 'Net Ücret Ve Komisyon Gelirleri/Giderleri')
 def m_net_ticari_kar(ctx, b, t):           return ctx.gelir(b, t, 'Ticari Kar/Zarar (Net)')
 def m_personel_giderleri(ctx, b, t):       return ctx.gelir(b, t, 'Personel Giderleri (-)')
-def m_diger_faaliyet_giderleri(ctx, b, t): return ctx.gelir(b, t, 'Diğer Faaliyet Giderleri (-)')
+
+
+def _opex(ctx, b, t):
+    """PBI [Diğer Faaliyet Giderleri (OPEX)] = Personel Giderleri + Diğer
+    Faaliyet Giderleri. PBI datatable'ıyla doğrulandı (2026-09-23): KT
+    2025-12-31 18.053 + 16.283 = 34.337 mn TL, PBI 34.337. Önceden yalnız
+    'Diğer Faaliyet Giderleri (-)' kalemi kullanılıyordu (personel hariç),
+    bu da bu ölçüyü ve onu kullanan 2 rasyoyu yaklaşık yarıya düşürüyordu."""
+    return ctx.gelir(b, t, 'Diğer Faaliyet Giderleri (-)') + ctx.gelir(b, t, 'Personel Giderleri (-)')
+
+
+def m_diger_faaliyet_giderleri(ctx, b, t): return _opex(ctx, b, t)
 def m_karsilik_giderleri(ctx, b, t):       return ctx.gelir(b, t, 'Kredi Ve Diğer Alacaklar Değer Düşüş Karşılığı (-)')
 def m_net_donem_kari(ctx, b, t):           return _net_donem_kari(ctx, b, t)
 def m_brut_faaliyet_kari(ctx, b, t):       return ctx.gelir(b, t, 'Net Faaliyet Karı/Zararı')
@@ -358,12 +369,30 @@ def m_grup_2_tuketici_tuketici(ctx, b, t):
     return safe_ratio(g2_tuk, tuketici_kredileri_kk_haric(ctx, b, t))
 
 
+def _grup_2_tuzel(ctx, b, t):
+    return (m_grup_2_krediler(ctx, b, t)
+          - _grup2_kategori(ctx, b, t, 'Kredi Kartları')
+          - _grup2_kategori(ctx, b, t, 'Tüketici Kredileri')
+          - _grup2_kategori(ctx, b, t, 'Mali Kesime Verilen Krediler'))
+
+
+def _tuzel_kredi_kartlari(ctx, b, t):
+    """Toplam kredi kartı (Grup 1 + Grup 2) − bireysel kredi kartları.
+    PBI [Tüzel Kredi Kartları] ile KT'de birebir (2025-12: 57.231 mn)."""
+    toplam_kk = (ctx.grup12(b, t, 'Kredi Kartları,  Standart Nitelikli Krediler, Toplam')
+               + _grup2_kategori(ctx, b, t, 'Kredi Kartları'))
+    return toplam_kk - m_bireysel_kredi_kartlari(ctx, b, t)
+
+
+def _tuzel_krediler_kk_haric(ctx, b, t):
+    return m_tuzel_krediler(ctx, b, t) - _tuzel_kredi_kartlari(ctx, b, t)
+
+
 def m_grup_2_tuzel_tuzel(ctx, b, t):
-    g2_total = m_grup_2_krediler(ctx, b, t)
-    g2_kart = _grup2_kategori(ctx, b, t, 'Kredi Kartları')
-    g2_tuk = _grup2_kategori(ctx, b, t, 'Tüketici Kredileri')
-    g2_mali = _grup2_kategori(ctx, b, t, 'Mali Kesime Verilen Krediler')
-    return safe_ratio(g2_total - g2_kart - g2_tuk - g2_mali, m_tuzel_krediler(ctx, b, t))
+    """2026-09-23: payda PBI'daki gibi Tüzel Krediler (KREDİ KARTI HARİÇ) —
+    pay zaten kredi kartlarını dışlıyordu, payda dışlamıyordu. PBI
+    datatable'ıyla son 5 çeyrekte 119/130 (önceden 54/132), KT birebir."""
+    return safe_ratio(_grup_2_tuzel(ctx, b, t), _tuzel_krediler_kk_haric(ctx, b, t))
 
 
 def m_konut_tuketici(ctx, b, t):
@@ -478,34 +507,36 @@ def m_tp_mevduat_toplam_mevduat(ctx, b, t):
 # RASYOLAR — Gelir Tablosu (YtD)
 # ============================================================
 
+# Aşağıdaki 5 rasyo PBI'da YtD/YtD (iki akım kalemin yılbaşından bugüne
+# oranı, yıllıklandırma yok). Önceden TTM/TTM hesaplanıyordu — Aralık'ta
+# ikisi aynı sonucu verdiği için fark yalnız Mart/Haziran/Eylül'de görünüyordu.
+# PBI datatable'ıyla doğrulandı (2026-09-23, son 5 çeyrek): faiz gid/gel
+# 135/135, komisyon 132/135, reklam/net kâr 130/132, personel/net kâr 27/27,
+# net ücret/opex 133/135.
 def m_komisyon_gid_gel(ctx, b, t):
-    vk = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Verilen Ücret Ve Komisyonlar'))
-    ak = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Alınan Ücret Ve Komisyonlar'))
-    return safe_ratio(vk, ak)
+    return safe_ratio(ctx.gelir(b, t, 'Verilen Ücret Ve Komisyonlar'),
+                      ctx.gelir(b, t, 'Alınan Ücret Ve Komisyonlar'))
 
 
 def m_faiz_gideri_faiz_geliri(ctx, b, t):
-    fgd = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Faiz Giderleri'))
-    fg = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Faiz Gelirleri'))
-    return safe_ratio(fgd, fg)
+    return safe_ratio(ctx.gelir(b, t, 'Faiz Giderleri'), ctx.gelir(b, t, 'Faiz Gelirleri'))
 
 
 def m_personel_net_kar(ctx, b, t):
-    pg = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Personel Giderleri (-)'))
-    nk = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Net Dönem Karı / Zararı'))
-    return safe_ratio(pg, nk)
+    return safe_ratio(ctx.gelir(b, t, 'Personel Giderleri (-)'),
+                      ctx.gelir(b, t, 'Net Dönem Karı / Zararı'))
 
 
 def m_reklam_net_kar(ctx, b, t):
-    rg = _ttm(ctx, b, t, lambda bb, tt: ctx.faaliyet_gid_detay(bb, tt, 'Reklam ve İlan Giderleri'))
-    nk = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Net Dönem Karı / Zararı'))
-    return safe_ratio(rg, nk)
+    return safe_ratio(ctx.faaliyet_gid_detay(b, t, 'Reklam ve İlan Giderleri'),
+                      ctx.gelir(b, t, 'Net Dönem Karı / Zararı'))
 
 
 def m_net_ucret_operasyonel(ctx, b, t):
-    nuk = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Net Ücret Ve Komisyon Gelirleri/Giderleri'))
-    dfg = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Diğer Faaliyet Giderleri (-)'))
-    return safe_ratio(nuk, dfg)
+    """Payda OPEX (personel dahil, bkz. _opex) — önceden yalnız Diğer
+    Faaliyet Giderleri'ydi, oran ~2 kat çıkıyordu."""
+    return safe_ratio(ctx.gelir(b, t, 'Net Ücret Ve Komisyon Gelirleri/Giderleri'),
+                      _opex(ctx, b, t))
 
 
 def m_maliyet_gelir(ctx, b, t):
@@ -531,6 +562,18 @@ def m_maliyet_gelir(ctx, b, t):
     maliyet = ctx.gelir(b, t, 'Diğer Faaliyet Giderleri (-)') + ctx.gelir(b, t, 'Personel Giderleri (-)')
     gelir = ctx.gelir(b, t, 'Faaliyet Gelirleri/Giderleri Toplamı')
     return safe_ratio(maliyet, gelir)
+
+
+def m_maliyet_gelir_duzeltilmis(ctx, b, t):
+    """PBI [Düzeltilmiş Maliyet Gelir Rasyosu] = (OPEX + Kredi Değer Düşüş
+    Karşılığı) / Faaliyet Gelirleri/Giderleri Toplamı, YtD/YtD.
+
+    Formülü hiç belgelenmemişti, BASELINE_PASSTHROUGH'ta donmuştu (yeni
+    çeyrekte hep boş). PBI datatable değerlerinden geri çıkarıldı
+    (2026-09-23): KT 2025-12-31 (34.337 + 12.690) / 101.096 = %46,517,
+    PBI %46,517; 2026-03-31 %53,855, PBI %53,855."""
+    maliyet = _opex(ctx, b, t) + ctx.gelir(b, t, 'Kredi Ve Diğer Alacaklar Değer Düşüş Karşılığı (-)')
+    return safe_ratio(maliyet, ctx.gelir(b, t, 'Faaliyet Gelirleri/Giderleri Toplamı'))
 
 
 def m_gayrinakdi_komisyon_gayrinakdi(ctx, b, t):
@@ -625,14 +668,33 @@ def m_cost_of_risk(ctx, b, t):
     istiyor. Pay tarafında ayrı bir "Brüt" ham kalem yok — Gelir Tablosu'nda
     tek karşılık kalemi ('Kredi Ve Diğer Alacaklar Değer Düşüş Karşılığı
     (-)') zaten değişmedi. Birim ×10000 (bps) yerine bu projenin '%'
-    biriminde kalması için ×100 (safe_ratio) kullanılıyor."""
-    ttm = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Kredi Ve Diğer Alacaklar Değer Düşüş Karşılığı (-)'))
+    biriminde kalması için ×100 (safe_ratio) kullanılıyor.
+
+    Pay 2026-09-23'te düzeltildi: Gelir Tablosu'ndaki 'Kredi Ve Diğer
+    Alacaklar Değer Düşüş Karşılığı (-)' DEĞİL, karşılık giderleri
+    dipnotundaki Beklenen Kredi Zararı / Özel Karşılık kalemi (bkz.
+    _cor_pay). PBI datatable'ıyla son 5 çeyrekte 130/134, KT birebir."""
+    ttm = _ttm(ctx, b, t, lambda bb, tt: _cor_pay(ctx, bb, tt))
     avg = _avg(ctx, b, t, lambda bb, tt: _brut_krediler(ctx, bb, tt))
     return safe_ratio(ttm, avg)
 
 
+_COR_KALEM = 'Karşılık Giderleri (Beklenen Kredi Zararı Karşılıkları / Özel Karşılıklar )'
+
+
+def _cor_pay(ctx, b, t):
+    """PBI [Beklenen Kredi Zararı Karşılıkları (Brüt)] — 'Bankaların Kredi
+    ve Diğer Alacaklarına İlişkin Karşılık Giderleri' dipnotu (kalem adının
+    sonundaki boşluk BDDK şablonunda var). Gelir Tablosu'ndaki toplam karşılık
+    kalemi bunu + diğer karşılıkları içerdiğinden (ör. KT 2025-12: 12.690 vs
+    11.372 mn) CoR'u ~%10 şişiriyordu."""
+    return ctx.karsilik_gid(b, t, _COR_KALEM)
+
+
 def m_faaliyet_gid_ort_aktif(ctx, b, t):
-    ttm = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Diğer Faaliyet Giderleri (-)'))
+    """TTM OPEX (personel dahil, bkz. _opex) / ortalama aktif. PBI
+    datatable'ıyla son 5 çeyrekte 128/135 (önceden 1/135)."""
+    ttm = _ttm(ctx, b, t, lambda bb, tt: _opex(ctx, bb, tt))
     avg = _avg(ctx, b, t, lambda bb, tt: ctx.bilanco(bb, tt, 'Toplam Aktifler'))
     return safe_ratio(ttm, avg)
 
@@ -670,23 +732,25 @@ def m_faiz_getirili_aktif_getirisi(ctx, b, t):
     return safe_ratio(ttm, avg)
 
 
-def m_faiz_maliyetli_pasif_maliyeti(ctx, b, t):
-    ttm = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Faiz Giderleri'))
-    avg = _avg(ctx, b, t, lambda bb, tt: maliyetli_pasif(ctx, bb, tt))
-    return safe_ratio(ttm, avg)
-
-
-def m_kaynak_pacal_maliyet(ctx, b, t):
-    return m_faiz_maliyetli_pasif_maliyeti(ctx, b, t)
-
-
 def _faiz_maliyetli_pasif_maliyeti_detay(ctx, b, t):
-    """m_faiz_maliyetli_pasif_maliyeti'nin DETAYLI (9-bileşenli
-    _faiz_maliyetli_pasif_detay) paydalı hali — yalnız m_spread için,
-    'kaynak_pacal_maliyet' ölçüsünü etkilemez."""
+    """TTM Faiz Giderleri / ortalama DETAYLI (9 bileşenli) maliyetli pasif."""
     ttm = _ttm(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Faiz Giderleri'))
     avg = _avg(ctx, b, t, lambda bb, tt: _faiz_maliyetli_pasif_detay(ctx, bb, tt))
     return safe_ratio(ttm, avg)
+
+
+def m_faiz_maliyetli_pasif_maliyeti(ctx, b, t):
+    """2026-09-23: payda basit 'maliyetli_pasif' yerine detaylı 9 bileşenli
+    tanım — PBI'ın kendi [Spread (bps)] içinde kullandığı ile aynı. PBI
+    datatable'ıyla son 5 çeyrekte 129/135 (önceden 0/135; KT 2025-12 %10,79
+    yerine PBI'daki gibi %19,82)."""
+    return _faiz_maliyetli_pasif_maliyeti_detay(ctx, b, t)
+
+
+def m_kaynak_pacal_maliyet(ctx, b, t):
+    """Katalog tanımı gereği Faiz Maliyetli Pasiflerin Maliyeti'nin kendisi
+    (PBI datatable'ı da bu ölçüyü aynı PBI ölçüsüne eşliyor)."""
+    return m_faiz_maliyetli_pasif_maliyeti(ctx, b, t)
 
 
 # PBI'daki ortak "spread" deseni: ((1+getiri)/(1+maliyet)-1)×10000 (bps).
@@ -953,12 +1017,19 @@ def m_npl_formasyonu(ctx, b, t):
     blank dönüp paydayı brüt(t)/2'ye düşürüyordu (KT Mart'26 yanlış %1,85). Doğru
     değer gerçek ortalama ile %1,11. Bu measure ailesinde (donuk_intikal/tahsilat_ort)
     her zaman gerçek ortalama kullanılır."""
+    return safe_ratio(_npl_net_olusum_yillik(ctx, b, t),
+                      avg_balance(ctx, b, t, lambda bb, tt: _brut_krediler(ctx, bb, tt)))
+
+
+def _npl_net_olusum_yillik(ctx, b, t):
+    """YtD net NPL oluşumu × 12 / ay. PBI oranı yıllıklandırıyor (2026-09-23,
+    datatable: Mart'ta bizim değerin tam 4, Haziran'da 2 katı, Aralık'ta aynısı);
+    son 5 çeyrekte 130/135 (önceden 33/135)."""
     net_olusum = (
         sum(ctx.donuk_akim(b, t, k) for k in _NPL_INTIKAL_ITEMS)
         + sum(ctx.donuk_akim(b, t, k) for k in _NPL_TAHSILAT_ITEMS)
     )
-    ort_brut = avg_balance(ctx, b, t, lambda bb, tt: _brut_krediler(ctx, bb, tt))
-    return safe_ratio(net_olusum, ort_brut)
+    return net_olusum * 12 / ctx.months_in_period(t)
 
 
 def m_alinan_krediler_iemk_toplam_kaynak(ctx, b, t):
@@ -1041,10 +1112,12 @@ def m_toplam_kaynak_toplam_pasifler(ctx, b, t):
 
 
 def m_tp_pasifler_toplam_pasifler_ozkaynak_haric(ctx, b, t):
-    """Pay = TP Pasifler (özkaynak dahil); payda = Toplam Pasifler − Özkaynak."""
-    pay = ctx.bilanco(b, t, 'Toplam Pasifler', 'TP')
-    den = ctx.bilanco(b, t, 'Toplam Pasifler') - ctx.bilanco(b, t, 'Özkaynaklar')
-    return safe_ratio(pay, den)
+    """TP Pasifler / Toplam Pasifler. Ölçünün adı "Özkaynaklar Hariç" dese de
+    PBI DAX'ı (measures.docx) paydayı düz [Toplam Pasifler] alıyor; önceki
+    kod paydadan özkaynağı düşüyordu. PBI datatable'ıyla son 5 çeyrekte
+    135/135 (önceden 0/135)."""
+    return safe_ratio(ctx.bilanco(b, t, 'Toplam Pasifler', 'TP'),
+                      ctx.bilanco(b, t, 'Toplam Pasifler'))
 
 
 def m_sermaye_benzeri_pasifler(ctx, b, t):
@@ -1242,6 +1315,15 @@ def m_rav(ctx, b, t):
     Risk] (Kredi+Piyasa+Operasyonel toplamı, m_toplam_risk_tabani) PBI'de
     AYRI ve farklı bir ölçü."""
     return ctx.sermaye(b, t, 'Kredi Riskine Esas Tutar: Toplam')
+
+
+def m_ort_rav_ort_ozkaynak(ctx, b, t):
+    """PBI [Ortalama RAV / Ortalama Özkaynaklar] (kat) — ortalama RAV
+    (m_rav) / ortalama Özkaynaklar. PBI datatable'ıyla son 5 çeyrekte
+    130/135, KT birebir (2025-12: 4,99 kat)."""
+    return safe_ratio(_avg(ctx, b, t, lambda bb, tt: m_rav(ctx, bb, tt)),
+                      _avg(ctx, b, t, lambda bb, tt: ctx.bilanco(bb, tt, 'Özkaynaklar')),
+                      scale=1.0)
 
 
 def m_syr(ctx, b, t):
@@ -1493,6 +1575,7 @@ MEASURE_FUNCS: Dict[str, Callable] = {
 
     # Gelir Tablosu rasyolar (YtD)
     'maliyet_gelir': m_maliyet_gelir,
+    'maliyet_gelir_duzeltilmis': m_maliyet_gelir_duzeltilmis,
     'komisyon_gid_gel': m_komisyon_gid_gel,
     'faiz_gideri_faiz_geliri': m_faiz_gideri_faiz_geliri,
     'personel_net_kar': m_personel_net_kar,
@@ -1561,6 +1644,7 @@ MEASURE_FUNCS: Dict[str, Callable] = {
     'syr': m_syr,
     'cekirdek_syr': m_cekirdek_syr,
     'rorwa': m_rorwa,
+    'ort_rav_ort_ozkaynak': m_ort_rav_ort_ozkaynak,
     'net_faiz_ort_rav': m_net_faiz_ort_rav,
     'faiz_getirili_aktif_getirisi': m_faiz_getirili_aktif_getirisi,
     'gayrinakdi_komisyon_gayrinakdi': m_gayrinakdi_komisyon_gayrinakdi,
@@ -1594,13 +1678,11 @@ MEASURE_FUNCS: Dict[str, Callable] = {
 # ============================================================
 # Ham veride bulunmayan veya v29 PBI hesabıyla raw'dan tam eşleşmeyen
 # measure'lar — base_data'dan (v29 baseline) olduğu gibi kopyalanır.
-BASELINE_PASSTHROUGH: Set[str] = {
-    # PBI özel düzeltmeli formül — "düzeltme" mantığı hiç belgelenmedi,
-    # denenecek bir formül adayı bile yok (2026-09-12'de arandı, bulunamadı).
-    # 'nim_duzeltilmis' 2026-09-18'de kullanıcının verdiği orijinal PBI
-    # DAX'ıyla raw'a taşındı (bkz. m_nim_duzeltilmis) — burada KALMADI.
-    'maliyet_gelir_duzeltilmis',
-}
+# Şu an boş: son üyesi 'maliyet_gelir_duzeltilmis' 2026-09-23'te PBI
+# datatable'ından formülü çıkarılıp raw'a taşındı (bkz.
+# m_maliyet_gelir_duzeltilmis). Mekanizma, ileride ham veriden
+# hesaplanamayan bir ölçü eklenirse diye korunuyor.
+BASELINE_PASSTHROUGH: Set[str] = set()
 
 # 2026-09-15: kullanıcı, birebir doğrulanmamış olsalar bile 'nim',
 # 'nim_bzk_sonrasi', 'spread' için elimdeki EN İYİ TAHMİN formülünün

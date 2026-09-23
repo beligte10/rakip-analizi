@@ -2045,11 +2045,19 @@
     return '%';
   }
 
-  // Yüzde-tabanlı mı? (Bps değişim yalnızca yüzde birimli measure'lar için
-  // anlamlıdır — TL tutarının "baz puan" değişimi diye bir şey yoktur.)
-  function isPctBirim(measure) {
+  // Rasyo değişimi baz puanla mı gösterilir? Yüzde (%) ve çarpan (kat)
+  // birimli oranlar EVET — PBI oranları kesir olarak tutup her rasyonun
+  // değişimini bps verir (kat oranı 2,0558 → 2,0520 = −38 bps). TL tutarı
+  // ve adet için baz puan anlamsız. 2026-09-23'e kadar kat oranlar yüzde
+  // değişimle gösteriliyordu (kullanıcı: "çeyreklik değişim yanlış").
+  function isBpsDelta(measure) {
     var birim = measure && measure.birim;
-    return birim !== 'bin_TL' && birim !== 'kat' && birim !== 'adet';
+    return birim !== 'bin_TL' && birim !== 'adet';
+  }
+  // Ölçünün kendi birimindeki farkı bps'ye çevirir: yüzde puan ×100,
+  // kat (kesir) ×10000.
+  function bpsCarpani(measure) {
+    return measure && measure.birim === 'kat' ? 10000 : 100;
   }
 
   // YtD/YoY büyüme grafiğindeki DAR etiket hücreleri için kompakt format.
@@ -2572,14 +2580,14 @@
     var prev = isGroup ? groupVal(measure.id, isim, cmpT)
                        : bankVal(measure.id, isim, cmpT);
     if (cur == null || prev == null) return null;
-    if (isPctBirim(measure)) return (cur - prev) * 100;
+    if (isBpsDelta(measure)) return (cur - prev) * bpsCarpani(measure);
     return prev === 0 ? null : (cur - prev) / Math.abs(prev) * 100;
   }
   function fmtQoQDelta(v, measure) {
     if (v == null) return '—';
-    return isPctBirim(measure) ? fmtBps(v) : fmtPctPlain(v, 1);
+    return isBpsDelta(measure) ? fmtBps(v) : fmtPctPlain(v, 1);
   }
-  function qoqDeltaEsik(measure) { return isPctBirim(measure) ? 0.5 : 0.05; }
+  function qoqDeltaEsik(measure) { return isBpsDelta(measure) ? 0.5 : 0.05; }
 
   // Şube & Personel kategorisi: çeyreklik değişim YÜZDE/BPS değil, MİKTARSAL
   // (mutlak fark) gösterilir — kullanıcı isteği (2026-08-15). Örn. Şube Sayısı
@@ -3859,7 +3867,6 @@
     var maxAbs = scaleAbs.length ? Math.max.apply(null, scaleAbs)
                : (absVals.length ? Math.max.apply(null, absVals) : 1);
     if (!maxAbs) maxAbs = 1;
-    var maxVal = validVals.length > 0 ? Math.max.apply(null, validVals) : 1;  // büyüklük için
     var barScaleFactor = isRasyo ? 0.72 : 0.92;
 
     var deltaVals = hasDelta ? displayRows.map(function(row) {
@@ -3898,7 +3905,7 @@
           },
             ['qoq', 'yoy', 'ytd'].map(function(p) {
               var unit = isMiktarDelta(measure) ? (measure.birim === 'bin_TL' ? 'TL' : 'adet')
-                       : isRasyo ? (isPctBirim(measure) ? 'Bps' : '%')
+                       : isRasyo ? (isBpsDelta(measure) ? 'Bps' : '%')
                        : 'Bps';
               return h('option', { key: p, value: p }, deltaPeriodLabel(p) + ' (' + unit + ')');
             })
@@ -3929,14 +3936,15 @@
         var rowOutlier = isValueOutlier(row.value);
         var isNeg = row.value != null && row.value < 0;
         var widthPct;
-        if (row.value == null) {
-          widthPct = 0;
-        } else if (isRasyo) {
-          // |değer| ile ölçekle (negatif-dayanıklı); outlier %100'de sınırlı.
-          widthPct = Math.min((Math.abs(row.value) / maxAbs) * 100 * barScaleFactor, 100);
-        } else {
-          widthPct = (row.value / maxVal) * 100 * barScaleFactor;
-        }
+        // |değer| / maxAbs ile ölçekle — rasyo ve büyüklük için aynı. Büyüklük
+        // eskiden değer/max(değer) kullanıyordu: negatif değerli bir ölçüde
+        // (ör. Net Ticari Kar) genişlik NEGATİF çıkıyor, tarayıcı geçersiz
+        // CSS'i yok sayıp barı ÖNCEKİ ölçünün genişliğinde bırakıyordu
+        // (kullanıcı: "soldaki tabloda grafiklerin güncellenmesi gerekiyor",
+        // 2026-09-23). Büyüklükte outlier ayıklanmadığından negatif yoksa
+        // maxAbs, eski max(değer) ile aynı.
+        widthPct = row.value == null ? 0
+          : Math.min((Math.abs(row.value) / maxAbs) * 100 * barScaleFactor, 100);
         // hasNegative modunda bar 0 çizgisinden (track'in ortası) başlar,
         // iki yöne de en fazla YARI genişliğe kadar uzanabilir — widthPct
         // (tam track'e göre) yarıya bölünüp merkeze göre konumlanır.
@@ -4429,10 +4437,9 @@
     var tarih = props.tarih;
     var groupOrder = DATA.meta.group_order;
 
-    // Bps (baz puan) yalnızca YÜZDE birimli measure'lar için anlamlıdır:
-    // iki yüzdenin farkı baz puandır. TL tutarı (bin_TL), çarpan (kat) veya
-    // adet birimli measure'larda çeyreklik değişim YÜZDE olarak gösterilir.
-    var bpsUygun = isPctBirim(measure);
+    // Bps: yüzde ve kat birimli oranlar (bkz. isBpsDelta). TL/adet birimli
+    // measure'larda çeyreklik değişim YÜZDE olarak gösterilir.
+    var bpsUygun = isBpsDelta(measure);
     // Şube&Personel: çeyreklik grup değişimi MİKTARSAL (banka seviyesiyle tutarlı).
     var miktar = isMiktarDelta(measure);
 

@@ -1700,6 +1700,81 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
 
 ---
 
+### Dönem 33 — 34 maddelik "veriler yanlış" listesi: gerçek PBI çıktısına karşı toplu düzeltme (2026-09-23)
+
+- **Tetikleyici:** kullanıcı 34 maddelik bir liste gönderdi (çoğu "Haziran
+  2026 veriler yanlış"). İlk hipotez Haziran verisinin bozuk olduğuydu
+  (Haziran BDR'leri milyona yuvarlı ayrı bir export'tan geliyor) — ama
+  muhasebe kimlikleri (aktif = pasif, faaliyet geliri toplamı) 27 bankanın
+  hepsinde tuttu, veri sağlam çıktı. Sorun formüllerdeydi; Haziran'da
+  görünmesinin nedeni kullanıcının orada PBI ile kıyaslaması.
+- **KRİTİK BULGU — doğrulama referansı yanlıştı:** önceki dönemlerde
+  "v29 baseline" diye kullanılan `data/computed_backup_2026-08-11.json`
+  kısmen PIPELINE'IN KENDİ ÇIKTISIYDI; `tests/test_baseline_promoted.py`
+  ise doğrudan canlı `computed.json`'la kıyaslıyordu → döngüsel: yanlış
+  bir formül kendi eski değerleriyle "%98 uyumlu" görünüyordu. **Gerçek
+  PBI çıktısı: `datatable_1.xlsx`** (PBI raporunun datatable export'u,
+  227 ölçü adıyla, 2015-03 → 2026-03, grup satırları MEVDUAT/KATILIM/RAKİP
+  dahil) ve ondan üretilmiş `data/computed_datatable_kaynakli_yedek.json`.
+  Bundan sonra formül doğrulaması YALNIZ buna karşı yapılmalı.
+  (`computed_datatable_kaynakli_yedek.json`'daki id eşlemesinde birkaç
+  hata var: kaynak_pacal_maliyet ve personel_ort_aktif — PBI adıyla
+  doğrudan xlsx'ten okumak daha güvenli.)
+- **Düzeltilen formüller** (hepsi PBI'la 2019+ %89–100, KT birebir):
+  - YtD/YtD olması gerekirken TTM/TTM hesaplananlar: Faiz Gideri/Geliri,
+    Komisyon Gid/Gel, Reklam/Net Kâr, Personel/Net Kâr, Net Ücret/Opex.
+  - OPEX tanımı: PBI "Diğer Faaliyet Giderleri (OPEX)" = Personel + Diğer
+    Faaliyet Giderleri (`_opex`). Etkilenenler: diger_faaliyet_giderleri
+    (büyüklük), faaliyet_gid_ort_aktif, net_ucret_operasyonel.
+  - Net NPL Formasyon: pay ×12/ay yıllıklandırılıyor.
+  - Maliyetli Pasif Maliyeti (ve takma adı Kaynağın Paçal Maliyeti):
+    detaylı 9 bileşenli payda (KT %10,8 → %19,8, PBI %19,8).
+  - Cost of Risk: pay Gelir Tablosu toplam karşılığı değil, karşılık
+    giderleri dipnotundaki "Beklenen Kredi Zararı / Özel Karşılıklar"
+    (yeni `ctx.karsilik_gid`).
+  - Tüzel Mevduat (`ctx.tuzel_mevduat`): Resmi Kuruluşlar hariç; Katılım'da
+    yerleşik tüzel kişi ve "Ticari ve Diğer Kur." segmentleri dahil.
+    Tüzel Kredi/Tüzel Mevduat ve (işaretlenmemiş ama bozuk olan) Tüzel
+    Mevduat/Toplam Mevduat birlikte düzeldi.
+  - TP Pasifler/Toplam Pasifler (Özk. Hariç): DAX paydayı düz Toplam
+    Pasifler alıyor (adına rağmen).
+  - Grup 2 Tüzel/Tüzel: payda Tüzel Krediler (kredi kartı hariç).
+  - Düzeltilmiş Maliyet/Gelir: formül PBI değerlerinden geri çıkarıldı —
+    (OPEX + Kredi Değer Düşüş Karşılığı) / Faaliyet Gelirleri, YtD.
+    BASELINE_PASSTHROUGH artık boş.
+- **Grup hesabı (`pipeline/groups.py`):** birçok `_nd_*` banka formülünün
+  eski hâlinde kalmıştı (ör. TP Alınan Krediler İEMK'sız, Maliyet/Gelir
+  eski dar payda + TTM, FGA getirisi basit payda). Hepsi banka tanımıyla
+  hizalandı; RORWA, Düzeltilmiş M/G ve yeni RAV ölçüsü `RATIO_NUM_DEN`'e
+  eklendi (RORWA Katılım grubu basit ortalamaya düşüp TOM Bank yüzünden
+  −0,3 çıkıyordu, PBI 5,3). Spread ve Kredi Mevduat Spread'i grupta artık
+  basit ortalama değil, grup getirisi/maliyetinden bileşik
+  (`COMPOUND_SPREADS`). Mevduat grubunda 21 ölçünün 21'i PBI'la 5/5.
+- **Yeni ölçü:** `ort_rav_ort_ozkaynak` (Ortalama RAV / Ortalama
+  Özkaynaklar, kat). "Ortalama FGA / Ortalama Özkaynaklar" zaten vardı
+  (`faiz_getirili_ozkaynak`, PBI'la birebir) — sadece adı düzeltildi.
+- **Arayüz:** (1) kat birimli oranların değişimi artık bps (fark ×10000,
+  PBI gibi) — önceden % değişimdi. (2) Büyüklük sıralama tablosunda
+  negatif değerlerde bar genişliği negatif çıkıp tarayıcı yok sayıyor, bar
+  önceki ölçünün genişliğinde kalıyordu (Net Ticari Kâr) — |değer|/maxAbs.
+- **Bilerek dokunulmayanlar:** (a) Personel Gid./Ort. Aktif — PBI'daki
+  değer her dönem Faaliyet Gid./Ort. Aktif ile birebir aynı, yani PBI
+  DAX'ında kopyala-yapıştır hatası var gibi; bizimki matematiksel olarak
+  doğru (KT %1,64 vs PBI %3,12), kullanıcıya soruldu. (b) TP Kredi/Toplam
+  Kredi, TP Kredi/TP Kaynak, YP Kredi/YP Altındışı Kaynak — KT'de
+  0,05–0,13 puan fark; PBI'ın [TP/YP Brüt Krediler] tanımı bilinmiyor,
+  DAX gerekiyor. (c) İhtiyaç Kredileri, Maliyet/Gelir, Spread, Kredi
+  Mevduat Spread'i, FGA Getirisi, Tüzel pazar payı, YK Tüzel/Toplam —
+  PBI'la tarihsel olarak birebir; Haziran referans değerleri istendi.
+- **Test:** `test_baseline_promoted.py` gerçek PBI referansına bağlandı
+  (27 ölçü, 2019+). Ölçü sayısı 161 → 162. `pytest` → 128/128.
+- **Veri:** `computed.json` yedeği
+  `data/backups/computed_20260923_152330_pre_pbi_formul_fix.json`; tam
+  diff'te yalnız amaçlanan 17 (banka) + 23 (grup) ölçü değişti, meta'da
+  yalnız available_measures (+1).
+
+---
+
 ## 7. Açık ve bekleyen konular
 
 

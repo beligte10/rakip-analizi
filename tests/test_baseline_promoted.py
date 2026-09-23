@@ -1,22 +1,19 @@
 """
-BASELINE_PASSTHROUGH'dan raw'a taşınan ölçüler için regresyon spot-check
-(bkz. docs/MIMARI_SABLON.md §10, docs/PROJE_EL_KITABI.md Dönem 25/26/29).
+Ham veriden hesaplanan rasyoların GERÇEK PBI çıktısıyla uyumu (regresyon).
 
-İki grup var:
-1. YÜKSEK GÜVEN: syr, cekirdek_syr, rorwa, net_faiz_ort_rav,
-   faiz_getirili_aktif_getirisi, gayrinakdi_komisyon_gayrinakdi,
-   maliyet_gelir (2026-09-12, ≥%85 ±0.5pp) — ARTIK ayrıca nim,
-   nim_duzeltilmis, nim_bzk_sonrasi, spread, cost_of_risk de burada
-   (2026-09-18/21'de kullanıcının verdiği orijinal PBI DAX'larıyla
-   düzeltildi, %92-97 ±0.5pp uyum — "en iyi tahmin" değil, DOĞRULANMIŞ
-   formül).
-2. EN İYİ TAHMİN: kredi_mevduat_spread (2026-09-21'de dış (compound)
-   formülü DAX'a göre düzeltildi ama iç "Mevduatın Paçal Maliyeti"
-   alt-formülü hâlâ doğrulanmadı, %79.5 ±0.5pp) — eşik BİLEREK düşük,
-   amaç "hâlâ makul aralıkta mı" kontrolü, birebir doğruluk garantisi
-   değil.
+Referans: `data/computed_datatable_kaynakli_yedek.json` — PBI raporunun
+kendi datatable export'undan (datatable_1.xlsx) üretilmiş değerler, 2015-03
+→ 2026-03. 2026-09-23'e kadar bu test referans olarak canlı
+`data/computed.json`'u, yani PIPELINE'IN KENDİ ÇIKTISINI kullanıyordu —
+döngüseldi: yanlış bir formül, kendi eski yanlış değerleriyle "uyumlu"
+görünüyordu (ör. Maliyetli Pasif Maliyeti KT'de %10,8 hesaplanıyordu, PBI
+%19,8). Şimdi bağımsız PBI değerlerine karşı ölçülüyor.
 
-Gerçek `data/veriler.parquet` + `data/computed.json`'a bağımlı (bu makineye
+Yalnız 2019 ve sonrası: 2013-2018 arası bazı BDDK şablon kalemleri farklı
+adlandırıldığı için eski dönemlerde yapısal sapma var (bkz. docs/
+PROJE_EL_KITABI.md Dönem 33). Eşikler 2026-09-23 ölçümünün biraz altında.
+
+Gerçek `data/veriler.parquet` + PBI referans JSON'una bağımlı (bu makineye
 özel, .gitignore'da) — yoksa test SESSİZCE ATLANIR.
 """
 from pathlib import Path
@@ -28,13 +25,15 @@ import pytest
 from pipeline.lookup import LookupContext
 from pipeline import measures as m
 
-VERILER_PATH = Path(__file__).resolve().parent.parent / 'data' / 'veriler.parquet'
-COMPUTED_PATH = Path(__file__).resolve().parent.parent / 'data' / 'computed.json'
-CATALOG_PATH = Path(__file__).resolve().parent.parent / 'data' / 'catalog.json'
+DATA_DIR = Path(__file__).resolve().parent.parent / 'data'
+VERILER_PATH = DATA_DIR / 'veriler.parquet'
+PBI_PATH = DATA_DIR / 'computed_datatable_kaynakli_yedek.json'
+CATALOG_PATH = DATA_DIR / 'catalog.json'
+SINCE = '2019-03-31'
 
 pytestmark = pytest.mark.skipif(
-    not VERILER_PATH.exists() or not COMPUTED_PATH.exists(),
-    reason='data/veriler.parquet veya data/computed.json bu makinede yok',
+    not VERILER_PATH.exists() or not PBI_PATH.exists(),
+    reason='data/veriler.parquet veya PBI referans JSON bu makinede yok',
 )
 
 
@@ -48,16 +47,15 @@ def ctx():
 
 
 @pytest.fixture(scope='module')
-def baseline():
-    return json.loads(COMPUTED_PATH.read_text(encoding='utf-8'))['bank_data']
+def pbi():
+    return json.loads(PBI_PATH.read_text(encoding='utf-8'))['bank_data']
 
 
-def _diffs(ctx, baseline, measure_id, fn):
-    prod = baseline.get(measure_id, {})
+def _diffs(ctx, pbi, measure_id, fn):
     diffs = []
-    for bank, dates in prod.items():
-        for date, prod_v in dates.items():
-            if prod_v is None:
+    for bank, dates in pbi.get(measure_id, {}).items():
+        for date, pbi_v in dates.items():
+            if pbi_v is None or date < SINCE:
                 continue
             try:
                 my_v = fn(ctx, bank, date)
@@ -65,60 +63,49 @@ def _diffs(ctx, baseline, measure_id, fn):
                 my_v = None
             if my_v is None:
                 continue
-            diffs.append(abs(my_v - prod_v))
+            diffs.append(abs(my_v - pbi_v))
     return diffs
 
 
 # (measure_id, fonksiyon, min_kabul_orani (<=0.5pp), min_nokta_sayisi)
-PROMOTED = [
-    ('syr', m.m_syr, 0.95, 500),
-    ('cekirdek_syr', m.m_cekirdek_syr, 0.95, 500),
-    ('rorwa', m.m_rorwa, 0.90, 500),
-    ('net_faiz_ort_rav', m.m_net_faiz_ort_rav, 0.90, 500),
-    ('faiz_getirili_aktif_getirisi', m.m_faiz_getirili_aktif_getirisi, 0.85, 500),
-    ('gayrinakdi_komisyon_gayrinakdi', m.m_gayrinakdi_komisyon_gayrinakdi, 0.95, 500),
-    ('maliyet_gelir', m.m_maliyet_gelir, 0.90, 500),
-    # 2026-09-18: kullanıcının verdiği orijinal PBI DAX'larıyla düzeltildi
-    # (önceden BEST_EFFORT'taydı, %81.7/yok/%43) — gerçek ölçüm %96.2/95.6/93.5.
-    ('nim', m.m_nim, 0.90, 500),
-    ('nim_duzeltilmis', m.m_nim_duzeltilmis, 0.90, 500),
-    ('nim_bzk_sonrasi', m.m_nim_bzk_sonrasi, 0.85, 500),
-    # 2026-09-21: basit fark (a−p) yerine bileşik ((1+a)/(1+p)-1) DAX
-    # formülüne düzeltildi (önceden BEST_EFFORT'ta %78.3) — gerçek ölçüm %92.8.
-    ('spread', m.m_spread, 0.85, 500),
-    # 2026-09-21: payda NET krediler yerine BRÜT krediler (DAX: "Ortalama
-    # Brüt Krediler") — gerçek ölçüm %96.7 (pratikte eski formülle aynı
-    # çıkıyor çoğu bankada, ama DAX'a artık birebir sadık).
-    ('cost_of_risk', m.m_cost_of_risk, 0.90, 500),
+# Yorumdaki yüzde: 2026-09-23 ölçümü (2019+).
+PBI_UYUMLU = [
+    ('syr', m.m_syr, 0.95, 500),                                          # 98.3
+    ('cekirdek_syr', m.m_cekirdek_syr, 0.95, 500),                        # 99.0
+    ('rorwa', m.m_rorwa, 0.93, 500),                                      # 96.0
+    ('net_faiz_ort_rav', m.m_net_faiz_ort_rav, 0.90, 500),                # 94.4
+    ('faiz_getirili_aktif_getirisi', m.m_faiz_getirili_aktif_getirisi, 0.90, 500),  # 94.2
+    ('faiz_getirili_ozkaynak', m.m_faiz_getirili_ozkaynak, 0.95, 500),    # 97.7
+    ('gayrinakdi_komisyon_gayrinakdi', m.m_gayrinakdi_komisyon_gayrinakdi, 0.95, 500),  # 99.9
+    ('maliyet_gelir', m.m_maliyet_gelir, 0.90, 500),                      # 94.9
+    ('maliyet_gelir_duzeltilmis', m.m_maliyet_gelir_duzeltilmis, 0.90, 500),  # 94.2
+    ('nim', m.m_nim, 0.93, 500),                                          # 96.2
+    ('nim_duzeltilmis', m.m_nim_duzeltilmis, 0.92, 500),                  # 95.3
+    ('nim_bzk_sonrasi', m.m_nim_bzk_sonrasi, 0.90, 500),                  # 92.8
+    ('spread', m.m_spread, 0.90, 500),                                    # 94.5
+    ('kredi_mevduat_spread', m.m_kredi_mevduat_spread, 0.93, 500),        # 97.0
+    ('cost_of_risk', m.m_cost_of_risk, 0.93, 500),                        # 97.0
+    ('npl_formasyonu', m.m_npl_formasyonu, 0.95, 500),                    # 98.4
+    ('grup_2_tuzel_tuzel', m.m_grup_2_tuzel_tuzel, 0.90, 500),            # 94.7
+    ('tuzel_krediler_tuzel_mevduat', m.m_tuzel_krediler_tuzel_mevduat, 0.92, 500),  # 95.6
+    ('tp_pasifler_toplam_pasifler_ozkaynak_haric', m.m_tp_pasifler_toplam_pasifler_ozkaynak_haric, 0.97, 500),  # 99.7
+    ('tp_alinan_toplam_alinan', m.m_tp_alinan_toplam_alinan, 0.97, 500),  # 99.9
+    ('faiz_gideri_faiz_geliri', m.m_faiz_gideri_faiz_geliri, 0.93, 500),  # 96.9
+    ('komisyon_gid_gel', m.m_komisyon_gid_gel, 0.93, 500),                # 97.7
+    ('reklam_net_kar', m.m_reklam_net_kar, 0.93, 500),                    # 97.6
+    ('faaliyet_gid_ort_aktif', m.m_faaliyet_gid_ort_aktif, 0.85, 500),    # 89.5
+    ('net_ucret_operasyonel', m.m_net_ucret_operasyonel, 0.92, 500),      # 96.3
+    ('faiz_maliyetli_pasif_maliyeti', m.m_faiz_maliyetli_pasif_maliyeti, 0.95, 500),  # 97.5
+    # PBI datatable'ında yalnız 2026-03-31 var.
+    ('personel_net_kar', m.m_personel_net_kar, 0.95, 20),                 # 100
 ]
 
 
-@pytest.mark.parametrize('measure_id,fn,min_oran,min_n', PROMOTED)
-def test_v29_baseline_ile_uyum(ctx, baseline, measure_id, fn, min_oran, min_n):
-    diffs = _diffs(ctx, baseline, measure_id, fn)
+@pytest.mark.parametrize('measure_id,fn,min_oran,min_n', PBI_UYUMLU)
+def test_pbi_ile_uyum(ctx, pbi, measure_id, fn, min_oran, min_n):
+    diffs = _diffs(ctx, pbi, measure_id, fn)
     assert len(diffs) >= min_n, f'{measure_id}: yeterli karşılaştırma noktası yok ({len(diffs)})'
     oran = sum(1 for d in diffs if d < 0.5) / len(diffs)
     medyan = statistics.median(diffs)
     assert oran >= min_oran, f'{measure_id}: ±0.5pp uyum oranı {oran:.1%} < {min_oran:.0%}'
     assert medyan < 0.5, f'{measure_id}: medyan fark {medyan:.4f} beklenenden büyük'
-
-
-# EN İYİ TAHMİN grubu — (measure_id, fonksiyon, min_oran, max_medyan,
-# min_nokta_sayisi). Eşikler bilerek gevşek: amaç "formül hâlâ makul mü"
-# kontrolü, üsttekiler (PROMOTED) kadar sıkı bir doğruluk garantisi değil.
-BEST_EFFORT = [
-    # 2026-09-21: dış (compound) formül DAX'a göre düzeltildi ama iç
-    # "Mevduatın Paçal Maliyeti" alt-formülü (TTM Mevduata Verilen Faizler /
-    # Ortalama Mevduat) hâlâ doğrulanmadı — gerçek ölçüm %79.5.
-    ('kredi_mevduat_spread', m.m_kredi_mevduat_spread, 0.70, 0.5, 500),
-]
-
-
-@pytest.mark.parametrize('measure_id,fn,min_oran,max_medyan,min_n', BEST_EFFORT)
-def test_v29_baseline_ile_en_iyi_tahmin(ctx, baseline, measure_id, fn, min_oran, max_medyan, min_n):
-    diffs = _diffs(ctx, baseline, measure_id, fn)
-    assert len(diffs) >= min_n, f'{measure_id}: yeterli karşılaştırma noktası yok ({len(diffs)})'
-    oran = sum(1 for d in diffs if d < 0.5) / len(diffs)
-    medyan = statistics.median(diffs)
-    assert oran >= min_oran, f'{measure_id}: ±0.5pp uyum oranı {oran:.1%} < {min_oran:.0%}'
-    assert medyan < max_medyan, f'{measure_id}: medyan fark {medyan:.4f} beklenenden büyük'

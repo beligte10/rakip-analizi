@@ -45,7 +45,9 @@ GOLDEN = {
 # RAV, Toplam Risk, Likidite Açığı×7, vade dilimleri vb.). Bilinçli artış.
 # 2026-09-18: 160→161 — "Kıymetli Maden Mevduatı / Toplam Mevduat" eklendi
 # (kullanıcı isteği). Bilinçli artış.
-EXPECTED_MEASURE_COUNT = 161
+# 2026-09-23: 161→162 — "Ortalama RAV / Ortalama Özkaynaklar" eklendi
+# (kullanıcı isteği, PBI'da var bizde yoktu). Bilinçli artış.
+EXPECTED_MEASURE_COUNT = 162
 EXPECTED_BANK_COUNT = 27
 
 

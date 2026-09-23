@@ -803,7 +803,7 @@
     },
     {
       "id": "faiz_getirili_ozkaynak",
-      "ad": "Faiz (Kar Payı) Getirili Aktifler / Özkaynaklar",
+      "ad": "Ortalama Faiz (Kar Payı) Getirili Aktifler / Ortalama Özkaynaklar",
       "tip": "rasyo",
       "akim_stok": "stok",
       "birim": "kat",
@@ -1833,6 +1833,17 @@
       "birim": "TL",
       "akim_stok": "stok",
       "pazar_payi": true,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "ort_rav_ort_ozkaynak",
+      "ad": "Ortalama RAV / Ortalama Özkaynaklar",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "tip": "rasyo",
+      "birim": "kat",
+      "akim_stok": "stok",
+      "pazar_payi": false,
       "sort_direction": "desc"
     },
     {
