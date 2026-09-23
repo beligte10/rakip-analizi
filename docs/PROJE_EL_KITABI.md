@@ -1656,9 +1656,47 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   sapma, bilinen veri kalitesi sorunu deseniyle tutarlı). Tam diff:
   SADECE `tp_spread`/`yp_spread` değişti. `pytest tests/` → 114/114
   yeşil.
-- **Commit'ler:** henüz commit edilmedi. `data/computed.json` canlıda
-  ayrı güncellendi — yedeği
+- **Commit:** `eb42d0e`. `data/computed.json` canlıda ayrı güncellendi —
+  yedeği
   `data/backups/computed_20260921_155348_pre_tpyp_vadeli_bakiye_fix.json`.
+
+---
+
+### Dönem 32 — Admin paneline Jira tarzı görev panosu (2026-09-22)
+
+- **İstek:** "admin arayüzünde backlog için jira tarzı bir yapı geliştir;
+  yapılacaklar, planlananlar ve yapıldılar elle eklenebilsin, sekmeler
+  arasında taşınabilsin."
+- **Mevcut "Backlog" sekmesinden farkı:** o sekme `whats_new.json`'u
+  okur, yani YAPILMIŞ işlerin sürüm günlüğüdür (salt-okunur). Yeni
+  **Görev Panosu** sekmesi ise henüz yapılmamış işlerin çalışma alanı —
+  bu yüzden verisi kodla değil VERİYLE yaşar: `data/board.json`
+  (git-ignored, `EXPORT_DATA_FILES`'a eklendi, yani sunucu taşıma
+  ZIP'iyle birlikte gider).
+- **Veri modeli:** kartlar sütun sütun LİSTE olarak saklanır
+  (`{"columns": {"yapilacak": [...], "planlanan": [...], "yapildi":
+  [...]}}`). Kartta ayrı bir "sıra" alanı YOK — sıra listenin kendisi;
+  taşıma = kaynaktan çıkar, hedefe `index`'e ekle. Böylece her taşımada
+  yeniden numaralandırma ve ondan doğacak tutarsızlık riski yok.
+- **API** (hepsi `require_admin_access` arkasında): `GET
+  /api/admin/board`, `POST .../cards`, `PUT .../cards/{id}`, `POST
+  .../cards/{id}/move`, `DELETE .../cards/{id}`. Yazma işlemleri
+  `_save_board` ile atomik (tmp → replace), `_load_board` bozuk/eksik
+  dosyada boş panoya düşer.
+- **Arayüz:** üç sütun; kart başlık + açıklama + öncelik (Yüksek/Orta/
+  Düşük, sol kenar rengi) + serbest etiket. Taşıma İKİ yolla: masaüstünde
+  sürükle-bırak (bırakma konumu kartların dikey orta noktasına göre
+  hesaplanır, yani sütun içinde sıralama da yapılabilir), dokunmatikte
+  ←/→ butonları — HTML5 drag&drop mobilde olay üretmediği için buton
+  yolu şart, süsleme değil.
+- **Yan düzeltme:** `escapeHtml` tırnakları kaçırmıyordu
+  (`textContent`→`innerHTML` sadece `& < >` çevirir). Kart başlığı bir
+  `value="…"` özniteliğine yazıldığı için içinde `"` geçen bir başlık
+  özniteliği kapatabilirdi — attribute bağlamı için `escapeAttr`
+  eklendi.
+- **Doğrulama:** canlı tarayıcıda ekle/düzenle/sil/sürükle-bırak/ok-buton
+  akışlarının hepsi denendi, sayfa yenilendikten sonra kalıcılık teyit
+  edildi, mobil genişlikte tek sütuna iniyor. `pytest tests/` → 114/114.
 
 ---
 

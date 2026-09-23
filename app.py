@@ -34,6 +34,8 @@ Endpoint'ler:
 - GET  /api/admin/history          → son upload'lar
 - GET  /api/admin/users            → üyelik başvuruları listesi
 - POST /api/admin/users/{id}/approve|reject → üyelik onayı/reddi
+- GET  /api/admin/board            → görev panosu (kanban) kartları
+- POST/PUT/DELETE /api/admin/board/cards[/{id}[/move]] → kart ekle/düzenle/taşı/sil
 - POST /admin/upload                → xlsx yükle, pipeline çalıştır
 
 ENV vars (opsiyonel, hiçbiri zorunlu değil):
@@ -46,6 +48,7 @@ from __future__ import annotations
 import os
 import io
 import json
+import uuid
 import shutil
 import secrets
 import zipfile
@@ -90,6 +93,11 @@ SEED_CATALOG = APP_ROOT / 'catalog.seed.json'
 MEASURE_INFO_MD = APP_ROOT / 'docs' / 'olcu_info_kartlari.md'
 DATA_HISTORY = DATA_DIR / 'upload_history.json'
 DATA_USERS = DATA_DIR / 'users.json'
+# Görev panosu (Jira tarzı kanban) — admin panelden elle girilen yapılacaklar.
+# whats_new.json'dan (yapılmış işlerin SÜRÜM günlüğü) ayrıdır: bu, henüz
+# yapılmamış/planlanan işlerin çalışma alanı, o yüzden kodla değil veriyle
+# birlikte (DATA_DIR) yaşar ve export/import paketine dahil edilir.
+DATA_BOARD = DATA_DIR / 'board.json'
 SESSION_SECRET_PATH = DATA_DIR / '.session_secret'
 
 # Auth — admin (mevcut, tek hesap, upload/rebuild/coverage kontrolü)
@@ -1146,6 +1154,149 @@ def admin_delete_group(group_name: str, _: str = Depends(require_admin_access)):
     return {'status': 'ok'}
 
 
+# ============================================================
+# GÖREV PANOSU (Jira tarzı kanban) — admin-only, 2026-09-22
+# ============================================================
+# Kartlar sütun sütun LİSTE olarak saklanır (her sütun kendi sırasını taşır) —
+# kartların üzerinde ayrı bir "sıra" alanı tutup her taşımada yeniden
+# numaralandırmaya gerek kalmıyor, taşıma = listeden çıkar + hedefe ekle.
+BOARD_COLUMNS = ['yapilacak', 'planlanan', 'yapildi']
+
+
+def _empty_board() -> dict:
+    return {'columns': {c: [] for c in BOARD_COLUMNS}}
+
+
+def _load_board() -> dict:
+    if not DATA_BOARD.exists():
+        return _empty_board()
+    try:
+        with open(DATA_BOARD, encoding='utf-8') as f:
+            board = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return _empty_board()
+    cols = board.get('columns') or {}
+    return {'columns': {c: list(cols.get(c, [])) for c in BOARD_COLUMNS}}
+
+
+def _save_board(board: dict) -> None:
+    tmp = DATA_BOARD.with_suffix('.tmp')
+    with open(tmp, 'w', encoding='utf-8') as f:
+        json.dump(board, f, ensure_ascii=False, indent=2)
+    tmp.replace(DATA_BOARD)
+
+
+def _find_card(board: dict, card_id: str):
+    """(sütun_adı, index) döner, bulunamazsa (None, None)."""
+    for col in BOARD_COLUMNS:
+        for i, card in enumerate(board['columns'][col]):
+            if card.get('id') == card_id:
+                return col, i
+    return None, None
+
+
+class BoardCardPayload(BaseModel):
+    baslik: str
+    aciklama: Optional[str] = ''
+    oncelik: str = 'orta'
+    etiket: Optional[str] = ''
+    durum: str = 'yapilacak'
+
+
+class BoardCardUpdatePayload(BaseModel):
+    baslik: Optional[str] = None
+    aciklama: Optional[str] = None
+    oncelik: Optional[str] = None
+    etiket: Optional[str] = None
+
+
+class BoardMovePayload(BaseModel):
+    durum: str
+    index: Optional[int] = None
+
+
+@app.get('/api/admin/board')
+def admin_board_list(_: str = Depends(require_admin_access)):
+    return _load_board()
+
+
+@app.post('/api/admin/board/cards')
+def admin_board_create(payload: BoardCardPayload, user: str = Depends(require_admin_access)):
+    baslik = (payload.baslik or '').strip()
+    if not baslik:
+        raise HTTPException(status_code=400, detail='Başlık boş olamaz')
+    if payload.durum not in BOARD_COLUMNS:
+        raise HTTPException(status_code=400, detail='Geçersiz sütun')
+    board = _load_board()
+    now = datetime.now().isoformat(timespec='seconds')
+    card = {
+        'id': uuid.uuid4().hex[:12],
+        'baslik': baslik,
+        'aciklama': (payload.aciklama or '').strip(),
+        'oncelik': payload.oncelik if payload.oncelik in ('yuksek', 'orta', 'dusuk') else 'orta',
+        'etiket': (payload.etiket or '').strip(),
+        'created_at': now,
+        'updated_at': now,
+        'created_by': user,
+    }
+    board['columns'][payload.durum].append(card)
+    _save_board(board)
+    return {'status': 'ok', 'card': card}
+
+
+@app.put('/api/admin/board/cards/{card_id}')
+def admin_board_update(card_id: str, payload: BoardCardUpdatePayload,
+                       _: str = Depends(require_admin_access)):
+    board = _load_board()
+    col, idx = _find_card(board, card_id)
+    if col is None:
+        raise HTTPException(status_code=404, detail='Kart bulunamadı')
+    card = board['columns'][col][idx]
+    if payload.baslik is not None:
+        baslik = payload.baslik.strip()
+        if not baslik:
+            raise HTTPException(status_code=400, detail='Başlık boş olamaz')
+        card['baslik'] = baslik
+    if payload.aciklama is not None:
+        card['aciklama'] = payload.aciklama.strip()
+    if payload.oncelik is not None and payload.oncelik in ('yuksek', 'orta', 'dusuk'):
+        card['oncelik'] = payload.oncelik
+    if payload.etiket is not None:
+        card['etiket'] = payload.etiket.strip()
+    card['updated_at'] = datetime.now().isoformat(timespec='seconds')
+    _save_board(board)
+    return {'status': 'ok', 'card': card}
+
+
+@app.post('/api/admin/board/cards/{card_id}/move')
+def admin_board_move(card_id: str, payload: BoardMovePayload,
+                     _: str = Depends(require_admin_access)):
+    if payload.durum not in BOARD_COLUMNS:
+        raise HTTPException(status_code=400, detail='Geçersiz sütun')
+    board = _load_board()
+    col, idx = _find_card(board, card_id)
+    if col is None:
+        raise HTTPException(status_code=404, detail='Kart bulunamadı')
+    card = board['columns'][col].pop(idx)
+    target = board['columns'][payload.durum]
+    pos = len(target) if payload.index is None else max(0, min(payload.index, len(target)))
+    target.insert(pos, card)
+    card['updated_at'] = datetime.now().isoformat(timespec='seconds')
+    _save_board(board)
+    return {'status': 'ok'}
+
+
+@app.delete('/api/admin/board/cards/{card_id}')
+def admin_board_delete(card_id: str, _: str = Depends(require_admin_access)):
+    board = _load_board()
+    col, idx = _find_card(board, card_id)
+    if col is None:
+        raise HTTPException(status_code=404, detail='Kart bulunamadı')
+    board['columns'][col].pop(idx)
+    _save_board(board)
+    return {'status': 'ok'}
+
+
 def _result_period_count(bank_data: dict) -> int:
     """Hesaplanan bank_data'da kaç (banka × tarih) hücresi dolu — boşluk kontrolü için."""
     ta = (bank_data or {}).get('toplam_aktifler', {})
@@ -2194,6 +2345,7 @@ EXPORT_DATA_FILES = [
     ('computed.json', DATA_COMPUTED),
     ('veriler.parquet', DATA_PARQUET),
     ('upload_history.json', DATA_HISTORY),
+    ('board.json', DATA_BOARD),
 ]
 
 

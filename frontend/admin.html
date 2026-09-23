@@ -474,6 +474,73 @@ button.secondary:hover { background: var(--hover); }
 .backlog-section:not(.collapsed) > h2 .chev, .backlog-section:not(.collapsed) > h3 .chev { transform: rotate(90deg); }
 .backlog-section.collapsed .backlog-section-body { display: none; }
 .backlog-section-body { padding-left: 4px; }
+
+/* ============================================================
+   GÖREV PANOSU (Jira tarzı kanban) — 2026-09-22
+   Üç sütun yan yana; kartlar hem sürükle-bırak hem de ←/→ butonlarıyla
+   taşınabilir (dokunmatik ekranlarda HTML5 drag&drop çalışmadığı için
+   buton yolu şart, sürükleme sadece masaüstü konforu).
+   ============================================================ */
+.board-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.board-col {
+  display: flex; flex-direction: column; min-width: 0;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px;
+}
+.board-col.drop-active { border-color: var(--kt-green); background: #f2f9ee; box-shadow: inset 0 0 0 1px var(--kt-green); }
+.board-col-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.board-col-title { font-size: 13px; font-weight: 700; color: var(--text); flex: 1; }
+.board-col-count {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 1px 8px;
+}
+.board-cards { display: flex; flex-direction: column; gap: 8px; min-height: 40px; }
+.board-card {
+  background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--muted);
+  border-radius: 8px; padding: 9px 10px; cursor: grab; position: relative;
+}
+.board-card:active { cursor: grabbing; }
+.board-card.dragging { opacity: 0.4; }
+.board-card.prio-yuksek { border-left-color: var(--error); }
+.board-card.prio-orta { border-left-color: var(--warning); }
+.board-card.prio-dusuk { border-left-color: var(--kt-green); }
+.board-card-title { font-size: 13px; font-weight: 600; line-height: 1.35; word-break: break-word; }
+.board-card-desc { font-size: 12px; color: var(--muted); margin-top: 4px; white-space: pre-wrap; word-break: break-word; }
+.board-card-meta { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.board-chip { font-size: 10.5px; font-weight: 700; border-radius: 20px; padding: 1px 7px; }
+.board-chip.prio-yuksek { color: var(--error); background: var(--error-bg); }
+.board-chip.prio-orta { color: var(--warning); background: var(--warning-bg); }
+.board-chip.prio-dusuk { color: var(--success); background: var(--success-bg); }
+.board-chip.label { color: var(--primary); background: var(--info-bg); }
+.board-card-date { font-size: 10.5px; color: var(--muted); margin-left: auto; }
+.board-card-actions { display: flex; gap: 4px; margin-top: 8px; padding-top: 7px; border-top: 1px solid var(--border); }
+.board-btn {
+  border: 1px solid var(--border); background: var(--panel); color: var(--muted);
+  border-radius: 5px; padding: 3px 8px; font-size: 12px; cursor: pointer; line-height: 1.3;
+}
+.board-btn:hover:not(:disabled) { background: var(--hover); color: var(--text); }
+.board-btn:disabled { opacity: 0.3; cursor: default; }
+.board-btn.danger:hover { background: var(--error-bg); color: var(--error); border-color: var(--error); }
+.board-btn.primary { background: var(--kt-green); border-color: var(--kt-green); color: #fff; font-weight: 600; }
+.board-btn.primary:hover:not(:disabled) { background: var(--kt-green-dark); border-color: var(--kt-green-dark); color: #fff; }
+.board-btn.spacer { margin-left: auto; }
+.board-add-btn {
+  margin-top: 8px; width: 100%; border: 1px dashed var(--border); background: none; color: var(--muted);
+  border-radius: 8px; padding: 7px; font-size: 12.5px; cursor: pointer;
+}
+.board-add-btn:hover { border-color: var(--kt-green); color: var(--kt-green); background: var(--panel); }
+.board-form { background: var(--panel); border: 1px solid var(--kt-green); border-radius: 8px; padding: 9px 10px; margin-top: 8px; }
+.board-form input, .board-form textarea, .board-form select {
+  width: 100%; border: 1px solid var(--border); border-radius: 5px; padding: 6px 8px;
+  font-size: 12.5px; font-family: inherit; margin-bottom: 6px; background: var(--panel); color: var(--text);
+}
+.board-form textarea { resize: vertical; min-height: 52px; }
+.board-form-row { display: flex; gap: 6px; }
+.board-form-actions { display: flex; gap: 6px; margin-top: 2px; }
+.board-empty { font-size: 12px; color: var(--muted); text-align: center; padding: 10px 4px; font-style: italic; }
+
+@media (max-width: 860px) {
+  .board-grid { grid-template-columns: minmax(0, 1fr); }
+}
 </style>
 </head>
 <body>
@@ -495,6 +562,7 @@ button.secondary:hover { background: var(--hover); }
     <button class="tab-btn" data-tab="uyelik" onclick="switchTab('uyelik')">👥 Üyelik Başvuruları<span class="tab-badge" id="pending-badge" style="display:none"></span></button>
     <button class="tab-btn" data-tab="gruplar" onclick="switchTab('gruplar')">🏷️ Banka Grupları</button>
     <button class="tab-btn" data-tab="gecmis" onclick="switchTab('gecmis')">📜 Yükleme Geçmişi</button>
+    <button class="tab-btn" data-tab="pano" onclick="switchTab('pano')">🗒️ Görev Panosu</button>
     <button class="tab-btn" data-tab="surumler" onclick="switchTab('surumler')">🗂️ Backlog</button>
     <button class="tab-btn" data-tab="backlog" onclick="switchTab('backlog')">📖 Proje El Kitabı</button>
   </div>
@@ -750,6 +818,20 @@ button.secondary:hover { background: var(--hover); }
   <div class="panel">
     <h2><span class="icon">📜</span> Yükleme Geçmişi</h2>
     <div id="history-content">
+      <div class="loading">Yükleniyor…</div>
+    </div>
+  </div>
+  </div>
+
+  <!-- GÖREV PANOSU (kanban) -->
+  <div class="tab-panel" data-tab-panel="pano" hidden>
+  <div class="panel">
+    <h2><span class="icon">🗒️</span> Görev Panosu</h2>
+    <p style="margin:0 0 12px;font-size:13px;color:var(--muted)">
+      Yapılacak işleri elle ekle, kartları sürükleyerek (ya da ←/→ butonlarıyla) sütunlar arasında taşı.
+      Sadece adminler görür; "Backlog" sekmesi YAPILMIŞ sürümlerin günlüğüdür, burası ise henüz yapılmamış işlerin çalışma alanı.
+    </p>
+    <div id="board-content">
       <div class="loading">Yükleniyor…</div>
     </div>
   </div>
@@ -1704,6 +1786,13 @@ function escapeHtml(s) {
   return div.innerHTML;
 }
 
+// escapeHtml TIRNAKLARI kaçırmaz (textContent→innerHTML sadece & < > çevirir),
+// bu yüzden bir HTML ÖZNİTELİĞİ içine yazarken bu kullanılmalı — aksi halde
+// içinde " geçen bir metin özniteliği kapatıp yeni öznitelik enjekte edebilir.
+function escapeAttr(s) {
+  return escapeHtml(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 let _usersCache = [];               // son yüklenen tüm başvurular (filtrelenmemiş)
 let _userFilters = { status: 'all', q: '' };  // 2026-08-12 filtreleme state'i
 
@@ -2257,12 +2346,249 @@ function wrapBacklogHeadingLevel(container, tagName) {
 }
 
 // ============================================================
+// GÖREV PANOSU (Jira tarzı kanban) — 2026-09-22
+// ============================================================
+const BOARD_COLS = [
+  { id: 'yapilacak', title: 'Yapılacaklar', icon: '📋' },
+  { id: 'planlanan', title: 'Planlananlar', icon: '🗓️' },
+  { id: 'yapildi',   title: 'Yapıldı',      icon: '✅' },
+];
+const BOARD_PRIO = { yuksek: 'Yüksek', orta: 'Orta', dusuk: 'Düşük' };
+
+let boardState = { columns: { yapilacak: [], planlanan: [], yapildi: [] } };
+// Hangi sütunda ekleme formu açık / hangi kart düzenleniyor — render bu
+// ikisine bakarak formu doğru yere basar (kart listesi her seferinde
+// sunucudan gelen state'ten yeniden çizildiği için UI durumu ayrı tutulur).
+let boardUI = { addingIn: null, editingId: null };
+
+async function boardApi(path, options) {
+  const r = await fetch('/api/admin/board' + path, options);
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({ detail: 'HTTP ' + r.status }));
+    throw new Error(err.detail || ('HTTP ' + r.status));
+  }
+  return r.json();
+}
+
+async function loadBoard() {
+  const target = $('board-content');
+  try {
+    boardState = await boardApi('', {});
+    renderBoard();
+  } catch (err) {
+    target.innerHTML = `<div class="result-panel error">Görev panosu yüklenemedi: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function boardShortDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  return d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+}
+
+function renderBoard() {
+  const target = $('board-content');
+  let html = '<div class="board-grid">';
+  for (let ci = 0; ci < BOARD_COLS.length; ci++) {
+    const col = BOARD_COLS[ci];
+    const cards = boardState.columns[col.id] || [];
+    html += `<div class="board-col" data-col="${col.id}">
+      <div class="board-col-head">
+        <span>${col.icon}</span>
+        <span class="board-col-title">${escapeHtml(col.title)}</span>
+        <span class="board-col-count">${cards.length}</span>
+      </div>
+      <div class="board-cards" data-col="${col.id}">`;
+    if (cards.length === 0 && boardUI.addingIn !== col.id) {
+      html += `<div class="board-empty">Kart yok</div>`;
+    }
+    for (const card of cards) {
+      html += boardUI.editingId === card.id
+        ? boardCardFormHtml(card, col.id)
+        : boardCardHtml(card, ci);
+    }
+    html += `</div>`;
+    html += boardUI.addingIn === col.id
+      ? boardCardFormHtml(null, col.id)
+      : `<button class="board-add-btn" onclick="boardOpenAdd('${col.id}')">+ Kart Ekle</button>`;
+    html += `</div>`;
+  }
+  html += '</div>';
+  target.innerHTML = html;
+  boardBindDragDrop();
+  const firstInput = target.querySelector('.board-form input');
+  if (firstInput) firstInput.focus();
+}
+
+function boardCardHtml(card, colIndex) {
+  const prio = card.oncelik || 'orta';
+  const prev = BOARD_COLS[colIndex - 1];
+  const next = BOARD_COLS[colIndex + 1];
+  return `<div class="board-card prio-${prio}" draggable="true" data-id="${card.id}">
+    <div class="board-card-title">${escapeHtml(card.baslik || '')}</div>
+    ${card.aciklama ? `<div class="board-card-desc">${escapeHtml(card.aciklama)}</div>` : ''}
+    <div class="board-card-meta">
+      <span class="board-chip prio-${prio}">${BOARD_PRIO[prio] || 'Orta'}</span>
+      ${card.etiket ? `<span class="board-chip label">${escapeHtml(card.etiket)}</span>` : ''}
+      <span class="board-card-date">${boardShortDate(card.updated_at)}</span>
+    </div>
+    <div class="board-card-actions">
+      <button class="board-btn" onclick="boardMove('${card.id}','${prev ? prev.id : ''}')"
+        ${prev ? `title="${escapeHtml(prev.title)}'a taşı"` : 'disabled'}>←</button>
+      <button class="board-btn" onclick="boardMove('${card.id}','${next ? next.id : ''}')"
+        ${next ? `title="${escapeHtml(next.title)}'a taşı"` : 'disabled'}>→</button>
+      <button class="board-btn spacer" onclick="boardOpenEdit('${card.id}')" title="Düzenle">✏️</button>
+      <button class="board-btn danger" onclick="boardDelete('${card.id}')" title="Sil">🗑️</button>
+    </div>
+  </div>`;
+}
+
+// Hem ekleme hem düzenleme aynı form — card null ise yeni kart.
+function boardCardFormHtml(card, colId) {
+  const c = card || { baslik: '', aciklama: '', oncelik: 'orta', etiket: '' };
+  const isEdit = !!card;
+  return `<div class="board-form" data-form-col="${colId}">
+    <input type="text" class="bf-baslik" placeholder="Başlık" value="${escapeAttr(c.baslik)}"
+      onkeydown="boardFormKey(event, ${isEdit ? `'${c.id}'` : 'null'}, '${colId}')">
+    <textarea class="bf-aciklama" placeholder="Açıklama (opsiyonel)">${escapeHtml(c.aciklama || '')}</textarea>
+    <div class="board-form-row">
+      <select class="bf-oncelik">
+        <option value="yuksek"${c.oncelik === 'yuksek' ? ' selected' : ''}>Yüksek öncelik</option>
+        <option value="orta"${c.oncelik === 'orta' ? ' selected' : ''}>Orta öncelik</option>
+        <option value="dusuk"${c.oncelik === 'dusuk' ? ' selected' : ''}>Düşük öncelik</option>
+      </select>
+      <input type="text" class="bf-etiket" placeholder="Etiket" value="${escapeAttr(c.etiket || '')}">
+    </div>
+    <div class="board-form-actions">
+      <button class="board-btn primary" onclick="boardSave(${isEdit ? `'${c.id}'` : 'null'}, '${colId}')">${isEdit ? 'Kaydet' : 'Ekle'}</button>
+      <button class="board-btn" onclick="boardCancelForm()">Vazgeç</button>
+    </div>
+  </div>`;
+}
+
+function boardFormKey(ev, cardId, colId) {
+  if (ev.key === 'Enter') { ev.preventDefault(); boardSave(cardId, colId); }
+  else if (ev.key === 'Escape') { ev.preventDefault(); boardCancelForm(); }
+}
+
+function boardOpenAdd(colId) { boardUI = { addingIn: colId, editingId: null }; renderBoard(); }
+function boardOpenEdit(cardId) { boardUI = { addingIn: null, editingId: cardId }; renderBoard(); }
+function boardCancelForm() { boardUI = { addingIn: null, editingId: null }; renderBoard(); }
+
+async function boardSave(cardId, colId) {
+  const form = document.querySelector(`.board-form[data-form-col="${colId}"]`);
+  if (!form) return;
+  const payload = {
+    baslik: form.querySelector('.bf-baslik').value.trim(),
+    aciklama: form.querySelector('.bf-aciklama').value.trim(),
+    oncelik: form.querySelector('.bf-oncelik').value,
+    etiket: form.querySelector('.bf-etiket').value.trim(),
+  };
+  if (!payload.baslik) { form.querySelector('.bf-baslik').focus(); return; }
+  try {
+    if (cardId) {
+      await boardApi('/cards/' + cardId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      boardUI = { addingIn: null, editingId: null };
+    } else {
+      await boardApi('/cards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ durum: colId }, payload)),
+      });
+      // Form açık kalır — arka arkaya hızlı kart girişi için.
+      boardUI = { addingIn: colId, editingId: null };
+    }
+    await loadBoard();
+  } catch (err) {
+    alert('Kaydedilemedi: ' + err.message);
+  }
+}
+
+async function boardDelete(cardId) {
+  if (!confirm('Bu kart silinsin mi?')) return;
+  try {
+    await boardApi('/cards/' + cardId, { method: 'DELETE' });
+    await loadBoard();
+  } catch (err) {
+    alert('Silinemedi: ' + err.message);
+  }
+}
+
+async function boardMove(cardId, colId, index) {
+  if (!colId) return;
+  try {
+    await boardApi(`/cards/${cardId}/move`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ durum: colId, index: index == null ? null : index }),
+    });
+    await loadBoard();
+  } catch (err) {
+    alert('Taşınamadı: ' + err.message);
+  }
+}
+
+// Sürükle-bırak (masaüstü). Dokunmatikte HTML5 drag&drop olayları gelmez —
+// orada karttaki ←/→ butonları aynı işi yapar.
+function boardBindDragDrop() {
+  let draggedId = null;
+  document.querySelectorAll('.board-card[draggable]').forEach(el => {
+    el.addEventListener('dragstart', ev => {
+      draggedId = el.getAttribute('data-id');
+      el.classList.add('dragging');
+      ev.dataTransfer.effectAllowed = 'move';
+      ev.dataTransfer.setData('text/plain', draggedId);
+    });
+    el.addEventListener('dragend', () => {
+      draggedId = null;
+      el.classList.remove('dragging');
+      document.querySelectorAll('.board-col').forEach(c => c.classList.remove('drop-active'));
+    });
+  });
+  document.querySelectorAll('.board-col').forEach(colEl => {
+    colEl.addEventListener('dragover', ev => {
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = 'move';
+      colEl.classList.add('drop-active');
+    });
+    colEl.addEventListener('dragleave', ev => {
+      if (!colEl.contains(ev.relatedTarget)) colEl.classList.remove('drop-active');
+    });
+    colEl.addEventListener('drop', ev => {
+      ev.preventDefault();
+      colEl.classList.remove('drop-active');
+      const id = draggedId || ev.dataTransfer.getData('text/plain');
+      if (!id) return;
+      boardMove(id, colEl.getAttribute('data-col'), boardDropIndex(colEl, ev.clientY, id));
+    });
+  });
+}
+
+// İmleç hangi kartların arasına denk geliyor — her kartın dikey ORTA
+// noktasıyla karşılaştırılır (üstündeyse o kartın önüne girer).
+function boardDropIndex(colEl, clientY, draggedIdValue) {
+  const cards = Array.from(colEl.querySelectorAll('.board-card'))
+    .filter(c => c.getAttribute('data-id') !== draggedIdValue);
+  for (let i = 0; i < cards.length; i++) {
+    const rect = cards[i].getBoundingClientRect();
+    if (clientY < rect.top + rect.height / 2) return i;
+  }
+  return cards.length;
+}
+
+// ============================================================
 // INIT
 // ============================================================
 loadCoverage();
 loadUsers();
 loadGroups();
 loadHistory();
+loadBoard();
 loadVersionLog();
 loadBacklog();
 </script>
