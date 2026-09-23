@@ -1757,8 +1757,16 @@
     .topbar-menu-btn { order: 3; }
     .topbar-toolbar.open { left: 12px; width: auto; }
 
-    .date-selector-bar { padding: 6px 12px; gap: 8px; }
-    .date-selector-bar .mode-toggle { margin-left: 0; }
+    /* Tarih satırı ve görünüm butonları, alttaki Ölçü Ara/Kategori
+       kutularıyla aynı sol-sağ kenarlara yaslanır (kullanıcı isteği,
+       2026-09-23): yıl seçici sabit, çeyrek pill'leri kalan genişliği
+       eşit paylaşır, mode-toggle tam satır ve butonları eşit genişlikte. */
+    .date-selector-bar { padding: 8px 12px; gap: 6px; }
+    .date-selector-bar .date-selector-group:first-child { flex: 0 0 auto; }
+    .date-selector-bar .date-selector-group:nth-child(2) { flex: 1 1 0; min-width: 0; }
+    .date-selector-bar .date-pill { flex: 1 1 0; min-width: 0; padding: 5px 4px; text-align: center; }
+    .date-selector-bar .mode-toggle { margin-left: 0; flex: 1 1 100%; display: flex; }
+    .date-selector-bar .mode-btn { flex: 1 1 0; padding: 6px 4px; text-align: center; }
     /* "YIL"/"ÇEYREK" etiket yazıları mobilde kaldırılıyor (kullanıcı
        isteği, 2026-09-18) — pill/dropdown'ların kendisi zaten ne
        olduklarını gösteriyor, etiket sadece yer kaplıyordu. */
@@ -2284,6 +2292,21 @@
     var set = {};
     (((DATA.meta.groups || {})[groupName]) || []).forEach(function(b){ set[b] = true; });
     return set;
+  }
+
+  // Banka listesi panellerinin (BankRanking, YtDGrowthChart) başlığındaki
+  // ÖZNE kısmı — hangi bankaların listelendiğini söyler. Kullanıcı isteği
+  // (2026-09-23): "filtreleme yapılınca başlıklar da filtreye göre
+  // değişsin" — önceden başlık her zaman "Tüm 27 Banka" diyordu, filtre
+  // seçiliyken listedeki 7 satırla çelişiyordu. Banka sayısı başlıkta
+  // gösterilmiyor (kullanıcı isteği, 2026-09-23); "İlk 20"deki 20 sayı
+  // değil filtrenin adı. İki panel de aynı ifadeyi kullanır.
+  function bankScopeLabel(filterMode) {
+    if (filterMode === 'katilim') return 'Katılım Bankaları';
+    if (filterMode === 'mevduat') return 'Mevduat Bankaları';
+    if (filterMode === 'rakip') return 'Rakip Bankalar';
+    if (filterMode === 'top20') return 'İlk 20 Banka';
+    return 'Tüm Banka';
   }
 
   // Bir tarih pazar payı (marketShare/Bps) hesabı için GÜVENİLİR mi?
@@ -3777,10 +3800,10 @@
     // (admin panelden düzenlenebilen GERÇEK grup üyelikleri — "Banka
     // Grupları" kartlarının kullandığı KAYNAKLA aynı) okunur; tur==='...'
     // gibi ham bir alan kontrolü DEĞİL, çünkü grup üyeliği admin'ce
-    // özelleştirilebilir. Panel başlığındaki "Tüm N Banka" metni her zaman
-    // TAM listeye göre kalır — satırlar VE alttaki "Kuveyt Türk sırası"
-    // rozeti filtreye göre güncellenir. Ölçü/çeyrek değişince de seçim
-    // korunur (local state, component tab değişince remount olmuyor).
+    // özelleştirilebilir. Panel başlığı da (bkz. bankScopeLabel), satırlar
+    // ve alttaki "Kuveyt Türk sırası" rozeti gibi, filtreye göre güncellenir.
+    // Ölçü/çeyrek değişince seçim korunur (local state, component tab
+    // değişince remount olmuyor).
     var filterModeState = useState('all');
     var filterMode = filterModeState[0], setFilterMode = filterModeState[1];
     var katilimSet = groupMemberSet('Katılım Bankaları');
@@ -3855,8 +3878,9 @@
         ref: props.headerRef
       },
         h('div', null,
-          isRasyo ? ('Tüm ' + sortedAll.length + ' Banka Rasyo (' + birimLabel(measure) + ')')
-                  : ('Tüm ' + sortedAll.length + ' Banka Büyüklükleri (' + buyuklukLabel(measure) + ')')),
+          bankScopeLabel(filterMode) +
+            (isRasyo ? (' Rasyo (' + birimLabel(measure) + ')')
+                     : (' Büyüklükleri (' + buyuklukLabel(measure) + ')'))),
         hasDelta && h('div', { className: 'bank-ranking-header-delta' },
           h('div', { className: 'bank-ranking-header-delta-title' },
             (isMiktarDelta(measure) || isRasyo) ? 'Değişim' : 'Pazar Payı'
@@ -4152,7 +4176,7 @@
     }));
     function headerTitle() {
       return h('div', { className: 'ytd-header-row' },
-        h('span', null, 'Tüm ' + bars.length + ' Banka ' + metricLabel + ' Büyüme (' + birimEtiket + ')'),
+        h('span', null, bankScopeLabel(filterMode) + ' ' + metricLabel + ' Büyüme (' + birimEtiket + ')'),
         periodSelectEl
       );
     }
