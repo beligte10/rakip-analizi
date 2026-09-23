@@ -1823,13 +1823,19 @@
        biniyordu (kullanıcı isteğiyle 2026-09-16'da geri getirildi) —
        çözüm: bank-label satırındaki gibi dikey (writing-mode) yazı, dar
        hücrelere üst üste binmeden sığıyor. */
+    /* Dikey yazı modunda flex eksenleri yer değiştirir: ana eksen DİKEY,
+       çapraz eksen YATAY olur. Bu yüzden barın tam üstünde ortalamak için
+       align-items:center (yatay) gerekir — eski flex-end metni hücrenin
+       kenarına itip her değeri barından ~12px kaydırıyordu (2026-09-23).
+       justify-content:flex-start + 180° döndürme metni hücrenin ALTINA,
+       yani bara bitişik yere oturtur. */
     .ytd-values-row { height: 42px; }
     .ytd-value-cell {
       writing-mode: vertical-rl;
       transform: rotate(180deg);
       font-size: 8px;
-      justify-content: center;
-      align-items: flex-end;
+      justify-content: flex-start;
+      align-items: center;
       display: flex;
     }
   }
