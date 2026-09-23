@@ -1775,6 +1775,26 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
 
 ---
 
+### Dönem 34 — "İlk 20 Banka" filtresi aktif büyüklüğüne bağlandı; kompozisyon kontrolü (2026-09-23)
+
+- **İstek:** "İlk 20 banka o kalemin ilk 20 bankası değil, güncel aktif
+  büyüklüğe göre ilk 20 banka filtresi olarak uygulanmalı" (ör. TP
+  Aktifler/Toplam Aktifler'de oranı en yüksek 20 banka geliyordu).
+- **Düzeltme:** sıralama tablosunun (BankRanking) "İlk 20" filtresi artık
+  `getFixedTop20(tarih)` — seçili dönemin Toplam Aktifler'ine göre ilk 20
+  (`meta.top20_by_date`, app.py::_rebuild_dynamic_meta) — ile filtreliyor,
+  sıralama ölçüye göre kalıyor. YtD grafiği zaten bu listeyi kullanıyordu;
+  filtre başka kartta yok. Tarayıcıda: iki kart aynı 20 bankayı veriyor.
+- **Kompozisyon şikâyetleri (kredi: Mevduat grubu tüzel/tüketici; gelir:
+  Katılım net faiz):** hem `composition_data` hem ekrandaki yüzdeler PBI
+  datatable'ıyla karşılaştırıldı — 2022'den beri her çeyrekte %0,5 içinde
+  / birebir. Fark bulunamadı; kullanıcıdan karşılaştırdığı PBI ekranı
+  istendi. Olası nedenler: kredi kompozisyonundaki "Tüzel" dilimi leasing,
+  mali kesim ve dış ticaret HARİÇ (PBI tanımı); gelir kompozisyonunda
+  yüzdeler mutlak değer toplamı üzerinden (negatif kalem pozitif dilim).
+
+---
+
 ## 7. Açık ve bekleyen konular
 
 

@@ -3834,7 +3834,14 @@
       // aynı listede görünmesi gerekiyor — grup üyeliğine KT ayrıca eklenir.
       displayRows = sortedAll.filter(function(r){ return rakipSet[r.banka] || r.banka === KT_NAME; });
     } else if (filterMode === 'top20') {
-      displayRows = sortedAll.slice(0, 20);
+      // Seçili dönemin TOPLAM AKTİF büyüklüğüne göre ilk 20 banka (kullanıcı
+      // isteği, 2026-09-23) — önceden ölçünün kendi sıralamasının ilk 20'si
+      // alınıyordu (ör. TP Aktifler/Toplam Aktifler'de oranı en yüksek 20
+      // banka). Liste ölçüye göre sıralı kalır; YtD grafiği de aynı listeyi
+      // kullanıyor (getFixedTop20).
+      var top20Set = {};
+      getFixedTop20(tarih).forEach(function(b){ top20Set[b] = true; });
+      displayRows = sortedAll.filter(function(r){ return top20Set[r.banka]; });
     }
     // KT'nin filtrelenmiş listedeki sırası — KT o alt kümede yoksa
     // (ör. "İlk 20" filtresinde KT 20. sıranın dışında kalmışsa) null,
