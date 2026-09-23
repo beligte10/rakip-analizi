@@ -1738,7 +1738,10 @@
       flex-wrap: wrap; padding: 8px 12px; min-height: 0; row-gap: 4px;
     }
     .topbar-left { order: 1; }
-    .topbar-left-text { font-size: 16px; }
+    /* Mobilde header'da sadece KT logosu kalır, "Rakip Analizi" yazısı
+       gizlenir (kullanıcı isteği, 2026-09-23 — 09-22'deki tersi denemenin
+       yerine). */
+    .topbar-left-text { display: none; }
     /* Ortadaki "Ölçü · Tarih" başlığı mobilde kaldırılıyor (kullanıcı
        isteği, 2026-09-18) — kendi satırını kaplayıp üst şeridi
        şişiriyordu; aynı bilgi zaten aşağıdaki ÖLÇÜ seçicisinde ve
