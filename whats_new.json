@@ -1,5 +1,17 @@
 [
   {
+    "version": "v2.1",
+    "date": "2026-09-24",
+    "title": "YP Mevduat payı ve yenilenen Ölçü Oluştur",
+    "items": [
+      "Yeni ölçü: YP Mevduat / Toplam Mevduat (TP Mevduat / Toplam Mevduat'ın yanında).",
+      "Ölçü Oluştur yenilendi: ölçü listelerinde arama, kaydetmeden önce canlı önizleme, geçersiz kombinasyonlarda anında açıklama ve otomatik ad önerisi.",
+      "Özel ölçülerde birim artık doğru: tutar/tutar yüzde, adet/adet ve rasyo/rasyo kat, TL/adet birim başına tutar; oranlarda yüzde ya da kat seçilebiliyor.",
+      "Gelir tablosu kalemi bilanço kalemine oranlandığında PBI'daki gibi son 12 ay / 12 aylık ortalama kullanılıyor (ör. Net Kâr / Toplam Aktifler = ROAA).",
+      "Özel ölçüler için otomatik bilgi kartı ve kaydettikten sonra tek tıkla dashboard'da açma."
+    ]
+  },
+  {
     "version": "v2.0",
     "date": "2026-09-23",
     "title": "Rasyolar PBI raporuyla birebir hizalandı",

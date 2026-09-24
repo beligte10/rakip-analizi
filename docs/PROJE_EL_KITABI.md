@@ -1795,6 +1795,45 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
 
 ---
 
+### Dönem 35 — YP Mevduat payı; "Ölçü Oluştur" baştan ele alındı (2026-09-24)
+
+- **YP Mevduat / Toplam Mevduat eklendi** (`yp_mevduat_toplam_mevduat`,
+  Bilanço › Pasifler, TP payının hemen arkasında, sıralama `asc`). 100 −
+  TP olarak değil doğrudan YP / Toplam: eski dönemlerde 12 banka-dönemde
+  TP + YP ≠ Toplam. PBI kalemlerinden hesaplanan oranla 641/643 aynı. TP
+  Mevduat / Toplam Mevduat zaten vardı (PBI ile 135/135). 163 ölçü.
+- **Ölçü Oluştur — bulunan sorunlar:** oranlar her durumda ×100/"%"
+  (Personel/Şube "%1.400" çıkıyordu); akım (YtD) / stok oranında
+  yıllıklandırma yoktu (Mart küçük, Aralık büyük); anlamsız kombinasyonlar
+  (A = B, rasyo/tutar, akım + stok) kaydedilebiliyordu; önizleme, arama,
+  ad çakışma kontrolü, bilgi kartı yoktu; kaynak ölçü silinince özel ölçü
+  sessizce kayboluyordu.
+- **Çözüm:**
+  - Anlam kuralları tek yerde: `pipeline/custom_measure_rules.py` (sunucu
+    doğrular) ve aynısının JS karşılığı `customMeasureSpec` (tarayıcı
+    hesaplar). Oran biçimi: TL/TL → % (veya kat), adet/adet ve
+    rasyo/rasyo → kat (veya %), TL/adet → birim başına bin TL; adet/TL ve
+    rasyo/tutar geçersiz. Fark/toplam: aynı birim, akım + stok yok.
+  - Akım tutar / stok tutar oranında PBI yöntemi: akım son 12 ay (TTM),
+    stok 12 aylık ortalama (`cmNokta`, lookup.ttm_flow/avg_balance ile aynı
+    formül). Doğrulama: "Net Dönem Karı / Toplam Aktifler" özel ölçüsü 27
+    bankanın 27'sinde hazır ROAA ile birebir; Krediler/Personel =
+    Personel Başına Krediler, Krediler/Mevduat = hazır ölçü.
+  - Kayıt: `bicim` alanı (pct/kat), aynı ad engeli (büyük/küçük harf ve
+    boşluk duyarsız, düzenlenen ölçü hariç; katalogdaki adlarla da), sabit
+    0/NaN/inf engeli, ad boşluk normalizasyonu.
+  - Arayüz: aranabilir ölçü seçici (tür/birim/dönem ipucuyla), canlı
+    önizleme (KT + 4 grup, son 4 çeyrek), anında hata açıklaması (Kaydet
+    kapalı), otomatik ad önerisi (60 karaktere sığdırılır), "Dashboard'da
+    göster", listede formül ve kırık referans uyarısı, otomatik bilgi kartı.
+- **Test:** `tests/test_custom_measures.py` (35 test: kurallar + kayıt).
+  UI, gerçek users.py + kural modülüyle çalışan yerel sahte sunucuda uçtan
+  uca denendi (oluştur/düzenle/sil/göster, 14 uç senaryo, mobil).
+  `pytest` → 163/163. Özellik hâlâ yalnız adminlere açık (2026-09-18
+  kararı).
+
+---
+
 ## 7. Açık ve bekleyen konular
 
 
