@@ -209,7 +209,7 @@
 
   /* -------- Ölçü Oluştur / Görünümlerim modal'ları (2026-09-17) -------- */
   .mb-modal {
-    background: #fff; color: #1a2b3c; width: 520px; max-width: 92vw;
+    background: #fff; color: #1a2b3c; width: 640px; max-width: 94vw;
     max-height: 82vh; display: flex; flex-direction: column;
     border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,0.3);
   }
@@ -234,6 +234,36 @@
     padding: 2px 4px; border-radius: 5px; opacity: 0.75;
   }
   .mb-measure-item-btn:hover { opacity: 1; background: rgba(0,0,0,0.06); }
+  /* Ölçü Oluştur v2 (2026-09-24): arama, birim ipucu, önizleme, uyarılar */
+  .mb-op-btn .mb-op-desc { display: block; font-size: 10.5px; font-weight: 500; opacity: 0.8; }
+  .mb-picker-filter { margin-bottom: 4px; }
+  .mb-meta { font-size: 11px; color: #64748b; margin-top: 3px; }
+  body.dark .mb-meta { color: #94a3b8; }
+  .mb-warn {
+    margin-top: 10px; padding: 8px 10px; border-radius: 7px; font-size: 12px;
+    background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;
+  }
+  body.dark .mb-warn { background: rgba(251,191,36,0.12); color: #fcd34d; border-color: rgba(251,191,36,0.35); }
+  .mb-preview {
+    margin-top: 12px; padding: 10px 12px; border-radius: 8px;
+    background: #f7f9fb; border: 1px solid #e2e8f0;
+  }
+  body.dark .mb-preview { background: rgba(255,255,255,0.03); border-color: #2a3b4d; }
+  .mb-preview-title { font-size: 11.5px; font-weight: 700; color: #475569; margin-bottom: 4px; }
+  body.dark .mb-preview-title { color: #cbd5e1; }
+  .mb-formula { font-size: 12.5px; font-weight: 600; margin-bottom: 2px; word-break: break-word; }
+  .mb-preview-wrap { overflow-x: auto; margin-top: 8px; }
+  .mb-preview table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .mb-preview th, .mb-preview td { padding: 4px 6px; text-align: right; white-space: nowrap; }
+  .mb-preview th:first-child, .mb-preview td:first-child { text-align: left; }
+  .mb-preview th { font-size: 11px; color: #64748b; font-weight: 600; border-bottom: 1px solid #e2e8f0; }
+  body.dark .mb-preview th { border-color: #2a3b4d; }
+  .mb-preview tr.kt td { color: var(--kt-green); font-weight: 700; }
+  .mb-measure-item-main { flex: 1; min-width: 0; }
+  .mb-measure-item-sub { font-size: 11px; color: #64748b; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mb-measure-item-sub.err { color: #b91c1c; white-space: normal; }
+  body.dark .mb-measure-item-sub { color: #94a3b8; }
+  .mb-success-actions { display: flex; gap: 8px; margin-top: 6px; }
   body.dark .mb-measure-item-btn:hover { background: rgba(255,255,255,0.08); }
   .mb-checklist {
     max-height: 260px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;
@@ -1862,9 +1892,142 @@
   // ÖNCE (ilk yükleme) ve sonra da (Ölçü Oluştur modal'ından kaydet/sil
   // sonrası, aynı DATA nesnesi yerinde güncellenerek) çağrılabilir —
   // idempotent: önce önceki enjeksiyonu temizler, sonra yeniden kurar.
+  // --- Anlam kuralları: pipeline/custom_measure_rules.py'nin JS karşılığı.
+  // Sunucu aynı kuralları kayıtta doğrular; biri değişirse ikisi de değişmeli.
+  var CM_BICIM = {
+    pct:    { etiket: 'Yüzde (%)',            birim: '%',      carpan: 100 },
+    kat:    { etiket: 'Kat (x)',              birim: 'kat',    carpan: 1 },
+    bin_TL: { etiket: 'Birim başına (bin TL)', birim: 'bin_TL', carpan: 0.001 },
+  };
+  function cmRatioFormats(ma, mb) {
+    if (ma.tip === 'rasyo' && mb.tip === 'rasyo') return ['kat', 'pct'];
+    if (ma.tip !== mb.tip) return [];
+    if (ma.birim === 'TL' && mb.birim === 'TL') return ['pct', 'kat'];
+    if (ma.birim === 'adet' && mb.birim === 'adet') return ['kat', 'pct'];
+    if (ma.birim === 'TL' && mb.birim === 'adet') return ['bin_TL'];
+    return [];
+  }
+  function cmDonem(m) {
+    if (m.tip === 'rasyo') return 'ölçünün kendi dönemi';
+    return m.akim_stok === 'akim' ? 'yılbaşından kümülatif (YtD)' : 'dönem sonu bakiye';
+  }
+  function cmSabitMetin(k) { return String(k).replace('.', ','); }
+
+  // Tanımdan (op/a/b/constant/bicim) hesaplama planı: sonuç tipi/birimi,
+  // her terimin dönüşümü ('raw' | 'ttm' | 'avg'), bilgi kartı metinleri.
+  // Geçersizse {error}. Hem enjeksiyon hem Ölçü Oluştur önizlemesi kullanır.
+  function customMeasureSpec(c, byId) {
+    var A = byId[c.a];
+    if (!c.a) return { error: 'Ölçü A seçilmeli' };
+    if (!A) return { error: 'A ölçüsü artık mevcut değil (katalogdan kaldırılmış)' };
+    if (c.op === 'scale') {
+      var k = c.constant;
+      if (k == null || typeof k !== 'number' || !isFinite(k)) return { error: 'Sabit sayı girilmeli' };
+      if (k === 0) return { error: 'Sabit 0 olamaz (sonuç her zaman 0 olur)' };
+      return { tip: A.tip, birim: A.birim, akim_stok: A.akim_stok, carpan: k,
+               aMode: 'raw', bMode: null,
+               formul: A.ad + ' × ' + cmSabitMetin(k),
+               donem: cmDonem(A).charAt(0).toUpperCase() + cmDonem(A).slice(1), notlar: [] };
+    }
+    if (!c.b) return { error: 'Ölçü B seçilmeli' };
+    var B = byId[c.b];
+    if (!B) return { error: 'B ölçüsü artık mevcut değil (katalogdan kaldırılmış)' };
+    if (c.a === c.b) return { error: 'A ve B aynı ölçü olamaz' };
+    if (c.op === 'diff' || c.op === 'sum') {
+      if (A.birim !== B.birim) {
+        return { error: 'Birimler uyuşmuyor (' + birimAd(A) + ' ≠ ' + birimAd(B) + ') — fark/toplam için aynı birimde iki ölçü seçin' };
+      }
+      if (A.tip === 'buyukluk' && B.tip === 'buyukluk' && A.akim_stok !== B.akim_stok) {
+        return { error: 'Gelir tablosu kalemi (yılbaşından kümülatif) ile bilanço kalemi (dönem sonu bakiye) toplanamaz/çıkarılamaz' };
+      }
+      return { tip: A.tip, birim: A.birim, akim_stok: A.akim_stok, carpan: 1,
+               aMode: 'raw', bMode: 'raw',
+               formul: A.ad + (c.op === 'diff' ? ' − ' : ' + ') + B.ad,
+               donem: cmDonem(A).charAt(0).toUpperCase() + cmDonem(A).slice(1), notlar: [] };
+    }
+    if (c.op !== 'ratio') return { error: 'Geçersiz işlem' };
+    var formats = cmRatioFormats(A, B);
+    if (!formats.length) {
+      return { error: 'Bu iki ölçünün oranı anlamlı değil — rasyo ile tutar oranlanamaz, adet / TL de anlamsız' };
+    }
+    var bicim = (c.bicim && formats.indexOf(c.bicim) >= 0) ? c.bicim : formats[0];
+    // Akım (YtD) tutar ile stok bakiye oranlanırsa PBI'daki gibi akım son 12
+    // aya (TTM), stok 12 aylık ortalamaya çevrilir — aksi halde oran Mart'ta
+    // küçük Aralık'ta büyük çıkar, çeyrekler kıyaslanamaz (ROAA deseni).
+    var karisik = A.tip === 'buyukluk' && B.tip === 'buyukluk' && A.akim_stok !== B.akim_stok;
+    var aMode = karisik ? (A.akim_stok === 'akim' ? 'ttm' : 'avg') : 'raw';
+    var bMode = karisik ? (B.akim_stok === 'akim' ? 'ttm' : 'avg') : 'raw';
+    var MODE_METIN = { ttm: 'son 12 ay (TTM)', avg: '12 aylık ortalama bakiye' };
+    var donem = karisik
+      ? 'Pay: ' + MODE_METIN[aMode] + ' · Payda: ' + MODE_METIN[bMode]
+      : (A.tip === 'buyukluk' && A.akim_stok === 'akim' ? 'Pay ve payda: yılbaşından kümülatif (YtD)'
+         : A.tip === 'buyukluk' ? 'Dönem sonu bakiye' : 'Ölçülerin kendi dönemi');
+    var notlar = [];
+    if (karisik) notlar.push({ type: 'info', text: 'ℹ️ Gelir tablosu kalemi son 12 aya, bilanço kalemi 12 aylık ortalamaya çevrildi (ROAA/ROAE ile aynı yöntem) — çeyrekler birbiriyle kıyaslanabilir.' });
+    if (bicim === 'bin_TL') notlar.push({ type: 'info', text: 'ℹ️ TL tutarın adete bölümü: birim başına düşen tutar (ör. personel başına kredi).' });
+    return { tip: 'rasyo', birim: CM_BICIM[bicim].birim, bicim: bicim, formats: formats,
+             akim_stok: (A.akim_stok === 'akim' || B.akim_stok === 'akim') ? 'akim' : 'stok',
+             carpan: CM_BICIM[bicim].carpan, aMode: aMode, bMode: bMode,
+             formul: (aMode === 'ttm' ? 'TTM ' : aMode === 'avg' ? 'Ort. ' : '') + A.ad + ' / ' +
+                     (bMode === 'ttm' ? 'TTM ' : bMode === 'avg' ? 'Ort. ' : '') + B.ad +
+                     (bicim === 'pct' ? ' × 100' : ''),
+             donem: donem, notlar: notlar };
+  }
+  function birimAd(m) {
+    return m.birim === 'TL' ? 'TL' : m.birim === 'bin_TL' ? 'bin TL' : m.birim === 'kat' ? 'kat' : m.birim === 'adet' ? 'adet' : '%';
+  }
+
+  // Seri dönüşümleri — pipeline/lookup.py ttm_flow/avg_balance ile aynı
+  // formül (yıl önceki dönem: aynı ay-gün, bir yıl önce).
+  function cmYilOnce(t) { return (parseInt(t.slice(0, 4), 10) - 1) + t.slice(4); }
+  function cmNokta(seri, t, mode) {
+    var v = seri[t];
+    if (v == null) return null;
+    if (mode === 'ttm') {
+      var ay = parseInt(t.slice(5, 7), 10);
+      if (ay === 12) return v;
+      var yilSonu = seri[(parseInt(t.slice(0, 4), 10) - 1) + '-12-31'];
+      var gecen = seri[cmYilOnce(t)];
+      return (yilSonu != null && gecen != null) ? v + yilSonu - gecen : v * 12 / ay;
+    }
+    if (mode === 'avg') {
+      var once = seri[cmYilOnce(t)];
+      return once == null ? v : (v + once) / 2;
+    }
+    return v;
+  }
+  function cmDeger(c, spec, seriA, seriB, t) {
+    var va = cmNokta(seriA, t, spec.aMode);
+    if (va == null) return null;
+    if (c.op === 'scale') return va * spec.carpan;
+    var vb = cmNokta(seriB, t, spec.bMode);
+    if (vb == null) return null;
+    if (c.op === 'ratio') return vb === 0 ? null : (va / vb) * spec.carpan;
+    return c.op === 'diff' ? va - vb : va + vb;
+  }
+  // group_data {tarih: {value}} → düz {tarih: value}
+  function cmGrupSeri(g) {
+    var out = {};
+    Object.keys(g || {}).forEach(function(d){ if (g[d]) out[d] = g[d].value; });
+    return out;
+  }
+  // Bir varlık (banka ya da düz grup serisi) için tüm tarihlerde özel ölçü.
+  function cmSeri(c, spec, seriA, seriB) {
+    var out = {};
+    var tarihler = {};
+    Object.keys(seriA || {}).forEach(function(d){ tarihler[d] = true; });
+    Object.keys(seriB || {}).forEach(function(d){ tarihler[d] = true; });
+    Object.keys(tarihler).forEach(function(d){ out[d] = cmDeger(c, spec, seriA || {}, seriB || {}, d); });
+    return out;
+  }
+
   function injectCustomMeasures(DATA, customMeasures) {
     // Önceki enjeksiyonu temizle (idempotency)
     DATA.catalog = DATA.catalog.filter(function(m){ return !m.custom; });
+    DATA.measureInfo = DATA.measureInfo || {};
+    Object.keys(DATA.measureInfo).forEach(function(mid){
+      if (mid.indexOf('custom_') === 0) delete DATA.measureInfo[mid];
+    });
     if (DATA.meta && DATA.meta.available_measures) {
       DATA.meta.available_measures = DATA.meta.available_measures.filter(function(id){
         return id.indexOf('custom_') !== 0;
@@ -1886,65 +2049,44 @@
 
     var byId = {};
     DATA.catalog.forEach(function(m){ byId[m.id] = m; });
-
-    function calc(op, va, vb, constant) {
-      if (va == null) return null;
-      if (op === 'scale') return va * constant;
-      if (vb == null) return null;
-      if (op === 'ratio') return vb === 0 ? null : (va / vb) * 100;
-      if (op === 'diff') return va - vb;
-      if (op === 'sum') return va + vb;
-      return null;
-    }
+    DATA.__customMeasureErrors = {};
 
     (customMeasures || []).forEach(function(c) {
-      var srcA = byId[c.a];
-      if (!srcA) return;  // referans verilen gerçek ölçü artık yok (catalog değişmiş olabilir)
-      var out = {};
+      var spec = customMeasureSpec(c, byId);
+      if (spec.error) {
+        // Kaynak ölçü katalogdan kalkmış vb. — ölçü gösterilmez ama Ölçü
+        // Oluştur listesinde nedeniyle birlikte uyarı olarak görünür.
+        DATA.__customMeasureErrors[c.id] = spec.error;
+        return;
+      }
       var dataA = DATA.bank_data[c.a] || {};
       var dataB = c.op === 'scale' ? {} : (DATA.bank_data[c.b] || {});
+      var out = {};
       var banks = {};
       Object.keys(dataA).forEach(function(b){ banks[b] = true; });
       Object.keys(dataB).forEach(function(b){ banks[b] = true; });
       Object.keys(banks).forEach(function(banka) {
-        var datesA = dataA[banka] || {};
-        var datesB = dataB[banka] || {};
-        var dates = {};
-        Object.keys(datesA).forEach(function(d){ dates[d] = true; });
-        Object.keys(datesB).forEach(function(d){ dates[d] = true; });
-        out[banka] = {};
-        Object.keys(dates).forEach(function(tarih) {
-          out[banka][tarih] = calc(c.op, datesA[tarih], datesB[tarih], c.constant);
-        });
+        out[banka] = cmSeri(c, spec, dataA[banka], dataB[banka]);
       });
       DATA.bank_data[c.id] = out;
 
-      // Grup toplamları: TEKRAR banka-banka aggregate ETMİYORUZ — a/b'nin
-      // zaten sunucu tarafında doğru hesaplanmış grup değerlerini (KT
-      // Hariç Katılım gibi kurulmamış-üye/kısmi-veri istisnalarıyla
-      // birlikte, bkz. pipeline/groups.py) alıp AYNI calc() işlemini grup
-      // seviyesinde uyguluyoruz — "ratio" için Σa/Σb, "sum/diff/scale"
-      // için grup toplamları üzerinden aynı işlem. groupVal()'ın beklediği
-      // {value: ...} sarmalayıcısıyla yazılıyor (bkz. groupVal, ~satır 1923).
+      // Grup değerleri banka banka yeniden toplanmıyor: a/b'nin sunucuda
+      // doğru hesaplanmış grup değerlerine (kurulmamış üye / kısmi veri
+      // istisnalarıyla, bkz. pipeline/groups.py) aynı işlem uygulanıyor.
+      // TTM/ortalama doğrusal olduğundan grup toplamı üzerinden hesap,
+      // üyelerinkinin toplamıyla aynı sonucu verir.
       if (DATA.group_data) {
+        var gA = DATA.group_data[c.a] || {};
+        var gB = c.op === 'scale' ? {} : (DATA.group_data[c.b] || {});
         var groupOut = {};
-        var groupDataA = DATA.group_data[c.a] || {};
-        var groupDataB = c.op === 'scale' ? {} : (DATA.group_data[c.b] || {});
         var groups = {};
-        Object.keys(groupDataA).forEach(function(g){ groups[g] = true; });
-        Object.keys(groupDataB).forEach(function(g){ groups[g] = true; });
+        Object.keys(gA).forEach(function(g){ groups[g] = true; });
+        Object.keys(gB).forEach(function(g){ groups[g] = true; });
         Object.keys(groups).forEach(function(grup) {
-          var datesA = groupDataA[grup] || {};
-          var datesB = groupDataB[grup] || {};
-          var dates = {};
-          Object.keys(datesA).forEach(function(d){ dates[d] = true; });
-          Object.keys(datesB).forEach(function(d){ dates[d] = true; });
+          var seri = cmSeri(c, spec, cmGrupSeri(gA[grup]), cmGrupSeri(gB[grup]));
           groupOut[grup] = {};
-          Object.keys(dates).forEach(function(tarih) {
-            var va = datesA[tarih] ? datesA[tarih].value : null;
-            var vb = datesB[tarih] ? datesB[tarih].value : null;
-            var result = calc(c.op, va, vb, c.constant);
-            groupOut[grup][tarih] = result == null ? null : { value: result };
+          Object.keys(seri).forEach(function(d){
+            groupOut[grup][d] = seri[d] == null ? null : { value: seri[d] };
           });
         });
         DATA.group_data[c.id] = groupOut;
@@ -1953,12 +2095,21 @@
       DATA.catalog.push({
         id: c.id, ad: c.ad,
         kategori: 'Özel Ölçülerim', alt_kategori: 'Kullanıcı Tanımlı',
-        tip: c.op === 'ratio' ? 'rasyo' : srcA.tip,
-        birim: c.op === 'ratio' ? '%' : srcA.birim,
-        akim_stok: srcA.akim_stok,
+        tip: spec.tip, birim: spec.birim, akim_stok: spec.akim_stok,
         sort_direction: c.sort_direction || 'desc',
         pazar_payi: false, custom: true,
       });
+      var A = byId[c.a], B = c.b ? byId[c.b] : null;
+      DATA.measureInfo[c.id] = {
+        id: c.id, baslik: c.ad, durum: 'Özel ölçü',
+        tanim: 'Sizin tanımladığınız, hazır ölçülerden türetilmiş ölçü.',
+        formul: spec.formul, donem: spec.donem,
+        kaynak: A.ad + (B ? ' ; ' + B.ad : ''),
+        kategori: 'Özel Ölçülerim',
+        tip: spec.tip === 'rasyo' ? 'Rasyo' : 'Büyüklük',
+        birim: birimAd(spec),
+        terimler: [], notlar: spec.notlar,
+      };
       if (DATA.meta && DATA.meta.available_measures) {
         DATA.meta.available_measures.push(c.id);
       }
@@ -3046,10 +3197,10 @@
   // ÖLÇÜ OLUŞTUR — kullanıcı tanımlı özel ölçü modal'ı (2026-09-17)
   // ===============================================================
   var CUSTOM_MEASURE_OPS = [
-    ['ratio', 'Oran (A / B)'],
-    ['diff', 'Fark (A − B)'],
-    ['sum', 'Toplam (A + B)'],
-    ['scale', 'A × Sabit'],
+    ['ratio', 'Oran', 'A / B'],
+    ['diff', 'Fark', 'A − B'],
+    ['sum', 'Toplam', 'A + B'],
+    ['scale', 'Ölçekle', 'A × sabit'],
   ];
 
   function measureOptionGroups(excludeCustom) {
@@ -3066,6 +3217,46 @@
     return m.ad + (m.tip === 'rasyo' ? '  (' + birimLabel(m) + ')' : '  (#)');
   }
 
+  // Aranabilir ölçü seçici: üstte filtre kutusu, altta (filtrelenmiş) liste,
+  // seçilen ölçünün türü/birimi/dönemi altta — 160+ ölçüde aramadan seçmek
+  // pratik değildi. Seçili ölçü filtre dışında kalsa da listede tutulur.
+  function CmPicker(props) {
+    var q = props.filtre.trim().toLocaleLowerCase('tr');
+    var mg = measureOptionGroups(true);
+    var sel = props.byId[props.value];
+    var eslesen = 0;
+    var gruplar = mg.order.map(function(k) {
+      var items = mg.groups[k].filter(function(m) {
+        return !q || m.id === props.value || m.ad.toLocaleLowerCase('tr').indexOf(q) >= 0;
+      });
+      eslesen += items.length;
+      if (!items.length) return null;
+      return h('optgroup', { key: k, label: k },
+        items.map(function(m){ return h('option', { key: m.id, value: m.id }, measureSelectLabel(m)); }));
+    });
+    return h('div', null,
+      h('input', {
+        className: 'pw-input mb-picker-filter', value: props.filtre,
+        placeholder: '🔍 Listede ara (ör. mevduat, kredi, faiz)',
+        'aria-label': props.label + ' için ara',
+        onInput: function(e){ props.setFiltre(e.target.value); }
+      }),
+      h('select', {
+        className: 'pw-input', value: props.value, 'aria-label': props.label,
+        onChange: function(e){ props.onChange(e.target.value); }
+      },
+        h('option', { value: '' }, q ? ('— ' + eslesen + ' eşleşme, seçin —') : '— seçin —'),
+        gruplar
+      ),
+      sel && h('div', { className: 'mb-meta' },
+        sel.kategori + (sel.alt_kategori ? ' › ' + sel.alt_kategori : '') + ' · ' +
+        (sel.tip === 'rasyo' ? 'Rasyo' : 'Tutar') + ' · ' + birimAd(sel) +
+        (sel.tip === 'buyukluk'
+          ? (sel.akim_stok === 'akim' ? ' · gelir tablosu (yılbaşından kümülatif)' : ' · bilanço (dönem sonu)')
+          : ''))
+    );
+  }
+
   function MeasureBuilderModal(props) {
     var listState = useState((DATA.__customMeasures || []).slice());
     var editIdState = useState(null);
@@ -3074,22 +3265,82 @@
     var aState = useState('');
     var bState = useState('');
     var constantState = useState('');
+    var bicimState = useState(null);
     var sortDirState = useState('desc');
+    var fAState = useState('');
+    var fBState = useState('');
     var msgState = useState(null);
     var busyState = useState(false);
 
+    var byId = {};
+    DATA.catalog.forEach(function(m){ if (!m.custom) byId[m.id] = m; });
+
     function resetForm() {
       editIdState[1](null); adState[1](''); opState[1]('ratio');
-      aState[1](''); bState[1](''); constantState[1](''); sortDirState[1]('desc');
+      aState[1](''); bState[1](''); constantState[1](''); bicimState[1](null);
+      sortDirState[1]('desc'); fAState[1](''); fBState[1]('');
     }
 
     function loadForEdit(rec) {
       editIdState[1](rec.id); adState[1](rec.ad); opState[1](rec.op);
       aState[1](rec.a); bState[1](rec.b || '');
-      constantState[1](rec.constant == null ? '' : String(rec.constant));
+      constantState[1](rec.constant == null ? '' : String(rec.constant).replace('.', ','));
+      bicimState[1](rec.bicim || null);
       sortDirState[1](rec.sort_direction || 'desc');
-      msgState[1](null);
+      fAState[1](''); fBState[1](''); msgState[1](null);
     }
+
+    // Tanım + plan (hesap kuralları: customMeasureSpec — sunucu da aynısını
+    // doğrular). Sabit Türkçe ondalıkla ("1,5") da girilebilir.
+    var op = opState[0];
+    var constantRaw = String(constantState[0]).trim();
+    var constant = constantRaw === '' ? null : Number(constantRaw.replace(',', '.'));
+    var def = {
+      op: op, a: aState[0], b: op === 'scale' ? null : bState[0],
+      constant: op === 'scale' ? constant : null, bicim: bicimState[0],
+    };
+    var spec = customMeasureSpec(def, byId);
+    var secimTamam = !!def.a && (op === 'scale' ? constantRaw !== '' : !!def.b);
+
+    // Ad önerisi 60 karaktere sığmalı: önce ölçülerin sondaki kısa adı
+    // ("... (ROAA)" → "ROAA") kullanılır, yine uzunsa kelime sınırında kesilir.
+    function kisaAd(m) {
+      var k = /\(([^()]{2,20})\)\s*$/.exec(m.ad);
+      return k ? k[1] : m.ad;
+    }
+    function sigdir(metin) {
+      if (metin.length <= 60) return metin;
+      var kes = metin.slice(0, 59);
+      var bosluk = kes.lastIndexOf(' ');
+      return (bosluk > 30 ? kes.slice(0, bosluk) : kes) + '…';
+    }
+    function oneriAd() {
+      var A = byId[def.a];
+      if (!A) return '';
+      if (op === 'scale') {
+        if (constant == null || !isFinite(constant)) return '';
+        var tekli = A.ad + ' × ' + cmSabitMetin(constant);
+        return sigdir(tekli.length <= 60 ? tekli : kisaAd(A) + ' × ' + cmSabitMetin(constant));
+      }
+      var B = byId[def.b];
+      if (!B) return '';
+      var isaret = op === 'ratio' ? ' / ' : op === 'diff' ? ' − ' : ' + ';
+      var tam = A.ad + isaret + B.ad;
+      return sigdir(tam.length <= 60 ? tam : kisaAd(A) + isaret + kisaAd(B));
+    }
+    var oneri = oneriAd();
+    var adFinal = (adState[0].trim() || oneri).replace(/\s+/g, ' ');
+    var adAnahtar = adFinal.toLocaleLowerCase('tr');
+    var adHata = !adFinal ? null
+      : adFinal.length > 60 ? 'Ölçü adı en fazla 60 karakter olabilir'
+      : listState[0].some(function(m){ return m.id !== editIdState[0] && m.ad.toLocaleLowerCase('tr') === adAnahtar; })
+        ? 'Bu adla bir özel ölçünüz zaten var'
+      : Object.keys(byId).some(function(id){ return byId[id].ad.toLocaleLowerCase('tr') === adAnahtar; })
+        ? (adState[0].trim()
+            ? 'Bu ad hazır bir ölçüde kullanılıyor, farklı bir ad seçin'
+            : 'Bu ölçü zaten hazır ölçüler arasında var (“' + adFinal + '”) — ölçü seçiciden açabilirsiniz. Yine de oluşturmak için farklı bir ad yazın.')
+      : null;
+    var hata = !secimTamam ? null : (spec.error || adHata);
 
     function refreshList() {
       return fetch('/api/my/measures', { credentials: 'same-origin' })
@@ -3108,31 +3359,28 @@
         });
     }
 
+    function goster(id) {
+      if (props.setMode && props.mode !== 'snapshot' && props.mode !== 'trend') props.setMode('snapshot');
+      props.setActiveMeasure && props.setActiveMeasure(id);
+      props.onClose();
+    }
+
     function submit() {
-      var ad = adState[0].trim();
-      var op = opState[0];
-      var a = aState[0];
-      var b = bState[0];
-      var constantRaw = constantState[0];
-      var constant = constantRaw === '' ? null : parseFloat(constantRaw);
-      var sortDir = sortDirState[0];
-      if (!ad) { msgState[1]({ type: 'err', text: 'Ölçü adı boş olamaz' }); return; }
-      if (!a) { msgState[1]({ type: 'err', text: 'Ölçü A seçilmeli' }); return; }
-      if (op !== 'scale' && !b) { msgState[1]({ type: 'err', text: 'Ölçü B seçilmeli' }); return; }
-      if (op === 'scale' && (constant == null || isNaN(constant))) {
-        msgState[1]({ type: 'err', text: 'Sabit sayı girilmeli' }); return;
+      if (!secimTamam) {
+        msgState[1]({ type: 'err', text: op === 'scale' ? 'Ölçü A ve sabit sayı girilmeli' : 'Ölçü A ve Ölçü B seçilmeli' });
+        return;
       }
+      if (hata) { msgState[1]({ type: 'err', text: hata }); return; }
+      if (!adFinal) { msgState[1]({ type: 'err', text: 'Ölçü adı boş olamaz' }); return; }
       busyState[1](true); msgState[1](null);
       var editId = editIdState[0];
-      var url = editId ? ('/api/my/measures/' + editId) : '/api/my/measures';
-      fetch(url, {
+      fetch(editId ? ('/api/my/measures/' + editId) : '/api/my/measures', {
         method: editId ? 'PUT' : 'POST', credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ad: ad, op: op, a: a,
-          b: op === 'scale' ? null : b,
-          constant: op === 'scale' ? constant : null,
-          sort_direction: sortDir,
+          ad: adFinal, op: op, a: def.a, b: def.b, constant: def.constant,
+          sort_direction: sortDirState[0],
+          bicim: (op === 'ratio' && spec.bicim !== 'bin_TL') ? spec.bicim : null,
         }),
       }).then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
         .then(function(res) {
@@ -3141,92 +3389,117 @@
             msgState[1]({ type: 'err', text: (res.j && res.j.detail) || 'Bir hata oluştu' });
             return;
           }
+          var id = res.j.measure && res.j.measure.id;
           refreshList().then(function() {
             busyState[1](false);
-            msgState[1]({ type: 'ok', text: editId ? 'Ölçü güncellendi.' : 'Ölçü oluşturuldu.' });
             resetForm();
+            msgState[1]({ type: 'ok', text: '“' + adFinal + '” ' + (editId ? 'güncellendi.' : 'oluşturuldu.'), showId: id });
           });
         })
         .catch(function(){ busyState[1](false); msgState[1]({ type: 'err', text: 'Sunucuya ulaşılamadı' }); });
     }
 
-    function del(id) {
-      if (!window.confirm('Bu özel ölçüyü silmek istediğinize emin misiniz? İçeren Görünümlerden de kaldırılır.')) return;
-      fetch('/api/my/measures/' + id, { method: 'DELETE', credentials: 'same-origin' })
+    function del(rec) {
+      if (!window.confirm('“' + rec.ad + '” silinsin mi? İçeren Görünümlerden de kaldırılır.')) return;
+      fetch('/api/my/measures/' + rec.id, { method: 'DELETE', credentials: 'same-origin' })
         .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
         .then(function(res) {
           if (!res.ok) { msgState[1]({ type: 'err', text: (res.j && res.j.detail) || 'Silinemedi' }); return; }
-          if (editIdState[0] === id) resetForm();
+          if (editIdState[0] === rec.id) resetForm();
           refreshList();
         });
     }
 
+    // Önizleme: KT + banka grupları, seçili dönem ve önceki 3 çeyrek.
+    var tarih = props.tarih || DATA.meta.default_date || DATA.meta.dates[DATA.meta.dates.length - 1];
+    var dates = DATA.meta.dates;
+    var ti = dates.indexOf(tarih);
+    var cols = ti < 0 ? dates.slice(-4) : dates.slice(Math.max(0, ti - 3), ti + 1);
+    function fmtOnizleme(v) {
+      if (v == null) return '—';
+      if (spec.tip === 'rasyo') return fmtMeasure(v, spec);
+      return spec.birim === 'adet' ? fmtNum(v, 0) : fmtNum(v / 1e6, 0) + ' mn TL';
+    }
+    var onizleme = null;
+    if (secimTamam && !spec.error) {
+      var varliklar = [{ ad: KT_NAME, banka: true }].concat(
+        (DATA.meta.group_order || []).filter(function(g){ return g !== KT_NAME; })
+          .map(function(g){ return { ad: g, banka: false }; }));
+      onizleme = varliklar.map(function(e) {
+        var sA, sB;
+        if (e.banka) {
+          sA = (DATA.bank_data[def.a] || {})[e.ad] || {};
+          sB = def.b ? ((DATA.bank_data[def.b] || {})[e.ad] || {}) : {};
+        } else {
+          sA = cmGrupSeri((DATA.group_data[def.a] || {})[e.ad]);
+          sB = def.b ? cmGrupSeri((DATA.group_data[def.b] || {})[e.ad]) : {};
+        }
+        return { ad: e.ad, kt: e.banka, vals: cols.map(function(d){ return cmDeger(def, spec, sA, sB, d); }) };
+      });
+    }
+
     var msg = msgState[0];
-    var op = opState[0];
-    var mg = measureOptionGroups(true);
     var list = listState[0];
+    var hatalar = DATA.__customMeasureErrors || {};
 
     return h('div', {
       className: 'pw-modal-overlay',
       onClick: function(e){ if (e.target.className === 'pw-modal-overlay') props.onClose(); }
     },
-      h('div', { className: 'mb-modal' },
+      h('div', { className: 'mb-modal', role: 'dialog', 'aria-label': 'Ölçü Oluştur' },
         h('div', { className: 'wn-modal-head' },
-          h('div', { className: 'wn-modal-title' }, '🧮 Ölçü Oluştur'),
+          h('div', { className: 'wn-modal-title' }, editIdState[0] ? '✏️ Ölçüyü Düzenle' : '🧮 Ölçü Oluştur'),
           h('button', { className: 'wn-modal-close', onClick: props.onClose, title: 'Kapat' }, '✕')
         ),
         h('div', { className: 'wn-modal-body' },
           h('div', { className: 'pw-modal-sub' },
-            'Mevcut ölçüleri birleştirerek kendi ölçünüzü oluşturun — sadece sizin profilinizde saklanır.'),
-
-          h('label', { className: 'pw-label' }, 'Ölçü Adı'),
-          h('input', { className: 'pw-input', value: adState[0],
-            onInput: function(e){ adState[1](e.target.value); } }),
+            'Hazır ölçüleri birleştirerek kendi ölçünüzü oluşturun. Tüm bankalar, gruplar ve dönemler için otomatik hesaplanır; yalnızca sizin profilinizde saklanır.'),
 
           h('label', { className: 'pw-label' }, 'İşlem'),
           h('div', { className: 'mb-op-group' },
-            CUSTOM_MEASURE_OPS.map(function(pair) {
+            CUSTOM_MEASURE_OPS.map(function(o) {
               return h('button', {
-                key: pair[0], type: 'button',
-                className: 'mb-op-btn' + (op === pair[0] ? ' active' : ''),
-                onClick: function(){ opState[1](pair[0]); },
-              }, pair[1]);
+                key: o[0], type: 'button',
+                className: 'mb-op-btn' + (op === o[0] ? ' active' : ''),
+                onClick: function(){ opState[1](o[0]); msgState[1](null); },
+              }, o[1], h('span', { className: 'mb-op-desc' }, o[2]));
             })
           ),
 
-          h('label', { className: 'pw-label' }, 'Ölçü A'),
-          h('select', { className: 'pw-input', value: aState[0],
-            onChange: function(e){ aState[1](e.target.value); } },
-            h('option', { value: '' }, '— seçin —'),
-            mg.order.map(function(k){
-              return h('optgroup', { key: k, label: k },
-                mg.groups[k].map(function(m){
-                  return h('option', { key: m.id, value: m.id }, measureSelectLabel(m));
-                })
-              );
-            })
-          ),
+          h('label', { className: 'pw-label' }, op === 'ratio' ? 'Ölçü A (pay)' : 'Ölçü A'),
+          h(CmPicker, { label: 'Ölçü A', value: aState[0], byId: byId,
+            onChange: function(v){ aState[1](v); msgState[1](null); },
+            filtre: fAState[0], setFiltre: fAState[1] }),
 
           op !== 'scale' && h(React.Fragment || 'div', null,
-            h('label', { className: 'pw-label' }, 'Ölçü B'),
-            h('select', { className: 'pw-input', value: bState[0],
-              onChange: function(e){ bState[1](e.target.value); } },
-              h('option', { value: '' }, '— seçin —'),
-              mg.order.map(function(k){
-                return h('optgroup', { key: k, label: k },
-                  mg.groups[k].map(function(m){
-                    return h('option', { key: m.id, value: m.id }, measureSelectLabel(m));
-                  })
-                );
-              })
-            )
+            h('label', { className: 'pw-label' }, op === 'ratio' ? 'Ölçü B (payda)' : 'Ölçü B'),
+            h(CmPicker, { label: 'Ölçü B', value: bState[0], byId: byId,
+              onChange: function(v){ bState[1](v); msgState[1](null); },
+              filtre: fBState[0], setFiltre: fBState[1] })
           ),
 
           op === 'scale' && h(React.Fragment || 'div', null,
             h('label', { className: 'pw-label' }, 'Sabit Sayı'),
-            h('input', { className: 'pw-input', type: 'number', value: constantState[0],
-              onInput: function(e){ constantState[1](e.target.value); } })
+            h('input', { className: 'pw-input', inputMode: 'decimal', placeholder: 'ör. 100 ya da 0,5',
+              value: constantState[0], onInput: function(e){ constantState[1](e.target.value); } })
           ),
+
+          op === 'ratio' && secimTamam && !spec.error && (spec.formats.length > 1
+            ? h(React.Fragment || 'div', null,
+                h('label', { className: 'pw-label' }, 'Sonuç Biçimi'),
+                h('div', { className: 'mb-op-group' },
+                  spec.formats.map(function(f) {
+                    return h('button', { key: f, type: 'button',
+                      className: 'mb-op-btn' + (spec.bicim === f ? ' active' : ''),
+                      onClick: function(){ bicimState[1](f); } }, CM_BICIM[f].etiket);
+                  })))
+            : h('div', { className: 'mb-meta' }, 'Sonuç biçimi: ' + CM_BICIM[spec.bicim].etiket)),
+
+          h('label', { className: 'pw-label' }, 'Ölçü Adı'),
+          h('input', { className: 'pw-input', value: adState[0], maxLength: 60,
+            placeholder: oneri || 'Ölçüleri seçince otomatik önerilir',
+            onInput: function(e){ adState[1](e.target.value); } }),
+          !adState[0].trim() && oneri && h('div', { className: 'mb-meta' }, 'Boş bırakırsanız önerilen ad kullanılır.'),
 
           h('label', { className: 'pw-label' }, 'Sıralama Yönü'),
           h('div', { className: 'mb-op-group' },
@@ -3238,24 +3511,55 @@
               onClick: function(){ sortDirState[1]('asc'); } }, 'Düşük iyi')
           ),
 
-          msg && h('div', { className: 'pw-msg ' + (msg.type === 'ok' ? 'ok' : 'err') }, msg.text),
+          hata && h('div', { className: 'mb-warn', role: 'alert' }, '⚠️ ' + hata),
+
+          onizleme && h('div', { className: 'mb-preview' },
+            h('div', { className: 'mb-preview-title' }, 'Önizleme'),
+            h('div', { className: 'mb-formula' }, spec.formul),
+            h('div', { className: 'mb-meta' }, spec.donem + ' · Birim: ' + birimAd(spec)),
+            spec.notlar.map(function(n, i){ return h('div', { key: i, className: 'mb-meta' }, n.text); }),
+            h('div', { className: 'mb-preview-wrap' },
+              h('table', null,
+                h('thead', null, h('tr', null,
+                  h('th', null, ''),
+                  cols.map(function(d){ return h('th', { key: d }, tarihLabelShort(d)); }))),
+                h('tbody', null, onizleme.map(function(r) {
+                  return h('tr', { key: r.ad, className: r.kt ? 'kt' : '' },
+                    h('td', null, r.ad),
+                    r.vals.map(function(v, i){ return h('td', { key: i }, fmtOnizleme(v)); }));
+                }))
+              ))
+          ),
+
+          msg && h('div', { className: 'pw-msg ' + (msg.type === 'ok' ? 'ok' : 'err') },
+            msg.text,
+            msg.showId && h('div', { className: 'mb-success-actions' },
+              h('button', { className: 'pw-btn primary', onClick: function(){ goster(msg.showId); } }, 'Dashboard\'da göster →'))),
           h('div', { className: 'pw-modal-actions' },
-            editIdState[0] && h('button', { className: 'pw-btn ghost', onClick: resetForm }, 'Vazgeç'),
-            h('button', { className: 'pw-btn primary', disabled: busyState[0], onClick: submit },
+            (editIdState[0] || secimTamam) && h('button', { className: 'pw-btn ghost',
+              onClick: function(){ resetForm(); msgState[1](null); } }, editIdState[0] ? 'Vazgeç' : 'Temizle'),
+            h('button', { className: 'pw-btn primary', disabled: busyState[0] || !!hata, onClick: submit },
               busyState[0] ? '...' : (editIdState[0] ? 'Güncelle' : 'Kaydet'))
           ),
 
           h('label', { className: 'pw-label', style: { marginTop: '18px' } },
             'Kayıtlı Özel Ölçülerim (' + list.length + ')'),
-          list.length === 0 ? h('div', { className: 'wn-empty' }, 'Henüz özel ölçünüz yok.') :
+          list.length === 0 ? h('div', { className: 'wn-empty' }, 'Henüz özel ölçünüz yok. Kaydettikleriniz ölçü seçicide "Özel Ölçülerim" kategorisinde görünür.') :
           h('div', { className: 'mb-measure-list' },
             list.map(function(rec) {
+              var err = hatalar[rec.id];
+              var s = err ? null : customMeasureSpec(rec, byId);
               return h('div', { key: rec.id, className: 'mb-measure-item' },
-                h('span', { className: 'mb-measure-item-name' }, rec.ad),
+                h('div', { className: 'mb-measure-item-main' },
+                  h('div', { className: 'mb-measure-item-name' }, rec.ad),
+                  h('div', { className: 'mb-measure-item-sub' + (err ? ' err' : ''), title: err || s.formul },
+                    err ? '⚠️ ' + err : s.formul + ' · ' + birimAd(s))),
+                !err && h('button', { className: 'mb-measure-item-btn', title: 'Dashboard\'da göster',
+                  onClick: function(){ goster(rec.id); } }, '👁'),
                 h('button', { className: 'mb-measure-item-btn', title: 'Düzenle',
                   onClick: function(){ loadForEdit(rec); } }, '✏️'),
                 h('button', { className: 'mb-measure-item-btn del', title: 'Sil',
-                  onClick: function(){ del(rec.id); } }, '🗑')
+                  onClick: function(){ del(rec); } }, '🗑')
               );
             })
           )
@@ -3522,6 +3826,8 @@
       wnOpenState[0] && h(WhatsNewModal, { onClose: function(){ wnOpenState[1](false); } }),
       mbOpenState[0] && h(MeasureBuilderModal, {
         onClose: function(){ mbOpenState[1](false); },
+        tarih: props.tarih,
+        mode: props.mode, setMode: props.setMode,
         activeMeasure: props.activeMeasure,
         setActiveMeasure: props.setActiveMeasure,
         onDataChanged: props.onDataChanged,

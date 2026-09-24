@@ -68,6 +68,7 @@ from pydantic import BaseModel
 
 import users as users_mod
 from pipeline.measure_info import get_measure_info_cards
+from pipeline import custom_measure_rules
 
 
 # ============================================================
@@ -558,19 +559,16 @@ def _catalog_measures_by_id() -> Dict[str, dict]:
     return {m['id']: m for m in catalog.get('measures', [])}
 
 
-def _validate_measure_refs(op: str, a: str, b: Optional[str]) -> None:
+def _validate_custom_measure_payload(p: 'CustomMeasurePayload') -> None:
+    """Anlam kuralları (pipeline/custom_measure_rules — tarayıcı aynı
+    kuralları uygular) + katalogdaki bir ölçüyle aynı ad olmasın."""
     by_id = _catalog_measures_by_id()
-    if a not in by_id:
-        raise HTTPException(status_code=400, detail=f"'{a}' geçerli bir ölçü değil")
-    if op != 'scale':
-        if not b or b not in by_id:
-            raise HTTPException(status_code=400, detail=f"'{b}' geçerli bir ölçü değil")
-        if op in ('diff', 'sum') and by_id[a]['birim'] != by_id[b]['birim']:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Birimler uyuşmuyor ({by_id[a]['birim']} ≠ {by_id[b]['birim']}) — "
-                       f"fark/toplam için aynı birimde iki ölçü seçin.",
-            )
+    err = custom_measure_rules.check(p.op, p.a, p.b, p.bicim, by_id)
+    if err:
+        raise HTTPException(status_code=400, detail=err)
+    key = ' '.join((p.ad or '').split()).casefold()
+    if any(' '.join(m['ad'].split()).casefold() == key for m in by_id.values()):
+        raise HTTPException(status_code=400, detail='Bu ad hazır bir ölçüde kullanılıyor, farklı bir ad seçin')
 
 
 class CustomMeasurePayload(BaseModel):
@@ -580,6 +578,7 @@ class CustomMeasurePayload(BaseModel):
     b: Optional[str] = None
     constant: Optional[float] = None
     sort_direction: str = 'desc'
+    bicim: Optional[str] = None   # oran için 'pct' | 'kat'; None = varsayılan
 
 
 def require_admin_member(user: dict = Depends(require_member)) -> dict:
@@ -602,10 +601,10 @@ def my_measures_list(user: dict = Depends(require_admin_member)):
 
 @app.post('/api/my/measures')
 def my_measures_create(payload: CustomMeasurePayload, user: dict = Depends(require_admin_member)):
-    _validate_measure_refs(payload.op, payload.a, payload.b)
+    _validate_custom_measure_payload(payload)
     ok, result = users_mod.add_custom_measure(
         DATA_USERS, user['id'], payload.ad, payload.op, payload.a,
-        payload.b, payload.constant, payload.sort_direction,
+        payload.b, payload.constant, payload.sort_direction, payload.bicim,
     )
     if not ok:
         raise HTTPException(status_code=400, detail=result)
@@ -615,10 +614,10 @@ def my_measures_create(payload: CustomMeasurePayload, user: dict = Depends(requi
 @app.put('/api/my/measures/{measure_id}')
 def my_measures_update(measure_id: str, payload: CustomMeasurePayload,
                        user: dict = Depends(require_admin_member)):
-    _validate_measure_refs(payload.op, payload.a, payload.b)
+    _validate_custom_measure_payload(payload)
     ok, result = users_mod.update_custom_measure(
         DATA_USERS, user['id'], measure_id, payload.ad, payload.op, payload.a,
-        payload.b, payload.constant, payload.sort_direction,
+        payload.b, payload.constant, payload.sort_direction, payload.bicim,
     )
     if not ok:
         raise HTTPException(status_code=400, detail=result)

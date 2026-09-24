@@ -22,6 +22,7 @@ Tasarım kararları:
 """
 from __future__ import annotations
 import json
+import math
 import os
 import re
 import secrets
@@ -326,6 +327,9 @@ def set_role(path: Path, user_id: int, role: str) -> bool:
 # catalog id'si olup olmadığını ve birim uyumunu kontrol ediyor).
 # ============================================================
 CUSTOM_MEASURE_OPS = {'ratio', 'diff', 'sum', 'scale'}
+# Oran sonucunun biçimi: 'pct' (×100, %), 'kat' (×1). None = ölçü çiftinin
+# varsayılanı (bkz. pipeline/custom_measure_rules.ratio_formats).
+CUSTOM_MEASURE_BICIMLER = {None, 'pct', 'kat'}
 MAX_AD_LEN = 60
 
 
@@ -333,8 +337,18 @@ def _find(items: list, item_id: str) -> Optional[dict]:
     return next((x for x in items if x['id'] == item_id), None)
 
 
+def _ad_key(ad: str) -> str:
+    return ' '.join((ad or '').split()).casefold()
+
+
+def _ad_cakisiyor(existing: list, ad: str, haric_id: Optional[str] = None) -> bool:
+    key = _ad_key(ad)
+    return any(_ad_key(m['ad']) == key for m in existing if m['id'] != haric_id)
+
+
 def _validate_custom_measure(ad: str, op: str, a: str, b: Optional[str],
-                             constant, sort_direction: str) -> tuple[bool, str]:
+                             constant, sort_direction: str,
+                             bicim: Optional[str] = None) -> tuple[bool, str]:
     ad = (ad or '').strip()
     if not ad:
         return False, 'Ölçü adı boş olamaz'
@@ -345,38 +359,51 @@ def _validate_custom_measure(ad: str, op: str, a: str, b: Optional[str],
     if not (a or '').strip():
         return False, 'Ölçü A seçilmeli'
     if op == 'scale':
-        if constant is None or not isinstance(constant, (int, float)):
+        if (constant is None or isinstance(constant, bool)
+                or not isinstance(constant, (int, float)) or not math.isfinite(constant)):
             return False, 'A×Sabit için sayısal bir sabit girilmeli'
+        if constant == 0:
+            return False, 'Sabit 0 olamaz (sonuç her zaman 0 olur)'
     else:
         if not (b or '').strip():
             return False, 'Ölçü B seçilmeli'
     if sort_direction not in ('asc', 'desc'):
         return False, "sort_direction 'asc' veya 'desc' olmalı"
+    if bicim not in CUSTOM_MEASURE_BICIMLER:
+        return False, f"Geçersiz biçim: '{bicim}'"
     return True, ''
 
 
-def add_custom_measure(path: Path, user_id: int, ad: str, op: str, a: str,
-                       b: Optional[str] = None, constant: Optional[float] = None,
-                       sort_direction: str = 'desc') -> tuple[bool, object]:
-    """Başarılıysa (True, yeni_kayit_dict), değilse (False, hata_mesaji)."""
-    ok, err = _validate_custom_measure(ad, op, a, b, constant, sort_direction)
-    if not ok:
-        return False, err
-    record = {
-        'id': 'custom_' + secrets.token_hex(4),
-        'ad': ad.strip(),
+def _custom_fields(ad, op, a, b, constant, sort_direction, bicim) -> dict:
+    return {
+        'ad': ' '.join(ad.split()),
         'op': op,
         'a': a,
         'b': None if op == 'scale' else b,
         'constant': constant if op == 'scale' else None,
         'sort_direction': sort_direction,
-        'created_at': datetime.now().isoformat(),
+        'bicim': bicim if op == 'ratio' else None,
     }
+
+
+def add_custom_measure(path: Path, user_id: int, ad: str, op: str, a: str,
+                       b: Optional[str] = None, constant: Optional[float] = None,
+                       sort_direction: str = 'desc',
+                       bicim: Optional[str] = None) -> tuple[bool, object]:
+    """Başarılıysa (True, yeni_kayit_dict), değilse (False, hata_mesaji)."""
+    ok, err = _validate_custom_measure(ad, op, a, b, constant, sort_direction, bicim)
+    if not ok:
+        return False, err
+    record = {'id': 'custom_' + secrets.token_hex(4),
+              **_custom_fields(ad, op, a, b, constant, sort_direction, bicim),
+              'created_at': datetime.now().isoformat()}
     with _users_file_lock:
         data = _load(path)
         user = _find(data['users'], user_id)
         if not user:
             return False, 'Kullanıcı bulunamadı'
+        if _ad_cakisiyor(user['custom_measures'], ad):
+            return False, 'Bu adla bir özel ölçünüz zaten var'
         user['custom_measures'].append(record)
         _save(path, data)
     return True, record
@@ -385,8 +412,9 @@ def add_custom_measure(path: Path, user_id: int, ad: str, op: str, a: str,
 def update_custom_measure(path: Path, user_id: int, measure_id: str, ad: str,
                           op: str, a: str, b: Optional[str] = None,
                           constant: Optional[float] = None,
-                          sort_direction: str = 'desc') -> tuple[bool, object]:
-    ok, err = _validate_custom_measure(ad, op, a, b, constant, sort_direction)
+                          sort_direction: str = 'desc',
+                          bicim: Optional[str] = None) -> tuple[bool, object]:
+    ok, err = _validate_custom_measure(ad, op, a, b, constant, sort_direction, bicim)
     if not ok:
         return False, err
     with _users_file_lock:
@@ -397,12 +425,9 @@ def update_custom_measure(path: Path, user_id: int, measure_id: str, ad: str,
         record = _find(user['custom_measures'], measure_id)
         if not record:
             return False, 'Özel ölçü bulunamadı'
-        record.update({
-            'ad': ad.strip(), 'op': op, 'a': a,
-            'b': None if op == 'scale' else b,
-            'constant': constant if op == 'scale' else None,
-            'sort_direction': sort_direction,
-        })
+        if _ad_cakisiyor(user['custom_measures'], ad, haric_id=measure_id):
+            return False, 'Bu adla bir özel ölçünüz zaten var'
+        record.update(_custom_fields(ad, op, a, b, constant, sort_direction, bicim))
         _save(path, data)
         return True, record
 
