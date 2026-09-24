@@ -225,6 +225,10 @@ def _nd_tp_mevduat(ctx, b, t):
     return ctx.bilanco(b, t, 'Mevduat', 'TP'), ctx.bilanco(b, t, 'Mevduat')
 
 
+def _nd_yp_mevduat(ctx, b, t):
+    return ctx.bilanco(b, t, 'Mevduat', 'YP'), ctx.bilanco(b, t, 'Mevduat')
+
+
 # --- Akım/TTM rasyolar ---
 def _nd_roaa(ctx, b, t):
     nk = ttm_flow(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Net Dönem Karı / Zararı'))
@@ -592,6 +596,7 @@ RATIO_NUM_DEN: Dict[str, NumDenFn] = {
     'vadesiz_mevduat_toplam_mevduat': _nd_vadesiz_mevduat_mev,
     'kiymetli_maden_toplam_mevduat': _nd_kiymetli_maden_mevduat,
     'tp_mevduat_toplam_mevduat': _nd_tp_mevduat,
+    'yp_mevduat_toplam_mevduat': _nd_yp_mevduat,
     # Akım/TTM
     'roaa': _nd_roaa,
     'roae': _nd_roae,

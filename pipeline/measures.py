@@ -503,6 +503,14 @@ def m_tp_mevduat_toplam_mevduat(ctx, b, t):
     return safe_ratio(ctx.bilanco(b, t, 'Mevduat', 'TP'), ctx.bilanco(b, t, 'Mevduat'))
 
 
+def m_yp_mevduat_toplam_mevduat(ctx, b, t):
+    """YP Mevduat (kıymetli maden dahil) / Toplam Mevduat. 100 − TP payı
+    olarak DEĞİL doğrudan hesaplanır: bazı eski dönemlerde ham veride
+    TP + YP ≠ Toplam. PBI kalemlerinden (YP Mevduat / Toplam Mevduat)
+    hesaplanan oranla 2019+ 641/643 aynı (2026-09-24)."""
+    return safe_ratio(ctx.bilanco(b, t, 'Mevduat', 'YP'), ctx.bilanco(b, t, 'Mevduat'))
+
+
 # ============================================================
 # RASYOLAR — Gelir Tablosu (YtD)
 # ============================================================
@@ -1572,6 +1580,7 @@ MEASURE_FUNCS: Dict[str, Callable] = {
     'vadesiz_mevduat_toplam_mevduat': m_vadesiz_mevduat_toplam_mevduat,
     'kiymetli_maden_toplam_mevduat': m_kiymetli_maden_toplam_mevduat,
     'tp_mevduat_toplam_mevduat': m_tp_mevduat_toplam_mevduat,
+    'yp_mevduat_toplam_mevduat': m_yp_mevduat_toplam_mevduat,
 
     # Gelir Tablosu rasyolar (YtD)
     'maliyet_gelir': m_maliyet_gelir,

@@ -1044,6 +1044,17 @@
       "sort_direction": "desc"
     },
     {
+      "id": "yp_mevduat_toplam_mevduat",
+      "ad": "YP Mevduat / Toplam Mevduat",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
       "id": "tp_mevduat_altindisi_mevduat",
       "ad": "TP Mevduat / Altındışı Mevduat",
       "tip": "rasyo",

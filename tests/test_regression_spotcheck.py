@@ -47,7 +47,9 @@ GOLDEN = {
 # (kullanıcı isteği). Bilinçli artış.
 # 2026-09-23: 161→162 — "Ortalama RAV / Ortalama Özkaynaklar" eklendi
 # (kullanıcı isteği, PBI'da var bizde yoktu). Bilinçli artış.
-EXPECTED_MEASURE_COUNT = 162
+# 2026-09-24: 162→163 — "YP Mevduat / Toplam Mevduat" eklendi (kullanıcı
+# isteği). Bilinçli artış.
+EXPECTED_MEASURE_COUNT = 163
 EXPECTED_BANK_COUNT = 27
 
 

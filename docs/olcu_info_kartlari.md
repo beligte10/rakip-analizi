@@ -1214,6 +1214,24 @@
 
 ---
 
+## YP Mevduat / Toplam Mevduat
+
+`id: yp_mevduat_toplam_mevduat`
+
+**Tanım:** Yabancı para (döviz ve kıymetli maden) mevduatın payı.
+
+**Formül:** YP Mevduat / Mevduat
+
+**Hesaplama dönemi:** Dönem sonu bakiye
+
+**Kaynak:** Bilanço
+
+**Kategori:** Bilanço › Pasifler · **Tip:** Rasyo (Stok) · **Birim:** %
+
+> ℹ️ Kıymetli maden mevduatı YP'ye dahil (bilançodaki YP kolonu).
+
+---
+
 ## TP Mevduat / Altındışı Mevduat
 
 `id: tp_mevduat_altindisi_mevduat`
