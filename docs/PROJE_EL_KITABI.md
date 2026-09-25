@@ -1832,6 +1832,41 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
   `pytest` → 163/163. Özellik hâlâ yalnız adminlere açık (2026-09-18
   kararı).
 
+### Dönem 36 — Mobil görünüm baştan elden geçirildi; Dışa Aktar düzeltildi (2026-09-25)
+
+- **Mobil denetimin 16 kartı kapatıldı** (Görev Panosu → Yapıldı). Öne
+  çıkanlar:
+  - Sayfa artık `html` kaydırıyor (`height:100%` + `overflow-x:hidden`
+    body'yi kaydırma kutusuna çeviriyordu → `min-height` + `overflow-x:clip`).
+  - iOS form yakınlaştırması: mobilde alanlar 16 px; yalnız iOS'ta viewport'a
+    `maximum-scale=1` (4 sayfa). Android'e uygulanmaz (parmakla
+    yakınlaştırmayı engellerdi).
+  - Grafikler için `useIsMobileChart()` (matchMedia 560 px): Trend ve Rakip
+    Trend telefonda ayrı viewBox'la (≈1 birim = 1 px) çiziliyor, Trend
+    lejantı grafiğin altında, grafik seçimlerin ÜSTÜNDE. YtD büyüme
+    ≤900 px'te yatay çubuk listesi (27 banka).
+  - `chartPointerProps` + `useTouchDismiss`: parmakla dönem gezinme
+    (`touch-action: pan-y`), dışarı dokununca kapanma.
+  - İç içe dikey kaydırma kaldırıldı (sıralama listesi, Dışa Aktar tablo/
+    ağaç); seçim çipleri yatay 3 sıra.
+  - Seçiciler mobilde tek satırlık özete katlanıyor; arama kutusu hep açık.
+    Arama sonrası sonuç listesinin yeniden açılmaması hatası (masaüstünde de
+    vardı) düzeltildi.
+  - Bilgi kartı mobilde alttan panel, kısa sürüm (ilk cümle + formül +
+    "Daha fazla bilgi"), en fazla %60 ekran.
+  - `BANK_SHORT` kısa banka adları, dokunmatik hedefler (`pointer: coarse`),
+    `noNegZero` ("−0" yazımı), tablet ara düzeni.
+  - Rakip listesi `rakipBankList()` ile `meta.groups['Rakip Bankalar']`'dan
+    (kartlar, trend, dipnot) — önceden koda sabitti.
+  - Admin: başlık "KT Rakip Analizi", sekmeler 2 sütun, pano yana kaydırmalı,
+    Yapıldı sütunu son 8 kart + "Tümünü göster".
+- **Dışa Aktar:** "Banka Grupları" modunda tüm hücreler boştu —
+  `group_data` değerleri `{value: x}` nesnesi, doğrudan okunuyordu
+  (`groupVal` kullanılıyor). Rasyo başlıkları gerçek birimle (%/kat/TL),
+  değerler Türkçe ondalıkla, banka sütunu sabit, mobilde sonuca kaydırma.
+- **Doğrulama:** yerel sahte sunucuda 375 / 768 / 1280 px; canlıda Dışa
+  Aktar hatası önce yeniden üretildi. `pytest` → 163/163.
+
 ---
 
 ## 7. Açık ve bekleyen konular

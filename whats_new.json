@@ -1,5 +1,25 @@
 [
   {
+    "version": "v2.2",
+    "date": "2026-09-25",
+    "title": "Mobil görünüm baştan elden geçirildi, Dışa Aktar düzeltildi",
+    "items": [
+      "Ölçü bilgi kartı telefonda alttan açılan panel olarak açılıyor, artık ekrandan taşmıyor.",
+      "iPhone'da arama ve seçim kutularına dokununca sayfa yakınlaşmıyor.",
+      "Telefonda sayfa kaydırması düzgün: adres çubuğu küçülüyor, üste dokununca başa dönülüyor.",
+      "Trend grafiği telefonda okunur boyutta; seri adları ve son değerleri grafiğin altında.",
+      "Rakip Bankalar Trend grafiği telefonda okunur, değer etiketleri üst üste binmiyor.",
+      "Telefonda liste içinde ayrı kaydırılan kutular kaldırıldı; banka seçim çipleri yana kayıyor.",
+      "Dışa Aktar düzeltildi: Banka Grupları seçildiğinde değerler artık geliyor (önceden hepsi boştu); oran kolonları doğru birimle (%, kat) ve Türkçe ondalıkla; telefonda tablo oluşunca otomatik olarak tabloya iniliyor.",
+      "Telefonda ölçü seçicileri tek satırlık özete katlanıyor — veriler ilk ekranda; 'Değiştir'e dokununca açılıyor.",
+      "Telefonda YtD büyüme grafiği yatay liste: 27 bankanın hepsi ve Kuveyt Türk görünür; banka adları kısaltılmış, kesilmiyor.",
+      "Grafiklerde parmakla dokunup sürükleyerek dönemler arasında gezinilebiliyor.",
+      "Butonlar ve sekmeler dokunmaya uygun boyutta; tablet için iki sütunlu düzen.",
+      "Rakip Bankalar listesi admin paneldeki gruptan geliyor (grup değişirse kartlar ve dipnot da değişir).",
+      "Admin paneli telefonda kullanılabilir: tüm sekmeler görünür, Görev Panosu yana kaydırmalı."
+    ]
+  },
+  {
     "version": "v2.1",
     "date": "2026-09-24",
     "title": "YP Mevduat payı ve yenilenen Ölçü Oluştur",
