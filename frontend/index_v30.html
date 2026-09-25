@@ -4,15 +4,29 @@
 <meta charset="UTF-8" />
 <title>KT Rakip Analizi</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+  /* iOS Safari 16 px altındaki form alanına dokununca sayfayı yakınlaştırıyor.
+     maximum-scale=1 yalnız bu otomatik yakınlaştırmayı kapatır; iOS parmakla
+     yakınlaştırmaya yine izin verir. Android'e uygulanmaz (orada engellerdi). */
+  (function(){
+    var ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    var m = document.querySelector('meta[name=viewport]');
+    if (ios && m) m.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
+  })();
+</script>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
   :root { --kt-green: #62AE41; --kt-green-dark: #457A2E; --kt-green-light: #A1CE8D; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-  html { overflow-x: hidden; }
-  body { overflow-x: hidden; }
+  /* Kaydıran öğe body değil sayfanın kendisi olmalı: height:100% +
+     overflow-x:hidden body'yi ayrı bir kaydırma kutusuna çeviriyordu (iPhone'da
+     adres çubuğu küçülmüyor, üste dokunup başa dönme çalışmıyordu). clip
+     yatay taşmayı kesiyor ama kaydırma kutusu oluşturmuyor. */
+  html, body { min-height: 100%; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  html, body { overflow-x: clip; }
+  @supports not (overflow-x: clip) { html { overflow-x: hidden; } }
   body {
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     font-size: 13px; line-height: 1.4;
@@ -307,6 +321,33 @@
     border: 1px solid rgba(15,31,47,0.08);
     padding: 18px 22px 22px; z-index: 70;
   }
+  /* Mobilde butona göre konumlanan baloncuk yerine alttan açılan panel
+     (butonun altında yer kalmayınca kart ekrandan taşıyordu). */
+  @media (max-width: 560px) {
+    .mi-popover {
+      left: 0 !important; right: 0 !important; top: auto !important; bottom: 0 !important;
+      transform: none !important; width: auto; max-width: none;
+      max-height: 60vh !important; border-radius: 16px 16px 0 0;
+      padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
+      overscroll-behavior: contain;
+    }
+    .mi-popover-head { margin-bottom: 8px; }
+    .mi-popover-title { font-size: 15px; }
+    .mi-popover-close { font-size: 20px; padding: 6px 8px; margin: -6px -8px 0 0; }
+    .mi-cat { font-size: 11.5px; }
+    .mi-row { margin-bottom: 10px; }
+    .mi-row-label { font-size: 10.5px; margin-bottom: 3px; }
+    .mi-row-value, .mi-term-name, .mi-term-def, .mi-note, .mi-meta { font-size: 13px; line-height: 1.5; }
+    .mi-formula { font-size: 12px; padding: 7px 10px; line-height: 1.5; }
+    .mi-note { padding: 8px 10px; }
+  }
+  .mi-compact-meta { font-size: 12px; color: #64748b; margin-bottom: 8px; }
+  body.dark .mi-compact-meta { color: #94a3b8; }
+  .mi-more-btn {
+    font: inherit; font-size: 13px; font-weight: 600; color: var(--kt-green-dark, #457A2E);
+    background: none; border: none; padding: 8px 0; min-height: 36px; cursor: pointer;
+  }
+  body.dark .mi-more-btn { color: #7EBAA5; }
   body.dark .mi-popover {
     background: #16232f; color: #e2e8f0; border-color: rgba(255,255,255,0.1);
     box-shadow: 0 16px 44px rgba(0,0,0,0.5);
@@ -435,6 +476,20 @@
     flex-wrap: nowrap;   /* ölçü kontrolleri tek satırda */
   }
   body.dark .control-bar { background: #13202e; border-color: #1a2f42; }
+  /* Mobil özet satırı (seçiciler kapalıyken) — masaüstünde hiç görünmez. */
+  .control-summary-row { display: none; }
+  .control-summary {
+    flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px;
+    background: #f7fafc; border: 1px solid #d4dde3; border-radius: 8px;
+    padding: 8px 12px; min-height: 48px; text-align: left; cursor: pointer;
+    font: inherit; color: #1a2635;
+  }
+  body.dark .control-summary { background: #1a2635; border-color: #2a3b4d; color: #e8eef1; }
+  .control-summary-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .control-summary-cat { font-size: 11px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .control-summary-name { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .control-summary-action { font-size: 13px; font-weight: 600; color: var(--kt-green-dark, #457A2E); flex: none; }
+  body.dark .control-summary-action { color: #7EBAA5; }
   .mode-toggle {
     display: inline-flex;
     background: #eef2f5;
@@ -626,6 +681,20 @@
   .comp-tooltip-pct { font-variant-numeric: tabular-nums; }
   .comp-tooltip-val { color: #94a3b8; font-variant-numeric: tabular-nums; min-width: 62px; text-align: right; }
 
+  .trend-mobile-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -2px 2px 8px; }
+  .trend-mobile-sum { font-size: 12.5px; color: #64748b; }
+  .trend-mobile-edit {
+    font: inherit; font-size: 13px; font-weight: 600; color: var(--kt-green-dark, #457A2E);
+    background: #f2f9ee; border: 1px solid rgba(69,122,46,0.3); border-radius: 8px;
+    padding: 8px 12px; min-height: 40px; cursor: pointer; flex: none;
+  }
+  body.dark .trend-mobile-edit { background: #1a2b22; color: #7EBAA5; }
+  .trend-legend { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .trend-legend-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .trend-legend-swatch { width: 18px; height: 0; border-top: 3px solid; flex-shrink: 0; }
+  .trend-legend-swatch.dashed { border-top-style: dashed; }
+  .trend-legend-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .trend-legend-value { font-weight: 700; font-variant-numeric: tabular-nums; }
   .trend-tooltip {
     position: absolute;
     background: rgba(15, 31, 47, 0.96);
@@ -639,6 +708,12 @@
     box-shadow: 0 4px 14px rgba(0,0,0,0.28);
     white-space: nowrap;
     transform: translate(-50%, calc(-100% - 14px));
+  }
+  /* Parmakla açılan ipucu parmağın altında kalmasın ve ekrandan taşmasın:
+     grafiğin sol üst köşesine sabitlenir. */
+  .trend-tooltip.touch {
+    left: 6px !important; top: 6px !important; transform: none;
+    white-space: normal; max-width: calc(100% - 12px);
   }
   .trend-tooltip-date {
     font-weight: 700;
@@ -797,6 +872,9 @@
     line-height: 15px;
   }
   body.dark .bank-row-name { color: #c5d3dd; }
+  .bn-short { display: none; }
+  .delta-unit-short { display: none; }
+  @media (max-width: 560px) { .delta-unit-short { display: inline; } }
   .bank-row.kt .bank-row-name { color: #0f1f2f; font-weight: 700; }
   body.dark .bank-row.kt .bank-row-name { color: #fff; }
 
@@ -924,6 +1002,18 @@
      gösterilebilir hale geldi) sütunlar okunmaz hale gelmesin diye grafik
      alanı yatay kayabiliyor (2026-09-18, bkz. YtDGrowthChart MIN_COL_PX). */
   .ytd-scroll-wrap { overflow-x: auto; width: 100%; }
+  .ytd-hlist { padding: 6px 10px 10px; }
+  .ytd-hrow { display: grid; grid-template-columns: 104px minmax(0,1fr) 58px; align-items: center; gap: 8px; min-height: 28px; font-size: 13px; }
+  .ytd-hrow.kt { background: rgba(98,174,65,0.1); border-radius: 6px; font-weight: 700; }
+  .ytd-hname { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 4px; }
+  .ytd-htrack { position: relative; height: 14px; }
+  .ytd-hzero { position: absolute; top: -4px; bottom: -4px; width: 1px; background: #94a3b8; }
+  .ytd-hbar { position: absolute; top: 0; bottom: 0; background: #1a2635; border-radius: 3px; }
+  body.dark .ytd-hbar { background: #94a3b8; }
+  .ytd-hbar.kt { background: var(--kt-green, #62AE41); }
+  .ytd-hval { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; padding-right: 4px; }
+  .ytd-hval.neg { color: #c0392b; }
+  .ytd-hval.anomaly { color: #94a3b8; font-style: italic; }
   .ytd-chart-container {
     display: flex;
     flex-direction: column;
@@ -1360,6 +1450,9 @@
     /* Sol kolonun altında hizalı: dashboard-grid'in ilk sütunu (genişlik = parent grid 1. col) */
     width: calc(((100% - 12px) * 0.9) / (0.9 + 1.5));
   }
+  /* Tek sütunlu düzende sol kolon genişliği anlamsız: dipnot tam genişlik
+     (mobilde ekranın 1/3'üne sıkışıyordu). */
+  @media (max-width: 900px) { .snapshot-footnote { width: auto; font-size: 12px; padding: 4px 8px; } }
   body.dark .snapshot-footnote { color: #94a3b8; }
   .snapshot-footnote em {
     font-style: italic;
@@ -1726,6 +1819,13 @@
   }
   body.dark .export-table th { background: #1a2635; }
   .export-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  /* Banka/grup sütunu yana kaydırırken sabit kalır (mobilde değer
+     sütunları ekrana sığmıyor, hangi satırın hangi bankaya ait olduğu
+     kayboluyordu). */
+  .export-table .sticky-col { position: sticky; left: 0; background: #fff; z-index: 1; }
+  .export-table th.sticky-col { z-index: 2; background: #f0f5f7; }
+  body.dark .export-table .sticky-col { background: #14202c; }
+  body.dark .export-table th.sticky-col { background: #1a2635; }
   .export-table td.empty { color: #cbd5e0; text-align: center; }
   body.dark .export-table td.empty { color: #4d6173; }
   .export-table tr:hover td { background: rgba(85,157,135,0.05); }
@@ -1763,6 +1863,21 @@
     .export-grid { grid-template-columns: minmax(0,1fr); }
     .export-sidebar { position: static; max-height: none; }
     .export-wrap { padding: 12px; }
+
+    /* İç içe dikey kaydırma yok: telefonda sayfanın içinde ayrı kaydırılan
+       kutular parmağı "yakalıyor" (liste sayfayı değil kendini kaydırıyor,
+       yatay telefonda kutu ekrandan büyük). Kutular tam boyuna açılır,
+       sayfa kayar. Seçim çipleri yatay kayan 3 sıraya dizilir (farklı eksen,
+       dikey kaydırmayla çakışmaz). */
+    .bank-rows-scroll { max-height: none !important; overflow: visible; }
+    .export-tree, .export-chips { max-height: none; overflow: visible; }
+    .export-table-wrap { max-height: none; overflow-x: auto; overflow-y: visible; }
+    .chip-container {
+      display: grid; grid-auto-flow: column; grid-template-rows: repeat(3, auto);
+      grid-auto-columns: max-content; justify-content: start;
+      max-height: none; overflow-x: auto; overflow-y: hidden;
+      -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+    }
 
     .topbar {
       flex-wrap: wrap; padding: 8px 12px; min-height: 0; row-gap: 4px;
@@ -1803,6 +1918,17 @@
     .date-selector-label { display: none; }
 
     .control-bar { flex-wrap: wrap; padding: 10px 12px; gap: 10px; }
+    .control-summary-row { display: flex; align-items: center; gap: 8px; flex: 1 1 100%; min-width: 0; max-width: 100%; }
+    .control-summary { overflow: hidden; }
+    .date-selector-bar .date-pill { max-width: 140px; }
+    /* Arama kutusu kapalıyken de görünür: bir ölçü seçtikten sonra yeni
+       arama için önce "Değiştir"e basmak gerekiyordu. Yalnız 3 açılır kutu
+       katlanır. */
+    .control-bar:not(.open) > .control-field:not(.control-field-search) { display: none; }
+    .control-bar:not(.open) > .control-field-search > .control-label { display: none; }
+    /* Dışa Aktar'ın kendi filtreleri var: üstteki bilgi satırı ve yıl/çeyrek
+       seçici (bu modda hiçbir şeyi etkilemiyor) mobilde gizlenir. */
+    .control-bar.export-mode { display: none; }
     /* Her control-field (Kategori/Alt Kategori/Ölçü) kendi tam satırını
        kaplar — üç ayrı kutu artık aynı hizada, etiket her zaman kutusunun
        hemen üstünde (bkz. .control-field, madde 5). */
@@ -1834,10 +1960,29 @@
        sığıyor gibi duruyor ama sağ sütun (Bps) kırpılıyordu. */
     .dashboard-grid > .panel, .comp-grid > .comp-panel { min-width: 0; }
     .bank-row { grid-template-columns: 110px minmax(0,1fr) 82px !important; }
+    /* Dar ekranda banka adının kısa hali (bkz. BANK_SHORT) — sabit ad
+       sütununda tam ad kesiliyordu. */
+    .bank-row-name .bn-full { display: none; }
+    .bank-row-name .bn-short { display: inline; }
     .bank-ranking-header { grid-template-columns: minmax(0,1fr) 82px !important; }
     .bank-bar-cell { grid-template-columns: minmax(0,1fr) 60px; }
+    .trend-wrap { padding-left: 8px; padding-right: 8px; display: flex; flex-direction: column; }
+    /* Grafik önce, seçimler sonra: seçim kutuları ilk ekranın tamamını
+       kaplıyor, grafik ancak kaydırınca görünüyordu. */
+    .trend-chart-wrap { padding: 14px 8px; order: -1; margin-bottom: 14px; }
+    .trend-controls { scroll-margin-top: 8px; }
+    /* Dokunulan form alanları en az 16 px (iOS otomatik yakınlaştırma eşiği). */
+    .control-select, .measure-search-input { font-size: 16px; }
   }
 
+
+  /* Tablet (561-900 px): telefon düzeni gerilmesin — seçiciler açıkken iki
+     sütun, çeyrek butonları makul genişlikte, grup/rakip kartları 3'lü. */
+  @media (min-width: 561px) and (max-width: 900px) {
+    .control-bar.open > .control-field { flex: 1 1 calc(50% - 5px); }
+    .date-selector-bar .date-selector-group:nth-child(2) { flex: 0 1 auto; }
+    .date-selector-bar .date-pill { flex: 0 0 auto; min-width: 84px; }
+  }
   @media (max-width: 560px) {
     .topbar-icon-btn { width: 40px; min-height: 38px; }
     .pw-modal, .wn-modal, .mb-modal { width: calc(100vw - 24px); }
@@ -1859,6 +2004,19 @@
        kenarına itip her değeri barından ~12px kaydırıyordu (2026-09-23).
        justify-content:flex-start + 180° döndürme metni hücrenin ALTINA,
        yani bara bitişik yere oturtur. */
+    .competitor-mini-hint { font-size: 10.5px; }
+    /* Beşinci grup kartı tek başına yarım satırda kalmasın. */
+    .group-grid > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+    /* Filtre sekmeleri tek satırda, gerekirse yana kayar ("İlk 20 Banka"
+       ikinci satıra düşüyordu). */
+    .bank-filter-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .bank-filter-tabs::-webkit-scrollbar { display: none; }
+    .bank-filter-tab { flex: none; white-space: nowrap; }
+    /* Başlıktaki dönem seçici dar sütunda kırpılıyordu: sütun genişler. */
+    .bank-row { grid-template-columns: 92px minmax(0,1fr) 76px !important; }
+    .bank-ranking-header { grid-template-columns: minmax(0,1fr) 76px !important; }
+    .bank-ranking-delta-period-select { max-width: 74px; padding: 4px 1px !important; }
+    .comp-tooltip { white-space: normal; }
     .ytd-values-row { height: 42px; }
     .ytd-value-cell {
       writing-mode: vertical-rl;
@@ -1868,6 +2026,27 @@
       align-items: center;
       display: flex;
     }
+  }
+
+  /* Dokunmatik ekranlarda dokunma hedefleri (parmak ≈ 44 px). Fareyle
+     kullanılan masaüstü düzeni değişmez; yalnız "kaba işaretçi" cihazlar. */
+  @media (pointer: coarse) {
+    .date-pill, .mode-btn, .year-dropdown-trigger { min-height: 40px; }
+    .bank-filter-tab { min-height: 36px; padding: 6px 12px; font-size: 13px; }
+    .bank-filter-tabs { gap: 8px; }
+    .mi-info-btn { width: 40px; height: 40px; font-size: 15px; margin-left: 2px; }
+    .bank-ranking-delta-period-select {
+      font-size: 12px !important; min-height: 32px; padding: 4px 6px;
+      border: 1px solid rgba(69,122,46,0.35); border-radius: 6px;
+    }
+    .year-end-toggle { min-height: 40px; padding: 6px 12px; }
+    .year-end-toggle input[type="checkbox"] { width: 20px; height: 20px; }
+    .export-quick button { min-height: 36px; padding: 6px 12px; font-size: 13px; }
+    .export-toggle button { min-height: 40px; }
+    .export-chip { min-height: 36px; display: inline-flex; align-items: center; font-size: 13px; }
+    .tree-node-row { min-height: 40px; }
+    .tree-checkbox { width: 20px; height: 20px; }
+    .chip { min-height: 36px; display: inline-flex; align-items: center; }
   }
 </style>
 </head>
@@ -2124,26 +2303,93 @@
   var useEffect = React.useEffect;
   var useRef = React.useRef;
 
+  // Telefon genişliğinde mi? Grafikler mobilde ayrı ölçek/düzenle çiziliyor:
+  // masaüstü viewBox'ı (ör. 1000 birim) 340 px'e sıkışınca yazılar 3 px'e
+  // düşüyordu. Ekran dönünce/boyut değişince yeniden çizilir.
+  var MOBILE_CHART_MQ = '(max-width: 560px)';
+  function useIsMobileChart(query) {
+    var mq = window.matchMedia ? window.matchMedia(query || MOBILE_CHART_MQ) : null;
+    var st = useState(mq ? mq.matches : false);
+    useEffect(function() {
+      if (!mq) return;
+      function onChange(e) { st[1](e.matches); }
+      if (mq.addEventListener) mq.addEventListener('change', onChange);
+      else mq.addListener(onChange);
+      return function() {
+        if (mq.removeEventListener) mq.removeEventListener('change', onChange);
+        else mq.removeListener(onChange);
+      };
+    }, []);
+    return st[0];
+  }
+
+  // Çizgi grafiklerde fare VE parmakla dönem gezinme. onPoint(clientX,
+  // clientY, rect, isTouch) çağrılır. Dokunmatikte yatay sürükleme ipucunu
+  // dönemler arasında gezdirir; touch-action:pan-y sayesinde dikey sürükleme
+  // sayfayı kaydırmaya devam eder. Önceden yalnız onMouseMove vardı.
+  function chartPointerProps(onPoint, onLeave) {
+    function fromTouch(e) {
+      var t = e.touches && e.touches[0];
+      if (!t) return;
+      onPoint(t.clientX, t.clientY, e.currentTarget.getBoundingClientRect(), true);
+    }
+    return {
+      style: { touchAction: 'pan-y' },
+      onMouseMove: function(e) {
+        onPoint(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect(), false);
+      },
+      onMouseLeave: onLeave,
+      onTouchStart: fromTouch,
+      onTouchMove: fromTouch
+    };
+  }
+  // Dokunmayla açılan ipucu, grafiğin dışına dokununca kapanır (fare
+  // olmadığı için mouseleave hiç gelmiyor).
+  function useTouchDismiss(active, ref, close) {
+    useEffect(function() {
+      if (!active) return;
+      function onDoc(e) {
+        if (ref.current && !ref.current.contains(e.target)) close();
+      }
+      document.addEventListener('touchstart', onDoc, { passive: true });
+      return function(){ document.removeEventListener('touchstart', onDoc); };
+    }, [active]);
+  }
+
   // --- Constants ---
   var KT_NAME = 'Kuveyt Türk';
   // Trend grafiği çizgi sonu etiketlerinde tam grup adı yerine kullanılan
   // kısaltmalar (2026-09-17) — "KT Hariç Katılım Bankaları" 22 karakter
   // sınırını aşıp "…" ile kesiliyordu, kullanıcı "KT Hariç Katılım" istedi.
   var GROUP_LABEL_SHORT = { 'KT Hariç Katılım Bankaları': 'KT Hariç Katılım' };
+  // Dar ekranda (telefon) banka listelerinde kullanılan kısa adlar — ad
+  // sütunu 88-110 px; "Ziraat Bank…", "QNB Finans…" diye kesiliyordu.
+  // Listede olmayan banka tam adıyla gösterilir.
+  var BANK_SHORT = {
+    'Ziraat Bankası': 'Ziraat', 'Garanti Bankası': 'Garanti', 'QNB Finansbank': 'QNB',
+    'Halk Bank': 'Halkbank', 'Alternatif Bank': 'Alternatif', 'Burgan Bank': 'Burgan',
+    'ING Bank': 'ING', 'Türkiye Finans': 'T. Finans', 'Ziraat Katılım': 'Ziraat Kat.',
+    'Vakıf Katılım': 'Vakıf Kat.', 'Emlak Katılım': 'Emlak Kat.', 'Dünya Katılım': 'Dünya Kat.'
+  };
+  function bankShortName(b) { return BANK_SHORT[b] || b; }
 
   // --- Utilities ---
+  // Yuvarlanınca sıfıra inen küçük negatifler "−0" / "%-0,0" yazmasın.
+  function noNegZero(str) {
+    return /[1-9]/.test(str) ? str : str.replace(/[-−]/, '');
+  }
   function fmtNum(v, decimals) {
     if (v == null) return '—';
     decimals = decimals == null ? 0 : decimals;
-    return v.toLocaleString('tr-TR', {
+    return noNegZero(v.toLocaleString('tr-TR', {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals
-    });
+    }));
   }
   function fmtPct(v, decimals) {
     if (v == null) return '—';
     decimals = decimals == null ? 2 : decimals;
-    return '%' + v.toFixed(decimals).replace('.', ',');
+    return noNegZero('%' + v.toFixed(decimals).replace('.', ','));
   }
   // bin_TL birimli measure'lar (Şube/Personel Başına ...) — değer BİN TL
   // cinsinden gelir, TL'ye çevirip okunur ölçekte gösterilir.
@@ -2222,13 +2468,13 @@
     var a = Math.abs(v);
     if (a >= 1000) return Math.round(v / 1000) + 'b';
     if (a >= 100)  return v.toFixed(0);
-    return v.toFixed(1).replace('.', ',');
+    return noNegZero(v.toFixed(1).replace('.', ','));
   }
 
   function fmtPctPlain(v, decimals) {
     if (v == null) return '—';
     decimals = decimals == null ? 1 : decimals;
-    return '%' + v.toFixed(decimals).replace('.', ',');
+    return noNegZero('%' + v.toFixed(decimals).replace('.', ','));
   }
   // 'kat' birimli rasyolar için: "2,05 kat" (Türkçe virgül). Yüzde DEĞİL.
   function fmtKat(v, decimals) {
@@ -2249,7 +2495,7 @@
   }
   function fmtBps(v) {
     if (v == null) return '—';
-    return Math.round(v).toLocaleString('tr-TR');
+    return noNegZero(Math.round(v).toLocaleString('tr-TR'));
   }
   // Compact TL formatı: 1,22 T / 470 mlr / 12 mn
   function fmtTLAbbr(v) {
@@ -2453,6 +2699,17 @@
   // hızlı filtreleri kullanması için (2026-09-18, kullanıcı isteği: "İlk
   // 20 banka olmasın aynı sınıflandırma burada da olsun") paylaşılan
   // scope'a taşındı.
+  // KT + "Rakip Bankalar" grubunun üyeleri. Grup admin panelden
+  // düzenlenebildiği için liste koda sabit yazılmaz (eskiden Rakip Bankalar
+  // kartları/trendi ve dipnot sabit 5 bankaydı, grup değişince yanlış
+  // kalıyordu). Bilinen sıra korunur, yeni eklenenler sona gelir.
+  var RAKIP_VARSAYILAN_SIRA = ['Garanti Bankası', 'Yapı Kredi', 'Akbank', 'QNB Finansbank', 'Denizbank'];
+  function rakipBankList() {
+    var uyeler = ((DATA.meta.groups || {})['Rakip Bankalar']) || RAKIP_VARSAYILAN_SIRA;
+    var sirali = RAKIP_VARSAYILAN_SIRA.filter(function(b){ return uyeler.indexOf(b) >= 0; })
+      .concat(uyeler.filter(function(b){ return RAKIP_VARSAYILAN_SIRA.indexOf(b) < 0 && b !== KT_NAME; }));
+    return [KT_NAME].concat(sirali);
+  }
   function groupMemberSet(groupName) {
     var set = {};
     (((DATA.meta.groups || {})[groupName]) || []).forEach(function(b){ set[b] = true; });
@@ -3002,12 +3259,15 @@
     // 📤 Dışa Aktar butonu (props.setMode('export')).
     var MODES = [['snapshot','Anında Görünüm'], ['trend','Trend'], ['composition','Kompozisyon']];
 
+    // Dışa Aktar'da tarih aralığı kendi filtrelerinden seçiliyor; yıl/çeyrek
+    // seçici bu modda hiçbir şeyi etkilemediği için gizlenir.
+    var hideDate = props.mode === 'export';
     return h('div', { className: 'date-selector-bar' },
-      h('div', { className: 'date-selector-group' },
+      !hideDate && h('div', { className: 'date-selector-group' },
         h('span', { className: 'date-selector-label' }, 'Yıl'),
         h(YearDropdown, { years: years, value: curYear, onSelect: selectYear })
       ),
-      h('div', { className: 'date-selector-group' },
+      !hideDate && h('div', { className: 'date-selector-group' },
         h('span', { className: 'date-selector-label' }, 'Çeyrek'),
         QUARTER_MONTHS.map(function(q) {
           var exists = !!dateFor(curYear, q.mm);
@@ -3130,14 +3390,30 @@
   // ÖLÇÜ INFO KARTI — Tanım/Formül/Kaynak/Terimler (2026-09-18,
   // docs/olcu_info_kartlari.md'den /api/measure-info ile geliyor)
   // ===============================================================
+  // İlk cümle — mobil bilgi kartında tanımın kısa hali. Nokta sonrası boşluk
+  // + büyük harf cümle sonu sayılır ("vb." gibi kısaltmalarda bölmez).
+  function ilkCumle(t) {
+    if (!t) return t;
+    var m = t.match(/^[\s\S]*?[.!?](?=\s+[A-ZÇĞİÖŞÜ(])/);
+    return m ? m[0] : t;
+  }
+
   function MeasureInfoPopover(props) {
+    // Mobilde kart ekranı kaplıyordu: kısa tanım + formül + tek satır detay
+    // gösterilir; tam tanım, terimler ve notlar "Daha fazla" ile açılır.
+    var compact = useIsMobileChart();
+    var moreState = useState(false);
+    var more = moreState[0], setMore = moreState[1];
     var card = (DATA.measureInfo || {})[props.measureId];
     var measure = DATA.catalog.filter(function(m){ return m.id === props.measureId; })[0];
     var titleText = (card && card.baslik) || (measure && measure.ad) || props.measureId;
     var pos = props.pos;
+    // Yükseklik, açıldığı yöndeki boş alanla sınırlı — kart ekranın
+    // altından/üstünden taşmasın (fixed olduğu için taşan kısım kaydırılamıyordu).
+    var room = Math.max(160, (pos.openUp ? pos.anchorTop : window.innerHeight - pos.anchorBottom) - 20);
     var posStyle = pos.openUp
-      ? { left: pos.left + 'px', top: pos.anchorTop + 'px', transform: 'translate(-50%, calc(-100% - 10px))' }
-      : { left: pos.left + 'px', top: pos.anchorBottom + 'px', transform: 'translate(-50%, 10px)' };
+      ? { left: pos.left + 'px', top: pos.anchorTop + 'px', transform: 'translate(-50%, calc(-100% - 10px))', maxHeight: room + 'px' }
+      : { left: pos.left + 'px', top: pos.anchorBottom + 'px', transform: 'translate(-50%, 10px)', maxHeight: room + 'px' };
     return h('div', {
       className: 'mi-popover',
       style: posStyle,
@@ -3154,6 +3430,21 @@
       ),
       !card
         ? h('div', { className: 'wn-empty' }, 'Bu ölçü için henüz bir bilgi kartı yok.')
+        : (compact && !more) ? h(React.Fragment || 'div', null,
+            card.durum && h('div', { className: 'mi-row' },
+              h('span', { className: 'mi-badge' }, card.durum)),
+            card.tanim && h('div', { className: 'mi-row mi-row-value' }, ilkCumle(card.tanim)),
+            card.formul && h('div', { className: 'mi-row mi-formula' }, card.formul),
+            h('div', { className: 'mi-compact-meta' },
+              [card.donem, card.birim].filter(Boolean).join(' · ')),
+            (function(){
+              var extra = (card.tanim && ilkCumle(card.tanim) !== card.tanim) ||
+                (card.terimler && card.terimler.length) || (card.notlar && card.notlar.length) || card.kaynak;
+              return extra && h('button', {
+                type: 'button', className: 'mi-more-btn', onClick: function(){ setMore(true); }
+              }, 'Daha fazla bilgi' + (card.terimler && card.terimler.length ? ' (' + card.terimler.length + ' terim)' : ''));
+            })()
+          )
         : h(React.Fragment || 'div', null,
             card.durum && h('div', { className: 'mi-row' },
               h('span', { className: 'mi-badge' }, card.durum)),
@@ -3880,6 +4171,25 @@
       miPinnedState[1](false);
     }
     var miPinned = miPinnedState[0];
+    // Mobilde seçiciler (arama + 3 açılır kutu) varsayılan kapalı: ilk ekranın
+    // yarısını kaplıyordu, yatay telefonda ilk ekranda hiç veri yoktu. Yerine
+    // seçili ölçüyü gösteren tek satırlık özet var; dokununca açılır.
+    var ctlOpenState = useState(false);
+    var ctlOpen = ctlOpenState[0], setCtlOpen = ctlOpenState[1];
+    function infoBtn(extraCls) {
+      return h('button', {
+        type: 'button', className: 'mi-info-btn' + (extraCls ? ' ' + extraCls : ''),
+        title: 'Ölçü hakkında bilgi', 'aria-label': 'Ölçü hakkında bilgi',
+        onMouseEnter: function(e){ miOpenFor(e.currentTarget); },
+        onFocus: function(e){ miOpenFor(e.currentTarget); },
+        onMouseLeave: miScheduleClose,
+        onBlur: miScheduleClose,
+        onClick: function(e){
+          if (miPinnedState[0]) { miCloseNow(); }
+          else { miOpenFor(e.currentTarget); miPinnedState[1](true); }
+        }
+      }, 'i');
+    }
     useEffect(function() {
       if (!miPinned) return;
       function onDocClick(e) {
@@ -3912,6 +4222,7 @@
       props.setActiveMeasure(m.id);
       setQuery('');
       setFocused(false);
+      setCtlOpen(false);
     }
 
     // Hiyerarşi
@@ -3970,7 +4281,7 @@
     }
 
     return h(React.Fragment || 'div', null,
-      h('div', { className: 'control-bar' },
+      h('div', { className: 'control-bar' + (ctlOpen ? ' open' : '') + (props.mode === 'export' ? ' export-mode' : '') },
       props.mode === 'export'
         ? h('div', { className: 'control-label', style: { color: '#94a3b8', fontStyle: 'italic' } },
             'Filtreler aşağıda — banka, tarih, kalem seçimi')
@@ -3988,7 +4299,22 @@
             )
           )
         : h(React.Fragment || 'div', null,
-            h('div', { className: 'control-field' },
+            h('div', { className: 'control-summary-row' },
+              h('button', {
+                type: 'button', className: 'control-summary',
+                'aria-expanded': ctlOpen ? 'true' : 'false',
+                onClick: function(){ setCtlOpen(!ctlOpen); }
+              },
+                h('span', { className: 'control-summary-text' },
+                  h('span', { className: 'control-summary-cat' },
+                    activeMeasureObj ? activeMeasureObj.kategori + (activeMeasureObj.alt_kategori ? ' › ' + activeMeasureObj.alt_kategori : '') : 'Ölçü'),
+                  h('span', { className: 'control-summary-name' },
+                    activeMeasureObj ? activeMeasureObj.ad : 'Ölçü seçin')),
+                h('span', { className: 'control-summary-action' }, ctlOpen ? 'Kapat' : 'Değiştir')
+              ),
+              infoBtn('control-summary-info')
+            ),
+            h('div', { className: 'control-field control-field-search' },
               h('div', { className: 'control-label' }, 'Ölçü Ara'),
               h('div', { className: 'measure-search-wrap' },
               h('input', {
@@ -3996,8 +4322,12 @@
                 type: 'text',
                 placeholder: 'Ölçü ara…',
                 value: query,
-                onInput: function(e){ setQuery(e.target.value); },
+                // Seçimden sonra kutu odakta kalıyor ama sonuç listesi kapanıyor;
+                // onFocus tekrar tetiklenmediği için yeni arama için önce başka
+                // yere tıklamak gerekiyordu. Yazınca ya da tıklayınca liste açılır.
+                onInput: function(e){ setQuery(e.target.value); setFocused(true); },
                 onFocus: function(){ setFocused(true); },
+                onClick: function(){ setFocused(true); },
                 // blur'da hemen kapatma — item tıklaması kaydolsun (150ms gecikme)
                 onBlur: function(){ setTimeout(function(){ setFocused(false); }, 150); },
                 onKeyDown: function(e){
@@ -4053,7 +4383,7 @@
                 h('select', {
                   className: 'control-select measure',
                   value: props.activeMeasure,
-                  onChange: function(e){ props.setActiveMeasure(e.target.value); }
+                  onChange: function(e){ props.setActiveMeasure(e.target.value); setCtlOpen(false); }
                 }, measureList.map(function(m){
                   var isAvail = !!available[m.id];
                   return h('option', {
@@ -4061,17 +4391,7 @@
                     disabled: !isAvail
                   }, m.ad + (m.tip === 'rasyo' ? '  (' + birimLabel(m) + ')' : '  (#)') + (isAvail ? '' : ' — veri yok'));
                 })),
-                h('button', {
-                  type: 'button', className: 'mi-info-btn', title: 'Ölçü hakkında bilgi',
-                  onMouseEnter: function(e){ miOpenFor(e.currentTarget); },
-                  onFocus: function(e){ miOpenFor(e.currentTarget); },
-                  onMouseLeave: miScheduleClose,
-                  onBlur: miScheduleClose,
-                  onClick: function(e){
-                    if (miPinnedState[0]) { miCloseNow(); }
-                    else { miOpenFor(e.currentTarget); miPinnedState[1](true); }
-                  }
-                }, 'i')
+                infoBtn()
               )
             )
           )
@@ -4102,8 +4422,12 @@
   function BankRanking(props) {
     var measure = props.measure;
     var tarih = props.tarih;
+    var isNarrow = useIsMobileChart();
     var isRasyo = measure.tip === 'rasyo';
     var hasDelta = showDeltaColumn(measure);
+    var deltaUnit = isMiktarDelta(measure) ? (measure.birim === 'bin_TL' ? 'TL' : 'adet')
+                  : isRasyo ? (isBpsDelta(measure) ? 'Bps' : '%')
+                  : 'Bps';
 
     // Delta sütununun karşılaştırma dönemi — Çeyreklik (varsayılan) / YoY / YtD
     // arasında seçilebilir (kullanıcı isteği, 2026-09-16).
@@ -4209,7 +4533,10 @@
                      : (' Büyüklükleri (' + buyuklukLabel(measure) + ')'))),
         hasDelta && h('div', { className: 'bank-ranking-header-delta' },
           h('div', { className: 'bank-ranking-header-delta-title' },
-            (isMiktarDelta(measure) || isRasyo) ? 'Değişim' : 'Pazar Payı'
+            ((isMiktarDelta(measure) || isRasyo) ? 'Değişim' : 'Pazar Payı'),
+            // Birim başlıkta (dar ekran), seçenekler kısa — mobilde
+            // "Çeyreklik (Bps)" 76 px'lik sütunda kırpılıyordu.
+            h('span', { className: 'delta-unit-short' }, ' (' + deltaUnit + ')')
           ),
           h('select', {
             className: 'bank-ranking-delta-period-select',
@@ -4217,10 +4544,8 @@
             onChange: function(e) { setDeltaPeriod(e.target.value); }
           },
             ['qoq', 'yoy', 'ytd'].map(function(p) {
-              var unit = isMiktarDelta(measure) ? (measure.birim === 'bin_TL' ? 'TL' : 'adet')
-                       : isRasyo ? (isBpsDelta(measure) ? 'Bps' : '%')
-                       : 'Bps';
-              return h('option', { key: p, value: p }, deltaPeriodLabel(p) + ' (' + unit + ')');
+              return h('option', { key: p, value: p },
+                (isNarrow && p === 'qoq' ? 'Çeyrek' : deltaPeriodLabel(p)) + (isNarrow ? '' : ' (' + deltaUnit + ')'));
             })
           )
         )
@@ -4283,7 +4608,9 @@
           className: 'bank-row' + (isKT ? ' kt' : ''),
           style: { gridTemplateColumns: gridCols }
         },
-          h('div', { className: 'bank-row-name', title: row.banka }, row.banka),
+          h('div', { className: 'bank-row-name', title: row.banka },
+            h('span', { className: 'bn-full' }, row.banka),
+            h('span', { className: 'bn-short' }, bankShortName(row.banka))),
           h('div', { className: 'bank-bar-cell' },
             h('div', { className: 'bank-bar-track' },
               hasNegative && h('div', { className: 'bank-bar-zero-line' }),
@@ -4328,6 +4655,9 @@
   function YtDGrowthChart(props) {
     var measure = props.measure;
     var tarih = props.tarih;
+    // Tek sütunlu düzende (tablet dahil) yatay liste: 768 px'te bile dikey
+    // grafik 27 bankanın ancak ~20'sini gösteriyordu.
+    var isMobile = useIsMobileChart('(max-width: 900px)');
 
     // Sol paneldeki (BankRanking) yüksekliğe hizalanmak için — bars-area'nın
     // GERÇEKTEN render edilen yüksekliği (CSS flex:1 ile SnapshotView'dan
@@ -4573,6 +4903,43 @@
     var MIN_COL_PX = 34;
     var chartMinWidth = displayBars.length * MIN_COL_PX;
 
+    // Mobil: dikey sütun grafiği 27 bankanın ancak 10'unu gösteriyordu (kalanı
+    // yana kaydırmayla, KT çoğu zaman görünmüyordu) ve değerler 8 px dikey
+    // yazıydı. Telefonda yatay çubuk listesi: her banka bir satır, ad solda,
+    // değer sağda, sıfır ekseni negatif/pozitif payına göre konumlu.
+    if (isMobile) {
+      var negFrac = totalRange > 0 ? Math.abs(minNeg) / totalRange : 0;
+      return h('div', { className: 'panel' },
+        h('div', { className: 'panel-header' }, headerTitle()),
+        filterTabsEl,
+        h('div', { className: 'ytd-hlist' },
+          displayBars.map(function(b) {
+            var isKT = b.banka === KT_NAME;
+            var ok = b.growth != null && !b.isAnomalous;
+            var w = ok && totalRange > 0 ? Math.abs(b.growth) / totalRange * 100 : 0;
+            var barStyle = b.growth >= 0
+              ? { left: (negFrac * 100) + '%', width: w + '%' }
+              : { left: (negFrac * 100 - w) + '%', width: w + '%' };
+            var valCls = 'ytd-hval';
+            if (b.isAnomalous) valCls += ' anomaly';
+            else if (ok && ((sortAsc && b.growth > 0) || (!sortAsc && b.growth < 0))) valCls += ' neg';
+            return h('div', { key: b.banka, className: 'ytd-hrow' + (isKT ? ' kt' : ''),
+                              title: b.isAnomalous ? 'Yapısal kırılma / düşük baz — ölçeğe dahil edilmedi' : undefined },
+              h('div', { className: 'ytd-hname' }, bankShortName(b.banka)),
+              h('div', { className: 'ytd-htrack' },
+                negFrac > 0 && h('div', { className: 'ytd-hzero', style: { left: (negFrac * 100) + '%' } }),
+                ok && h('div', { className: 'ytd-hbar' + (isKT ? ' kt' : ''), style: barStyle })
+              ),
+              h('div', { className: valCls },
+                b.growth == null ? '—'
+                  : miktar ? ((b.growth > 0 ? '+' : '') + Math.round(b.growth).toLocaleString('tr-TR'))
+                  : fmtPctPlain(b.growth, 1))
+            );
+          })
+        )
+      );
+    }
+
     return h('div', { className: 'panel', style: panelStyle },
       h('div', { className: 'panel-header', style: headerStyle }, headerTitle()),
       filterTabsEl,
@@ -4804,9 +5171,12 @@
 
   function CompetitorPopover(props) {
     var pos = props.pos;
+    // Yükseklik, açıldığı yöndeki boş alanla sınırlı — kart ekranın
+    // altından/üstünden taşmasın (fixed olduğu için taşan kısım kaydırılamıyordu).
+    var room = Math.max(160, (pos.openUp ? pos.anchorTop : window.innerHeight - pos.anchorBottom) - 20);
     var posStyle = pos.openUp
-      ? { left: pos.left + 'px', top: pos.anchorTop + 'px', transform: 'translate(-50%, calc(-100% - 10px))' }
-      : { left: pos.left + 'px', top: pos.anchorBottom + 'px', transform: 'translate(-50%, 10px)' };
+      ? { left: pos.left + 'px', top: pos.anchorTop + 'px', transform: 'translate(-50%, calc(-100% - 10px))', maxHeight: room + 'px' }
+      : { left: pos.left + 'px', top: pos.anchorBottom + 'px', transform: 'translate(-50%, 10px)', maxHeight: room + 'px' };
     return h('div', {
       className: 'competitor-popover',
       style: posStyle,
@@ -4833,7 +5203,7 @@
   function CompetitorCardsGrowth(props) {
     var measure = props.measure;
     var tarih = props.tarih;
-    var rakipler = [KT_NAME, 'Garanti Bankası', 'Yapı Kredi', 'Akbank', 'QNB Finansbank', 'Denizbank'];
+    var rakipler = rakipBankList();
 
     // Kollaps kart → hover/tık ile büyüyen popover (kullanıcı isteği,
     // 2026-09-17: "tek satırda yan yana + interaktif" — okunabilirlik
@@ -5033,7 +5403,7 @@
     var measure = props.measure;
     var tarih = props.tarih;
     // 5 rakip + KT sırası: KT, Garanti, Yapı Kredi, Akbank, QNB, Denizbank (2026-09-15)
-    var rakipler = [KT_NAME, 'Garanti Bankası', 'Yapı Kredi', 'Akbank', 'QNB Finansbank', 'Denizbank'];
+    var rakipler = rakipBankList();
 
     // Hover crosshair + tooltip — TrendView'deki (satır ~5123-5140, ~5278-5303)
     // kanıtlanmış desenin birebir portu (kullanıcı isteği, 2026-09-17: "kardeş"
@@ -5041,6 +5411,9 @@
     // fare x'ini SVG viewBox uzayına çevir, en yakın veri index'ini bul.
     var hoverState = useState(null);
     var hoverIdx = hoverState[0], setHoverIdx = hoverState[1];
+    var isMobile = useIsMobileChart();
+    var svgWrapRef = useRef(null);
+    useTouchDismiss(!!(hoverIdx && hoverIdx.touch), svgWrapRef, function(){ setHoverIdx(null); });
 
     var allDates = DATA.meta.dates;
     var curIdx = allDates.indexOf(tarih);
@@ -5070,6 +5443,10 @@
 
     var W = 560, H = 220;
     var padL = 40, padR = 60, padT = 30, padB = 30;  // sağda label için pay
+    // Mobil: viewBox telefon genişliğinde (≈1 birim = 1 px) ve yükseklik
+    // oranla büyüyor — 560 birim 330 px'e sıkışınca yazılar 6-7 px'e iniyor,
+    // sabit 220 px yükseklikte grafiğin üstünde/altında boşluk kalıyordu.
+    if (isMobile) { W = 330; H = 250; padL = 14; padR = 62; padT = 16; padB = 28; }
     var chartW = W - padL - padR;
     var chartH = H - padT - padB;
     var stepX = chartW / (trendDates.length - 1);
@@ -5080,7 +5457,7 @@
     // düştüğünde etiketler üst üste biniyordu. Aşağıda etiketler ideal
     // y konumlarına göre sıralanıp aralarında en az LABEL_MIN_GAP kalacak
     // şekilde ayrıştırılır (önce aşağı it, taşarsa yukarı geri sıkıştır).
-    var LABEL_MIN_GAP = 13;   // fontSize 11.5 için okunur minimum aralık (2026-09-17 büyütüldü)
+    var LABEL_MIN_GAP = isMobile ? 14 : 13;   // fontSize 11.5 için okunur minimum aralık (2026-09-17 büyütüldü)
     var labelItems = [];
     rakipler.forEach(function(b) {
       var vals = seriesByBank[b];
@@ -5131,23 +5508,20 @@
             );
           })
         ),
-        h('div', {
-          className: 'trend-svg-wrap',
-          onMouseMove: function(e) {
-            var rect = e.currentTarget.getBoundingClientRect();
-            var vbX = (e.clientX - rect.left) / rect.width * W;
+        h('div', Object.assign({ className: 'trend-svg-wrap', ref: svgWrapRef },
+          chartPointerProps(function(cx, cy, rect, isTouch) {
+            var vbX = (cx - rect.left) / rect.width * W;
             var i = Math.round((vbX - padL) / stepX);
             if (i < 0) i = 0;
             if (i >= trendDates.length) i = trendDates.length - 1;
-            if (vbX < padL - 5 || vbX > W - padR + 5) {
+            // Parmakla grafiğin kenarına dokununca da en yakın dönem seçilsin
+            if (!isTouch && (vbX < padL - 5 || vbX > W - padR + 5)) {
               setHoverIdx(null);
             } else {
-              setHoverIdx({ i: i, mouseX: e.clientX - rect.left, mouseY: e.clientY - rect.top });
+              setHoverIdx({ i: i, mouseX: cx - rect.left, mouseY: cy - rect.top, touch: isTouch });
             }
-          },
-          onMouseLeave: function(){ setHoverIdx(null); }
-        },
-        h('svg', { viewBox: '0 0 '+W+' '+H, style:{width:'100%', height:'220px'}},
+          }, function(){ setHoverIdx(null); })),
+        h('svg', { viewBox: '0 0 '+W+' '+H, style: isMobile ? {width:'100%', height:'auto', display:'block'} : {width:'100%', height:'220px'}},
           [0, 0.25, 0.5, 0.75, 1].map(function(p, i) {
             return h('line', {
               key: i,
@@ -5157,11 +5531,13 @@
             });
           }),
           trendDates.map(function(d, i) {
+            // Mobilde 8 tarih sığmıyor: sondan geriye birer atlayarak yaz.
+            if (isMobile && (trendDates.length - 1 - i) % 2 !== 0) return null;
             return h('text', {
               key: 'xl' + i,
               x: padL + i * stepX,
               y: H - padB + 16,
-              fontSize:'10.5', fill:'#64748b', textAnchor:'middle'
+              fontSize: isMobile ? '11' : '10.5', fill:'#64748b', textAnchor:'middle'
             }, tarihLabelShort(d));
           }),
           rakipler.map(function(b, bi) {
@@ -5242,7 +5618,7 @@
           var rows = rakipler.filter(function(b){ return seriesByBank[b][hoverIdx.i] != null; });
           if (rows.length === 0) return null;
           return h('div', {
-            className: 'trend-tooltip',
+            className: 'trend-tooltip' + (hoverIdx.touch ? ' touch' : ''),
             style: { left: hoverIdx.mouseX + 'px', top: hoverIdx.mouseY + 'px' }
           },
             h('div', { className: 'trend-tooltip-date' }, tarihLabel(trendDates[hoverIdx.i])),
@@ -5391,7 +5767,7 @@
       ),
       h('div', { className: 'snapshot-footnote' },
         h('span', null, 'Rakip Bankalar: '),
-        h('em', null, 'Garanti Bankası, Yapı Kredi, Akbank, QNB Finansbank, Denizbank')
+        h('em', null, rakipBankList().slice(1).join(', '))
       )
     );
   }
@@ -5455,6 +5831,15 @@
       setCompHover({ head: head, rows: rows, activeId: activeId,
                      x: e.clientX, y: e.clientY });
     }
+    // Dokunmatikte (mouseleave gelmez) segment dışına dokununca kapansın.
+    useEffect(function() {
+      if (!compHover) return;
+      function onDoc(e) {
+        if (!(e.target.closest && e.target.closest('.comp-bar-segment, .comp-hbar-segment'))) setCompHover(null);
+      }
+      document.addEventListener('touchstart', onDoc, { passive: true });
+      return function(){ document.removeEventListener('touchstart', onDoc); };
+    }, [!!compHover]);
 
     var barsRef = useRef(null);
     var barsWState = useState(0);
@@ -5596,7 +5981,8 @@
                         className: 'comp-bar-segment',
                         style: { height: pct + '%', background: c.color },
                         onMouseEnter: function(e){ hoverEvt(e, tipHead, tipRows, c.id); },
-                        onMouseMove: function(e){ hoverEvt(e, tipHead, tipRows, c.id); }
+                        onMouseMove: function(e){ hoverEvt(e, tipHead, tipRows, c.id); },
+                        onClick: function(e){ hoverEvt(e, tipHead, tipRows, c.id); }
                       },
                         pct >= 5 && h('div', { className: 'comp-bar-segment-label' },
                           fmtPctPlain(pct, 1))
@@ -5662,7 +6048,8 @@
                         className: 'comp-bar-segment',
                         style: { height: s.pct + '%', background: s.color },
                         onMouseEnter: function(e){ hoverEvt(e, tipHead2, tipRows2, s.id); },
-                        onMouseMove: function(e){ hoverEvt(e, tipHead2, tipRows2, s.id); }
+                        onMouseMove: function(e){ hoverEvt(e, tipHead2, tipRows2, s.id); },
+                        onClick: function(e){ hoverEvt(e, tipHead2, tipRows2, s.id); }
                       },
                         s.pct >= 5 && h('div', { className: 'comp-bar-segment-label' },
                           fmtPctPlain(s.pct, 1))
@@ -5809,7 +6196,15 @@
       ),
       compHover && h('div', {
         className: 'comp-tooltip',
-        style: { left: compHover.x + 'px', top: compHover.y + 'px' }
+        // Ekran kenarında açılınca taşmasın: yatayda kelepçele, üstte yer
+        // yoksa noktanın altına aç (telefonda parmak nereye değerse orada).
+        style: (function(){
+          var tw = Math.min(320, window.innerWidth * 0.92);
+          var left = Math.max(tw / 2 + 6, Math.min(window.innerWidth - tw / 2 - 6, compHover.x));
+          var below = compHover.y < 240;
+          return { left: left + 'px', top: compHover.y + 'px', maxWidth: tw + 'px',
+                   transform: below ? 'translate(-50%, 18px)' : undefined };
+        })()
       },
         h('div', { className: 'comp-tooltip-head' }, compHover.head),
         compHover.rows.map(function(r){
@@ -5864,6 +6259,9 @@
   // TREND VIEW — with final-value labels
   // ===============================================================
   function TrendView(props) {
+    var isMobile = useIsMobileChart();
+    var svgWrapRef = useRef(null);
+    var controlsRef = useRef(null);
     var measure = DATA.catalog.filter(function(m){return m.id === props.activeMeasure;})[0];
     if (!measure) return h('div', { className:'empty-state' }, 'Ölçü seçin');
 
@@ -5874,6 +6272,7 @@
     var hoverState = useState(null);  // null veya { i: number, x: number, y: number }
     var hoverIdx = hoverState[0];
     var setHoverIdx = hoverState[1];
+    useTouchDismiss(!!(hoverIdx && hoverIdx.touch), svgWrapRef, function(){ setHoverIdx(null); });
 
     // Banka türü lookup (Katılım Bankası mı?) — (2026-09-18 bug düzeltmesi)
     // alan adı 'tur', değer 'Katılım' (bkz. pipeline/datatable.py::build_meta).
@@ -5991,6 +6390,10 @@
     // padR 80 -> 200 (2026-09-08): seri adları artık sol üstteki lejantta
     // değil, çizginin bittiği yerde değerin yanında yazılıyor.
     var padL = 60, padR = 200, padT = 30, padB = 50;
+    // Mobil: viewBox telefon genişliğine yakın (≈1 birim = 1 px), seri
+    // adları çizgi sonunda değil grafiğin altındaki lejantta.
+    var FS = 10;
+    if (isMobile) { W = 330; H = 360; padL = 54; padR = 10; padT = 14; padB = 30; FS = 12.5; }
     var chartW = W - padL - padR;
     var chartH = H - padT - padB;
 
@@ -6058,7 +6461,7 @@
     // aralıkla seçiliyor — en güncel dönem her zaman yazılır, aralar eşit.
     var xTickIdx = [];
     if (!noData) {
-      var LBL_W = 46;    // "Haz 2026" ~10px fontta yaklaşık genişlik (viewBox birimi)
+      var LBL_W = isMobile ? 54 : 46;    // "Haz 2026" ~10px fontta yaklaşık genişlik (viewBox birimi)
       var MIN_GAP = 14;
       var maxTicks = Math.max(2, Math.floor(chartW / (LBL_W + MIN_GAP)));
       var tickStep = Math.max(1, Math.ceil(filteredDates.length / maxTicks));
@@ -6067,7 +6470,7 @@
     }
 
     var endLabels = [];
-    if (!noData) {
+    if (!noData && !isMobile) {
       series.forEach(function(s) {
         var idx = -1;
         for (var li = s.values.length - 1; li >= 0; li--) {
@@ -6111,7 +6514,7 @@
     var allGroups = DATA.meta.group_order;
 
     return h('div', { className: 'trend-wrap' },
-      h('div', { className: 'trend-controls' },
+      h('div', { className: 'trend-controls', ref: controlsRef },
         h('div', { className: 'trend-control-row' },
           h('div', { className: 'trend-control-block', style:{flex:'2'} },
             h('div', { className: 'trend-control-label' },
@@ -6204,6 +6607,19 @@
         h('div', {
           style:{ textAlign:'center', fontSize:'14px', fontWeight:'600', marginBottom:'10px' }
         }, measure.ad + ' — ' + trendModeLabel(effectiveMode) + ' Trend'),
+        // Mobilde seçimler grafiğin ALTINDA; ne seçili olduğu burada özetlenir,
+        // butonla seçimlere inilir.
+        isMobile && h('div', { className: 'trend-mobile-bar' },
+          h('span', { className: 'trend-mobile-sum' },
+            selection.banks.length + ' banka · ' + selection.groups.length + ' grup · ' +
+            tarihLabelShort(range.start) + ' – ' + tarihLabelShort(range.end)),
+          h('button', {
+            type: 'button', className: 'trend-mobile-edit',
+            onClick: function(){
+              if (controlsRef.current) controlsRef.current.scrollIntoView({ block: 'start' });
+            }
+          }, 'Seçimi değiştir ↓')
+        ),
         noData
           ? h('div', { className:'empty-state' },
               selection.banks.length + selection.groups.length === 0
@@ -6212,27 +6628,23 @@
                     ? 'Seçili dönemde ' + trendModeLabel(effectiveMode) + ' hesaplanamadı (yetersiz baz dönem verisi).'
                     : 'Seçili kriterlerde veri yok.')
             )
-          : h('div', {
-              className: 'trend-svg-wrap',
-              onMouseMove: function(e) {
-                var rect = e.currentTarget.getBoundingClientRect();
+          : h('div', Object.assign({ className: 'trend-svg-wrap', ref: svgWrapRef },
+              chartPointerProps(function(cx, cy, rect, isTouch) {
                 // SVG viewBox: 0..W, gerçek genişlik rect.width
                 // Mouse x → viewBox x: (clientX - rect.left) / rect.width * W
-                var vbX = (e.clientX - rect.left) / rect.width * W;
+                var vbX = (cx - rect.left) / rect.width * W;
                 // En yakın data index'ini bul
                 var iApprox = (vbX - padL) / stepX;
                 var i = Math.round(iApprox);
                 if (i < 0) i = 0;
                 if (i >= filteredDates.length) i = filteredDates.length - 1;
                 // X bandının dışına çıkıldıysa (sağ veya sol marjin) gizle
-                if (vbX < padL - 5 || vbX > W - padR + 5) {
+                if (!isTouch && (vbX < padL - 5 || vbX > W - padR + 5)) {
                   setHoverIdx(null);
                 } else {
-                  setHoverIdx({ i: i, mouseX: e.clientX - rect.left, mouseY: e.clientY - rect.top });
+                  setHoverIdx({ i: i, mouseX: cx - rect.left, mouseY: cy - rect.top, touch: isTouch });
                 }
-              },
-              onMouseLeave: function(){ setHoverIdx(null); }
-            },
+              }, function(){ setHoverIdx(null); })),
               h('svg', { viewBox: '0 0 '+W+' '+H, style:{width:'100%', height:'auto', display:'block'}},
               h('defs', null,
                 series.length === 1 && h('linearGradient', {
@@ -6252,16 +6664,19 @@
                   }),
                   h('text', {
                     x: padL - 6, y: padT + p * chartH + 3,
-                    fontSize:'10', fill:'#64748b', textAnchor:'end'
+                    fontSize: String(FS), fill:'#64748b', textAnchor:'end'
                   }, formatY(yVal))
                 );
               }),
               xTickIdx.map(function(i) {
+                // Kenara düşen etiket dışarı taşmasın (mobilde padR dar).
+                var tx = padL + i * stepX;
+                var anchor = tx + LBL_W / 2 > W ? 'end' : 'middle';
                 return h('text', {
                   key: 'xl' + i,
-                  x: padL + i * stepX,
+                  x: anchor === 'end' ? W - 1 : tx,
                   y: H - padB + 18,
-                  fontSize:'10', fill:'#64748b', textAnchor:'middle'
+                  fontSize: String(FS), fill:'#64748b', textAnchor: anchor
                 }, tarihLabelShort(filteredDates[i]));
               }),
               // 0 referans çizgisi — büyüme modlarında ve 0 chart aralığındaysa
@@ -6314,7 +6729,7 @@
                     // açık modda marka renginin birebir kendisi. Yeni palette
                     // #0B2E63 gibi koyu tonlar var, koyu zeminde kaybolmasın.
                     d: path, fill:'none',
-                    stroke: s.textColor, strokeWidth:'2.5',
+                    stroke: s.textColor, strokeWidth: isMobile ? '3' : '2.5',
                     strokeDasharray: s.dashed ? '6,3' : 'none',
                     strokeLinecap: 'round', strokeLinejoin: 'round',
                     pathLength: s.dashed ? undefined : 1,
@@ -6326,7 +6741,7 @@
                     return h('circle', {
                       key: i,
                       cx: padL + i * stepX, cy: scale(v),
-                      r: 3.5, fill: s.textColor,
+                      r: isMobile ? 4 : 3.5, fill: s.textColor,
                       stroke: '#fff', strokeWidth: '1.5',
                       className: 'trend-dot-fade',
                       style: { animationDelay: (si * 90 + 550) + 'ms' }
@@ -6398,7 +6813,7 @@
               });
               if (tooltipRows.length === 0) return null;
               return h('div', {
-                className: 'trend-tooltip',
+                className: 'trend-tooltip' + (hoverIdx.touch ? ' touch' : ''),
                 style: {
                   left: hoverIdx.mouseX + 'px',
                   top: hoverIdx.mouseY + 'px'
@@ -6416,7 +6831,24 @@
                 })
               );
             })()
-            )
+            ),
+        // Mobil lejant: çizgi sonu etiketlerinin yerine, seri adı + son değer
+        !noData && isMobile && h('div', { className: 'trend-legend' },
+          series.map(function(s) {
+            var last = null;
+            for (var li = s.values.length - 1; li >= 0; li--) {
+              if (s.values[li] != null) { last = s.values[li]; break; }
+            }
+            if (last == null) return null;
+            var nm = s.name.replace(' (grup toplamı)', '');
+            return h('div', { key: s.name, className: 'trend-legend-row' },
+              h('span', { className: 'trend-legend-swatch' + (s.dashed ? ' dashed' : ''),
+                          style: { borderColor: s.textColor } }),
+              h('span', { className: 'trend-legend-name' }, GROUP_LABEL_SHORT[nm] || nm),
+              h('span', { className: 'trend-legend-value', style: { color: s.textColor } }, formatFinal(last))
+            );
+          })
+        )
       )
     );
   }
@@ -6434,7 +6866,8 @@
     if (value === null || value === undefined) return null;
     if (typeof value !== 'number' || isNaN(value)) return null;
     if (measure.tip === 'rasyo') {
-      return value.toFixed(2);
+      var dp = exportDecimals(measure);
+      return value.toLocaleString('tr-TR', { minimumFractionDigits: dp, maximumFractionDigits: dp });
     }
     // büyüklük: Türkçe binlik formatı (nokta ile)
     return Math.round(value).toLocaleString('tr-TR');
@@ -6446,6 +6879,20 @@
     if (typeof value !== 'number' || isNaN(value)) return null;
     if (measure.tip === 'rasyo') return Number(value.toFixed(4));
     return Math.round(value);
+  }
+
+  // Rasyo birimi kat (çarpan) ise değişimler bps'le okunduğu için 4 hane,
+  // yüzde/TL rasyolarında 2 hane.
+  function exportDecimals(measure) {
+    return measure.birim === 'kat' ? 4 : 2;
+  }
+  // Kolon başlığındaki birim — eskiden her rasyo "(%)" yazıyordu, kat ve
+  // birim başına TL oranları da yüzde görünüyordu.
+  function exportUnitLabel(m) {
+    if (m.tip === 'rasyo') return ' (' + birimLabel(m) + ')';
+    if (m.birim === 'TL') return ' (TL)';
+    if (m.birim === 'adet') return ' (Adet)';
+    return m.birim ? ' (' + m.birim + ')' : '';
   }
 
   function ExportView() {
@@ -6484,8 +6931,12 @@
     // Tree expanded nodes
     var expandedState = useState(function(){
       var e = {};
+      // Masaüstünde kategoriler açık başlar; dar ekranda ağaç kendi kutusunda
+      // kaymadığı için (iç içe kaydırma yok) 160 ölçü sayfayı çok uzatıyordu
+      // — orada kapalı başlar, arama yapınca eşleşenler zaten açılır.
+      var acik = window.innerWidth > 900;
       DATA.catalog.forEach(function(m){
-        e['cat:' + m.kategori] = true;  // Tüm kategoriler default açık
+        e['cat:' + m.kategori] = acik;
       });
       return e;
     });
@@ -6709,8 +7160,11 @@
         return a.ad.localeCompare(b.ad, 'tr');
       });
 
-      // Veri kaynağı: bankalar için bank_data, gruplar için group_data
-      var src = entityMode === 'banks' ? DATA.bank_data : DATA.group_data;
+      // Veri kaynağı: bankalar için bank_data (düz sayı), gruplar için
+      // group_data ({value} nesnesi) — ikisi farklı biçimde, bu yüzden
+      // doğrudan okumak yerine bankVal/groupVal kullanılır (grup modunda
+      // tüm hücreler "—" çıkıyordu).
+      var getVal = entityMode === 'banks' ? bankVal : groupVal;
 
       // Satırları oluştur (Banka/Grup × Tarih)
       var rows = [];
@@ -6719,8 +7173,7 @@
           var row = { entity: entity, tarih: d, values: {} };
           var hasAny = false;
           measureMeta.forEach(function(m){
-            var series = (src[m.id] || {})[entity];
-            var v = series ? series[d] : null;
+            var v = getVal(m.id, entity, d);
             if (v !== null && v !== undefined) hasAny = true;
             row.values[m.id] = v == null ? null : v;
           });
@@ -6742,6 +7195,15 @@
 
     function clearTable() { setTable(null); }
 
+    // Tek sütunlu (mobil/dar) düzende tablo uzun filtre sütununun ALTINDA
+    // çıkıyor — "Tabloyu Oluştur"a basınca hiçbir şey olmamış gibi
+    // görünüyordu. Tablo oluşunca sonuca kaydır.
+    var resultRef = useRef(null);
+    useEffect(function() {
+      if (!table || !resultRef.current || window.innerWidth > 900) return;
+      resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, [table]);
+
     // ----------------------------------------------------
     // EXPORT
     // ----------------------------------------------------
@@ -6750,11 +7212,7 @@
       var entLabel = table.entityMode === 'banks' ? 'Banka' : 'Banka Grubu';
       var headers = [entLabel, 'Tarih'];
       table.measures.forEach(function(m){
-        var unitLabel = m.tip === 'rasyo' ? ' (%)' :
-                       (m.birim === 'TL' ? ' (TL)' :
-                       (m.birim === 'adet' ? ' (Adet)' :
-                       (m.birim ? ' (' + m.birim + ')' : '')));
-        headers.push(m.ad + unitLabel);
+        headers.push(m.ad + exportUnitLabel(m));
       });
       var aoa = [headers];
       var src = includeAll ? table.rows : table.displayedRows;
@@ -7005,12 +7463,12 @@
           h('select', {
             value: dateStart,
             onChange: function(e){ setDateStart(e.target.value); }
-          }, dates.map(function(d){ return h('option', { key: d, value: d }, d); })),
+          }, dates.map(function(d){ return h('option', { key: d, value: d }, tarihLabel(d)); })),
           h('span', { className: 'export-date-sep' }, '→'),
           h('select', {
             value: dateEnd,
             onChange: function(e){ setDateEnd(e.target.value); }
-          }, dates.map(function(d){ return h('option', { key: d, value: d }, d); }))
+          }, dates.map(function(d){ return h('option', { key: d, value: d }, tarihLabel(d)); }))
         ),
         h('div', { className: 'export-quick', style: { marginTop: '8px' } },
           h('button', {
@@ -7086,7 +7544,7 @@
       main = h('div', { className: 'export-result' },
         h('div', { className: 'export-empty' },
           h('div', { className: 'export-empty-icon' }, '📊'),
-          h('div', null, 'Soldaki filtreleri seçin ve "Tabloyu Oluştur"a tıklayın.'),
+          h('div', null, 'Banka, tarih ve kalem seçip "Tabloyu Oluştur"a basın.'),
           h('div', { className: 'export-empty-hint' },
             'Banka/grup × tarih aralığı × kalem kombinasyonundaki tüm değerler tabloya gelir, Excel veya CSV olarak indirilebilir.'
           )
@@ -7094,7 +7552,7 @@
       );
     } else {
       var entLabel = table.entityMode === 'banks' ? 'Banka' : 'Banka Grubu';
-      main = h('div', { className: 'export-result' },
+      main = h('div', { className: 'export-result', ref: resultRef },
         h('div', { className: 'export-result-header' },
           h('div', { className: 'export-result-title-block' },
             h('div', { className: 'export-result-title' },
@@ -7133,22 +7591,18 @@
           h('table', { className: 'export-table' },
             h('thead', null,
               h('tr', null,
-                h('th', null, entLabel),
+                h('th', { className: 'sticky-col' }, entLabel),
                 h('th', null, 'Tarih'),
                 table.measures.map(function(m){
-                  var unitLabel = m.tip === 'rasyo' ? ' (%)' :
-                                 (m.birim === 'TL' ? ' (TL)' :
-                                 (m.birim === 'adet' ? ' (Adet)' :
-                                 (m.birim ? ' (' + m.birim + ')' : '')));
-                  return h('th', { key: m.id, title: m.id }, m.ad + unitLabel);
+                  return h('th', { key: m.id, title: m.id }, m.ad + exportUnitLabel(m));
                 })
               )
             ),
             h('tbody', null,
               table.displayedRows.map(function(r, i){
                 return h('tr', { key: r.entity + '|' + r.tarih + '|' + i },
-                  h('td', null, r.entity),
-                  h('td', null, r.tarih),
+                  h('td', { className: 'sticky-col' }, r.entity),
+                  h('td', null, tarihLabel(r.tarih)),
                   table.measures.map(function(m){
                     var v = r.values[m.id];
                     var formatted = fmtExportValue(v, m);

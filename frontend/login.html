@@ -3,6 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  /* iOS Safari 16 px altındaki form alanına dokununca sayfayı yakınlaştırıyor.
+     maximum-scale=1 yalnız bu otomatik yakınlaştırmayı kapatır; iOS parmakla
+     yakınlaştırmaya yine izin verir. Android'e uygulanmaz (orada engellerdi). */
+  (function(){
+    var ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    var m = document.querySelector('meta[name=viewport]');
+    if (ios && m) m.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
+  })();
+</script>
 <title>Giriş — KT Rakip Analizi</title>
 <style>
 :root {
@@ -100,6 +110,7 @@ button:disabled { opacity: 0.6; cursor: default; }
 }
 .footer-link a { color: var(--kt-green); text-decoration: none; font-weight: 500; }
 .footer-link a:hover { text-decoration: underline; }
+@media (max-width: 560px) { input, select, textarea { font-size: 16px !important; } }
 </style>
 </head>
 <body>
