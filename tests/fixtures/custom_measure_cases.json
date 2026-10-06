@@ -1,0 +1,1391 @@
+{
+ "_aciklama": "Özel ölçü ifade ağacı vakaları — hem pipeline/custom_measure_rules.py (test_custom_measures.py) hem frontend <cm-rules> bloğu (test_custom_measures_js.py) aynı sonuçları vermeli.",
+ "catalog": {
+  "krediler": {
+   "ad": "Krediler",
+   "tip": "buyukluk",
+   "birim": "TL",
+   "akim_stok": "stok"
+  },
+  "mevduat": {
+   "ad": "Mevduat",
+   "tip": "buyukluk",
+   "birim": "TL",
+   "akim_stok": "stok"
+  },
+  "menkul": {
+   "ad": "Menkul Kıymetler",
+   "tip": "buyukluk",
+   "birim": "TL",
+   "akim_stok": "stok"
+  },
+  "aktif": {
+   "ad": "Toplam Aktifler",
+   "tip": "buyukluk",
+   "birim": "TL",
+   "akim_stok": "stok"
+  },
+  "net_kar": {
+   "ad": "Net Kâr",
+   "tip": "buyukluk",
+   "birim": "TL",
+   "akim_stok": "akim"
+  },
+  "faiz_gel": {
+   "ad": "Faiz Gelirleri",
+   "tip": "buyukluk",
+   "birim": "TL",
+   "akim_stok": "akim"
+  },
+  "personel": {
+   "ad": "Personel Sayısı",
+   "tip": "buyukluk",
+   "birim": "adet",
+   "akim_stok": "stok"
+  },
+  "sube": {
+   "ad": "Şube Sayısı",
+   "tip": "buyukluk",
+   "birim": "adet",
+   "akim_stok": "stok"
+  },
+  "roaa": {
+   "ad": "Ortalama Aktif Karlılığı (ROAA)",
+   "tip": "rasyo",
+   "birim": "%",
+   "akim_stok": "akim"
+  },
+  "roae": {
+   "ad": "Ortalama Özkaynak Karlılığı (ROAE)",
+   "tip": "rasyo",
+   "birim": "%",
+   "akim_stok": "akim"
+  },
+  "fga_mp": {
+   "ad": "FGA / Maliyetli Pasifler",
+   "tip": "rasyo",
+   "birim": "kat",
+   "akim_stok": "stok"
+  },
+  "sube_basi": {
+   "ad": "Şube Başına Personel",
+   "tip": "rasyo",
+   "birim": "adet",
+   "akim_stok": "stok"
+  }
+ },
+ "valid": [
+  {
+   "ad": "oran TL/TL",
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "mevduat"
+    }
+   },
+   "type": {
+    "tip": "rasyo",
+    "birim": "%",
+    "akim_stok": "stok"
+   }
+  },
+  {
+   "ad": "oran kat",
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "mevduat"
+    },
+    "bicim": "kat"
+   },
+   "type": {
+    "tip": "rasyo",
+    "birim": "kat",
+    "akim_stok": "stok"
+   }
+  },
+  {
+   "ad": "akım/stok TTM",
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "net_kar"
+    },
+    "r": {
+     "m": "aktif"
+    }
+   },
+   "type": {
+    "tip": "rasyo",
+    "birim": "%",
+    "akim_stok": "akim"
+   }
+  },
+  {
+   "ad": "TL/adet",
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "personel"
+    }
+   },
+   "type": {
+    "tip": "rasyo",
+    "birim": "bin_TL",
+    "akim_stok": "stok"
+   }
+  },
+  {
+   "ad": "rasyo/rasyo",
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "roae"
+    },
+    "r": {
+     "m": "roaa"
+    }
+   },
+   "type": {
+    "tip": "rasyo",
+    "birim": "kat",
+    "akim_stok": "akim"
+   }
+  },
+  {
+   "ad": "(A+B)/C",
+   "expr": {
+    "op": "div",
+    "l": {
+     "op": "add",
+     "l": {
+      "m": "krediler"
+     },
+     "r": {
+      "m": "menkul"
+     }
+    },
+    "r": {
+     "m": "aktif"
+    }
+   },
+   "type": {
+    "tip": "rasyo",
+    "birim": "%",
+    "akim_stok": "stok"
+   }
+  },
+  {
+   "ad": "A/C - B/C",
+   "expr": {
+    "op": "sub",
+    "l": {
+     "op": "div",
+     "l": {
+      "m": "krediler"
+     },
+     "r": {
+      "m": "aktif"
+     }
+    },
+    "r": {
+     "op": "div",
+     "l": {
+      "m": "mevduat"
+     },
+     "r": {
+      "m": "aktif"
+     }
+    }
+   },
+   "type": {
+    "tip": "rasyo",
+    "birim": "%",
+    "akim_stok": "stok"
+   }
+  },
+  {
+   "ad": "(akım-akım)/stok",
+   "expr": {
+    "op": "div",
+    "l": {
+     "op": "sub",
+     "l": {
+      "m": "faiz_gel"
+     },
+     "r": {
+      "m": "net_kar"
+     }
+    },
+    "r": {
+     "m": "aktif"
+    }
+   },
+   "type": {
+    "tip": "rasyo",
+    "birim": "%",
+    "akim_stok": "akim"
+   }
+  },
+  {
+   "ad": "A×sabit",
+   "expr": {
+    "op": "mul",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "k": 0.5
+    }
+   },
+   "type": {
+    "tip": "buyukluk",
+    "birim": "TL",
+    "akim_stok": "stok"
+   }
+  },
+  {
+   "ad": "sabit×rasyo",
+   "expr": {
+    "op": "mul",
+    "l": {
+     "k": 100
+    },
+    "r": {
+     "m": "roaa"
+    }
+   },
+   "type": {
+    "tip": "rasyo",
+    "birim": "%",
+    "akim_stok": "akim"
+   }
+  },
+  {
+   "ad": "A/sabit",
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "k": 1000
+    }
+   },
+   "type": {
+    "tip": "buyukluk",
+    "birim": "TL",
+    "akim_stok": "stok"
+   }
+  },
+  {
+   "ad": "(A-B)/A",
+   "expr": {
+    "op": "div",
+    "l": {
+     "op": "sub",
+     "l": {
+      "m": "krediler"
+     },
+     "r": {
+      "m": "mevduat"
+     }
+    },
+    "r": {
+     "m": "krediler"
+    }
+   },
+   "type": {
+    "tip": "rasyo",
+    "birim": "%",
+    "akim_stok": "stok"
+   }
+  },
+  {
+   "ad": "rasyo farkı",
+   "expr": {
+    "op": "sub",
+    "l": {
+     "m": "roae"
+    },
+    "r": {
+     "m": "roaa"
+    }
+   },
+   "type": {
+    "tip": "rasyo",
+    "birim": "%",
+    "akim_stok": "akim"
+   }
+  },
+  {
+   "ad": "iç içe oran farkı",
+   "expr": {
+    "op": "sub",
+    "l": {
+     "op": "div",
+     "l": {
+      "m": "personel"
+     },
+     "r": {
+      "m": "sube"
+     }
+    },
+    "r": {
+     "m": "fga_mp"
+    }
+   },
+   "type": {
+    "tip": "rasyo",
+    "birim": "kat",
+    "akim_stok": "stok"
+   }
+  }
+ ],
+ "invalid": [
+  {
+   "ad": "A-A",
+   "expr": {
+    "op": "sub",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "krediler"
+    }
+   },
+   "hata": "aynı ölçü"
+  },
+  {
+   "ad": "aynı alt ifade",
+   "expr": {
+    "op": "div",
+    "l": {
+     "op": "add",
+     "l": {
+      "m": "krediler"
+     },
+     "r": {
+      "m": "mevduat"
+     }
+    },
+    "r": {
+     "op": "add",
+     "l": {
+      "m": "krediler"
+     },
+     "r": {
+      "m": "mevduat"
+     }
+    }
+   },
+   "hata": "aynı ölçü"
+  },
+  {
+   "ad": "sabit toplama",
+   "expr": {
+    "op": "add",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "k": 5
+    }
+   },
+   "hata": "yalnız çarpma"
+  },
+  {
+   "ad": "ölçü×ölçü",
+   "expr": {
+    "op": "mul",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "mevduat"
+    }
+   },
+   "hata": "İki ölçü çarpılamaz"
+  },
+  {
+   "ad": "sabit×sabit",
+   "expr": {
+    "op": "mul",
+    "l": {
+     "k": 2
+    },
+    "r": {
+     "k": 3
+    }
+   },
+   "hata": "İki sabit"
+  },
+  {
+   "ad": "sabit/ölçü",
+   "expr": {
+    "op": "div",
+    "l": {
+     "k": 1
+    },
+    "r": {
+     "m": "krediler"
+    }
+   },
+   "hata": "bölünemez"
+  },
+  {
+   "ad": "sıfıra bölme",
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "k": 0
+    }
+   },
+   "hata": "Sıfıra"
+  },
+  {
+   "ad": "sıfırla çarpma",
+   "expr": {
+    "op": "mul",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "k": 0
+    }
+   },
+   "hata": "0 olamaz"
+  },
+  {
+   "ad": "akım+stok",
+   "expr": {
+    "op": "add",
+    "l": {
+     "m": "net_kar"
+    },
+    "r": {
+     "m": "krediler"
+    }
+   },
+   "hata": "toplanamaz"
+  },
+  {
+   "ad": "iç akım+stok",
+   "expr": {
+    "op": "div",
+    "l": {
+     "op": "add",
+     "l": {
+      "m": "net_kar"
+     },
+     "r": {
+      "m": "krediler"
+     }
+    },
+    "r": {
+     "m": "aktif"
+    }
+   },
+   "hata": "toplanamaz"
+  },
+  {
+   "ad": "rasyo/tutar",
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "roaa"
+    },
+    "r": {
+     "m": "krediler"
+    }
+   },
+   "hata": "anlamlı değil"
+  },
+  {
+   "ad": "adet/TL",
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "personel"
+    },
+    "r": {
+     "m": "krediler"
+    }
+   },
+   "hata": "anlamlı değil"
+  },
+  {
+   "ad": "TL/adet pct",
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "personel"
+    },
+    "bicim": "pct"
+   },
+   "hata": "geçersiz biçim"
+  },
+  {
+   "ad": "% - kat",
+   "expr": {
+    "op": "sub",
+    "l": {
+     "op": "div",
+     "l": {
+      "m": "krediler"
+     },
+     "r": {
+      "m": "mevduat"
+     }
+    },
+    "r": {
+     "op": "div",
+     "l": {
+      "m": "personel"
+     },
+     "r": {
+      "m": "sube"
+     }
+    }
+   },
+   "hata": "Birimler uyuşmuyor"
+  },
+  {
+   "ad": "rasyo birim",
+   "expr": {
+    "op": "add",
+    "l": {
+     "m": "roaa"
+    },
+    "r": {
+     "m": "fga_mp"
+    }
+   },
+   "hata": "Birimler uyuşmuyor"
+  },
+  {
+   "ad": "tutar+rasyo aynı birim",
+   "expr": {
+    "op": "add",
+    "l": {
+     "m": "personel"
+    },
+    "r": {
+     "m": "sube_basi"
+    }
+   },
+   "hata": "Tutar ile rasyo"
+  },
+  {
+   "ad": "bilinmeyen",
+   "expr": {
+    "m": "yok"
+   },
+   "hata": "geçerli bir ölçü değil"
+  },
+  {
+   "ad": "bilinmeyen iç",
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "yok"
+    }
+   },
+   "hata": "geçerli bir ölçü değil"
+  },
+  {
+   "ad": "geçersiz op",
+   "expr": {
+    "op": "pow",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "k": 2
+    }
+   },
+   "hata": "Geçersiz işlem"
+  },
+  {
+   "ad": "yalnız sabit",
+   "expr": {
+    "k": 5
+   },
+   "hata": "en az bir ölçü"
+  },
+  {
+   "ad": "fazla anahtar",
+   "expr": {
+    "m": "krediler",
+    "x": 1
+   },
+   "hata": "Geçersiz ölçü düğümü"
+  },
+  {
+   "ad": "bool sabit",
+   "expr": {
+    "op": "mul",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "k": true
+    }
+   },
+   "hata": "Sabit geçerli bir sayı"
+  },
+  {
+   "ad": "geçersiz biçim",
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "mevduat"
+    },
+    "bicim": "bps"
+   },
+   "hata": "Geçersiz biçim"
+  },
+  {
+   "ad": "sabite bölmede biçim",
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "k": 1000
+    },
+    "bicim": "pct"
+   },
+   "hata": "Sabite bölmede"
+  },
+  {
+   "ad": "liste",
+   "expr": [
+    {
+     "m": "krediler"
+    }
+   ],
+   "hata": "Geçersiz formül yapısı"
+  },
+  {
+   "ad": "eksik dal",
+   "expr": {
+    "op": "add",
+    "l": {
+     "m": "krediler"
+    }
+   },
+   "hata": "Geçersiz formül yapısı"
+  },
+  {
+   "ad": "çok derin",
+   "expr": {
+    "op": "mul",
+    "l": {
+     "op": "mul",
+     "l": {
+      "op": "mul",
+      "l": {
+       "op": "mul",
+       "l": {
+        "op": "mul",
+        "l": {
+         "op": "mul",
+         "l": {
+          "m": "krediler"
+         },
+         "r": {
+          "k": 2
+         }
+        },
+        "r": {
+         "k": 2
+        }
+       },
+       "r": {
+        "k": 2
+       }
+      },
+      "r": {
+       "k": 2
+      }
+     },
+     "r": {
+      "k": 2
+     }
+    },
+    "r": {
+     "k": 2
+    }
+   },
+   "hata": "iç içe"
+  },
+  {
+   "ad": "çok ölçü",
+   "expr": {
+    "op": "add",
+    "l": {
+     "op": "add",
+     "l": {
+      "op": "add",
+      "l": {
+       "m": "krediler"
+      },
+      "r": {
+       "m": "mevduat"
+      }
+     },
+     "r": {
+      "op": "add",
+      "l": {
+       "m": "menkul"
+      },
+      "r": {
+       "op": "add",
+       "l": {
+        "m": "aktif"
+       },
+       "r": {
+        "m": "krediler"
+       }
+      }
+     }
+    },
+    "r": {
+     "op": "add",
+     "l": {
+      "op": "add",
+      "l": {
+       "m": "mevduat"
+      },
+      "r": {
+       "op": "add",
+       "l": {
+        "m": "menkul"
+       },
+       "r": {
+        "m": "aktif"
+       }
+      }
+     },
+     "r": {
+      "op": "add",
+      "l": {
+       "m": "krediler"
+      },
+      "r": {
+       "op": "add",
+       "l": {
+        "m": "mevduat"
+       },
+       "r": {
+        "m": "menkul"
+       }
+      }
+     }
+    }
+   },
+   "hata": "en fazla 10"
+  }
+ ],
+ "series": {
+  "krediler": {
+   "2024-06-30": 100,
+   "2024-12-31": 120,
+   "2025-06-30": 150
+  },
+  "mevduat": {
+   "2024-06-30": 200,
+   "2024-12-31": 220,
+   "2025-06-30": 250
+  },
+  "net_kar": {
+   "2024-06-30": 10,
+   "2024-12-31": 25,
+   "2025-06-30": 12
+  },
+  "aktif": {
+   "2024-06-30": 400,
+   "2025-06-30": 500
+  },
+  "personel": {
+   "2025-06-30": 50
+  }
+ },
+ "eval": [
+  {
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "mevduat"
+    }
+   },
+   "tarih": "2025-06-30",
+   "beklenen": 60
+  },
+  {
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "mevduat"
+    },
+    "bicim": "kat"
+   },
+   "tarih": "2025-06-30",
+   "beklenen": 0.6
+  },
+  {
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "net_kar"
+    },
+    "r": {
+     "m": "aktif"
+    }
+   },
+   "tarih": "2025-06-30",
+   "beklenen": 6
+  },
+  {
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "net_kar"
+    },
+    "r": {
+     "m": "aktif"
+    }
+   },
+   "tarih": "2024-06-30",
+   "beklenen": 5
+  },
+  {
+   "expr": {
+    "op": "div",
+    "l": {
+     "op": "add",
+     "l": {
+      "m": "krediler"
+     },
+     "r": {
+      "m": "mevduat"
+     }
+    },
+    "r": {
+     "m": "aktif"
+    }
+   },
+   "tarih": "2025-06-30",
+   "beklenen": 80
+  },
+  {
+   "expr": {
+    "op": "sub",
+    "l": {
+     "op": "div",
+     "l": {
+      "m": "krediler"
+     },
+     "r": {
+      "m": "aktif"
+     }
+    },
+    "r": {
+     "op": "div",
+     "l": {
+      "m": "mevduat"
+     },
+     "r": {
+      "m": "aktif"
+     }
+    }
+   },
+   "tarih": "2025-06-30",
+   "beklenen": -20
+  },
+  {
+   "expr": {
+    "op": "mul",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "k": 0.5
+    }
+   },
+   "tarih": "2024-12-31",
+   "beklenen": 60
+  },
+  {
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "k": 1000
+    }
+   },
+   "tarih": "2025-06-30",
+   "beklenen": 0.15
+  },
+  {
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "aktif"
+    }
+   },
+   "tarih": "2024-12-31",
+   "beklenen": null
+  },
+  {
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "personel"
+    }
+   },
+   "tarih": "2025-06-30",
+   "beklenen": 0.003
+  },
+  {
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "net_kar"
+    },
+    "r": {
+     "op": "sub",
+     "l": {
+      "m": "aktif"
+     },
+     "r": {
+      "m": "krediler"
+     }
+    }
+   },
+   "tarih": "2025-06-30",
+   "beklenen": 8.307692307692308
+  }
+ ],
+ "parse": [
+  {
+   "metin": "([Krediler] + [Menkul Kıymetler]) / [Toplam Aktifler]",
+   "expr": {
+    "op": "div",
+    "l": {
+     "op": "add",
+     "l": {
+      "m": "krediler"
+     },
+     "r": {
+      "m": "menkul"
+     }
+    },
+    "r": {
+     "m": "aktif"
+    }
+   }
+  },
+  {
+   "metin": "[krediler]   -  [MEVDUAT] − [menkul]",
+   "expr": {
+    "op": "sub",
+    "l": {
+     "op": "sub",
+     "l": {
+      "m": "krediler"
+     },
+     "r": {
+      "m": "mevduat"
+     }
+    },
+    "r": {
+     "m": "menkul"
+    }
+   }
+  },
+  {
+   "metin": "[Krediler] × 1,5",
+   "expr": {
+    "op": "mul",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "k": 1.5
+    }
+   }
+  },
+  {
+   "metin": "[Krediler]*0.5",
+   "expr": {
+    "op": "mul",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "k": 0.5
+    }
+   }
+  },
+  {
+   "metin": "[Krediler] / [Mevduat] - [Menkul Kıymetler] / [Mevduat]",
+   "expr": {
+    "op": "sub",
+    "l": {
+     "op": "div",
+     "l": {
+      "m": "krediler"
+     },
+     "r": {
+      "m": "mevduat"
+     }
+    },
+    "r": {
+     "op": "div",
+     "l": {
+      "m": "menkul"
+     },
+     "r": {
+      "m": "mevduat"
+     }
+    }
+   }
+  },
+  {
+   "metin": "[Krediler] / ([Mevduat] / [Toplam Aktifler])",
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "op": "div",
+     "l": {
+      "m": "mevduat"
+     },
+     "r": {
+      "m": "aktif"
+     }
+    }
+   }
+  },
+  {
+   "metin": "[FGA / Maliyetli Pasifler] × -1",
+   "expr": {
+    "op": "mul",
+    "l": {
+     "m": "fga_mp"
+    },
+    "r": {
+     "k": -1
+    }
+   }
+  },
+  {
+   "metin": "[net_kar] / [aktif]",
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "net_kar"
+    },
+    "r": {
+     "m": "aktif"
+    }
+   }
+  }
+ ],
+ "parse_hata": [
+  {
+   "metin": "[Krediler] + ",
+   "hata": "eksik"
+  },
+  {
+   "metin": "[Krediler] [Mevduat]",
+   "hata": "işlem işareti eksik"
+  },
+  {
+   "metin": "([Krediler] + [Mevduat]",
+   "hata": "Kapanmayan parantez"
+  },
+  {
+   "metin": "[Krediler] + [Mevduat])",
+   "hata": "Fazladan kapanan"
+  },
+  {
+   "metin": "[Krediler + [Mevduat]",
+   "hata": "Bilinmeyen ölçü"
+  },
+  {
+   "metin": "[Krediler",
+   "hata": "Kapanmayan köşeli"
+  },
+  {
+   "metin": "Krediler / Mevduat",
+   "hata": "köşeli parantez"
+  },
+  {
+   "metin": "[Krediler] ^ 2",
+   "hata": "Beklenmeyen karakter"
+  },
+  {
+   "metin": "[Krediler] + * [Mevduat]",
+   "hata": "Arka arkaya"
+  },
+  {
+   "metin": "   ",
+   "hata": "boş"
+  }
+ ],
+ "metin": [
+  {
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "net_kar"
+    },
+    "r": {
+     "m": "aktif"
+    }
+   },
+   "formul": "TTM Net Kâr / Ort. Toplam Aktifler × 100"
+  },
+  {
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "mevduat"
+    },
+    "bicim": "kat"
+   },
+   "formul": "Krediler / Mevduat"
+  },
+  {
+   "expr": {
+    "op": "sub",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "mevduat"
+    }
+   },
+   "formul": "Krediler − Mevduat"
+  },
+  {
+   "expr": {
+    "op": "mul",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "k": 1.5
+    }
+   },
+   "formul": "Krediler × 1,5"
+  },
+  {
+   "expr": {
+    "op": "div",
+    "l": {
+     "op": "add",
+     "l": {
+      "m": "krediler"
+     },
+     "r": {
+      "m": "menkul"
+     }
+    },
+    "r": {
+     "m": "aktif"
+    }
+   },
+   "formul": "(Krediler + Menkul Kıymetler) / Toplam Aktifler × 100"
+  },
+  {
+   "expr": {
+    "op": "sub",
+    "l": {
+     "op": "div",
+     "l": {
+      "m": "krediler"
+     },
+     "r": {
+      "m": "aktif"
+     }
+    },
+    "r": {
+     "op": "div",
+     "l": {
+      "m": "mevduat"
+     },
+     "r": {
+      "m": "aktif"
+     }
+    }
+   },
+   "formul": "(Krediler / Toplam Aktifler × 100) − (Mevduat / Toplam Aktifler × 100)"
+  },
+  {
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "net_kar"
+    },
+    "r": {
+     "op": "sub",
+     "l": {
+      "m": "aktif"
+     },
+     "r": {
+      "m": "krediler"
+     }
+    }
+   },
+   "formul": "TTM Net Kâr / (Ort. Toplam Aktifler − Ort. Krediler) × 100"
+  },
+  {
+   "expr": {
+    "op": "sub",
+    "l": {
+     "m": "fga_mp"
+    },
+    "r": {
+     "op": "div",
+     "l": {
+      "m": "personel"
+     },
+     "r": {
+      "m": "sube"
+     }
+    }
+   },
+   "formul": "(FGA / Maliyetli Pasifler) − Personel Sayısı / Şube Sayısı"
+  }
+ ],
+ "legacy": [
+  {
+   "kayit": {
+    "op": "ratio",
+    "a": "krediler",
+    "b": "mevduat",
+    "bicim": "kat"
+   },
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "mevduat"
+    },
+    "bicim": "kat"
+   }
+  },
+  {
+   "kayit": {
+    "op": "ratio",
+    "a": "krediler",
+    "b": "mevduat",
+    "bicim": null
+   },
+   "expr": {
+    "op": "div",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "mevduat"
+    }
+   }
+  },
+  {
+   "kayit": {
+    "op": "diff",
+    "a": "krediler",
+    "b": "mevduat"
+   },
+   "expr": {
+    "op": "sub",
+    "l": {
+     "m": "krediler"
+    },
+    "r": {
+     "m": "mevduat"
+    }
+   }
+  },
+  {
+   "kayit": {
+    "op": "sum",
+    "a": "net_kar",
+    "b": "faiz_gel"
+   },
+   "expr": {
+    "op": "add",
+    "l": {
+     "m": "net_kar"
+    },
+    "r": {
+     "m": "faiz_gel"
+    }
+   }
+  },
+  {
+   "kayit": {
+    "op": "scale",
+    "a": "roaa",
+    "constant": 2.5
+   },
+   "expr": {
+    "op": "mul",
+    "l": {
+     "m": "roaa"
+    },
+    "r": {
+     "k": 2.5
+    }
+   }
+  }
+ ]
+}

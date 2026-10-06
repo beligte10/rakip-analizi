@@ -27,9 +27,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Kalan dosyaları kopyala
 COPY app.py .
 COPY users.py .
+COPY roles.py .
 COPY catalog.seed.json .
 COPY whats_new.json .
 COPY pipeline/ pipeline/
+COPY assistant/ assistant/
 COPY frontend/ frontend/
 COPY scripts/ scripts/
 COPY docs/ docs/

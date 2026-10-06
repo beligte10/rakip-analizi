@@ -44,3 +44,7 @@ Thumbs.db
 
 # Kullanıcının yüklediği ham BDR klasörleri — veri git'e girmez (bkz. data/ notu)
 BDR Veriler/
+
+# Ham BDR PDF/çıktı klasörleri — veri git'e girmez (2026-10-07)
+bdrler/
+cikti/

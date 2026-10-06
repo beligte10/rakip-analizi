@@ -32,7 +32,7 @@ BANK_NAME_MAP: Dict[str, str] = {
     'Garanti BBVA': 'Garanti Bankası',
     'Halkbank': 'Halk Bank',
     'ING': 'ING Bank',
-    'QNB': 'QNB Finansbank',
+    'QNB Finansbank': 'QNB',
     'VakıfBank': 'Vakıfbank',
 }
 

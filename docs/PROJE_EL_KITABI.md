@@ -297,7 +297,14 @@ Bunların her biri gerçekten yaşandı ve zaman kaybettirdi.
 
 2. **NBSP (`\xa0`) tuzağı.** BDDK ham verisinde bazı kalem/tablo adlarında
    normal boşluk yerine kırılmaz boşluk var. Normalize edilmezse ölçü %0,49
-   çıkar (gerçeği %14,95).
+   çıkar (gerçeği %14,95). `LookupContext` bunu kategori etiketlerinde yapar
+   (2026-09-29); sütunları `astype(str)` ile metne çevirmek 4+ GB bellek
+   yiyordu — geri almayın.
+
+2a. **`LookupContext._fast` ile `_idx` birlikte yaşar.** Hesaplama düz
+   sözlükten (`_fast`) okur; `TracingLookupContext` (cikti_diagnostics) hâlâ
+   pandas `_idx`'i kullanır. Birini değiştiren diğerini de güncellemeli;
+   `tests/test_lookup_fast.py` ikisinin aynı sonucu verdiğini denetler.
 
 3. **`reload=False` — kod değişince sunucu restart şart.** Bilinçli tercih:
    tek worker garantisi (kilitler ve rate-limit in-process).
@@ -1867,9 +1874,192 @@ okunabilirliği, konsol hatası yok; 47 test yeşil.
 - **Doğrulama:** yerel sahte sunucuda 375 / 768 / 1280 px; canlıda Dışa
   Aktar hatası önce yeniden üretildi. `pytest` → 163/163.
 
+### Dönem 37 — Asistan, PDF mutabakatı, rol bazlı erişim, hızlanma (2026-09-27 → 2026-09-30, v2.3)
+
+- **Asistan (Qwen 3.5, OpenRouter üzerinden).** `assistant/` paketi:
+  `knowledge.py` (computed.json + catalog + bilgi kartları, mtime ile
+  önbellekli), `tools.py` (salt okunur araçlar: ölçü ara, ölçü bilgisi,
+  banka/grup listesi, değer getir, sırala, ölçü taslağı öner, görünüm aç),
+  `llm.py` (urllib ile SSE; `sk-or-` anahtarı OpenRouter'ı seçer),
+  `service.py` (en fazla 8 tur). Uç: `POST /api/chat` (SSE), `GET
+  /api/chat/status`; kullanıcı başına dakikada 8, günde 300 istek. Anahtar
+  `OPENROUTER_API_KEY` / `QWEN_API_KEY` / `DASHSCOPE_API_KEY` ortam
+  değişkeninde (yerelde gitignore'daki `start.sh`); yoksa asistan butonu
+  hiç görünmez.
+- **Ölçü Oluştur ifade ağacına genişletildi.** Özel ölçü artık `expr`
+  ağacı: `{m}` ölçü, `{k}` sabit, `{op: add|sub|mul|div, l, r}` (en fazla 10
+  yaprak, 6 derinlik). Kurallar `pipeline/custom_measure_rules.py`'de, aynısı
+  frontend'deki `<cm-rules>` bloğunda; ikisi `tests/fixtures/
+  custom_measure_cases.json` ortak senaryolarıyla test ediliyor (JS tarafı
+  node yoksa macOS `jsc` ile). Eski (a op b) kayıtlar otomatik çevriliyor.
+  Ölçü Oluştur tüm üyelere açıldı.
+- **Haziran 2026 PDF'i ile mutabakat.** 136 veri sayfasındaki 10.401 değer
+  dashboard'la karşılaştırıldı (rapor: claude.ai artifact "Rakip Analizi
+  Mutabakatı"). Düzeltilenler:
+  - `m_kredi_mevduat_spread`: maliyet = **kaynak** paçal maliyeti (mevduat
+    değil) — 3/81 → 77/81 eşleşme.
+  - `m_kaynak_pacal_maliyet` = TTM(Mevduata + Kullanılan Kredilere + İhraç
+    Edilen MK'lere verilen faizler) / ort(Mevduat + Alınan Krediler + İhraç
+    Edilen MK) — `kaynak_pacal_num_den`, grup tarafında da aynı pay/payda.
+  - `m_brut_faaliyet_kari`: 'Faaliyet Gelirleri/Giderleri Toplamı' satırı.
+  - Katılım bankalarında TP/YP vadeli bakiye: Mevduat − özel cari (YP'de −
+    kıymetli maden). Mevduat bankalarında sapma sürüyor (açık konu).
+  - `net_faiz_ort_rav`, `gayrinakdi_komisyon_gayrinakdi` grup değerleri
+    basit ortalamaya düşüyordu → `RATIO_NUM_DEN`'e eklendi (SYR/Çekirdek
+    SYR'de PDF de basit ortalama kullanıyor, dokunulmadı).
+  - Gelir kompozisyonunda negatif bileşen işareti korunuyor (`pct = v/Σ|v|`).
+  - 30.09: `faiz_maliyetli_pasif_maliyeti` payı kaynağa verilen faizler
+    (`faiz_maliyetli_pasif_num_den`; repo/diğer faiz hariç) — PDF'le 52/52,
+    `spread` da 52/52. TP/YP kredi ayrımı kur riski tablosundan
+    (`kur_ayrimli_krediler`: YP = 'Kur Riski, Varlıklar (Krediler, Toplam)',
+    dövize endeksli dahil; tablo yoksa bilanço) — üç TP/YP kredi oranı 52/52.
+    TP/YP spread getirisinde bilanço ayrımı korunuyor (kur ayrımı daha uzaktı).
+    Kalan farklar yalnız Rakip grubu tanımından. PDF toplam uyum 9.017 → 9.342.
+  - 30.09: yeni ölçüler `tp_getirili_maliyetli_spread` / `yp_getirili_maliyetli_spread`
+    (kullanıcı formülü: faiz gelirleri/getirili aktif − faiz giderleri/maliyetli
+    pasif, basit fark). TP/YP faiz kırılımı `LookupContext.faiz_tpyp` dipnot
+    tablolarından; zorunlu karşılık, para piyasası ve diğer faiz gelirlerinin
+    TP/YP kırılımı olmadığından TP'ye yazılıyor. Grup: `groups.DIFF_SPREADS`.
+    PDF'teki "TP/YP Kredi Mevduat Spread'i" (tp_spread/yp_spread) bu formülle
+    üretilemiyor (0/52) — o ölçüler değiştirilmedi.
+  - Referans artık Haziran 2026 PDF'i: `test_baseline_promoted`'daki eski
+    spread satırı çıkarıldı, `test_pdf_202606_uyum` eklendi.
+  - PDF'in hatalı olduğu yerler (dashboard doğru): YK 2026-06 KMH-YP kopya
+    satırı, s.119 = s.99 kopyası, s.26 pazar payı sütunu.
+- **Asistana TCMB EVDS (30.09).** `assistant/external/`: `http.py` (urllib + TTL
+  önbellek), `evds.py` (evds3.tcmb.gov.tr/igmevdsms-dis; anahtar `key` başlığında;
+  veri grubu listesi 12 saat önbellekte), `tools.py` (`evds_ara`, `evds_seriler`,
+  `evds_veri`; en fazla 5 seri, 120 satır — fazlasında en yeni satırlar ve "düşük
+  frekans seç" notu). Araçlar yalnız `EVDS_API_KEY` tanımlıysa modele sunulur
+  (`tools.active_specs`); sistem istemine "dış veriyi kaynağıyla ver, BDDK
+  verisiyle karıştırma" kuralı eklendi. EVDS kullanım şartları: kaynak gösterilerek
+  kullanılabilir. evds2 adresi evds3'e yönleniyor.
+- **TÜİK SDMX beklemede (30.09).** github.com/orhoncan/tuik-mcp (MIT) çözümleme
+  fonksiyonları `assistant/external/tuik.py`'ye alındı (bildirim:
+  `THIRD_PARTY_NOTICES.md`), HTTP katmanı urllib ile yeniden yazıldı, anahtar
+  kaydetme aracı alınmadı. Canlı ölçüm: TÜİK sunucusu isteklerin ~%20-30'unda
+  bağlantıyı kabul edip yanıt vermiyor (aynı URL bir denemede 1 sn, diğerinde
+  yanıtsız); `lastNObservations` parametresi hep takılıyor (son N dönem istemci
+  tarafında). Paralel "hedge" istekle 10'da 8 başarı. Kullanıcı kararıyla kapalı:
+  `TUIK_ETKIN=1` + `TUIK_API_KEY` ile açılır.
+- **Karşılaştır sekmesi eklendi, sonra kaldırıldı (2026-09-30, kullanıcı
+  kararı).** 6 panele kadar trend/Anında/kompozisyon paneli ve Banka Tablosu
+  içeriyordu; kod tamamen çıkarıldı (`CompareView`, `BankCompareTable`,
+  `compact`/`stacked` dalları, paylaşılan fare konumu, CSS). Tarayıcılarda
+  kalan `kt_compare_items` anahtarı artık okunmuyor. Trend kontrolleri
+  `TrendControls` bileşeninde kaldı.
+- **İhtiyaç Kredileri ve Serbest Sermaye tanımları (PDF + KT BDR ile).**
+  `m_ihtiyac_kredileri` = İhtiyaç + "Diğer" (tüketici ve personel; KT Haziran
+  2026 BDR: 4.124 + 278 personel + 330 diğer = 4.732, PDF 20/20 banka). Serbest
+  sermaye payından Yatırım Amaçlı Gayrimenkuller de düşülüyor (`serbest_sermaye`,
+  PDF 51/51; fark yalnız bu kalemi büyük olan Garanti/Vakıf/Halk'ta görünüyordu).
+  Not: `scripts/recompute.py` composition/meta yazmıyor — yeniden hesaplamayı
+  `app._run_pipeline_and_save(catalog, force=False, passthrough_only=False)` ile yap.
+- **Tüketici kredisi: kalem toplamı değil Toplam satırı (YK, Garanti, TEB BDR'leriyle).**
+  PBI tüketici kredisini alt kalemleri toplayarak alıyor (PDF 20/20); BDR'ler
+  tablonun Toplam satırını doğruluyor: YK 2026-06 ham veride 'KMH - YP' TP'nin
+  kopyası (+149.296 mn → PDF YK Tüzel Kr./Tüzel Mevduat %232 yerine doğrusu %267),
+  Garanti'de 'KMH-TP (Personel)' 190 mn şablonda ayrı kalem değil, TEB'de ham
+  Tüketici YP 12 (BDR 5). `tuketici_kredileri_kk_haric` = Toplam − kartlar
+  (Grup 2 Tüketici paydası; YK 2026-06 %9,31 → %12,74). Kredi Mevduat Spread'inde
+  PBI'ın "Mevduatın Paçal Maliyeti" aslında kaynağın paçal maliyeti (PDF 52/52;
+  yalnız mevduat maliyetiyle 1/52).
+- **TP/YP Kredi Mevduat Spread'i: vadeli mevduat PDF'ten geri çözüldü.**
+  Bilançodaki YP Mevduat = vade tablosundaki DTH + Kıymetli Maden DH + kur
+  riski tablosundaki Bankalar Mevduatı (13 bankada birebir). Mevduat bankası:
+  YP vadeli = DTH vadeli + YP bankalar − bankalar vadesizi (TCMB hariç), KM
+  dışarıda; TP vadesiz = toplam vadesiz − DTH − KM − aynı bankalar vadesizi.
+  Pay = TP/YP mevduat faizi − KM faizi (`ctx.vadeli_mevduat_faizi`). PDF'le tam
+  eşleşme TP 1→20/35, YP 0→26/35; ortanca 7→1,1 / 15→0,5 bps. Grup değeri
+  COMPOUND_SPREADS'e taşındı (Mevduat Bankaları TP −49 → −254, PDF −248; Rakip
+  farkı yalnız üye tanımından — PDF üyeleriyle −221/410 = PDF). Kalan: bazı
+  bankaların yalnız 2026-06 değeri (Garanti/Vakıf/İş/Halk/Şekerbank/Enpara) —
+  TP ve YP'de eşit ve ters tutarlı bakiye kayması; PBI'daki bir çeyrek verisi
+  farklı olabilir. TP/YP Getirili–Maliyetli Spread de aynı tanımı kullanır.
+- **BDR sağlaması (KT, Garanti, TEB — Haziran 2026).** Her ölçünün okuduğu ham satırlar
+  `TracingLookupContext` ile izlendi (banka başına ~385 girdi) ve BDR metniyle bağlamı
+  (satır adı) kontrol edilerek eşlendi; 2026-06 girdileri ve 2025-06 gelir tablosu birebir.
+  Bulunanlar: `finansal_varliklar()` (nakit BZK düşülmeden, PDF 37→52/52) uygulandı.
+  01.10'da düzeltildi (kullanıcı onayı): `toplam_rav()` = ham satır, kredi riski = RAV − piyasa
+  − operasyonel (≤ 0 ise boş; 2 eski kayıt), Toplam Risk = RAV; `toplam_kredi_kartlari` = kart
+  kredileri Grup 1 + Grup 2; `_vade_dilimi()` katılımda katılım fonu sütunları. SYR ile 'hangisi
+  toplam' algılaması denendi, PBI ile çeliştiği için (QNB 2023-09) bırakıldı. Ölçü formülleri
+  dosyası: `docs/Olcu_Formulleri_2026-10-01.xlsx` (koddan; sözlük + değişiklik günlüğü). Kaynak
+  veri: TEB 'Tüketici YP, Konut' 7 mn = dövize endeksli satırın kopyası (YK KMH deseni).
+  Ham 'Aktiften Silinen' = BDR'de satılan + silinen (satış ve terkin öncesi doğru).
+- **Veri düzeltmeleri (`pipeline/veri_duzeltmeleri.py`).** Ham veride bilinen tutarsızlıklar için belgelenmiş,
+  `LookupContext` veriyi indekslemeden önce uyguladığı tablo; her kayıt beklenen ham değeri taşır (uyuşmazsa
+  dokunulmaz). İlk kayıt: Halk 2025-03 Net Dönem Kârı = 7.051 mn (raporlanan; ham gelir tablosu yeniden
+  düzenlenmiş 6.405'i taşıyordu, özkaynak raporlanan tabandaydı). Kaynak: Halk 31.03.2026 BDR yeniden düzenleme
+  notu (Eylül 2025 TMS 28 özkaynak yöntemi). Halk 2024 gelir/bilanço net kârı ayrışması (3,3–3,8 mlr) açık.
+  BDR sağlaması: Halk Mart BDR'si bin TL, diğerleri milyon TL cinsinden (`ktbdr/audit.py BDRTL=1`).
+- **Rol bazlı erişim (`roles.py`, `data/roles.json`).** Kullanıcı kaydındaki
+  `role` artık bir rol kimliği; izinler rolden gelir. İzinler: `asistan`,
+  `asistan_dis_veri`, `olcu_olustur`, `export_veri`, `export_gorsel`,
+  `admin_veri` (Veri Durumu/Yükleme/Geçmiş, rebuild, yedek), `admin_gruplar`,
+  `admin_kullanicilar` (üyelik + rol tanımları), `admin_proje` (pano, backlog,
+  el kitabı). Hazır roller: Görüntüleyici (izin yok, yeni ve eski 'member'
+  üyeler), Analist, Veri Yöneticisi, Admin (izinleri kilitli). Rol başına
+  asistan günlük soru sınırı (`asistan_gunluk`, 0 = kapalı; dakika sınırı
+  ortak `CHAT_PER_MIN`). Sunucu: `require_perm(...)` (üye uçları),
+  `require_admin_perm(...)` (admin uçları; Basic Auth kökü her izne sahip),
+  `/api/admin/me`, `/api/admin/roles` CRUD. Yetki yükseltme koruması: kimse
+  kendi izinlerini aşan rol atayamaz/tanımlayamaz, daha geniş yetkili
+  kullanıcıyı reddedemez/şifresini sıfırlayamaz, kendi rolünü değiştiremez.
+  Kullanıcı dışa/içe aktarımı `admin_kullanicilar` ister ve `roles.json`'u da
+  taşır. Arayüz: panoda düğmeler `can(...)` ile, admin panelinde sekmeler
+  `data-perm` ile gizlenir; yeni 🔐 Roller sekmesi izin matrisi (satır izin,
+  sütun rol). **Dışa aktarma izinleri yalnız arayüzde** — `/api/data`
+  tarayıcıya tam geldiği için sunucu engelleyemez.
+- **Hızlı kazanımlar.** ⇄ önceki ölçü (Q tuşu); trend grafiklerinde ⬇ PNG
+  (`downloadChartPng`, SVG → canvas 2x).
+- **Görüntü tabanlı PDF (`exportElementPdf`).** `.main-panel` html2canvas
+  ile resme çevrilir, jsPDF ile A4 yatay sayfalara dizilir, doğrudan .pdf
+  iner (kütüphaneler cdnjs'ten ilk PDF'te yüklenir; yüklenemezse
+  `window.print`'e düşer). Ayrıntılar: kesim yeri hiçbir kartı bölmeyen en
+  uzak kenar, yoksa sıralama satırı arası; biraz taşan görünüm tek sayfaya
+  küçültülür; `body.pdf-capture` iç kaydırma kutularını açar; html2canvas
+  `writing-mode` ve `select` çizemediği için kopyada dikey banka adları
+  döndürülmüş SVG metne, açılır kutular düz yazıya çevrilir (`onclone`,
+  `data-pdf-root` ile yalnız yakalanan bölgede). Sayfa başlığı canvas'a
+  yazılıp resim olarak eklenir — jsPDF'in hazır fontlarında ş/ğ/ı yok.
+- **Performans.**
+  - `LookupContext`: pandas MultiIndex `.loc` yerine düz sözlük; NBSP
+    temizliği kategori etiketlerinde. Tam hesaplama 42 sn → 3 sn, bellek
+    tepesi 4,2 GB → 1,0 GB; çıktı birebir aynı (`tests/test_lookup_fast.py`).
+  - `GZipMiddleware` (seviye 6) ve `/`, `/api/data` için ETag + 304
+    (`_revalidated_file`, `Cache-Control: no-cache`). Veri değişmedikçe
+    tekrar açılışta 10 MB inmiyor.
+  - SheetJS yalnız Excel indirilirken yükleniyor (`loadXlsx`); React
+    18.3.1'e sabitlendi.
+- **Tek hesaplama yolu.** Yükleme / ZIP yükleme / rebuild artık
+  `_run_pipeline_and_save()` kullanıyor (grup güncelleme `_write_computed`).
+  ZIP yükleme `banks=` vermediği için computed.json yokken ilk kurulumda
+  boş sonuç hatası veriyordu — düzeldi, testi var.
+- **Kararlar:** Rakip grubu dashboard'daki gibi kalır (PDF'teki
+  Deniz+QNB+TEB'e çekilmedi); pazar payı varsayılan 27 banka, banka
+  listesinde filtre seçiliyken listelenen bankalar içinde; Enpara'nın verisi
+  olan tüm dönemleri gösterilir.
+- **Doğrulama:** yerel sahte sunucuda 375 / 1440 px, açık/koyu tema;
+  gerçek veriyle tam hesaplama karşılaştırması. `pytest` → 291/291.
+
 ---
 
 ## 7. Açık ve bekleyen konular
+
+- **PDF mutabakatında açık kalan (Power BI DAX tanımı gerekiyor):** mevduat
+  bankalarının TP/YP vadeli mevduat bakiyesi (TP/YP spread). En iyi YP
+  yaklaşımı: YP mevduat − DTH vadesiz − kıymetli maden (tümü) − yurtdışı
+  bankalar vadesiz (21/38). Faiz Maliyetli Pasif ve TP/YP kredi 30.09'da
+  çözüldü.
+- **TÜİK entegrasyonu (beklemede, 2026-09-30).** Kod hazır, servis güvenilirliği
+  yetersiz (isteklerin ~%20-30'u yanıtsız). Açmadan önce: TÜİK servisinin
+  kararlılığı yeniden ölçülmeli; kişisel (SMS doğrulamalı) anahtarın çok
+  kullanıcılı sunucuda kullanımı için TÜİK kullanım şartları kontrol edilmeli.
+- **Kütüphaneleri projeden sunmak (ertelendi, 2026-09-29).** React ve
+  SheetJS hâlâ unpkg / cdn.sheetjs.com'dan geliyor; bu siteler kurum ağında
+  engelliyse dashboard açılmaz. Üç dosya (~1,1 MB) `frontend/vendor/`'a
+  alınabilir.
 
 
 - **Site tarafında geçmiş veri eksik (Contabo/`kt-strateji.space`)** —
@@ -2331,6 +2521,9 @@ Bir şeyi değiştirmeden önce buraya bakın; çoğu "tuhaf" görünen tercih, 
 | **Sunucu taşıma paketi manifest'li** | "Hangi zip güncel" sorusu insan hafızasına kalınca, bir sunucuda Eylül 2025'te donmuş veri yayına çıktı. Manifest bunu görünür kılıyor. |
 | **Otomasyon veriyi hazırlar, yayına insan alır** | PDF fazında da aynı ilke: indirme otomatik, yayın kararı admin onayında (§8, FAZ 2). |
 | **12 ölçü hâlâ passthrough** (2026-09-09'a kadar 13'tü) | Ham veriden türetilmeleri doğrulama gerektiriyor; yanlış formülle "dolu ama hatalı" veri üretmektense bilinen bir boşluk bırakıldı. `gayrinakdi_krediler` doğrulanıp (1057 noktadan 1053 tam eşleşme) raw'a taşındı — geri kalan 12'si için de aynı doğrulama süreci önce (bkz. Dönem 9, §8). |
+| **Esas referans Haziran 2026 PDF'i** (2026-09-27) | `datatable_1.xlsx` eski spread tanımını taşıyordu; PDF Power BI'ın güncel çıktısı. Rakip grubu ise PDF'e çekilmedi, dashboard'daki tanım korundu. |
+| **Pazar payı evreni filtreye bağlı** (2026-09-27) | Varsayılan 27 banka; banka listesinde Katılım/Mevduat/Rakip/İlk 20 seçiliyken o listenin kendi içindeki pay — PDF ilk 20'ye göre veriyordu, kullanıcı ikisini de istedi. |
+| **Roller kutucuklu, izinler sabit listeden** (2026-09-30) | Kullanıcı özel rol + izin kutucuklarını seçti; izin anahtarları kodda sabit (`roles.IZINLER`) çünkü her biri bir uç noktaya/düğmeye bağlı. Mevcut üyeler Görüntüleyici'ye düştü (kullanıcı kararı) — admin rol vermeli. Dışa aktarma kısıtı arayüz düzeyinde; gerçek veri kısıtı gerekirse `/api/data` rol bazlı süzülmeli. |
 | **Bozuk "Toplam" satırına karşı alt kalem toplamı yedeği** (2026-09-09) | KT 2020-06-30'da BDDK ham verisinin kendisinde bir "Toplam" kalemi (-2,15 trilyon) fiziksel olarak imkânsızdı; alt kalemler toplamı doğruydu. Negatif/anlamsız bir toplam görülürse alt kalemlere düşmek, tek bozuk satırın tüm tarihi bozmasını önlüyor — ham BDDK verisi %100 güvenilir değil, formüllerde bu ihtimal göz önünde tutulmalı. |
 
 ---

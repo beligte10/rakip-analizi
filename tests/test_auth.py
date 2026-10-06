@@ -61,7 +61,7 @@ def test_signup_pending_ve_member(users_file):
     U.create_signup(users_file, 'Veli', 'veli@kuveytturk.com.tr', 'parola12345')
     u = U.list_users(users_file)[-1]
     assert u['status'] == 'pending'
-    assert u['role'] == 'member'
+    assert u['role'] == 'goruntuleyici'   # 2026-09-30: rol kimlikleri (roles.py)
 
 
 def test_signup_mukerrer_email(users_file):
@@ -198,6 +198,7 @@ def test_set_role(users_file):
     assert U.set_role(users_file, uid, 'admin')
     assert U.get_user_by_id(users_file, uid)['role'] == 'admin'
     assert not U.set_role(users_file, uid, 'gecersiz-rol')
+    assert not U.set_role(users_file, uid, 'member')      # eski ad artık atanamaz
 
 
 def test_set_status_red(users_file):

@@ -4,16 +4,14 @@ users.py
 Dosya tabanlı (data/users.json) üyelik sistemi.
 
 Tasarım kararları:
-- Kayıt olan HERKES 'pending' durumunda ve role='member' olarak oluşur —
-  dashboard'a giriş yapamaz.
+- Kayıt olan HERKES 'pending' durumunda ve Görüntüleyici rolüyle oluşur —
+  onaylanana kadar dashboard'a giriş yapamaz.
 - Sadece mevcut admin hesabı (app.py::verify_admin — HTTP Basic Auth, ayrı
   ve değişmeden kalır) onaylayabilir/reddedebilir/rol atayabilir.
-- ROL (2026-08-12 eklendi): 'member' (varsayılan) sadece dashboard'u
-  görüntüler; 'admin' TÜM admin panel yetkilerine sahiptir (upload/
-  rebuild/ZIP/üyelik onayı/banka grubu düzenleme — bkz.
-  app.py::require_admin_access). Admin, onaylı bir üyeye admin panelden
-  rol atayabilir — bu, ikinci bir "tam yetkili admin" hesabı yaratır
-  (Basic Auth hesabıyla eş değer, ayrı bir kısıtlama katmanı YOK).
+- ROL (2026-09-30): 'role' alanı roles.py'deki bir rol kimliğidir
+  (goruntuleyici | analist | veri_yoneticisi | admin | admin panelden
+  eklenen roller); izinler rolden gelir. Eski 'member' kayıtları okurken
+  Görüntüleyici'ye çevrilir (roles.resolve_id).
 - Şifreler bcrypt ile hash'lenir; düz metin hiçbir yerde saklanmaz/loglanmaz.
 - Tüm oku-değiştir-yaz işlemleri _users_file_lock (threading.Lock) ile
   korunuyor (2026-08-12 düzeltmesi) — eşzamanlı iki yazma isteği artık
@@ -31,6 +29,9 @@ import bcrypt
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+
+import roles as roles_mod
+from pipeline import custom_measure_rules as cm_rules
 
 EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 MIN_PASSWORD_LEN = 8
@@ -61,11 +62,12 @@ def _load(path: Path) -> dict:
     with open(path, encoding='utf-8') as f:
         data = json.load(f)
     # Geriye dönük uyumluluk (2026-08-12 rol özelliği eklendi): eski
-    # kayıtlarda 'role' alanı yok — okurken varsayılan 'member' atanır.
+    # kayıtlarda 'role' alanı yok — okurken varsayılan rol atanır; 2026-09-30
+    # rol kimliklerine geçişte 'member' → Görüntüleyici.
     # (2026-09-17: aynı desenle custom_measures/saved_views eklendi —
     # bkz. add_custom_measure/add_saved_view.)
     for u in data.get('users', []):
-        u.setdefault('role', 'member')
+        u['role'] = roles_mod.ESKI_ROLLER.get(u.get('role') or 'member', u.get('role'))
         u.setdefault('custom_measures', [])
         u.setdefault('saved_views', [])
     return data
@@ -89,6 +91,9 @@ def _save(path: Path, data: dict) -> None:
 
 def hash_password(pw: str) -> str:
     return bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+
+_SAHTE_HASH = bcrypt.hashpw(b'zamanlama-denemesi', bcrypt.gensalt()).decode('utf-8')
 
 
 def verify_password(pw: str, hashed: str) -> bool:
@@ -125,7 +130,7 @@ def create_signup(path: Path, name: str, email: str, password: str) -> tuple[boo
             'email': email,
             'password_hash': hash_password(password),
             'status': 'pending',  # pending | approved | rejected
-            'role': 'member',     # member | admin (2026-08-12) — sadece admin atayabilir
+            'role': roles_mod.VARSAYILAN_ROL,
             'created_at': datetime.now().isoformat(),
             'approved_at': None,
             'approved_by': None,
@@ -167,7 +172,7 @@ def admin_create_user(path: Path, name: str, email: str, password: str,
             'email': email,
             'password_hash': hash_password(password),
             'status': 'approved',
-            'role': 'member',
+            'role': roles_mod.VARSAYILAN_ROL,
             'created_at': now,
             'approved_at': now,
             'approved_by': created_by,
@@ -182,8 +187,12 @@ def authenticate(path: Path, email: str, password: str) -> tuple[Optional[dict],
     data = _load(path)
     user = next((u for u in data['users'] if u['email'] == email), None)
 
-    # Kullanıcı yok VEYA şifre yanlış — aynı hata mesajı (e-posta enumeration'ı önlemek için)
-    if not user or not verify_password(password, user['password_hash']):
+    # Kullanıcı yok VEYA şifre yanlış — aynı hata mesajı (e-posta enumeration'ı önlemek için).
+    # Kullanıcı yokken de bcrypt çalıştırılır: yanıt süresi farkıyla hesap varlığı anlaşılamasın (2026-10-04).
+    if not user:
+        verify_password(password or '', _SAHTE_HASH)
+        return None, 'E-posta veya şifre hatalı'
+    if not verify_password(password, user['password_hash']):
         return None, 'E-posta veya şifre hatalı'
     if user['status'] == 'pending':
         return None, 'Hesabınız henüz onay bekliyor — admin onayladıktan sonra giriş yapabilirsiniz'
@@ -195,6 +204,43 @@ def authenticate(path: Path, email: str, password: str) -> tuple[Optional[dict],
 def get_user_by_id(path: Path, user_id: int) -> Optional[dict]:
     data = _load(path)
     return next((u for u in data['users'] if u['id'] == user_id), None)
+
+
+def get_user_by_email(path: Path, email: str) -> Optional[dict]:
+    email = (email or '').strip().lower()
+    data = _load(path)
+    return next((u for u in data['users'] if u['email'] == email and u['status'] == 'approved'), None)
+
+
+def count_by_role(path: Path) -> dict:
+    """Rol kimliği → o roldeki onaylı kullanıcı sayısı."""
+    out: dict = {}
+    for u in _load(path)['users']:
+        if u['status'] == 'approved':
+            out[u['role']] = out.get(u['role'], 0) + 1
+    return out
+
+
+def set_focus_bank(path: Path, user_id: int, banka: Optional[str],
+                   rakipler: Optional[list] = None) -> bool:
+    """Kullanıcının kendi odak bankası (2026-10-02). None/'' → admin varsayılanına döner.
+    rakipler (2026-10-03): kullanıcının bu odak için seçtiği rakip listesi; None → odak bankaya
+    göre otomatik kurulan liste."""
+    with _users_file_lock:
+        data = _load(path)
+        u = next((x for x in data['users'] if x['id'] == user_id), None)
+        if u is None:
+            return False
+        if banka:
+            u['odak_banka'] = banka
+        else:
+            u.pop('odak_banka', None)
+        if rakipler:
+            u['rakipler'] = list(rakipler)
+        else:
+            u.pop('rakipler', None)
+        _save(path, data)
+        return True
 
 
 def list_users(path: Path) -> list[dict]:
@@ -295,11 +341,10 @@ def admin_reset_password(path: Path, user_id: int, new_password: str) -> tuple[b
     return True, ''
 
 
-def set_role(path: Path, user_id: int, role: str) -> bool:
-    """role: 'member' | 'admin'. Admin rolü, tüm admin panel yetkilerini
-    (upload/rebuild/ZIP/üyelik onayı/grup düzenleme) verir — bkz.
-    app.py::require_admin_access (2026-08-12)."""
-    if role not in ('member', 'admin'):
+def set_role(path: Path, user_id: int, role: str, roles_path: Optional[Path] = None) -> bool:
+    """role: roles.json'daki bir rol kimliği (2026-09-30). roles_path
+    verilmezse users.json'un yanındaki roles.json kullanılır."""
+    if not roles_mod.exists(roles_path or path.with_name('roles.json'), role):
         return False
     with _users_file_lock:
         data = _load(path)
@@ -319,18 +364,23 @@ def set_role(path: Path, user_id: int, role: str) -> bool:
 # SADECE kendi kullanıcısına özel — app.py::require_member ile korunan
 # /api/my/* uçlarından erişiliyor, başka kullanıcı/admin göremiyor.
 #
-# Formül gövdesi (A/B, A-B, A+B, A×sabit) bilerek burada YOK — istemci
-# tarafında (frontend/index_v30.html::injectCustomMeasures) hesaplanıyor,
-# çünkü ölçü değerleri zaten computed.json'da hazır, sunucunun tekrar
-# hesaplamasına gerek yok. Burası sadece TANIMI (op/a/b/constant)
-# saklıyor — doğrulama da burada (app.py sadece a/b'nin gerçek bir
-# catalog id'si olup olmadığını ve birim uyumunu kontrol ediyor).
+# Formül gövdesi bilerek burada hesaplanmıyor — istemci tarafında
+# (frontend/index_v30.html::injectCustomMeasures) hesaplanıyor, çünkü ölçü
+# değerleri zaten computed.json'da hazır. Burası sadece TANIMI saklıyor.
+#
+# Tanım biçimi (2026-09-25): yeni/güncellenen kayıtlar formülü ifade ağacı
+# olarak 'expr' alanında tutar (bkz. pipeline/custom_measure_rules). Eski
+# tek işlemli kayıtlar (op/a/b/constant/bicim) diskte olduğu gibi kalır ve
+# okunurken custom_measure_rules.record_expr ile ağaca çevrilir. Burada
+# yalnız ad/sıralama ve ağacın YAPISI doğrulanır; ölçülerin katalogda olup
+# olmadığı ve birim uyumu (anlam) app.py'de katalogla birlikte kontrol edilir.
 # ============================================================
 CUSTOM_MEASURE_OPS = {'ratio', 'diff', 'sum', 'scale'}
 # Oran sonucunun biçimi: 'pct' (×100, %), 'kat' (×1). None = ölçü çiftinin
 # varsayılanı (bkz. pipeline/custom_measure_rules.ratio_formats).
 CUSTOM_MEASURE_BICIMLER = {None, 'pct', 'kat'}
 MAX_AD_LEN = 60
+_LEGACY_FIELDS = ('op', 'a', 'b', 'constant', 'bicim')
 
 
 def _find(items: list, item_id: str) -> Optional[dict]:
@@ -346,14 +396,8 @@ def _ad_cakisiyor(existing: list, ad: str, haric_id: Optional[str] = None) -> bo
     return any(_ad_key(m['ad']) == key for m in existing if m['id'] != haric_id)
 
 
-def _validate_custom_measure(ad: str, op: str, a: str, b: Optional[str],
-                             constant, sort_direction: str,
-                             bicim: Optional[str] = None) -> tuple[bool, str]:
-    ad = (ad or '').strip()
-    if not ad:
-        return False, 'Ölçü adı boş olamaz'
-    if len(ad) > MAX_AD_LEN:
-        return False, f'Ölçü adı en fazla {MAX_AD_LEN} karakter olabilir'
+def _validate_legacy_def(op: str, a: Optional[str], b: Optional[str],
+                         constant, bicim: Optional[str]) -> tuple[bool, str]:
     if op not in CUSTOM_MEASURE_OPS:
         return False, f"Geçersiz işlem: '{op}'"
     if not (a or '').strip():
@@ -367,35 +411,46 @@ def _validate_custom_measure(ad: str, op: str, a: str, b: Optional[str],
     else:
         if not (b or '').strip():
             return False, 'Ölçü B seçilmeli'
-    if sort_direction not in ('asc', 'desc'):
-        return False, "sort_direction 'asc' veya 'desc' olmalı"
     if bicim not in CUSTOM_MEASURE_BICIMLER:
         return False, f"Geçersiz biçim: '{bicim}'"
     return True, ''
 
 
-def _custom_fields(ad, op, a, b, constant, sort_direction, bicim) -> dict:
-    return {
-        'ad': ' '.join(ad.split()),
-        'op': op,
-        'a': a,
-        'b': None if op == 'scale' else b,
-        'constant': constant if op == 'scale' else None,
-        'sort_direction': sort_direction,
-        'bicim': bicim if op == 'ratio' else None,
-    }
+def _resolve_custom_measure(ad: str, op: Optional[str], a: Optional[str], b: Optional[str],
+                            constant, sort_direction: str, bicim: Optional[str],
+                            expr: Optional[dict]) -> tuple[Optional[dict], str]:
+    """Doğrular; (kaydedilecek_ağaç, '') ya da (None, hata_mesajı).
+    expr verilmişse eski alanlar (op/a/b/constant/bicim) yok sayılır."""
+    ad = (ad or '').strip()
+    if not ad:
+        return None, 'Ölçü adı boş olamaz'
+    if len(ad) > MAX_AD_LEN:
+        return None, f'Ölçü adı en fazla {MAX_AD_LEN} karakter olabilir'
+    if expr is None:
+        ok, err = _validate_legacy_def(op, a, b, constant, bicim)
+        if not ok:
+            return None, err
+        expr = cm_rules.legacy_to_expr(op, a, b, constant, bicim if op == 'ratio' else None)
+    err = cm_rules.check_shape(expr)
+    if err:
+        return None, err
+    if sort_direction not in ('asc', 'desc'):
+        return None, "sort_direction 'asc' veya 'desc' olmalı"
+    return expr, ''
 
 
-def add_custom_measure(path: Path, user_id: int, ad: str, op: str, a: str,
-                       b: Optional[str] = None, constant: Optional[float] = None,
+def add_custom_measure(path: Path, user_id: int, ad: str, op: Optional[str] = None,
+                       a: Optional[str] = None, b: Optional[str] = None,
+                       constant: Optional[float] = None,
                        sort_direction: str = 'desc',
-                       bicim: Optional[str] = None) -> tuple[bool, object]:
+                       bicim: Optional[str] = None,
+                       expr: Optional[dict] = None) -> tuple[bool, object]:
     """Başarılıysa (True, yeni_kayit_dict), değilse (False, hata_mesaji)."""
-    ok, err = _validate_custom_measure(ad, op, a, b, constant, sort_direction, bicim)
-    if not ok:
+    tree, err = _resolve_custom_measure(ad, op, a, b, constant, sort_direction, bicim, expr)
+    if tree is None:
         return False, err
     record = {'id': 'custom_' + secrets.token_hex(4),
-              **_custom_fields(ad, op, a, b, constant, sort_direction, bicim),
+              'ad': ' '.join(ad.split()), 'expr': tree, 'sort_direction': sort_direction,
               'created_at': datetime.now().isoformat()}
     with _users_file_lock:
         data = _load(path)
@@ -410,12 +465,14 @@ def add_custom_measure(path: Path, user_id: int, ad: str, op: str, a: str,
 
 
 def update_custom_measure(path: Path, user_id: int, measure_id: str, ad: str,
-                          op: str, a: str, b: Optional[str] = None,
+                          op: Optional[str] = None, a: Optional[str] = None,
+                          b: Optional[str] = None,
                           constant: Optional[float] = None,
                           sort_direction: str = 'desc',
-                          bicim: Optional[str] = None) -> tuple[bool, object]:
-    ok, err = _validate_custom_measure(ad, op, a, b, constant, sort_direction, bicim)
-    if not ok:
+                          bicim: Optional[str] = None,
+                          expr: Optional[dict] = None) -> tuple[bool, object]:
+    tree, err = _resolve_custom_measure(ad, op, a, b, constant, sort_direction, bicim, expr)
+    if tree is None:
         return False, err
     with _users_file_lock:
         data = _load(path)
@@ -427,7 +484,10 @@ def update_custom_measure(path: Path, user_id: int, measure_id: str, ad: str,
             return False, 'Özel ölçü bulunamadı'
         if _ad_cakisiyor(user['custom_measures'], ad, haric_id=measure_id):
             return False, 'Bu adla bir özel ölçünüz zaten var'
-        record.update(_custom_fields(ad, op, a, b, constant, sort_direction, bicim))
+        for k in _LEGACY_FIELDS:   # eski biçimden ağaca geçiş
+            record.pop(k, None)
+        record.update({'ad': ' '.join(ad.split()), 'expr': tree,
+                       'sort_direction': sort_direction})
         _save(path, data)
         return True, record
 

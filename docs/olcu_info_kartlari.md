@@ -147,9 +147,9 @@
 
 `id: ihtiyac_kredileri`
 
-**Tanım:** Genel ihtiyaç kredileri.
+**Tanım:** Genel ihtiyaç kredileri; tablodaki "Diğer" tüketici kredileri de dahil (Power BI raporuyla aynı).
 
-**Formül:** Tüketici + Personel İhtiyaç Kredisi (TP + YP + Dövize Endeksli)
+**Formül:** Tüketici + Personel (İhtiyaç Kredisi + Diğer) (TP + YP + Dövize Endeksli)
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
@@ -235,7 +235,7 @@
 
 **Tanım:** Finansal varlıkların aktif içindeki payı.
 
-**Formül:** (Finansal Varlıklar (Net) + İtfa Edilmiş Maliyetle Ölçülen FV) / Toplam Aktifler
+**Formül:** (Nakit Değerler ve MB + Bankalar + Para Piyasalarından Alacaklar + GUD K/Z FV + GUD DKG FV + Türev FV + İtfa Edilmiş Maliyetle Ölçülen FV) / Toplam Aktifler — nakit tarafındaki beklenen zarar karşılığı düşülmeden (Power BI ile aynı)
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
@@ -485,7 +485,7 @@
 
 **Tanım:** Bireysel kredilerde Aşama 2 oranı.
 
-**Formül:** Grup 2 Tüketici Kredileri / Tüketici Kredileri (KK hariç)
+**Formül:** Grup 2 Tüketici Kredileri / (Tüketici Kredileri Toplam satırı − Bireysel ve Personel Kredi Kartları)
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
@@ -673,7 +673,7 @@
 
 **Tanım:** TL kredilerin toplam kredi içindeki payı.
 
-**Formül:** TP Toplam Brüt Krediler / Toplam Brüt Krediler
+**Formül:** TP Krediler / Toplam Brüt Krediler — YP = kur riski tablosundaki krediler (dövize endeksli dahil), TP = Toplam Brüt Krediler − YP
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
@@ -1110,7 +1110,7 @@
 
 **Tanım:** TL kredilerin TL kaynaklarla fonlanma oranı.
 
-**Formül:** TP Krediler (net) / TP (Mevduat + Alınan Krediler + İhraç Edilen MK)
+**Formül:** TP Krediler (Toplam Brüt Krediler − kur riski tablosundaki YP krediler) / TP (Mevduat + Alınan Krediler + İhraç Edilen MK)
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
@@ -1132,7 +1132,7 @@
 
 **Tanım:** YP kredilerin altın hariç YP kaynaklarla fonlanma oranı.
 
-**Formül:** YP Krediler (net) / (YP Kaynak − Kıymetli Maden Mevduatı)
+**Formül:** YP Krediler (kur riski tablosu, dövize endeksli dahil) / (YP Kaynak − Kıymetli Maden Mevduatı)
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
@@ -1364,7 +1364,7 @@
 
 **Tanım:** Duran varlıklara bağlanmamış özkaynağın aktife oranı.
 
-**Formül:** (Özkaynaklar − Ortaklık Yatırımları − Maddi Duran V. − Maddi Olmayan Duran V.) / Toplam Aktifler
+**Formül:** (Özkaynaklar − Ortaklık Yatırımları − Maddi Duran V. − Maddi Olmayan Duran V. − Yatırım Amaçlı Gayrimenkuller) / Toplam Aktifler
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
@@ -1452,7 +1452,7 @@
 
 **Tanım:** Karşılık ve giderler sonrası faaliyet kârı.
 
-**Formül:** Net Faaliyet Karı / Zararı
+**Formül:** Gelir tablosu 'Faaliyet Gelirleri/Giderleri Toplamı' (Faaliyet Brüt Kârı)
 
 **Hesaplama dönemi:** Yılbaşından kümülatif (YtD)
 
@@ -1814,7 +1814,7 @@
 
 **Tanım:** Maliyetli pasiflerin ortalama maliyeti.
 
-**Formül:** TTM Faiz Giderleri / Ortalama Faiz (Kar Payı) Maliyetli Pasifler (detaylı, 9 bileşen)
+**Formül:** TTM Kaynağa verilen faizler (Mevduata + Kullanılan Kredilere + İhraç Edilen Menkul Kıymetlere Verilen Faizler) / Ortalama Faiz (Kar Payı) Maliyetli Pasifler (9 bileşen); para piyasası ve diğer faiz giderleri hariç
 
 **Hesaplama dönemi:** Pay: son 12 ay (TTM) · Payda: 12 aylık ortalama bakiye
 
@@ -2104,6 +2104,89 @@
 
 ---
 
+## OPEX Büyümesi (YoY)
+
+`id: opex_yoy_buyumesi`
+
+**Tanım:** Operasyonel giderlerin yıllık nominal büyümesi.
+
+**Formül:** OPEX (dönem YtD) / OPEX (bir yıl önceki aynı dönem YtD) − 1
+
+**Hesaplama dönemi:** Yılbaşından kümülatif (YtD) değerin bir önceki yılın aynı çeyreğiyle kıyaslanması (ör. 6A26 / 6A25)
+
+**Kaynak:** Gelir Tablosu
+
+**Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
+
+**Terimler:**
+
+- *Operasyonel Giderler (OPEX):* Personel Giderleri + Diğer Faaliyet Giderleri.
+- *Grup değeri:* Üye bankaların OPEX toplamları üzerinden hesaplanır (banka büyümelerinin ortalaması değil).
+
+---
+
+## Reel OPEX Büyümesi (TÜFE'ye Göre)
+
+`id: reel_opex_buyumesi`
+
+**Tanım:** OPEX büyümesinin enflasyondan arındırılmış hali: giderler enflasyonun ne kadar üzerinde/altında arttı.
+
+**Formül:** (1 + OPEX büyümesi) / (1 + TÜFE yıllık değişimi) − 1
+
+**Hesaplama dönemi:** Yılbaşından kümülatif (YtD) değerin bir önceki yılın aynı çeyreğiyle kıyaslanması (ör. 6A26 / 6A25)
+
+**Kaynak:** Gelir Tablosu
+
+**Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
+
+**Terimler:**
+
+- *Operasyonel Giderler (OPEX):* Personel Giderleri + Diğer Faaliyet Giderleri.
+- *TÜFE:* Dönem sonu ayının TÜFE yıllık % değişimi (TCMB EVDS, TP.TUKFIY2025.GENEL; `pipeline/tufe_yillik.json`, `scripts/tufe_guncelle.py` ile yenilenir). TÜFE dosyada yoksa değer boş kalır.
+
+---
+
+## Faaliyet Gelirleri Büyümesi (YoY)
+
+`id: gelir_yoy_buyumesi`
+
+**Tanım:** Faaliyet gelirlerinin yıllık nominal büyümesi.
+
+**Formül:** Faaliyet Gelirleri/Giderleri Toplamı (YtD) / bir yıl önceki aynı dönem − 1
+
+**Hesaplama dönemi:** Yılbaşından kümülatif (YtD) değerin bir önceki yılın aynı çeyreğiyle kıyaslanması (ör. 6A26 / 6A25)
+
+**Kaynak:** Gelir Tablosu
+
+**Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
+
+**Terimler:**
+
+- *Operasyonel Giderler (OPEX):* Personel Giderleri + Diğer Faaliyet Giderleri.
+
+---
+
+## Makas: Gelir Büyümesi − OPEX Büyümesi (puan)
+
+`id: opex_gelir_makasi`
+
+**Tanım:** Gelirlerin giderlerden ne kadar hızlı büyüdüğü; pozitif = operasyonel kaldıraç, negatif = gider gelirin önünde.
+
+**Formül:** Faaliyet Gelirleri Büyümesi (YoY) − OPEX Büyümesi (YoY)  → yüzde puan
+
+**Hesaplama dönemi:** Yılbaşından kümülatif (YtD) değerin bir önceki yılın aynı çeyreğiyle kıyaslanması (ör. 6A26 / 6A25)
+
+**Kaynak:** Gelir Tablosu
+
+**Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
+
+**Terimler:**
+
+- *Operasyonel Giderler (OPEX):* Personel Giderleri + Diğer Faaliyet Giderleri.
+- *Puan:* İki büyüme oranının yüzde cinsinden farkı (ör. %40,4 − %49,6 = −9,2 puan).
+
+---
+
 ## Kredi Riski Maliyeti (Cost of Risk)
 
 `id: cost_of_risk`
@@ -2134,7 +2217,7 @@
 
 **Tanım:** Kredi getirisi ile mevduat maliyeti arasındaki bileşik spread'i.
 
-**Formül:** ((1 + Kredilerin Paçal Getirisi) / (1 + Mevduatın Paçal Maliyeti) − 1) × 100
+**Formül:** ((1 + Kredilerin Paçal Getirisi) / (1 + Kaynağın Paçal Maliyeti) − 1) × 100 — PBI'daki 'Mevduatın Paçal Maliyeti' terimi kaynağın paçal maliyetidir
 
 **Hesaplama dönemi:** İki yıllıklandırılmış oranın bileşik farkı (TTM / ortalama bakiye)
 
@@ -2194,12 +2277,12 @@
 
 **Terimler:**
 
-- *TP Kredilerin Getirisi:* TTM Kredilerden Faizler (Toplam, TP) / Ortalama Krediler (TP).
-- *TP Vadeli Mevduatın Maliyeti:* TTM gerçek vadeli (vadesiz hariç) TP faiz/kâr payı gideri / Ortalama TP VADELİ Mevduat bakiyesi (mevduat bankasında `Döviz Tevdiat Hesabı`+`Kıymetli Maden Depo Hesabı` segmentlerinden türetilen YP vadesiz payı çıkarılarak; Katılım bankasında hâlâ TOPLAM bakiye — bkz. not).
+- *TP Kredilerin Getirisi:* TTM Kredilerden Faizler (Toplam, TP) / Ortalama TP Brüt Krediler (= Toplam brüt − YP brüt; dövize endeksli krediler YP'ye sayılır).
+- *TP Vadeli Mevduatın Maliyeti:* TTM TP mevduat faizi / Ortalama TP vadeli mevduat. Mevduat bankasında TP vadeli = bilançodaki TP Mevduat − TP vadesiz; TP vadesiz = Tasarruf + Resmi + Ticari + Diğer Kurul. vadesiz + 'Bankalar Mevduatı' (banka vadesizleri) − Yurtdışı Bankalar vadesiz (Power BI DAX). Katılım bankasında kâr payı alan bakiye = TP Mevduat − Özel Cari Hesaplar.
 - *TTM (son 12 ay):* BDDK gelir tablosu YtD olduğundan: TTM(t) = YtD(t) + (Önceki yıl sonu − YtD(t − 12 ay)). 4. çeyrekte doğrudan yıllık tutar. Geçmiş dönem yoksa YtD × 12 / ay sayısı.
 - *Ortalama bakiye:* (Bakiye(t) + Bakiye(t − 12 ay)) / 2. Bir yıl önceki dönem yoksa dönem sonu bakiye.
 
-> ℹ️ 2026-09-21'de kullanıcı gerçek PBI ekran görüntüsüyle karşılaştırdı — payda TOPLAM TP Mevduat (vadesiz dahil) kullanıldığında değerler ~100-250bps yüksek çıkıyordu. Mevduat bankalarında artık gerçek TP Vadeli bakiye türetiliyor (v29 ekran görüntüsüyle ortalama sapma ~36bps'e düştü). ⚠️ Katılım bankalarında (KT, Albaraka, Türkiye Finans, Ziraat/Vakıf/Emlak Katılım) YP katılma hesabı segmentleri dipnotta güvenilir görünmediği için hâlâ TOPLAM bakiye kullanılıyor — bu alt kümede hâlâ olduğundan yüksek çıkabilir.
+> ℹ️ Vadeli mevduat tanımı 2026-09-30'da Haziran 2026 Power BI raporundan geri çözüldü: PDF ile ortanca sapma ~1 bps. Grup değeri üyelerin pay ve paydaları toplanarak hesaplanır (basit ortalama değil).
 
 ---
 
@@ -2219,12 +2302,60 @@
 
 **Terimler:**
 
-- *YP Kredilerin Getirisi:* TTM Kredilerden Faizler (Toplam, YP) / Ortalama Krediler (YP).
-- *YP Vadeli Mevduatın Maliyeti:* TTM gerçek vadeli (vadesiz hariç) YP faiz/kâr payı gideri / Ortalama YP VADELİ Mevduat bakiyesi (mevduat bankasında `Döviz Tevdiat Hesabı`+`Kıymetli Maden Depo Hesabı` segmentlerinin vadesiz kısmı çıkarılarak türetilir — bu iki segmentin toplamı bilançodaki YP Mevduat'a ~%1 içinde yaklaşıyor; Katılım bankasında hâlâ TOPLAM bakiye — bkz. not).
+- *YP Kredilerin Getirisi:* TTM Kredilerden Faizler (Toplam, YP) / Ortalama YP Brüt Krediler (= kur riski tablosundaki YP krediler + YP beklenen zarar karşılığı).
+- *YP Vadeli Mevduatın Maliyeti:* TTM YP mevduat faizi (kıymetli maden faizi hariç) / Ortalama YP vadeli mevduat. Mevduat bankasında YP vadeli (KM hariç) = Vadeli Mevduat (Toplam Mevduat − Vadesiz) − TP Vadeli − KM Vadeli (KM − KM vadesiz) (Power BI DAX). Katılım bankasında aynı DAX: YP vadeli = Vadeli − TP vadeli (TP Mevduat − TP Özel Cari) − (KM − KM vadesiz); faiz payı = YP kâr payı − Kıymetli Maden Depo kâr payı.
 - *TTM (son 12 ay):* BDDK gelir tablosu YtD olduğundan: TTM(t) = YtD(t) + (Önceki yıl sonu − YtD(t − 12 ay)). 4. çeyrekte doğrudan yıllık tutar. Geçmiş dönem yoksa YtD × 12 / ay sayısı.
 - *Ortalama bakiye:* (Bakiye(t) + Bakiye(t − 12 ay)) / 2. Bir yıl önceki dönem yoksa dönem sonu bakiye.
 
-> ℹ️ 2026-09-21'de kullanıcı gerçek PBI ekran görüntüsüyle (Haziran 2026) karşılaştırdı — payda TOPLAM YP Mevduat (vadesiz dahil) kullanıldığında değerler ~100-250bps yüksek çıkıyordu (ör. Kuveyt Türk 640 vs gerçek 512bps). Mevduat bankalarında artık gerçek YP Vadeli bakiye türetiliyor — v29 ekran görüntüsüyle ortalama sapma ~36bps'e düştü (Enpara 1259 vs gerçek 1261, TEB 601 vs 599 gibi neredeyse birebir örnekler dahil; Şekerbank hâlâ ~170bps sapıyor, bilinen veri kalitesi istisnası). ⚠️ Katılım bankalarında (KT, Albaraka, Türkiye Finans, Ziraat/Vakıf/Emlak Katılım) YP katılma hesabı segmentleri dipnotta güvenilir görünmediği için (bilançodaki YP Mevduat'ın küçük bir kesrini kapsıyor) hâlâ TOPLAM bakiye kullanılıyor — bu alt kümede hâlâ olduğundan yüksek çıkıyor.
+> ℹ️ Vadeli mevduat tanımı 2026-09-30'da Haziran 2026 Power BI raporundan geri çözüldü: PDF ile ortanca sapma ~0,5 bps. Grup değeri üyelerin pay ve paydaları toplanarak hesaplanır (basit ortalama değil).
+
+---
+
+## TP Getirili Aktif – Maliyetli Pasif Spread'i
+
+`id: tp_getirili_maliyetli_spread`
+
+**Tanım:** TL faiz getirili aktiflerin getirisi ile TL faiz maliyetli pasiflerin maliyeti arasındaki fark.
+
+**Formül:** TP Faiz Gelirleri / Ortalama TP Faiz Getirili Aktifler − TP Faiz Giderleri / Ortalama TP Faiz Maliyetli Pasifler
+
+**Hesaplama dönemi:** Son 12 ay (TTM) faiz / 12 ay önceyle ortalama bakiye; iki oranın basit farkı (yüzde puan)
+
+**Kaynak:** Kredi, menkul değer, bankalar, kullanılan kredi ve ihraç edilen MK faiz dipnotları (TP/YP); Mevduata ödenen faizin vade yapısı; Bilanço (TP)
+
+**Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
+
+**Terimler:**
+
+- *TP Faiz Gelirleri:* TP kredi + TP menkul değer + TP bankalar faizleri; zorunlu karşılık, para piyasası ve diğer faiz gelirlerinin TP/YP kırılımı BDDK verisinde olmadığından tamamı TP'ye yazılır.
+- *TP Faiz Giderleri:* TP vadeli mevduat + TP kullanılan krediler + TP ihraç edilen MK faizleri (Faiz Maliyetli Pasiflerin Maliyeti ile aynı kalemler; repo hariç).
+- *Faiz getirili aktif / maliyetli pasif:* Spread ölçüsündeki 13 ve 9 bileşenin TP sütunları.
+
+> ℹ️ 2026-09-30'da kullanıcının verdiği formülle eklendi. PDF'teki "TP Kredi Mevduat Spread'i"nden farklıdır: o yalnız kredi getirisi ile vadeli mevduat maliyetini karşılaştırır.
+
+---
+
+## YP Getirili Aktif – Maliyetli Pasif Spread'i
+
+`id: yp_getirili_maliyetli_spread`
+
+**Tanım:** YP faiz getirili aktiflerin getirisi ile YP faiz maliyetli pasiflerin maliyeti arasındaki fark.
+
+**Formül:** YP Faiz Gelirleri / Ortalama YP Faiz Getirili Aktifler − YP Faiz Giderleri / Ortalama YP Faiz Maliyetli Pasifler
+
+**Hesaplama dönemi:** Son 12 ay (TTM) faiz / 12 ay önceyle ortalama bakiye; iki oranın basit farkı (yüzde puan)
+
+**Kaynak:** Kredi, menkul değer, bankalar, kullanılan kredi ve ihraç edilen MK faiz dipnotları (TP/YP); Mevduata ödenen faizin vade yapısı; Bilanço (YP)
+
+**Kategori:** Gelir Tablosu · **Tip:** Rasyo (Akım) · **Birim:** %
+
+**Terimler:**
+
+- *YP Faiz Gelirleri:* YP kredi + YP menkul değer + YP bankalar faizleri.
+- *YP Faiz Giderleri:* YP vadeli mevduat + YP kullanılan krediler + YP ihraç edilen MK faizleri.
+- *Faiz getirili aktif / maliyetli pasif:* Spread ölçüsündeki 13 ve 9 bileşenin YP sütunları; vadeli YP mevduat bakiyesi tahminle kurulur (DTH ve kıymetli maden vadesiz kırılımından).
+
+> ℹ️ 2026-09-30'da kullanıcının verdiği formülle eklendi. PDF'teki "YP Kredi Mevduat Spread'i"nden farklıdır.
 
 ---
 
@@ -2256,7 +2387,7 @@
 
 **Tanım:** Kaynakların ortalama maliyeti.
 
-**Formül:** = Faiz Maliyetli Pasiflerin Maliyeti
+**Formül:** TTM (Mevduata + Kullanılan Kredilere + İhraç Edilen Menkul Kıymetlere Verilen Faizler) / Ortalama Toplam Kaynak (Mevduat + Alınan Krediler + İhraç Edilen Menkul Kıymetler)
 
 **Hesaplama dönemi:** Pay: son 12 ay (TTM) · Payda: 12 aylık ortalama bakiye
 
@@ -2461,6 +2592,26 @@
 
 ---
 
+## İnsan Sermayesi Yatırım Getirisi
+
+`id: insan_sermayesi_yatirim_getirisi`
+
+**Tanım:** 1 TL personel giderine karşılık elde edilen net kâr; kat olarak gösterilir (1,2 = personel giderinin 1,2 katı net kâr).
+
+**Formül:** Net Dönem Karı / Personel Giderleri
+
+**Hesaplama dönemi:** Pay ve payda: yılbaşından kümülatif (YtD)
+
+**Kaynak:** Gelir Tablosu
+
+**Kategori:** Şube & Personel · **Tip:** Rasyo (Akım) · **Birim:** Kat
+
+> ℹ️ Kardeş ölçü "Personel Giderleri / Net Dönem Kar/Zararı"nın tersidir; o da YtD hesaplanır, yıllıklandırılmaz. Aralık dışındaki çeyreklerde TTM oranından farklıdır.
+
+> ℹ️ Zarar eden bankada negatif çıkar. Grup değeri üyelerin net kârları toplamının personel giderleri toplamına oranıdır.
+
+---
+
 ## Toplam Brüt Krediler
 
 `id: toplam_brut_krediler`
@@ -2513,9 +2664,9 @@
 
 `id: toplam_kredi_kartlari`
 
-**Tanım:** Kredi kartı kaynaklı toplam alacak (PBI tanımı).
+**Tanım:** Kredi kartı kredileri (bireysel ve kurumsal, donuk hariç).
 
-**Formül:** Kredi Kartları Standart Nitelikli (Toplam) + Bireysel KK TP + Bireysel KK TP
+**Formül:** Kredi Kartları Standart Nitelikli (Grup 1) + Kredi Kartları Yakın İzlemedeki (Grup 2: krediler ve diğer alacaklar + ödeme planı uzatılan + diğer)
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
@@ -2523,7 +2674,7 @@
 
 **Kategori:** Bilanço › Aktifler · **Tip:** Büyüklük (Stok) · **Birim:** TL
 
-> ⚠️ PBI DAX'ına birebir sadık: Bireysel KK TP iki kez toplanıyor, YP hiç yok. Kaynak formülde kopyala-yapıştır hatası olabilir; teyit edilmeli.
+> ℹ️ 2026-10-01: PBI DAX'ındaki kopyalama hatası (Bireysel KK TP iki kez, YP hiç) düzeltildi; BDR ile tutarlı (KT 137.461, Garanti 748.887, TEB 70.795).
 
 ---
 
@@ -2595,9 +2746,9 @@
 
 `id: rav`
 
-**Tanım:** Kredi riskine esas tutar.
+**Tanım:** Toplam risk ağırlıklı varlıklar (kredi + karşı taraf + piyasa + operasyonel risk).
 
-**Formül:** Kredi Riskine Esas Tutar: Toplam
+**Formül:** Sermaye yeterliliği tablosundaki 'Kredi Riskine Esas Tutar: Toplam' satırı (adına rağmen toplam RAV'ı taşır)
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
@@ -2605,7 +2756,7 @@
 
 **Kategori:** Bilanço › Pasifler · **Tip:** Büyüklük (Stok) · **Birim:** TL
 
-> ⚠️ Ad "Toplam RAV" olsa da yalnız kredi riskini içerir (PBI DAX'ına sadık). Piyasa + operasyonel dahil tutar: toplam_risk_tabani.
+> ℹ️ 2026-10-01 BDR sağlaması: bu satır BDDK verisinde toplam RAV'dır (SYR = özkaynak / bu satır; KT 861.892, Garanti 3.409.452, TEB 643.547 — BDR'lerdeki Toplam Risk Ağırlıklı Tutarlar).
 
 ---
 
@@ -2636,7 +2787,7 @@
 
 **Tanım:** Sermaye yeterliliği paydası olan toplam risk tabanı.
 
-**Formül:** Kredi Riskine Esas Tutar + Piyasa Riskine Esas Tutar + Operasyonel Riske Esas Tutar.
+**Formül:** Toplam RAV (= Kredi + Piyasa + Operasyonel Riske Esas Tutar). 2026-10-01'e kadar piyasa ve operasyonel risk iki kez sayılıyordu.
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
@@ -2662,7 +2813,7 @@
 
 **Terimler:**
 
-- *Toplam Risk Tabanı:* Kredi Riskine Esas Tutar + Piyasa Riskine Esas Tutar + Operasyonel Riske Esas Tutar.
+- *Toplam Risk Tabanı:* Toplam RAV. Kredi Riskine Esas Tutar = Toplam RAV − Piyasa − Operasyonel (karşı taraf kredi riski dahil).
 
 ---
 
@@ -2682,7 +2833,7 @@
 
 **Terimler:**
 
-- *Toplam Risk Tabanı:* Kredi Riskine Esas Tutar + Piyasa Riskine Esas Tutar + Operasyonel Riske Esas Tutar.
+- *Toplam Risk Tabanı:* Toplam RAV. Kredi Riskine Esas Tutar = Toplam RAV − Piyasa − Operasyonel (karşı taraf kredi riski dahil).
 
 ---
 
@@ -2702,7 +2853,7 @@
 
 **Terimler:**
 
-- *Toplam Risk Tabanı:* Kredi Riskine Esas Tutar + Piyasa Riskine Esas Tutar + Operasyonel Riske Esas Tutar.
+- *Toplam Risk Tabanı:* Toplam RAV. Kredi Riskine Esas Tutar = Toplam RAV − Piyasa − Operasyonel (karşı taraf kredi riski dahil).
 
 ---
 
@@ -2857,15 +3008,15 @@
 
 **Tanım:** 1 aya kadar vadeli mevduatın payı.
 
-**Formül:** Vadeli Mevduat (1 Aya Kadar) / Vadeli Mevduat
+**Formül:** Vadeli Mevduat (1 Aya Kadar) / Vadeli Mevduat — katılım bankasında katılım fonunun '1 aya kadar' sütunu
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
-**Kaynak:** Mevduat Vade Yapısı tablosu
+**Kaynak:** Mevduat Vade Yapısı tablosu (katılım: Katılım Fonunun Vade Yapısı)
 
 **Kategori:** Bilanço › Pasifler · **Tip:** Rasyo (Stok) · **Birim:** %
 
-> ⚠️ Katılım bankalarında vade dilimleri farklı olduğundan 0 döner.
+> ℹ️ 2026-10-01'den beri katılım bankalarında da hesaplanıyor (önceden 0'dı).
 
 ---
 
@@ -2875,15 +3026,15 @@
 
 **Tanım:** 1-3 ay vadeli mevduatın payı.
 
-**Formül:** Vadeli Mevduat (1-3 Ay) / Vadeli Mevduat
+**Formül:** Vadeli Mevduat (1-3 Ay) / Vadeli Mevduat — katılım bankasında katılım fonunun '3 aya kadar' sütunu
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
-**Kaynak:** Mevduat Vade Yapısı tablosu
+**Kaynak:** Mevduat Vade Yapısı tablosu (katılım: Katılım Fonunun Vade Yapısı)
 
 **Kategori:** Bilanço › Pasifler · **Tip:** Rasyo (Stok) · **Birim:** %
 
-> ⚠️ Katılım bankalarında 0 döner.
+> ℹ️ 2026-10-01'den beri katılım bankalarında da hesaplanıyor (önceden 0'dı).
 
 ---
 
@@ -2893,15 +3044,15 @@
 
 **Tanım:** 3-6 ay vadeli mevduatın payı.
 
-**Formül:** Vadeli Mevduat (3-6 Ay) / Vadeli Mevduat
+**Formül:** Vadeli Mevduat (3-6 Ay) / Vadeli Mevduat — katılım bankasında katılım fonunun '6 aya kadar' sütunu
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
-**Kaynak:** Mevduat Vade Yapısı tablosu
+**Kaynak:** Mevduat Vade Yapısı tablosu (katılım: Katılım Fonunun Vade Yapısı)
 
 **Kategori:** Bilanço › Pasifler · **Tip:** Rasyo (Stok) · **Birim:** %
 
-> ⚠️ Katılım bankalarında 0 döner.
+> ℹ️ 2026-10-01'den beri katılım bankalarında da hesaplanıyor (önceden 0'dı).
 
 ---
 
@@ -2911,15 +3062,15 @@
 
 **Tanım:** 6-12 ay vadeli mevduatın payı.
 
-**Formül:** Vadeli Mevduat (6 Ay-1 Yıl) / Vadeli Mevduat
+**Formül:** Vadeli Mevduat (6 Ay-1 Yıl) / Vadeli Mevduat — katılım bankasında katılım fonunun '9 aya kadar + 1 yıla kadar' sütunu
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
-**Kaynak:** Mevduat Vade Yapısı tablosu
+**Kaynak:** Mevduat Vade Yapısı tablosu (katılım: Katılım Fonunun Vade Yapısı)
 
 **Kategori:** Bilanço › Pasifler · **Tip:** Rasyo (Stok) · **Birim:** %
 
-> ⚠️ Katılım bankalarında 0 döner.
+> ℹ️ 2026-10-01'den beri katılım bankalarında da hesaplanıyor (önceden 0'dı).
 
 ---
 
@@ -2929,7 +3080,7 @@
 
 **Tanım:** Yabancı para kredilerin toplam kredi içindeki payı.
 
-**Formül:** YP Toplam Brüt Krediler / Toplam Brüt Krediler
+**Formül:** YP Krediler (kur riski tablosu, dövize endeksli dahil) / Toplam Brüt Krediler
 
 **Hesaplama dönemi:** Dönem sonu bakiye
 
@@ -3064,3 +3215,693 @@
 **Kaynak:** Kalan Vade (Likidite) tablosu; Bilanço
 
 **Kategori:** Bilanço › Aktifler · **Tip:** Rasyo (Stok) · **Birim:** %
+
+---
+
+## Zorunlu Karşılıklardan Alınan Faiz (Kar Payı) Gelirleri
+
+`id: zorunlu_karsilik_geliri`
+
+**Tanım:** Bankanın TCMB nezdindeki zorunlu karşılıklarından elde ettiği faiz (kâr payı) geliri.
+
+**Formül:** Gelir Tablosu: Zorunlu Karşılıklardan Alınan Faizler
+
+**Hesaplama dönemi:** Yılbaşından kümülatif (YtD)
+
+**Kaynak:** Gelir Tablosu
+
+**Kategori:** Rekabet Analizi › Zorunlu Karşılık ve Marj · **Tip:** Büyüklük (Akım) · **Birim:** TL
+
+> ⚠️ Zorunlu karşılıklar ücretlendirilir; fiilen getirisiz olan çoğunlukla YP bacağıdır. Sıfır getirili denmez.
+
+---
+
+## Zorunlu Karşılık Gelirleri / Faiz (Kar Payı) Gelirleri
+
+`id: zk_faiz_gelirleri_orani`
+
+**Tanım:** Faiz gelirlerinin ne kadarının zorunlu karşılıklardan geldiği.
+
+**Formül:** TTM Zorunlu Karşılıklardan Alınan Faizler / TTM Faiz (Kâr Payı) Gelirleri
+
+**Hesaplama dönemi:** Pay ve payda: son 12 ay (TTM)
+
+**Kaynak:** Gelir Tablosu
+
+**Kategori:** Rekabet Analizi › Zorunlu Karşılık ve Marj · **Tip:** Rasyo (Akım) · **Birim:** %
+
+---
+
+## Ortalama TCMB Hesabı / Ortalama Faiz (Kar Payı) Getirili Aktifler
+
+`id: tcmb_hesabi_getirili_aktif`
+
+**Tanım:** TCMB hesabının (zorunlu karşılık + serbest hesap) getirili aktifler içindeki ağırlığı; sürüklemenin "blok büyüklüğü" terimi.
+
+**Formül:** Ortalama TCMB Hesabı (TP + YP) / Ortalama Faiz (Kâr Payı) Getirili Aktifler
+
+**Hesaplama dönemi:** Pay: son 12 ay (TTM) · Payda: 12 aylık ortalama bakiye (iki nokta: dönem sonu ve bir yıl önceki)
+
+**Kaynak:** Bilanço · Nakit Değerler ve TCMB dipnotu
+
+**Kategori:** Rekabet Analizi › Zorunlu Karşılık ve Marj · **Tip:** Rasyo (Stok) · **Birim:** %
+
+> ⚠️ Toplam aktif payı değildir: payda ortalama getirili aktiflerdir.
+
+---
+
+## Örtük TCMB Getirisi (ZK Geliri / Ortalama TCMB Hesabı)
+
+`id: ortuk_tcmb_getirisi`
+
+**Tanım:** TCMB hesabına örtük olarak işleyen getiri. Açıklanmış bir ücretlendirme oranı değil, vekil (proxy) göstergedir.
+
+**Formül:** TTM Zorunlu Karşılık Geliri / Ortalama TCMB Hesabı
+
+**Hesaplama dönemi:** Pay: son 12 ay (TTM) · Payda: 12 aylık ortalama bakiye (iki nokta: dönem sonu ve bir yıl önceki)
+
+**Kaynak:** Gelir Tablosu; Bilanço · Nakit Değerler ve TCMB dipnotu
+
+**Kategori:** Rekabet Analizi › Zorunlu Karşılık ve Marj · **Tip:** Rasyo (Akım) · **Birim:** %
+
+> ⚠️ TCMB hesabı zorunlu karşılık ile serbest hesabı birlikte taşır.
+
+---
+
+## ZK Hariç Faiz (Kar Payı) Getirili Aktif Getirisi
+
+`id: zk_haric_getirili_aktif_getirisi`
+
+**Tanım:** Zorunlu karşılık bloğu çıkarıldığında getirili aktiflerin getirisi.
+
+**Formül:** (TTM Faiz Gelirleri − TTM Zorunlu Karşılık Geliri) / (Ort. Getirili Aktifler − Ort. TCMB Hesabı)
+
+**Hesaplama dönemi:** Pay: son 12 ay (TTM) · Payda: 12 aylık ortalama bakiye (iki nokta: dönem sonu ve bir yıl önceki)
+
+**Kaynak:** Gelir Tablosu; Bilanço
+
+**Kategori:** Rekabet Analizi › Zorunlu Karşılık ve Marj · **Tip:** Rasyo (Akım) · **Birim:** %
+
+---
+
+## Zorunlu Karşılık Sürüklemesi (puan)
+
+`id: zk_surukleme`
+
+**Tanım:** Zorunlu karşılığın getirili aktif getirisini kaç puan aşağı çektiği (negatif = sürükleme).
+
+**Formül:** Getirili Aktif Getirisi − ZK Hariç Getirili Aktif Getirisi (yüzde puan; −2,46 = −246 bps)
+
+**Hesaplama dönemi:** Pay: son 12 ay (TTM) · Payda: 12 aylık ortalama bakiye (iki nokta: dönem sonu ve bir yıl önceki)
+
+**Kaynak:** Gelir Tablosu; Bilanço
+
+**Kategori:** Rekabet Analizi › Zorunlu Karşılık ve Marj · **Tip:** Rasyo (Akım) · **Birim:** %
+
+**Terimler:**
+
+- *Puan:* Yüzde cinsinden fark; 1 puan = 100 bps.
+
+> ℹ️ Ayrışım: Sürükleme = w / (1 − w) × (Getiri − Örtük TCMB Getirisi); w = TCMB hesabının getirili aktif payı.
+
+---
+
+## Net Faiz (Kar Payı) Marjı (Getirili Aktif Bazlı)
+
+`id: nim_getirili_aktif`
+
+**Tanım:** Net faiz gelirinin ortalama getirili aktiflere oranı ("Marjı 2" tanımı).
+
+**Formül:** TTM Net Faiz (Kâr Payı) Geliri / Ortalama Faiz (Kâr Payı) Getirili Aktifler
+
+**Hesaplama dönemi:** Pay: son 12 ay (TTM) · Payda: 12 aylık ortalama bakiye (iki nokta: dönem sonu ve bir yıl önceki)
+
+**Kaynak:** Gelir Tablosu; Bilanço
+
+**Kategori:** Rekabet Analizi › Zorunlu Karşılık ve Marj · **Tip:** Rasyo (Akım) · **Birim:** %
+
+> ⚠️ NIM ölçüsünden farkı: orada payda ortalama toplam aktiftir; bu ölçüde ortalama getirili aktiftir.
+
+---
+
+## Swap Düzeltilmiş Net Faiz (Kar Payı) Marjı (Getirili Aktif Bazlı)
+
+`id: nim_swap_duzeltilmis`
+
+**Tanım:** Net faiz marjının türev (swap) kâr/zararıyla düzeltilmiş hâli.
+
+**Formül:** TTM (Net Faiz Geliri + Türev Finansal İşlemlerden Kâr/Zarar) / Ortalama Getirili Aktifler
+
+**Hesaplama dönemi:** Pay: son 12 ay (TTM) · Payda: 12 aylık ortalama bakiye (iki nokta: dönem sonu ve bir yıl önceki)
+
+**Kaynak:** Gelir Tablosu; Bilanço
+
+**Kategori:** Rekabet Analizi › Zorunlu Karşılık ve Marj · **Tip:** Rasyo (Akım) · **Birim:** %
+
+> ⚠️ Düzeltme yalnız türev K/Z'dir; kambiyo ve diğer ticari K/Z dahil değildir (Düzeltilmiş NIM bunların hepsini ekler).
+
+---
+
+## Donuk Alacak Tahsilatı / İntikali
+
+`id: donuk_tahsilat_intikal`
+
+**Tanım:** Dönem içinde donuk alacaklara giren her 1 TL'nin ne kadarının tahsil edildiği.
+
+**Formül:** Dönem İçi Tahsilat / Dönem İçi İntikal (III + IV + V. grup)
+
+**Hesaplama dönemi:** Yılbaşından kümülatif (YtD); yıllıklandırılmaz
+
+**Kaynak:** Toplam Donuk Alacaklara İlişkin Bilgiler dipnotu
+
+**Kategori:** Rekabet Analizi › Donuk Alacak ve Karşılıklar · **Tip:** Rasyo (Akım) · **Birim:** %
+
+> ⚠️ Yalnız aynı uzunluktaki dönemler karşılaştırılır; diğer giriş/çıkış satırları dahil değildir.
+
+---
+
+## Donuk Alacak Portföy Temizliği ((Terkin + Satış) / Dönem Başı Donuk)
+
+`id: donuk_portfoy_temizligi`
+
+**Tanım:** Dönem başındaki donuk stokun ne kadarının terkin ve satışla bilançodan çıktığı.
+
+**Formül:** (Aktiften Silinen + Satılan) / Önceki Dönem Sonu Donuk Alacaklar (III + IV + V. grup)
+
+**Hesaplama dönemi:** Yılbaşından kümülatif (YtD)
+
+**Kaynak:** Toplam Donuk Alacaklara İlişkin Bilgiler dipnotu
+
+**Kategori:** Rekabet Analizi › Donuk Alacak ve Karşılıklar · **Tip:** Rasyo (Akım) · **Birim:** %
+
+> ⚠️ Yüksek değer iyileşme değil, temizlik anlamına gelebilir; NPL oranı terkin/satış öncesi hâliyle birlikte okunmalıdır.
+
+---
+
+## Donuk Alacak Net Oluşumu (İntikal − Tahsilat)
+
+`id: donuk_net_olusum`
+
+**Tanım:** Dönem içinde oluşan net yeni donuk alacak tutarı.
+
+**Formül:** Dönem İçi İntikal (diğer giriş dahil) − Dönem İçi Tahsilat (diğer çıkış dahil)
+
+**Hesaplama dönemi:** Yılbaşından kümülatif (YtD)
+
+**Kaynak:** Toplam Donuk Alacaklara İlişkin Bilgiler dipnotu
+
+**Kategori:** Rekabet Analizi › Donuk Alacak ve Karşılıklar · **Tip:** Büyüklük (Akım) · **Birim:** TL
+
+> ℹ️ Terkin ve satış girmez; stok değişimi bunları da içerir.
+
+---
+
+## NPL 3. Aşama Karşılama Oranı
+
+`id: npl_3_asama_karsilama`
+
+**Tanım:** Donuk alacakların 3. aşama (özel) karşılıkla karşılanma oranı.
+
+**Formül:** 3. Aşama (Temerrüt / Özel Karşılık) Karşılığı / Donuk Alacaklar
+
+**Hesaplama dönemi:** Dönem sonu bakiye
+
+**Kaynak:** Bilanço; donuk alacak dipnotu
+
+**Kategori:** Rekabet Analizi › Donuk Alacak ve Karşılıklar · **Tip:** Rasyo (Stok) · **Birim:** %
+
+> ⚠️ NPL Karşılama Oranı'ndan farklıdır: o, toplam beklenen zarar karşılığını (1+2+3. aşama) payına alır; bu ölçü yalnız 3. aşamayı alır.
+> ℹ️ 2018-2020'de aşama satırları boş olduğundan donuk dipnotundaki özel karşılık kullanılır.
+
+---
+
+## Grup 2 Krediler 2. Aşama Karşılama Oranı
+
+`id: grup_2_karsilama`
+
+**Tanım:** Yakın izlemedeki (Grup 2) kredilerin 2. aşama karşılıkla karşılanma oranı.
+
+**Formül:** 2. Aşama (Kredi Riskinde Önemli Artış) Karşılığı / Grup 2 Krediler
+
+**Hesaplama dönemi:** Dönem sonu bakiye
+
+**Kaynak:** Bilanço; Grup 1-2 kredi dipnotu
+
+**Kategori:** Rekabet Analizi › Donuk Alacak ve Karşılıklar · **Tip:** Rasyo (Stok) · **Birim:** %
+
+---
+
+## Faaliyet Gelirleri
+
+`id: faaliyet_gelirleri`
+
+**Tanım:** Karşılık giderleri öncesi toplam faaliyet geliri.
+
+**Formül:** Net Faiz Geliri + Net Ücret ve Komisyon + Ticari K/Z + Temettü + Diğer Faaliyet Gelirleri
+
+**Hesaplama dönemi:** Yılbaşından kümülatif (YtD)
+
+**Kaynak:** Gelir Tablosu
+
+**Kategori:** Rekabet Analizi › Gider ve Verimlilik · **Tip:** Büyüklük (Akım) · **Birim:** TL
+
+---
+
+## Net Ücret ve Komisyonlar / Faaliyet Gelirleri
+
+`id: net_ucret_faaliyet_gelirleri`
+
+**Tanım:** Gelir yapısında ücret ve komisyonun ağırlığı.
+
+**Formül:** Net Ücret ve Komisyon Gelirleri / Faaliyet Gelirleri
+
+**Hesaplama dönemi:** Pay ve payda yılbaşından kümülatif (YtD)
+
+**Kaynak:** Gelir Tablosu
+
+**Kategori:** Rekabet Analizi › Gider ve Verimlilik · **Tip:** Rasyo (Akım) · **Birim:** %
+
+---
+
+## Personel Başına OPEX
+
+`id: personel_basina_opex`
+
+**Tanım:** Çalışan başına yıllık operasyonel gider.
+
+**Formül:** TTM OPEX / Personel Sayısı / 1.000
+
+**Hesaplama dönemi:** Pay: son 12 ay (TTM) · Payda: dönem sonu personel sayısı
+
+**Kaynak:** Gelir Tablosu; Şube-Personel
+
+**Kategori:** Rekabet Analizi › Gider ve Verimlilik · **Tip:** Rasyo (Akım) · **Birim:** bin TL
+
+> ⚠️ Personel sayısı her zaman solo bankadır.
+
+---
+
+## Şube Başına OPEX
+
+`id: sube_basina_opex`
+
+**Tanım:** Şube başına yıllık operasyonel gider.
+
+**Formül:** TTM OPEX / Şube Sayısı / 1.000
+
+**Hesaplama dönemi:** Pay: son 12 ay (TTM) · Payda: dönem sonu şube sayısı
+
+**Kaynak:** Gelir Tablosu; Şube-Personel
+
+**Kategori:** Rekabet Analizi › Gider ve Verimlilik · **Tip:** Rasyo (Akım) · **Birim:** bin TL
+
+> ⚠️ Şubesiz (dijital) bankalar bu ölçüden ve grup toplamından dışlanır.
+
+---
+
+## Personel Sayısı Değişimi (YoY)
+
+`id: personel_sayisi_yoy`
+
+**Tanım:** Kadro büyüklüğünün bir önceki yılın aynı dönemine göre değişimi (personel giderindeki "kadro etkisi").
+
+**Formül:** Personel Sayısı / Bir Yıl Önceki Personel Sayısı − 1
+
+**Hesaplama dönemi:** Dönem sonu; YoY
+
+**Kaynak:** Şube-Personel
+
+**Kategori:** Rekabet Analizi › Gider ve Verimlilik · **Tip:** Rasyo (Stok) · **Birim:** %
+
+---
+
+## Personel Başına Personel Gideri Büyümesi (YoY)
+
+`id: personel_basina_personel_gideri_yoy`
+
+**Tanım:** Çalışan başına personel giderindeki artış ("ücret etkisi").
+
+**Formül:** (Personel Gideri / Personel Sayısı) / Bir Yıl Önceki Aynı Oran − 1
+
+**Hesaplama dönemi:** Gider yılbaşından kümülatif (YtD); YoY
+
+**Kaynak:** Gelir Tablosu; Şube-Personel
+
+**Kategori:** Rekabet Analizi › Gider ve Verimlilik · **Tip:** Rasyo (Akım) · **Birim:** %
+
+> ℹ️ Personel gideri büyümesi ≈ kadro etkisi × ücret etkisi; ikisi birlikte okunur.
+
+---
+
+## Personel Başına OPEX Büyümesi (YoY)
+
+`id: personel_basina_opex_yoy`
+
+**Tanım:** Çalışan başına OPEX'in yıllık artışı.
+
+**Formül:** (OPEX / Personel Sayısı) / Bir Yıl Önceki Aynı Oran − 1
+
+**Hesaplama dönemi:** OPEX yılbaşından kümülatif (YtD); YoY
+
+**Kaynak:** Gelir Tablosu; Şube-Personel
+
+**Kategori:** Rekabet Analizi › Gider ve Verimlilik · **Tip:** Rasyo (Akım) · **Birim:** %
+
+---
+
+## Vergi Öncesi Kar (Sürdürülen Faaliyetler)
+
+`id: vergi_oncesi_kar`
+
+**Tanım:** Sürdürülen faaliyetlerden vergi öncesi kâr.
+
+**Formül:** Gelir Tablosu: Sürdürülen Faaliyetler Vergi Öncesi Kar/Zarar
+
+**Hesaplama dönemi:** Yılbaşından kümülatif (YtD)
+
+**Kaynak:** Gelir Tablosu
+
+**Kategori:** Rekabet Analizi › Kârlılık Bileşimi · **Tip:** Büyüklük (Akım) · **Birim:** TL
+
+---
+
+## Efektif Vergi Oranı
+
+`id: efektif_vergi_orani`
+
+**Tanım:** Vergi karşılığının vergi öncesi kâra oranı.
+
+**Formül:** Sürdürülen Faaliyetler Vergi Karşılığı / Vergi Öncesi Kar
+
+**Hesaplama dönemi:** Pay ve payda yılbaşından kümülatif (YtD)
+
+**Kaynak:** Gelir Tablosu
+
+**Kategori:** Rekabet Analizi › Kârlılık Bileşimi · **Tip:** Rasyo (Akım) · **Birim:** %
+
+> ⚠️ Özkaynak yöntemiyle iştirak kârı alan bankalarda oran düşük/negatif çıkabilir (vergi dışı gelir).
+
+---
+
+## Özkaynak Yöntemi İştirak Kârı / Vergi Öncesi Kar
+
+`id: istirak_kari_vergi_oncesi_kar`
+
+**Tanım:** Vergi öncesi kârın ne kadarının özkaynak yöntemiyle iştirak gelirinden geldiği.
+
+**Formül:** Özkaynak Yöntemi Uygulanan Ortaklıklardan Kar/Zarar / Vergi Öncesi Kar
+
+**Hesaplama dönemi:** Pay ve payda yılbaşından kümülatif (YtD)
+
+**Kaynak:** Gelir Tablosu
+
+**Kategori:** Rekabet Analizi › Kârlılık Bileşimi · **Tip:** Rasyo (Akım) · **Birim:** %
+
+> ⚠️ TMS 27: solo raporda iştirakleri özkaynak yöntemiyle taşıyan bankalarda iştirak kârı solo kâra girer; maliyet değeriyle taşıyanlarda girmez. Bu bir raporlama esası farkıdır, iş modeli farkı değil.
+
+---
+
+## Net Dönem Kârı Büyümesi (YoY)
+
+`id: net_kar_yoy_buyumesi`
+
+**Tanım:** Net dönem kârının bir önceki yılın aynı dönemine göre nominal büyümesi.
+
+**Formül:** Net Dönem Kârı / Bir Yıl Önceki Aynı Dönem Net Kârı − 1
+
+**Hesaplama dönemi:** Yılbaşından kümülatif (YtD); YoY
+
+**Kaynak:** Gelir Tablosu
+
+**Kategori:** Rekabet Analizi › Kârlılık Bileşimi · **Tip:** Rasyo (Akım) · **Birim:** %
+
+> ℹ️ Baz dönem zarar ise hesaplanmaz.
+
+---
+
+## Reel Net Dönem Kârı Büyümesi (TÜFE'ye Göre)
+
+`id: reel_net_kar_buyumesi`
+
+**Tanım:** Net kâr büyümesinin TÜFE'den arındırılmış hâli.
+
+**Formül:** (1 + Net Kâr Büyümesi) / (1 + Yıllık TÜFE) − 1
+
+**Hesaplama dönemi:** Yılbaşından kümülatif (YtD); YoY
+
+**Kaynak:** Gelir Tablosu; TÜİK TÜFE
+
+**Kategori:** Rekabet Analizi › Kârlılık Bileşimi · **Tip:** Rasyo (Akım) · **Birim:** %
+
+> ℹ️ Türkiye'de bankalar TMS 29 uygulamadığı için seriler nominaldir; çifte düzeltme oluşmaz.
+
+---
+
+## Türev Finansal İşlemlerden Kar/Zarar
+
+`id: turev_kar_zarar`
+
+**Tanım:** Türev finansal işlemlerden net kâr/zarar (swap maliyeti dahil).
+
+**Formül:** Gelir Tablosu: Türev Finansal İşlemlerden Kar/Zarar
+
+**Hesaplama dönemi:** Yılbaşından kümülatif (YtD)
+
+**Kaynak:** Gelir Tablosu
+
+**Kategori:** Rekabet Analizi › Kârlılık Bileşimi · **Tip:** Büyüklük (Akım) · **Birim:** TL
+
+> ℹ️ Türev zararı ile kambiyo kârı çoğunlukla birbirini götürür; bir korunma bacağıdır.
+
+---
+
+## Kambiyo İşlemleri Kâr/Zararı
+
+`id: kambiyo_kar_zarar`
+
+**Tanım:** Kambiyo işlemlerinden net kâr/zarar.
+
+**Formül:** Gelir Tablosu: Kambiyo İşlemleri Kâr/Zararı
+
+**Hesaplama dönemi:** Yılbaşından kümülatif (YtD)
+
+**Kaynak:** Gelir Tablosu
+
+**Kategori:** Rekabet Analizi › Kârlılık Bileşimi · **Tip:** Büyüklük (Akım) · **Birim:** TL
+
+---
+
+## YP Toplam Fonlama / Toplam Fonlama
+
+`id: yp_toplam_fonlama_payi`
+
+**Tanım:** Toplam fonlamanın döviz cinsinden kısmı (para piyasası borçları dahil).
+
+**Formül:** (YP Mevduat + YP Alınan Krediler + YP Para Piyasası Borçları + YP İhraç MK) / Toplam Fonlama
+
+**Hesaplama dönemi:** Dönem sonu bakiye
+
+**Kaynak:** Bilanço TP/YP sütunları
+
+**Kategori:** Rekabet Analizi › Döviz, Altın ve Fonlama · **Tip:** Rasyo (Stok) · **Birim:** %
+
+---
+
+## Toplam Brüt Krediler / Toplam Fonlama
+
+`id: krediler_toplam_fonlama`
+
+**Tanım:** Kredilerin toplam fonlama ile karşılanma düzeyi.
+
+**Formül:** Toplam Brüt Krediler / Toplam Fonlama
+
+**Hesaplama dönemi:** Dönem sonu bakiye
+
+**Kaynak:** Bilanço
+
+**Kategori:** Rekabet Analizi › Döviz, Altın ve Fonlama · **Tip:** Rasyo (Stok) · **Birim:** %
+
+> ⚠️ Krediler/Toplam Kaynak ölçüsünden farkı: bu ölçüde payda para piyasalarına borçları da içerir.
+
+---
+
+## Altın Hesapları Vadesiz Payı (Altın Hesapları İçinde)
+
+`id: altin_vadesiz_payi`
+
+**Tanım:** Altın (kıymetli maden) hesaplarının ne kadarının vadesiz olduğu.
+
+**Formül:** Kıymetli Maden Depo Hesapları Vadesiz / Kıymetli Maden Depo Hesapları Toplam
+
+**Hesaplama dönemi:** Dönem sonu bakiye
+
+**Kaynak:** Katılım bankaları: Toplanan Fonların Vade Yapısı dipnotu · Mevduat bankaları: elle yüklenen BDR verisi (yalnız 30.06.2026)
+
+**Kategori:** Rekabet Analizi › Döviz, Altın ve Fonlama · **Tip:** Rasyo (Stok) · **Birim:** %
+
+> ⚠️ Mevduat bankalarında bu kırılım BDDK verisinde yoktur; yalnız elle yüklenen dönemde dolu olur.
+
+---
+
+## YP Fonlama Fazlası / Toplam Aktifler
+
+`id: yp_fonlama_fazlasi_aktif`
+
+**Tanım:** YP fonlamanın YP kredileri aşan kısmının aktife oranı.
+
+**Formül:** max(0, YP Toplam Fonlama − YP Brüt Krediler) / Toplam Aktifler
+
+**Hesaplama dönemi:** Dönem sonu bakiye
+
+**Kaynak:** Bilanço TP/YP sütunları
+
+**Kategori:** Rekabet Analizi › Döviz, Altın ve Fonlama · **Tip:** Rasyo (Stok) · **Birim:** %
+
+> ℹ️ Bu fazla TCMB, YP menkul kıymet ve bankalardaki YP hesaplarında tutulur.
+
+---
+
+## RAV Yoğunluğu (Toplam RAV / Toplam Aktifler)
+
+`id: rav_yogunlugu`
+
+**Tanım:** Risk ağırlıklı varlıkların aktife oranı; risk iştahının göstergesi.
+
+**Formül:** Toplam RAV (kredi + piyasa + operasyonel risk) / Toplam Aktifler
+
+**Hesaplama dönemi:** Dönem sonu bakiye
+
+**Kaynak:** Sermaye yeterliliği tablosu; Bilanço
+
+**Kategori:** Rekabet Analizi › Sermaye ve Likidite · **Tip:** Rasyo (Stok) · **Birim:** %
+
+> ⚠️ BDDK'nın 11286 sayılı kararıyla sabit kur imkânı 01.01.2026'da kalktığı için 2025 sonu ile sonrası karşılaştırılırken RAV yoğunluğundaki sıçrama organik risk alımı olarak yorumlanmaz.
+
+---
+
+## Basit Kaldıraç (Özkaynaklar / Toplam Aktifler)
+
+`id: basit_kaldirac`
+
+**Tanım:** Özkaynakların aktife oranı; Basel III kaldıraç oranının basit vekili.
+
+**Formül:** Özkaynaklar / Toplam Aktifler
+
+**Hesaplama dönemi:** Dönem sonu bakiye
+
+**Kaynak:** Bilanço
+
+**Kategori:** Rekabet Analizi › Sermaye ve Likidite · **Tip:** Rasyo (Stok) · **Birim:** %
+
+> ⚠️ Basel III kaldıraç oranı değildir (o ana sermaye / toplam risk tutarıdır).
+
+---
+
+## Basel III Kaldıraç Oranı
+
+`id: basel_kaldirac_orani`
+
+**Tanım:** Bankanın açıkladığı Basel III kaldıraç oranı (ana sermaye / toplam risk tutarı).
+
+**Formül:** Bankanın BDR'de açıkladığı değer
+
+**Hesaplama dönemi:** Dönem sonu
+
+**Kaynak:** Bağımsız denetim raporu (elle yüklenir, pipeline/manuel_olculer.json)
+
+**Kategori:** Rekabet Analizi › Sermaye ve Likidite · **Tip:** Rasyo (Stok) · **Birim:** %
+
+> ⚠️ BDDK ham verisinde yoktur; yalnız yüklenen dönemlerde dolu olur. Grup değeri hesaplanmaz.
+
+---
+
+## Likidite Karşılama Oranı (LCR)
+
+`id: lcr`
+
+**Tanım:** Bankanın açıkladığı likidite karşılama oranı (toplam).
+
+**Formül:** Bankanın BDR'de açıkladığı değer
+
+**Hesaplama dönemi:** Dönem sonu
+
+**Kaynak:** Bağımsız denetim raporu (elle yüklenir, pipeline/manuel_olculer.json)
+
+**Kategori:** Rekabet Analizi › Sermaye ve Likidite · **Tip:** Rasyo (Stok) · **Birim:** %
+
+> ⚠️ Paydası açıklanmadığı için grup paçalı hesaplanmaz.
+
+---
+
+## Likidite Karşılama Oranı (LCR, YP)
+
+`id: lcr_yp`
+
+**Tanım:** Bankanın açıkladığı likidite karşılama oranı (yabancı para).
+
+**Formül:** Bankanın BDR'de açıkladığı değer
+
+**Hesaplama dönemi:** Dönem sonu
+
+**Kaynak:** Bağımsız denetim raporu (elle yüklenir, pipeline/manuel_olculer.json)
+
+**Kategori:** Rekabet Analizi › Sermaye ve Likidite · **Tip:** Rasyo (Stok) · **Birim:** %
+
+> ⚠️ Paydası açıklanmadığı için grup paçalı hesaplanmaz.
+
+---
+
+## Serbest Karşılık Bakiyesi
+
+`id: serbest_karsilik`
+
+**Tanım:** Muhtemel riskler için ayrılan serbest karşılık bakiyesi (gelecek dönem kârına aktarılabilecek muhasebesel yastık).
+
+**Formül:** Bankanın BDR dipnotundaki değer
+
+**Hesaplama dönemi:** Dönem sonu bakiye
+
+**Kaynak:** Bağımsız denetim raporu (elle yüklenir)
+
+**Kategori:** Rekabet Analizi › Kâr Tamponu · **Tip:** Büyüklük (Stok) · **Birim:** TL
+
+> ⚠️ Serbest karşılık BDDK formatında varsa dipnotta zorunludur; yokluğu sıfır okunur.
+
+---
+
+## TÜFEX Tamponu
+
+`id: tufex_tamponu`
+
+**Tanım:** TÜFE'ye endeksli menkul kıymet değerlemesinde varsayım ile gerçekleşen TÜFE farkının kâra etkisi.
+
+**Formül:** Açıklanmış: BDR cümlesindeki tutar · Türetilmiş: (gerçekleşen TÜFE − varsayım) × açıklanan duyarlılık
+
+**Hesaplama dönemi:** Dönem sonu
+
+**Kaynak:** Bağımsız denetim raporu (elle yüklenir)
+
+**Kategori:** Rekabet Analizi › Kâr Tamponu · **Tip:** Büyüklük (Akım) · **Birim:** TL
+
+> ⚠️ Türetilmiş değerler büyüklük mertebesi göstergesidir; açıklananlar referans endekse göredir.
+> ℹ️ Kuveyt Türk, Vakıf Katılım ve Ziraat Katılım için yapısal sıfırdır (TÜFE'ye endeksli MK yok / Hazine endeksiyle değerlenir).
+
+---
+
+## Kâr Tamponu (Serbest Karşılık + TÜFEX) / Net Dönem Kârı
+
+`id: kar_tamponu_net_kar`
+
+**Tanım:** Serbest karşılık ve TÜFEX tamponunun dönem net kârına oranı.
+
+**Formül:** (Serbest Karşılık + TÜFEX Tamponu) / Net Dönem Kârı (YtD)
+
+**Hesaplama dönemi:** Dönem sonu; net kâr yılbaşından kümülatif
+
+**Kaynak:** Bağımsız denetim raporu (elle yüklenir); Gelir Tablosu
+
+**Kategori:** Rekabet Analizi › Kâr Tamponu · **Tip:** Rasyo (Akım) · **Birim:** %
+
+> ⚠️ Tampon sıfır olması olumsuz bir kâr kalitesi bulgusu değildir: raporlanan kâr şartsızdır.
+
+---

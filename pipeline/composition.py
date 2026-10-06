@@ -281,7 +281,9 @@ def _to_comp_list(vals: Dict[str, float], spec) -> List[dict]:
     out = []
     for cid, _ in spec['components']:
         v = vals.get(cid, 0.0)
-        pct = (abs(v) / abs_total * 100.0) if abs_total else 0.0
+        # İşaret korunur (2026-09-27): net ticari zarar gibi negatif bileşen
+        # negatif pay olarak görünmeli (PBI ile aynı); payda Σ|değer| kalır.
+        pct = (v / abs_total * 100.0) if abs_total else 0.0
         out.append({'id': cid, 'value': v, 'pct': pct})
     return out
 

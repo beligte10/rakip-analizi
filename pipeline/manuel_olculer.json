@@ -1,0 +1,221 @@
+{
+ "_aciklama": "Kaynak: Kuveyt Türk Rekabet Analizi 2026 İlk Yarı (BDR'ler, 30.06.2026). Yalnız bu dönem dolu; yeni dönem için scripts/manuel_olcu_yukle.py. carpan: dosyadaki birimden sistem birimine (mn TL → TL için 1e6).",
+ "olculer": {
+  "basel_kaldirac_orani": {
+   "carpan": 1.0,
+   "veri": {
+    "2026-06-30": {
+     "Kuveyt Türk": 6.29,
+     "QNB": 5.21,
+     "Denizbank": 6.46,
+     "TEB": 5.74,
+     "Vakıf Katılım": 6.32,
+     "Ziraat Katılım": 5.28,
+     "Akbank": 5.77,
+     "Garanti Bankası": 5.6,
+     "İş Bankası": 4.97,
+     "Yapı Kredi": 4.93,
+     "Albaraka": 5.12,
+     "Alternatif Bank": 9.28,
+     "Burgan Bank": 7.07,
+     "Dünya Katılım": 7.47,
+     "Emlak Katılım": 9.27,
+     "Fibabanka": 10.05,
+     "HSBC": 8.52,
+     "Hayat Finans": 10.9,
+     "ING Bank": 5.29,
+     "Odeabank": 2.61,
+     "Şekerbank": 10.59,
+     "Vakıfbank": 5.21,
+     "TOM Bank": 9.86,
+     "Türkiye Finans": 5.26,
+     "Halk Bank": 4.45,
+     "Ziraat Bankası": 6.25,
+     "Enpara": 4.42
+    }
+   }
+  },
+  "lcr": {
+   "carpan": 1.0,
+   "veri": {
+    "2026-06-30": {
+     "Kuveyt Türk": 202.0,
+     "QNB": 129.2,
+     "Denizbank": 121.5,
+     "TEB": 137.1,
+     "Vakıf Katılım": 143.5,
+     "Ziraat Katılım": 198.0,
+     "Akbank": 125.8,
+     "Garanti Bankası": 133.6,
+     "İş Bankası": 110.4,
+     "Yapı Kredi": 124.5,
+     "Albaraka": 113.25,
+     "Alternatif Bank": 147.68,
+     "Burgan Bank": 167.54,
+     "Dünya Katılım": 208.56,
+     "Emlak Katılım": 571.38,
+     "Fibabanka": 189.25,
+     "HSBC": 218.28,
+     "Hayat Finans": 112.87,
+     "ING Bank": 211.05,
+     "Odeabank": 158.98,
+     "Şekerbank": 121.78,
+     "Vakıfbank": 149.15,
+     "TOM Bank": 492.1,
+     "Türkiye Finans": 227.91,
+     "Halk Bank": 159.62,
+     "Ziraat Bankası": 146.97,
+     "Enpara": 264.74
+    }
+   }
+  },
+  "lcr_yp": {
+   "carpan": 1.0,
+   "veri": {
+    "2026-06-30": {
+     "Kuveyt Türk": 285.4,
+     "QNB": 413.2,
+     "Denizbank": 318.2,
+     "TEB": 185.3,
+     "Vakıf Katılım": 116.4,
+     "Ziraat Katılım": 236.0,
+     "Akbank": 161.4,
+     "Garanti Bankası": 416,
+     "İş Bankası": 348,
+     "Yapı Kredi": 456,
+     "Albaraka": 369.66,
+     "Alternatif Bank": 324.5,
+     "Burgan Bank": 460.27,
+     "Dünya Katılım": 231.42,
+     "Emlak Katılım": 624.27,
+     "Fibabanka": 341.62,
+     "HSBC": 302.89,
+     "Hayat Finans": 439.8,
+     "ING Bank": 165.35,
+     "Odeabank": 535.34,
+     "Şekerbank": 460.37,
+     "Vakıfbank": 257.72,
+     "TOM Bank": 159.63,
+     "Türkiye Finans": 199.04,
+     "Halk Bank": 214.3,
+     "Ziraat Bankası": 325.05,
+     "Enpara": 1229.73
+    }
+   }
+  },
+  "serbest_karsilik": {
+   "carpan": 1000000.0,
+   "veri": {
+    "2026-06-30": {
+     "Kuveyt Türk": 0,
+     "QNB": 3500,
+     "Denizbank": 8700,
+     "TEB": 368,
+     "Vakıf Katılım": 2100,
+     "Ziraat Katılım": 0,
+     "Akbank": 0,
+     "Garanti Bankası": 0,
+     "İş Bankası": 0,
+     "Yapı Kredi": 0,
+     "Albaraka": 1040.0,
+     "Emlak Katılım": 13000.0,
+     "Fibabanka": 1210.0,
+     "Şekerbank": 1000.0,
+     "Vakıfbank": 0.0,
+     "Burgan Bank": 0.0,
+     "Odeabank": 0.0,
+     "HSBC": 0.0,
+     "Alternatif Bank": 0.0,
+     "Dünya Katılım": 0.0,
+     "Hayat Finans": 0.0,
+     "ING Bank": 0.0,
+     "TOM Bank": 0.0,
+     "Türkiye Finans": 0.0,
+     "Halk Bank": 0.0,
+     "Ziraat Bankası": 0.0
+    }
+   }
+  },
+  "tufex_tamponu": {
+   "carpan": 1000000.0,
+   "veri": {
+    "2026-06-30": {
+     "Kuveyt Türk": 0,
+     "QNB": 2699,
+     "Denizbank": 1514,
+     "TEB": 678,
+     "Vakıf Katılım": 0,
+     "Ziraat Katılım": 0,
+     "Akbank": 2397,
+     "Garanti Bankası": 2407,
+     "İş Bankası": 714,
+     "Yapı Kredi": 2203,
+     "ING Bank": 82,
+     "Ziraat Bankası": 13307,
+     "Vakıfbank": 5425
+    }
+   }
+  },
+  "altin_vadesiz_tutar": {
+   "carpan": 1000000.0,
+   "veri": {
+    "2026-06-30": {
+     "Kuveyt Türk": 322498,
+     "QNB": 146814,
+     "Denizbank": 118085,
+     "TEB": 49664,
+     "Vakıf Katılım": 71803,
+     "Ziraat Katılım": 56407,
+     "Akbank": 255605,
+     "Garanti Bankası": 323799,
+     "İş Bankası": 452682,
+     "Yapı Kredi": 281485
+    }
+   }
+  }
+ },
+ "metinler": {
+  "denetci_gorusu": {
+   "2026-06-30": {
+    "Kuveyt Türk": "Temiz",
+    "QNB": "Sınırlı olumlu (şartlı)",
+    "Denizbank": "Şartlı sonuç",
+    "TEB": "Şartlı sonuç",
+    "Vakıf Katılım": "Şartlı sonuç",
+    "Ziraat Katılım": "Temiz",
+    "Akbank": "Temiz",
+    "Garanti Bankası": "Temiz",
+    "İş Bankası": "Temiz",
+    "Yapı Kredi": "Temiz"
+   }
+  },
+  "tufex_kaynak": {
+   "2026-06-30": {
+    "QNB": "Açıklanmış",
+    "Denizbank": "Açıklanmış",
+    "TEB": "Türetilmiş",
+    "Akbank": "Türetilmiş",
+    "Garanti Bankası": "Türetilmiş",
+    "İş Bankası": "Türetilmiş",
+    "Yapı Kredi": "Türetilmiş",
+    "ING Bank": "Türetilmiş",
+    "Ziraat Bankası": "Türetilmiş",
+    "Vakıfbank": "Türetilmiş"
+   }
+  },
+  "tufex_varsayimi_yuzde": {
+   "2026-06-30": {
+    "QNB": "25.0",
+    "Denizbank": "29.0",
+    "TEB": "27.0",
+    "Akbank": "30",
+    "Garanti Bankası": "27",
+    "İş Bankası": "29.94",
+    "Yapı Kredi": "30",
+    "ING Bank": "27",
+    "Ziraat Bankası": "24",
+    "Vakıfbank": "23"
+   }
+  }
+ }
+}

@@ -3,7 +3,9 @@
 (pipeline/custom_measure_rules) ve kayıt mantığı (users.py). HTTP katmanı
 olmadan, test_auth.py ile aynı desen.
 """
+import json
 import math
+from pathlib import Path
 
 import pytest
 
@@ -81,11 +83,13 @@ def uid(tmp_path):
 
 
 def test_kayit_bicim_saklanir_ve_oran_disinda_silinir(uid):
+    # Eski tek işlemli istek ağaca çevrilerek saklanır; biçim yalnız oranda.
     p, u = uid
     ok, rec = U.add_custom_measure(p, u, 'Kredi/Mevduat', 'ratio', 'krediler', 'mevduat', bicim='kat')
-    assert ok and rec['bicim'] == 'kat'
+    assert ok and rec['expr'] == {'op': 'div', 'l': {'m': 'krediler'}, 'r': {'m': 'mevduat'}, 'bicim': 'kat'}
     ok, rec2 = U.add_custom_measure(p, u, 'Kredi - Mevduat', 'diff', 'krediler', 'mevduat', bicim='kat')
-    assert ok and rec2['bicim'] is None
+    assert ok and rec2['expr'] == {'op': 'sub', 'l': {'m': 'krediler'}, 'r': {'m': 'mevduat'}}
+    assert 'op' not in rec and 'bicim' not in rec
 
 
 def test_ayni_ad_engellenir_buyuk_kucuk_harf_ve_bosluk_duyarsiz(uid):
@@ -123,3 +127,88 @@ def test_ad_bosluklari_normalize_edilir(uid):
     p, u = uid
     _, rec = U.add_custom_measure(p, u, '  Kredi    Mevduat  ', 'ratio', 'krediler', 'mevduat')
     assert rec['ad'] == 'Kredi Mevduat'
+
+
+# --- İfade ağacı (2026-09-25) — ortak vakalar, JS ile aynı dosya ---
+
+CASES = json.loads((Path(__file__).parent / 'fixtures' / 'custom_measure_cases.json')
+                   .read_text(encoding='utf-8'))
+FCAT = CASES['catalog']
+
+
+@pytest.mark.parametrize('case', CASES['valid'], ids=lambda c: c['ad'])
+def test_agac_gecerli(case):
+    plan, err = R.analyze(case['expr'], FCAT)
+    assert err is None, err
+    assert plan['type'] == case['type']
+
+
+@pytest.mark.parametrize('case', CASES['invalid'], ids=lambda c: c['ad'])
+def test_agac_gecersiz(case):
+    err = R.check_expr(case['expr'], FCAT)
+    assert err and case['hata'] in err, err
+
+
+@pytest.mark.parametrize('case', CASES['eval'], ids=lambda c: json.dumps(c['expr'])[:60])
+def test_agac_hesap(case):
+    plan, err = R.analyze(case['expr'], FCAT)
+    assert err is None, err
+    v = R.evaluate(plan, lambda i: CASES['series'].get(i, {}), case['tarih'])
+    if case['beklenen'] is None:
+        assert v is None
+    else:
+        assert v == pytest.approx(case['beklenen'], rel=1e-12)
+
+
+@pytest.mark.parametrize('case', CASES['legacy'], ids=lambda c: c['kayit']['op'])
+def test_eski_kayit_agaca_cevrilir(case):
+    assert R.record_expr(case['kayit']) == case['expr']
+
+
+def test_eski_kayit_ile_agac_ayni_sonucu_verir():
+    # Eski check() ile ağaç üzerinden kontrol aynı kararı verir.
+    for op, a, b in [('ratio', 'net_kar', 'aktif'), ('diff', 'net_kar', 'krediler'),
+                     ('ratio', 'roaa', 'krediler'), ('sum', 'krediler', 'menkul')]:
+        assert R.check(op, a, b, None, FCAT) == R.check_expr(R.legacy_to_expr(op, a, b), FCAT)
+
+
+def test_measure_ids_sirali_tekrarsiz():
+    e = CASES['valid'][11]['expr']   # (A-B)/A
+    assert R.measure_ids(e) == ['krediler', 'mevduat']
+
+
+def test_kayit_agac_ile(uid):
+    p, u = uid
+    expr = {'op': 'div', 'l': {'op': 'add', 'l': {'m': 'krediler'}, 'r': {'m': 'menkul'}},
+            'r': {'m': 'aktif'}}
+    ok, rec = U.add_custom_measure(p, u, 'Kredi+Menkul / Aktif', expr=expr)
+    assert ok and rec['expr'] == expr
+    assert U.list_custom_measures(p, u)[0]['expr'] == expr
+
+
+def test_kayit_bozuk_agac_reddedilir(uid):
+    p, u = uid
+    ok, err = U.add_custom_measure(p, u, 'Bozuk', expr={'op': 'div', 'l': {'m': 'krediler'}})
+    assert not ok and 'yapısı' in err
+    ok, err = U.add_custom_measure(p, u, 'Uzun', expr={'m': 'x' * 5000})
+    assert not ok and 'uzun' in err
+
+
+def test_eski_kayit_guncellenince_agaca_gecer(uid):
+    p, u = uid
+    data = json.loads(p.read_text(encoding='utf-8'))
+    eski = {'id': 'custom_eski', 'ad': 'Eski', 'op': 'ratio', 'a': 'krediler', 'b': 'mevduat',
+            'constant': None, 'sort_direction': 'desc', 'bicim': 'kat', 'created_at': 'x'}
+    data['users'][-1].setdefault('custom_measures', []).append(eski)
+    p.write_text(json.dumps(data), encoding='utf-8')
+    assert R.record_expr(U.list_custom_measures(p, u)[0])['bicim'] == 'kat'
+    expr = {'op': 'mul', 'l': {'m': 'krediler'}, 'r': {'k': 2}}
+    ok, rec = U.update_custom_measure(p, u, 'custom_eski', 'Eski', expr=expr)
+    assert ok and rec['expr'] == expr and 'op' not in rec and 'a' not in rec
+
+
+@pytest.mark.parametrize('case', CASES['metin'], ids=lambda c: c['formul'][:40])
+def test_okunur_formul_js_ile_ayni(case):
+    plan, err = R.analyze(case['expr'], FCAT)
+    assert err is None, err
+    assert R.formula_text(plan, FCAT) == case['formul']

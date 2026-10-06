@@ -13,7 +13,155 @@
     if (ios && m) m.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
   })();
 </script>
-<title>KT Rakip Analizi — Admin</title>
+<!-- Dil (TR/EN): sözlük + sayfa çeviri motoru; scripts/i18n_gom.py doldurur, elle düzenlemeyin. -->
+<script>/*I18N_SAYFA*/
+window.KT_I18N = {"bankalar":["Akbank","Albaraka","Alternatif Bank","Burgan Bank","Denizbank","Dünya Katılım","Emlak Katılım","Enpara","Fibabanka","Garanti Bankası","HSBC","Halk Bank","Hayat Finans","ING Bank","Kuveyt Türk","Odeabank","QNB","TEB","TOM Bank","Türkiye Finans","Vakıf Katılım","Vakıfbank","Yapı Kredi","Ziraat Bankası","Ziraat Katılım","İş Bankası","Şekerbank"],"sozluk":{"\" kaydedildi. Kullanıcılar değişikliği sayfayı yenilediğinde görür.":"\" saved. Users will see the change when they reload the page.","\"Rakip Bankalar\" gibi grupların üyeliğini düzenle veya yeni özel bir grup oluştur. Değişiklik TÜM kullanıcıların dashboard'unda aynı şekilde görünür (kişiye özel değildir). Kaydettikten sonra grup toplamlarının yeniden hesaplanması birkaç saniye sürer.":"Edit the membership of groups such as \"Peer Banks\" or create a new custom group. Changes appear the same way on ALL users' dashboards (not per person). After saving, recalculating the group totals takes a few seconds.","'den okunur, kod ile birlikte deploy edilir.":", deployed together with the code (in Turkish).","'e basın. Admin rolünün izinleri kilitlidir. Kendi izinlerinizde olmayan bir izni başka role veremezsiniz. Dışa aktarma izinleri arayüzdeki düğmeleri gizler; pano verisi tarayıcıya zaten geldiği için tam bir veri kısıtı değildir.":" under the column. The Admin role's permissions are locked. You cannot give another role a permission you don't have yourself. Export permissions hide the buttons in the interface; since dashboard data already reaches the browser, this is not a full data restriction.","(ZIP boyutuna göre). Mevcut":"(depending on ZIP size). The existing","(deneysel — üretime yazmaz)":"(experimental — does not write to production)","(düzenleniyor)":"(editing)","(dışa aktarım zamanı:":"(exported at:","(örn.":"(e.g.","(üstteki":"(the top-level",") legacy bir kaleme otomatik düşer (fallback) ve hücre sonucu yine doğru çıkar. Aşağıdaki hücre tablosundaki \"eksik kalemler\" sütunu, hangi eksiğin GERÇEKTEN o hücreyi bozduğunu gösterir.":") fall back to a legacy item automatically and the cell result is still correct. The \"missing items\" column in the cell table below shows which gap REALLY breaks that cell.",") yükleyip, hesaplanan ölçüleri mevcut":") to compare the calculated measures with the existing","+ Grup Oluştur":"+ Create Group","+ Kart Ekle":"+ Add Card","+ Rol Ekle":"+ Add Role","+ Üye Ekle":"+ Add Member",", tarayıcı üzerinden başka bir sunucuya taşımak için. Dışa aktar → indirilen ZIP'i hedef sunucunun admin panelinden içe aktar. Elle \"proje klasörünü zip'leyip yükleme\" yöntemi kullanma — hangi anlık görüntünün taşındığı belirsiz kalır, bu da eski/yanlış verinin farkına varılmadan canlıya taşınmasına yol açabilir.":", through the browser, to another server. Export → import the downloaded ZIP from the target server's admin panel. Do not manually \"zip the project folder and upload it\" — it stays unclear which snapshot was moved, which can lead to old or wrong data going live unnoticed.","... ve":"... and","/signup + onay adımlarını atlayıp doğrudan onaylı bir hesap oluşturur — ör. yeni işe başlayan biri için.":"Creates an approved account directly, skipping /signup and approval — e.g. for a new joiner.","1. Yükleme":"1. Upload","4. Kaydet":"4. Save",": rolünde":": users whose role has the","<DÖNEM>.json":"<PERIOD>.json","AI asistan":"AI assistant","Ad Soyad":"Full name","Ad Soyad, e-posta ve şifre gerekli.":"Full name, email and password are required.","Admin paneli":"Admin panel","Admin yetkisi gerekiyor":"Admin permission required","Analist":"Analyst","Asistan günlük soru sınırı":"Assistant daily question limit","Asistan: dış veri (TCMB EVDS)":"Assistant: external data (CBRT EVDS)","Asistanın EVDS gibi dış kaynaklardan makro veri çekmesi (AI asistan izniyle birlikte çalışır)":"Lets the assistant fetch macro data from external sources such as EVDS (works together with the AI assistant permission)","Açıklama (opsiyonel)":"Description (optional)","BDR JSON Test Yükleme":"BDR JSON Test Upload","BDR-Kısayol aracının ürettiği":"Upload the","Backlog":"Backlog","Backlog yüklenemedi:":"Could not load the backlog:","Banka":"Bank","Banka Adı - DD.MM.YYYY.xlsx":"Bank Name - DD.MM.YYYY.xlsx","Banka Grupları":"Bank Groups","Banka grupları":"Bank groups","Başka bir ağır işlem (yükleme/rebuild) sürüyor. Bitmesini bekleyip tekrar deneyin.":"Another heavy operation (upload/rebuild) is running. Wait for it to finish and try again.","Başka bir kurulumdan \"Dışa Aktar\" ile indirilmiş ZIP'i yükle. Mevcut veri önce otomatik yedeklenir.":"Upload a ZIP downloaded with \"Export\" from another installation. Existing data is backed up automatically first.","Başlangıç izinleri":"Starting permissions","Başlık":"Title","Başlık boş olamaz":"Title cannot be empty","Başvuru Tarihi":"Applied on","Başvurunuz alındı. Admin onayından sonra giriş yapabilirsiniz.":"Your application has been received. You can sign in after an admin approves it.","Başvurunuz reddedildi":"Your application was rejected","Beklenen ZIP yapısı:":"Expected ZIP structure:","Beklenen format:":"Expected format:","Beklenmeyen bir hata oluştu.":"An unexpected error occurred.","Bilinmeyen banka:":"Unknown bank:","Bilinmeyen hata":"Unknown error","Bir kalemin burada listelenmesi HER ZAMAN hata anlamına gelmez — bazı ölçüler (ör.":"An item listed here does NOT ALWAYS mean an error — some measures (e.g.","Bir veya birden fazla xlsx (1-27 banka tek seferde) — her dosyanın bankası ve çeyreği adından otomatik tespit edilir":"One or more xlsx files (1–27 banks at once) — each file's bank and quarter are detected from its name","Boyut":"Size","Boş izinlerle başla":"Start with no permissions","Bu adla bir rol zaten var":"A role with this name already exists","Bu e-posta ile zaten bir başvuru/hesap mevcut":"An application or account with this email already exists","Bu filtreye uyan başvuru yok.":"No applications match this filter.","Bu hesabın şifresi sunucu yapılandırmasından (start.sh → KT_PASSWORD) yönetilir.":"This account's password is managed in the server configuration (start.sh → KT_PASSWORD).","Bu isimde bir grup zaten var":"A group with this name already exists","Bu işlem için rolünüzde yetki yok":"Your role does not allow this action","Bu kart silinsin mi?":"Delete this card?","Bu özellik rolünüzde açık değil":"This feature is not enabled for your role","Catalog'ta tanımlı olmayan banka(lar):":"Bank(s) not defined in the catalog:","Coverage yüklenemedi:":"Could not load coverage:","Dashboard bu banka etrafında okunur: vurgu rengi (bankanın marka rengi), \"sırası\" rozeti, hızlı seçimler, varsayılan seçimler ve AI asistan odak bankayı kullanır. Başka bir banka seçince odak grubu o bankanın adını alır, \"… Hariç … Bankaları\" grubu o bankanın segmentine göre kurulur ve yapay zeka o bankaya göre \"Rakip Bankalar\" setini gerekçeleriyle önerir (listeyi işaretleyerek değiştirebilirsiniz). Buradaki seçim":"The dashboard is read around this bank: the highlight colour (the bank's brand colour), the \"rank\" badge, quick selections, default selections and the AI assistant use the focus bank. When you choose another bank, the focus group takes that bank's name, the \"… excl. …\" group is rebuilt for that bank's segment and the AI suggests a \"Peer Banks\" set for that bank with reasons (you can change the list with the checkboxes). The selection here is the","Dashboard sekmelerini yenileyince (Cmd+Shift+R) görünür.":"Visible after reloading dashboard tabs (Cmd+Shift+R).","Dashboard'a Dön":"Back to Dashboard","Dashboard'da güncel veriyi görmek için":"To see the latest data on the dashboard, go to the","Dashboard'u görüntülemek isteyenler":"People who want to view the dashboard apply via","Detaylı Banka × Çeyrek Matrisi (son 4 yıl) — tıkla aç/kapat":"Detailed Bank × Quarter Matrix (last 4 years) — click to expand/collapse","Devam etmek istiyor musunuz?":"Do you want to continue?","Değer":"Value","Değer (TL)":"Value (TL)","Dil / Language":"Dil / Language","Dosya":"File","Dosya gönderilmedi":"No file was sent","Dosyaları buraya sürükle":"Drag files here","Durum":"Status","Dönüştürme/karşılaştırma hatası:":"Conversion/comparison error:","Düzenle":"Edit","Düşük":"Low","Düşük öncelik":"Low priority","Dışa Aktar sekmesi ve tablolardan Excel indirme":"Export tab and Excel downloads from tables","E-posta":"Email","E-posta veya şifre hatalı":"Incorrect email or password","EVDS_API_KEY tanımlı değil":"EVDS_API_KEY is not set","Ekle":"Add","Eklenemedi:":"Could not add:","Eksik":"Missing","Eksik %":"Missing %","Eksik ham kalemler":"Missing raw items","Eksik/Aranan":"Missing/Expected","En az 1 banka seç.":"Select at least 1 bank.","Erişimi Kaldır":"Revoke Access","Etiket":"Label","Fark %":"Diff %","Farklı":"Different","Filtreye uyan hücre yok":"No cells match the filter","Geçerli bir e-posta adresi girin":"Enter a valid email address","Geçerli dosya yok. Atlananlar:":"No valid files. Skipped:","Geçersiz JSON:":"Invalid JSON:","Geçersiz banka(lar):":"Invalid bank(s):","Geçersiz izin":"Invalid permission","Geçersiz kullanıcı veya rol":"Invalid user or role","Geçersiz rol":"Invalid role","Geçersiz sütun":"Invalid column","Geçersiz veya bozuk ZIP dosyası":"Invalid or corrupt ZIP file","Geçersiz:":"Invalid:","Geçmiş yüklenemedi:":"Could not load history:","Giriş yapmalısınız":"You need to sign in","Grafik PNG ve sayfa PDF çıktısı":"Chart PNG and page PDF output","Grup adı (ör. Büyük Ölçekli Bankalar)":"Group name (e.g. Large Banks)","Grup adı boş olamaz":"Group name cannot be empty","Grup adı boş olamaz.":"Group name cannot be empty.","Grup bulunamadı":"Group not found","Grup en az 1 banka içermeli.":"A group must contain at least 1 bank.","Grup en az 1 üye içermeli":"A group must have at least 1 member","Grup üyeliklerini düzenleme, grup ekleme/silme":"Editing group memberships, adding/deleting groups","Gruplar yüklenemedi:":"Could not load groups:","Görev Panosu":"Task Board","Görev panosu yüklenemedi:":"Could not load the task board:","Görev panosu, backlog ve el kitabı":"Task board, backlog and handbook","Görsel dışa aktarma (PNG / PDF)":"Visual export (PNG / PDF)","Görüntüleyici":"Viewer","Günlük soru sınırı sayı olmalı":"Daily question limit must be a number","Hazır rol":"Built-in role","Hazır roller silinemez":"Built-in roles cannot be deleted","Hazırlanıyor…":"Preparing…","Henüz başvuru yok.":"No applications yet.","Henüz bir sürüm kaydı yok.":"No release entries yet.","Henüz grup yok.":"No groups yet.","Henüz yükleme yapılmamış. Yukarıdan ilk dosyanızı yükleyin.":"Nothing has been uploaded yet. Upload your first file above.","Her sütun bir rol. Kutucuklarla özellik ve admin paneli izinlerini açıp kapatın, asistanın günlük soru sınırını girin ve sütunun altındaki":"Each column is a role. Use the checkboxes to turn feature and admin panel permissions on or off, enter the assistant's daily question limit and press","Hesabınız henüz onay bekliyor — admin onayladıktan sonra giriş yapabilirsiniz":"Your account is awaiting approval — you can sign in once an admin approves it","Hesaplama boş sonuç verdi (toplam_aktifler için 0 dönem). Mevcut veri KORUNDU, yazma iptal edildi. Olası neden: data/raw boş ya da parquet eksik.":"The calculation returned an empty result (0 periods for toplam_aktifler). Existing data was KEPT and the write was cancelled. Likely cause: data/raw is empty or the parquet file is missing.","Hesaplanan Measure":"Measures Computed","Hiç eksik kalem yok 🎉":"No missing items 🎉","JSON boş veya tanınmayan formatta":"JSON is empty or in an unrecognised format","JSON dosyasını buraya sürükle":"Drag the JSON file here","JSON'da 'donem'/'kayitlar' anahtarları yok":"JSON has no 'donem'/'kayitlar' keys","JSON'da yok":"Not in JSON","Kalem":"Item","Kart bulunamadı":"Card not found","Kart yok":"No cards","Katalog güncellemesi zaten çalışıyor":"A catalog update is already running","Katılım Bankaları":"Participation Banks","Kaydedilemedi:":"Could not save:","Kaydet":"Save","Kaynak:":"Source:","Kendi izinlerinizden geniş bir rol atayamazsınız":"You cannot assign a role with more permissions than your own","Kendi izinlerinizden geniş bir rol tanımlayamazsınız":"You cannot define a role with more permissions than your own","Kendi rolünüzü değiştiremezsiniz":"You cannot change your own role","Kullanıcı":"User","Kullanıcı başına, 24 saatte; 0 = asistan kapalı":"Per user, per 24 hours; 0 = assistant off","Kullanıcı bulunamadı":"User not found","Kullanıcı kendi odak bankasını seçebilir; izni olmayan admin panelindeki varsayılanı görür":"Users can choose their own focus bank; those without it see the admin panel default","Kullanıcılar ve roller":"Users and roles","Kullanıcıları dışa aktarmak için \"Kullanıcılar ve roller\" izni gerekir":"Exporting users requires the \"Users and roles\" permission","Kullanıcıları içe aktarmak için \"Kullanıcılar ve roller\" izni gerekir":"Importing users requires the \"Users and roles\" permission","Kuveyt Türk Rakip Analizi — Admin":"Kuveyt Türk Peer Analysis — Admin","Kuveyt Türk Rakip Analizi — Admin Paneli":"Kuveyt Türk Peer Analysis — Admin Panel","MB) yükleniyor...":"MB) uploading...","Mevcut":"Current","Mevcut computed.json ve veriler.parquet bu ZIP'in içeriğiyle değiştirilecek.":"The existing computed.json and veriler.parquet will be replaced with this ZIP's contents.","Mevcut hesaplanmış veriyi (computed.json + veriler.parquet + yükleme geçmişi) tek bir ZIP olarak indirir.":"Downloads the current computed data (computed.json + veriler.parquet + upload history) as a single ZIP.","Mevcut şifre hatalı":"Current password is incorrect","Mevduat Bankaları":"Deposit Banks","Normalde, hesaplama sonucu mevcut veriden küçükse (dönem/banka/ölçü sayısı düşüyorsa) yazma otomatik olarak durdurulur ve mevcut veri korunur. Bu kutuyu yalnızca azalmanın":"Normally, if the calculated result is smaller than the existing data (fewer periods, banks or measures), the write is stopped automatically and the existing data is kept. Tick this box only when the reduction is","Odak banka değiştirilemedi:":"Could not change the focus bank:","Odak banka seçimi":"Focus bank selection","Odak bankayı uygula":"Apply focus bank","Oluşturulamadı:":"Could not create:","Onayla":"Approve","Orta":"Medium","Orta öncelik":"Medium priority","Oturum geçersiz — tekrar giriş yapın":"Session expired — please sign in again","P.Birimi":"Currency","Parquet merge + pipeline çalışıyor…":"Parquet merge + pipeline running…","Parquet rebuild ediliyor...":"Rebuilding parquet...","Pipeline hatası:":"Pipeline error:","Pipeline çalışıyor (compute_all)...":"Pipeline running (compute_all)...","Pipeline'da bug fix yapıldıktan sonra":"Use it after a pipeline bug fix","Pipeline'daki Banka":"Banks in Pipeline","Planlananlar":"Planned","Proje El Kitabı":"Project Handbook","Proje el kitabı yüklenemedi:":"Could not load the project handbook:","Proje yönetimi sekmeleri":"Project management tabs","Projenin ne olduğu, nasıl çalıştığı, nasıl işletildiği, bugüne kadar ne yapıldığı ve yol haritası —":"What the project is, how it works, how it is operated, what has been done so far and the roadmap — read from","Rakip Bankalar":"Peer Banks","Rakip Bankalar grubuna geri eklendi":"re-added to Peer Banks","Rakip Bankalar grubundan çıkarıldı":"removed from Peer Banks","Raw klasörü taranıyor, parquet rebuild ediliyor...":"Scanning the raw folder, rebuilding parquet...","Rebuild hatası:":"Rebuild error:","Reddet":"Reject","Rekabet Analizi kategorisindeki ölçüleri (ZK sürüklemesi, TÜFEX, LCR vb.) pano, dışa aktarma ve asistanda görme; izni olmayan kullanıcıya bu ölçüler sunucudan hiç gönderilmez":"See the Competitive Analysis measures (reserve drag, TUFEX, LCR etc.) in the dashboard, exports and assistant; users without it never receive these measures from the server","Rekabet Analizi ölçüleri":"Competitive Analysis measures","Rol":"Role","Rol adı 1–40 karakter olmalı":"Role name must be 1–40 characters","Rol adı girin.":"Enter a role name.","Rol bulunamadı":"Role not found","Roller":"Roles","Roller yüklenemedi:":"Could not load roles:","SSH gerekmeden":"without SSH","STRATEJİ":"STRATEJİ","Sadece .json dosyaları kabul edilir":"Only .json files are accepted","Sadece .json kabul edilir":"Only .json is accepted","Sadece .xlsx dosyaları kabul edilir.":"Only .xlsx files are accepted.","Sadece .zip dosyaları kabul edilir":"Only .zip files are accepted","Sadece .zip dosyası kabul edilir":"Only .zip files are accepted","Sadece .zip kabul edilir":"Only .zip is accepted","Sadece Farklı":"Different only","Sadece JSON'da yok":"Not in JSON only","Sadece Yeni":"New only","Sadece kuveytturk.com.tr uzantılı kurumsal e-posta adresleriyle başvuru yapılabilir":"Only corporate email addresses ending in kuveytturk.com.tr can apply","Sadece kuveytturk.com.tr uzantılı kurumsal e-posta adresleriyle üye eklenebilir":"Only corporate email addresses ending in kuveytturk.com.tr can be added","Sayfa bulunamadı":"Page not found","Seçilen banka zaten odak banka.":"The selected bank is already the focus bank.","Sil":"Delete","Silinemedi:":"Could not delete:","Sizden daha geniş yetkili bir kullanıcı üzerinde işlem yapamazsınız":"You cannot act on a user with more permissions than you","Sizden daha geniş yetkili bir rolü düzenleyemezsiniz":"You cannot edit a role with more permissions than yours","Sizden geniş yetkili kullanıcı":"User with broader permissions than you","Sohbet paneli; pano verisi üzerinde soru sorma":"Chat panel; asking questions about dashboard data","Son Güncelleme":"Last Updated","Son Çeyrek":"Latest Quarter","Son Çeyreği Olan Banka":"Banks with Latest Quarter","Son çeyrek (eksik)":"Latest quarter (missing)","Son çeyrek (var)":"Latest quarter (available)","Sonuçlar kaydediliyor...":"Saving results...","Sonuçlar kaydediliyor…":"Saving results…","Sorunlu (Farklı+Yeni+JSON'da yok)":"Problems (Different+New+Not in JSON)","Sunucu Taşıma":"Server Migration","Sunucuda ham arşiv eksikse rebuild, geçmişi mevcut dosyalarla sınırlar — 2026-08-19'da 51 dönem bu şekilde 1 döneme düşmüştü. Kilit bunu durdurur; yalnızca ne yaptığınızdan eminseniz işaretleyin.":"If the raw archive on the server is incomplete, a rebuild limits the history to the files present — on 2026-08-19, 51 periods dropped to 1 this way. The lock prevents this; tick only if you are sure what you are doing.","Sunucuya gönderiliyor…":"Sending to the server…","Süre":"Duration","Süre: 5-10 dakika.":"Duration: 5–10 minutes.","Süre: 5-15 dakika":"Duration: 5–15 minutes","Sürüm sürüm, aşama aşama ne yapıldığı — kısa madde listesi halinde, sadece adminler görür. Üyelere gösterilen \"Yenilikler\" penceresinde sadece en son sürüm (versiyon/tarih olmadan) görünür.":"What was done, release by release and step by step — as a short bullet list, visible to admins only. The \"What's New\" window shown to members only includes the latest release (without version/date). Release notes are in Turkish.","Tablo":"Table","Tamamlandı!":"Done!","Tarih":"Date","Taşınamadı:":"Could not move:","Tek dosya, tek dönem — 27 bankanın tümünü içerir":"One file, one period — contains all 27 banks","Tek seferde":"Upload a ZIP to replace","Tüm /data/raw/ verisi taranacak ve computed.json sıfırdan üretilecek.":"All /data/raw/ data will be scanned and computed.json regenerated from scratch.","Tüm 27 banka × 48 dönem tek ZIP içinde olabilir (~150 MB)":"All 27 banks × 48 periods can be in a single ZIP (~150 MB)","Tüm Bankalar":"All Banks","Tüm Veriden Yeniden Hesapla":"Recalculate from All Data","Tümü":"All","Tümü (Uyuşanlar dahil)":"All (including matches)","Tümünü göster (+":"Show all (+","Uygulanan dosyalar:":"Applied files:","Uygulanıyor…":"Applying…","Uyum Oranı":"Match Rate","Uyuşan":"Matching","Vazgeç":"Cancel","Veri Durumu":"Data Status","Veri Durumu, Veri Yükleme, Yükleme Geçmişi; yeniden hesaplama ve veri yedeği":"Data Status, Data Upload, Upload History; recalculation and data backup","Veri Yöneticisi":"Data Manager","Veri Yükleme":"Data Upload","Veri azalmasına izin ver.":"Allow data reduction.","Veri durumu, yükleme ve yedekler":"Data status, uploads and backups","Veri dışa aktarma (Excel)":"Data export (Excel)","Veri henüz yüklenmemiş.":"No data has been uploaded yet.","Veri var":"Has data","Veriler/Banka Adı/Banka Adı - DD.MM.YYYY.xlsx":"Veriler/Bank Name/Bank Name - DD.MM.YYYY.xlsx","Veriyi":"Move the data","Yapılacak işleri elle ekle, kartları sürükleyerek (ya da ←/→ butonlarıyla) sütunlar arasında taşı. Sadece adminler görür; \"Backlog\" sekmesi YAPILMIŞ sürümlerin günlüğüdür, burası ise henüz yapılmamış işlerin çalışma alanı.":"Add to-dos manually and move cards between columns by dragging (or with the ←/→ buttons). Only admins see this; the \"Backlog\" tab is the log of COMPLETED releases, while this is the workspace for work not done yet.","Yapılacaklar":"To Do","Yapıldı":"Done","Yapılma Aşamasında":"In Progress","Yeni (baseline'da yok)":"New (not in baseline)","Yeni Dosya Yükleme":"Upload New Files","Yeni Grup Oluştur":"Create New Group","Yeni rol adı (ör. Şube Analisti)":"New role name (e.g. Branch Analyst)","Yenile":"Refresh","Yükleme Geçmişi":"Upload History","Yükleniyor…":"Loading…","Yüksek":"High","Yüksek öncelik":"High priority","ZIP Boyutu":"ZIP Size","ZIP Yükle — Tüm Raw Veriyi Yenile":"Upload ZIP — Replace All Raw Data","ZIP açılıyor, dosyalar /data/raw/'a yerleştiriliyor...":"Extracting the ZIP, placing files in /data/raw/...","ZIP dosyasını buraya sürükle":"Drag the ZIP file here","ZIP içinde .xlsx dosyası yok":"The ZIP contains no .xlsx files","ZIP içinde computed.json yok":"The ZIP contains no computed.json","ZIP içindeki üye hesaplarını da uygula":"Also apply the member accounts in the ZIP","ZIP sunucuya yükleniyor...":"Uploading the ZIP to the server...","ZIP upload hatası:":"ZIP upload error:","ZIP yapısı:":"ZIP structure:","ZIP yükleme başlatılacak.":"A ZIP upload will start.","ZIP, mevcut verinin bir kısmını içermiyorsa sonuç küçülür ve yazma durdurulur. Bilinçli bir daraltma yapıyorsanız işaretleyin.":"If the ZIP does not contain part of the existing data, the result shrinks and the write is stopped. Tick this if you are narrowing the data intentionally.","ad.soyad@kuveytturk.com.tr":"name.surname@kuveytturk.com.tr","adında bir grup zaten var":"already exists as a group name","altındaki tüm xlsx dosyalarını tarayıp parquet'i baştan üretir, ardından tüm measure'ları yeniden hesaplar.":"— scans all xlsx files under it, rebuilds the parquet from scratch and then recalculates all measures.","ana sayfaya":"home page","bank_data içinde hiç dolu hücre yok":"bank_data has no filled cells","bank_data yok veya boş":"bank_data is missing or empty","banka":"banks","banka verisi henüz yüklenmedi:":"banks not uploaded yet:","banka,":"banks,","banka:":"banks:","bankası için veri işlendi.":"— data processed.","bilinçli":"intentional","bölümünü kullanın.)":"section.)","catalog yok":"catalog is missing","catalog.json yok":"catalog.json is missing","computed.json bozuk (geçersiz JSON)":"computed.json is corrupt (invalid JSON)","computed.json boş görünüyor (bank_data yok) — içe aktarma iptal edildi":"computed.json looks empty (no bank_data) — import cancelled","computed.json yok":"computed.json is missing","computed.json yok — dışa aktarılacak veri yok. Önce veri yükleyin/rebuild yapın.":"computed.json is missing — nothing to export. Upload data or rebuild first.","computed.json yok — önce /admin/rebuild çalıştırın":"computed.json is missing — run /admin/rebuild first","computed.json yok. Admin paneli üzerinden veri yükleyin.":"computed.json is missing. Upload data from the admin panel.","data/raw altında banka klasörü yok":"There are no bank folders under data/raw","data/raw boş. Önce raw xlsx dosyalarını yükleyin.":"data/raw is empty. Upload the raw xlsx files first.","docs/PROJE_EL_KITABI.md bulunamadı":"docs/PROJE_EL_KITABI.md not found","dosya atlandı":"files skipped","dosya daha":"more files","dosya işlendi (":"files processed (","dosya yüklenecek (toplam":"files will be uploaded (total","dosya yükleniyor (":"files uploading (","dosyasını (örn.":"file produced by the BDR-Kısayol tool (e.g.","gidin ve hard refresh yapın (Ctrl+Shift+R).":"and do a hard refresh (Ctrl+Shift+R).","güncellendi":"updated","ham satır":"raw rows","hazır":"built-in","hücre gösteriliyor":"cells shown","hücre)":"cells)","ile karşılaştırır.":"data.","izni olan kullanıcılar (🔐 Roller sekmesi) menüdeki 🎯 Odak düğmesiyle kendi odak bankalarını seçebilir; izni olmayanlar bu bankayı görür.":"permission (🔐 Roles tab) can choose their own focus bank with the 🎯 Focus button in the menu; others see this bank.","içeriği":"contents","işlendi —":"processed —","işleniyor (dönüştürme + hesaplama + karşılaştırma)...":"processing (conversion + calculation + comparison)...","kalem eksik/kısmi bulundu)":"items missing/partial)","kart)":"cards)","kilitli":"locked","kullanıcı":"users","kullanın. (Yeni veri yüklemek için":". (To upload new data, use the","kök nesne dict değil":"root object is not a dict","manifest.json bulunamadı — bu dosya /admin/export-data ile mi üretildi?":"manifest.json not found — was this file produced by /admin/export-data?","meta yok":"meta is missing","odak banka grubu":"focus bank group","odak banka grubudur, silinemez (önce odak bankayı değiştirin)":"is the focus bank group and cannot be deleted (change the focus bank first)","olduğu durumlarda işaretleyin (ör. hatalı bir bankanın verisini kasten siliyorsanız).":"(e.g. you are deliberately deleting a faulty bank's data).","rolüyle başlar (yalnız pano). Asistan, Ölçü Oluştur, dışa aktarma ve admin paneli erişimi için Rol sütunundan rol seçin; rollerin neleri içerdiği":"role (dashboard only). To give access to the Assistant, Create Measure, exports and the admin panel, choose a role in the Role column; what each role includes is edited in the","satırın tümü CSV'de olur).":"rows are all in the CSV).","sekmesinden düzenlenir.":"tab.","son çeyrek":"latest quarter","sorununu bypass eder.":"issue of xlsx files extracted without the Bloomberg/FactSet add-ins.","tamamen silinir":"are deleted completely","tüm raw veriyi":"all raw data","var":"available","varsayılandır":"default","ve ZIP'tekiyle değiştirilir. Tarayıcı sekmesini kapatma.":"and replaced with the ZIP's contents. Do not close the browser tab.","verisi tüm 27 banka için yüklendi":"data uploaded for all 27 banks","veya tıkla":"or click","wrapper opsiyonel)":"wrapper is optional)","yenilemek için ZIP yükle. ZIP'in içindeki xlsx dosyaları doğrudan okunur — Bloomberg/FactSet eklentileri olmadan extract edilen xlsx'lerin":"at once. The xlsx files inside the ZIP are read directly — this bypasses the","yok":"missing","yükleniyor (":"uploading (","Çeyrek":"Quarter","Çok fazla başarısız giriş denemesi. Lütfen birkaç dakika sonra tekrar deneyin.":"Too many failed sign-in attempts. Please try again in a few minutes.","Ölçü":"Measure","Ölçü Oluştur ve Görünümlerim":"Create Measure and My Views","Ölçü veya banka adında ara…":"Search measure or bank name…","Önce kullanıcılara başka rol verin":"Assign these users another role first","Özel rol":"Custom role","Özel ölçü tanımlama ve görünüm kaydetme":"Defining custom measures and saving views","Özellikler":"Features","Üye hesaplarını da dahil et (users.json)":"Include member accounts too (users.json)","Üyelik Başvuruları":"Membership Applications","Üyelik listesi yüklenemedi:":"Could not load the membership list:","Üyelik onayı, rol atama, şifre sıfırlama, rol tanımları":"Membership approval, role assignment, password reset, role definitions","ölçü, son tarih":"measures, latest date","üzerinden başvurur. Onaylanana kadar giriş yapamazlar. Yeni üyeler":". They cannot sign in until approved. New members start with the","İlk 20 Banka":"Top 20 Banks","İlk 3000 satır gösteriliyor — daraltmak için filtre/arama kullanın veya CSV indirin (":"Showing the first 3000 rows — use the filter/search to narrow down or download the CSV (","İptal":"Cancel","İsim boş olamaz":"Name cannot be empty","İsim veya e-posta ara…":"Search name or email…","İzin":"Permission","İzinleri kopyala:":"Copy permissions:","İşlem başarısız:":"Operation failed:","İşlem sırasında uygulama yavaş cevap verebilir. Tarayıcı sekmesini kapatma.":"The application may respond slowly during the process. Do not close the browser tab.","İşlenen Banka":"Banks Processed","İşlenen Dosya":"Files Processed","Şifre (en az 8 karakter)":"Password (at least 8 characters)","Şifre en az 8 karakter olmalı.":"Password must be at least 8 characters.","Şifreniz güncellendi.":"Your password has been updated.","Şifreyi kendisine iletin.":"Send them the password.","Şu an odak:":"Current focus:","• Dosya:":"• File:","• Mevcut /data/raw/ içeriği TAMAMEN SİLİNECEK":"• The existing /data/raw/ contents will be DELETED COMPLETELY","• Mevcut computed.json otomatik yedeklenir":"• The existing computed.json is backed up automatically","• Mevcut computed.json üzerine yazılacak":"• The existing computed.json will be overwritten","• Pipeline yeniden çalışacak (5-15 dakika)":"• The pipeline will run again (5–15 minutes)","• Süre: ~5-10 dakika":"• Duration: ~5–10 minutes","• İşlem geri alınamaz":"• This cannot be undone","• İşlem üzerine yazma şeklindedir, geri almak için yedeği elle geri yüklemek gerekir":"• This overwrites the data; to undo it you need to restore the backup manually","← Dashboard'a Dön":"← Back to Dashboard","↻ Yenile":"↻ Refresh","⏳ Bekleyen":"⏳ Pending","⏳ Hazırlanıyor...":"⏳ Preparing...","⏳ Onay bekliyor":"⏳ Awaiting approval","⏳ Yükleniyor ve uygulanıyor…":"⏳ Uploading and applying…","⏳ İşleniyor...":"⏳ Processing...","⚠️ Veri dosyası otomatik kurtarıldı":"⚠️ Data file was recovered automatically","⚪ JSON'da yok":"⚪ Not in JSON","✅ Rebuild başarılı":"✅ Rebuild successful","✅ Uyuşuyor":"✅ Matches","✅ Yükleme başarılı":"✅ Upload successful","✅ ZIP yükleme başarılı":"✅ ZIP upload successful","✅ İndirildi:":"✅ Downloaded:","✅ İçe aktarma başarılı":"✅ Import successful","✓ Başarılı":"✓ Successful","✓ Bu işlem computed.json / veriler.parquet / data/raw'a HİÇBİR ŞEKİLDE yazmaz — sadece bir karşılaştırma raporu üretir.":"✓ This NEVER writes to computed.json / veriler.parquet / data/raw — it only produces a comparison report.","✓ Grup oluşturuldu.":"✓ Group created.","✓ Odak banka:":"✓ Focus bank:","✓ Onaylı":"✓ Approved","✓ Rol eklendi — izinleri tablodan düzenleyin.":"✓ Role added — edit its permissions in the table.","✓ Üye eklendi ve onaylandı.":"✓ Member added and approved.","✗ Hata":"✗ Error","✗ Reddedildi":"✗ Rejected","✗ Reddedilen":"✗ Rejected","❌ Farklı":"❌ Different","❌ Rebuild başarısız":"❌ Rebuild failed","❌ Yükleme başarısız":"❌ Upload failed","❌ ZIP yükleme başarısız":"❌ ZIP upload failed","❌ İşlem başarısız":"❌ Operation failed","➕ Üye Ekle (doğrudan onaylı)":"➕ Add Member (pre-approved)","⬆️ İçe Aktar":"⬆️ Import","⬇️ CSV indir":"⬇️ Download CSV","⬇️ Dışa Aktar":"⬇️ Export","⬇️ Veriyi İndir":"⬇️ Download Data","🆕 Yeni":"🆕 New","🎯 Varsayılan Odak Banka":"🎯 Default Focus Bank","🏦 Kuveyt Türk Rakip Analizi — Admin Paneli":"🏦 Kuveyt Türk Peer Analysis — Admin Panel","🏷️ Banka Grupları":"🏷️ Bank Groups","👥 Üyelik Başvuruları":"👥 Membership Applications","📊 Veri Durumu":"📊 Data Status","📋 Ham Kalem Kapsama Özeti (":"📋 Raw Item Coverage Summary (","📖 Proje El Kitabı":"📖 Project Handbook","📜 Yükleme Geçmişi":"📜 Upload History","📤 Veri Yükleme":"📤 Data Upload","📦 ZIP Yükle":"📦 Upload ZIP","🔄 Tüm Veriden Yeniden Hesapla":"🔄 Recalculate from All Data","🔎 Hücre Detayları — kalem kalem tüm sonuçlar (":"🔎 Cell Details — all results item by item (","🔐 Roller":"🔐 Roles","🔑 Şifre Sıfırla":"🔑 Reset Password","🗒️ Görev Panosu":"🗒️ Task Board"}};
+// Sayfa çevirisi (2026-10-02): giriş, başvuru ve admin sayfaları için TR/EN.
+// scripts/i18n_gom.py bu dosyayı sayfanın <head>'ine, önüne KT_I18N = {sozluk, bankalar} koyarak gömer.
+// Pano (index_v30.html) kendi React tabanlı çevirisini kullanır; dil seçimi ortaktır (localStorage 'kt_dil').
+//
+// İngilizce seçiliyken:
+//  - Sayfadaki metin düğümleri ve placeholder/title/alt/aria-label öznitelikleri sözlükle çevrilir
+//    (önce boşlukları sadeleştirilmiş tam eşleşme, yoksa ifade düzeyinde; banka adları korunur).
+//  - Sonradan eklenen içerik (innerHTML, textContent) MutationObserver ile çevrilir.
+//  - alert / confirm / prompt mesajları satır satır çevrilir.
+//  - translate="no" işaretli öğelerin içi (kullanıcı içeriği, sürüm notları, el kitabı) dokunulmaz.
+//  - İlk çeviri bitene kadar gövde gizli tutulur (Türkçe metin bir an görünmesin).
+(function() {
+  var DIL = 'tr';
+  try { DIL = localStorage.getItem('kt_dil') === 'en' ? 'en' : 'tr'; } catch (e) { /* depolama kapalı */ }
+  var EN = DIL === 'en';
+  var veri = window.KT_I18N || {};
+  var SOZLUK = veri.sozluk || {};
+  window.KT_DIL = DIL;
+  window.KT_LOCALE = EN ? 'en-US' : 'tr-TR';
+  window.ktT = function(tr, en) { return EN ? en : tr; };
+  window.ktDilSec = function(d) {
+    try { localStorage.setItem('kt_dil', d); } catch (e) { /* depolama kapalı */ }
+    window.location.reload();
+  };
+
+  // <kt-cevir> (tests/test_i18n.py bu bloğu JS motorunda çalıştırır)
+  var _re = null, _korRe = null, _bellek = {}, _sayi = 0;
+  function _kacis(t) { return t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function _sade(t) { return t.replace(/\s+/g, ' ').trim(); }
+  function cevir(s) {
+    if (!EN || typeof s !== 'string' || !/[A-Za-zÇĞİÖŞÜçğıöşü]/.test(s)) return s;
+    var m = /^(\s*)([\s\S]*?)(\s*)$/.exec(s);
+    var on = m[1], oz = _sade(m[2]), son = m[3];
+    if (Object.prototype.hasOwnProperty.call(_bellek, oz)) return _birlestir(on, oz, _bellek[oz], son);
+    var out = SOZLUK[oz];
+    if (out == null) {
+      if (!_re) {
+        var anahtar = Object.keys(SOZLUK).filter(function(k) { return k.trim(); })
+          .sort(function(a, b) { return b.length - a.length; });
+        _re = new RegExp(anahtar.map(function(k) {
+          return (/^\p{L}/u.test(k) ? '(?<!\\p{L})' : '') + _kacis(k) + (/\p{L}$/u.test(k) ? '(?!\\p{L})' : '');
+        }).join('|'), 'gu');
+        var bankalar = (veri.bankalar || []).slice().sort(function(a, b) { return b.length - a.length; });
+        _korRe = bankalar.length ? new RegExp(bankalar.map(_kacis).join('|'), 'g') : null;
+      }
+      var korunan = [];
+      out = _korRe ? oz.replace(_korRe, function(x) { korunan.push(x); return '\uE000' + (korunan.length - 1) + '\uE001'; }) : oz;
+      // "<X> Hariç Katılım Bankaları" → "Participation Banks excl. <X>"
+      out = out.replace(/(\S+) Hariç (Katılım|Mevduat)( Bankaları)?/g, function(x, ad, seg, tam) {
+        return (seg === 'Katılım' ? 'Participation' : 'Deposit') + (tam ? ' Banks' : '') + ' excl. ' + ad;
+      });
+      out = out.replace(_re, function(x) { return SOZLUK[x]; });
+      out = out.replace(/\uE000(\d+)\uE001/g, function(x, i) { return korunan[+i]; });
+      // Türkçede sayıdan sonra isim tekildir ("1 banka"); İngilizcede 1 için çoğul eki düşer.
+      out = out.replace(/(^|[^\d.,])1 (bank|period|measure|group|page|row|item|file|user|card|cell|role)s\b/g,
+                        function(x, o, ad) { return o + '1 ' + ad; });
+      if (window.__ktEksik && /[ÇĞİÖŞÜçğıöşü]/.test(out)) window.__ktEksik[oz] = out;
+    }
+    if (_sayi < 20000) { _bellek[oz] = out; _sayi++; }
+    return _birlestir(on, oz, out, son);
+  }
+  // Türkçe parça boşlukla başlayıp İngilizcesi noktalamayla başlıyorsa (" üzerinden başvurur." → ". They…")
+  // öndeki boşluk atılır: "/signup ." yerine "/signup.".
+  function _birlestir(on, oz, out, son) {
+    var nokta = /^[.,;:!?)]/;
+    return (nokta.test(out) && !nokta.test(oz) ? '' : on) + out + son;
+  }
+  // <\/kt-cevir>
+  window.ktCevir = cevir;
+  if (!EN) return;
+
+  document.documentElement.lang = 'en';
+  document.documentElement.classList.add('kt-ceviri');
+  var stil = document.createElement('style');
+  stil.textContent = 'html.kt-ceviri body { visibility: hidden; }';
+  (document.head || document.documentElement).appendChild(stil);
+
+  var OZNITELIK = ['placeholder', 'title', 'alt', 'aria-label'];
+  var ATLA = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, NOSCRIPT: 1 };
+  function atlanir(el) {
+    for (; el && el.nodeType === 1; el = el.parentNode) {
+      if (ATLA[el.tagName] || el.getAttribute('translate') === 'no') return true;
+    }
+    return false;
+  }
+  function metinCevir(n) {
+    var v = n.nodeValue, c = cevir(v);
+    if (c !== v) n.nodeValue = c;
+  }
+  function oznitelikCevir(el, ad) {
+    var v = el.getAttribute(ad);
+    if (v) { var c = cevir(v); if (c !== v) el.setAttribute(ad, c); }
+  }
+  function agacCevir(kok) {
+    if (!kok) return;
+    if (kok.nodeType === 3) { if (!atlanir(kok.parentNode)) metinCevir(kok); return; }
+    if (kok.nodeType !== 1 || atlanir(kok)) return;
+    var w = document.createTreeWalker(kok, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+      acceptNode: function(n) {
+        if (n.nodeType === 1 && (ATLA[n.tagName] || n.getAttribute('translate') === 'no')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var n = kok;
+    do {
+      if (n.nodeType === 3) metinCevir(n);
+      else {
+        for (var i = 0; i < OZNITELIK.length; i++) oznitelikCevir(n, OZNITELIK[i]);
+        if (n.tagName === 'INPUT' && /^(button|submit|reset)$/i.test(n.type)) oznitelikCevir(n, 'value');
+      }
+    } while ((n = w.nextNode()));
+  }
+  new MutationObserver(function(kayitlar) {
+    for (var i = 0; i < kayitlar.length; i++) {
+      var k = kayitlar[i];
+      if (k.type === 'childList') {
+        for (var j = 0; j < k.addedNodes.length; j++) agacCevir(k.addedNodes[j]);
+      } else if (k.type === 'characterData') {
+        if (!atlanir(k.target.parentNode)) metinCevir(k.target);
+      } else if (k.type === 'attributes' && !atlanir(k.target)) {
+        oznitelikCevir(k.target, k.attributeName);
+      }
+    }
+  }).observe(document.documentElement, {
+    childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: OZNITELIK
+  });
+
+  function cokSatir(t) { return typeof t === 'string' ? t.split('\n').map(cevir).join('\n') : t; }
+  var _alert = window.alert, _confirm = window.confirm, _prompt = window.prompt;
+  window.alert = function(t) { return _alert.call(window, cokSatir(t)); };
+  window.confirm = function(t) { return _confirm.call(window, cokSatir(t)); };
+  window.prompt = function(t, v) { return _prompt.call(window, cokSatir(t), v); };
+
+  function hazir() {
+    document.title = cevir(document.title);
+    agacCevir(document.body);
+    document.documentElement.classList.remove('kt-ceviri');
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hazir);
+  else hazir();
+  // Güvenlik: bir hata olsa bile sayfa gizli kalmasın.
+  setTimeout(function() { document.documentElement.classList.remove('kt-ceviri'); }, 2000);
+})();
+/*/I18N_SAYFA*/</script>
+<title>Kuveyt Türk Rakip Analizi — Admin</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,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" />
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
 <style>
 :root {
@@ -77,6 +225,13 @@ header .nav-links a {
   transition: background 0.15s;
 }
 header .nav-links a:hover { background: rgba(255,255,255,0.24); }
+/* Dil seçici (2026-10-02) */
+.dil-sec { display: inline-flex; gap: 2px; padding: 3px; margin-left: 16px; border-radius: 999px;
+  background: rgba(0,0,0,0.18); border: 1px solid rgba(255,255,255,0.25); }
+.dil-sec button { border: 0; background: transparent; color: rgba(255,255,255,0.8); cursor: pointer;
+  font: 700 11.5px/1 inherit; letter-spacing: 0.6px; padding: 6px 11px; border-radius: 999px; }
+.dil-sec button:hover:not(.on) { color: #fff; background: rgba(255,255,255,0.14); }
+.dil-sec button.on { background: #fff; color: var(--kt-green-dark); cursor: default; }
 
 .container {
   max-width: 1280px;
@@ -361,6 +516,7 @@ button.secondary:hover { background: var(--hover); }
   line-height: 1.5;
 }
 .tab-panel[hidden] { display: none; }
+.tab-btn[hidden] { display: none !important; }
 
 /* Üyelik filtre çubuğu */
 .user-filter-bar {
@@ -416,6 +572,7 @@ button.secondary:hover { background: var(--hover); }
   header h1 { font-size: 15px; }
   header .nav-links { flex-wrap: wrap; width: 100%; gap: 8px; }
   header .nav-links a { margin-left: 0; }
+  header .dil-sec { margin-left: 0; }
   .container { padding: 0 12px; margin: 16px auto; }
   .panel { padding: 14px 16px; }
   .summary-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
@@ -570,36 +727,190 @@ button.secondary:hover { background: var(--hover); }
   .tab-btn.active { border-color: var(--kt-green); background: #f2f9ee; }
   header .nav-links a { min-height: 40px; display: inline-flex; align-items: center; }
 }
+/* Roller (2026-09-30): izin matrisi — satır izin, sütun rol. */
+.roles-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+.roles-matrix { border-collapse: collapse; font-size: 13px; min-width: 100%; }
+.roles-matrix th, .roles-matrix td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.roles-matrix thead th { background: var(--bg); position: sticky; top: 0; }
+.roles-matrix .perm-col { text-align: left; min-width: 260px; position: sticky; left: 0; background: var(--panel); z-index: 1; }
+.roles-matrix thead .perm-col { background: var(--bg); z-index: 2; }
+.roles-matrix .perm-desc { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.roles-matrix .role-col { text-align: center; min-width: 132px; }
+.roles-matrix .sec-row td { background: var(--hover); font-weight: 600; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.roles-matrix input[type=checkbox] { width: 17px; height: 17px; cursor: pointer; accent-color: var(--kt-green-dark); }
+.roles-matrix input[type=checkbox]:disabled { cursor: not-allowed; }
+.roles-matrix .role-name { width: 118px; padding: 5px 7px; border: 1px solid var(--border); border-radius: 6px; font: inherit; font-weight: 600; text-align: center; }
+.roles-matrix .role-name:disabled { border-color: transparent; background: transparent; color: var(--text); }
+.roles-matrix .role-quota { width: 76px; padding: 5px 7px; border: 1px solid var(--border); border-radius: 6px; font: inherit; text-align: right; font-variant-numeric: tabular-nums; }
+.role-meta { font-size: 11.5px; color: var(--muted); font-weight: 400; margin-top: 3px; }
+.role-col.dirty { background: #fffbeb; }
+.role-btn { padding: 4px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); background: var(--panel); color: var(--text); }
+.role-btn.primary { border-color: var(--primary); background: var(--info-bg); color: var(--primary); }
+.role-btn.danger { border-color: var(--error); background: var(--error-bg); color: var(--error); }
+.role-btn:disabled { opacity: .45; cursor: default; }
+.role-select { padding: 4px 6px; border: 1px solid var(--border); border-radius: 6px; font: inherit; font-size: 12.5px; background: var(--panel); }
+.new-role-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 0 0 14px; }
+.new-role-bar input, .new-role-bar select { padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
+
+/* ============================================================
+   MODERN GÖRÜNÜM (2026-10-03) — pano menüsünün tasarım dili: yeşil gradyan başlık,
+   yuvarlatılmış kartlar, yumuşak gölgeler, Lucide çizgi ikonlar. Satır içi stiller
+   token'ları (--primary, --info-bg …) kullandığı için düğmeler de bu paletle uyumlanır.
+   ============================================================ */
+:root {
+  --bg: #f3f6f1;
+  --panel: #ffffff;
+  --border: #e2e8df;
+  --text: #17231b;
+  --muted: #64748b;
+  --hover: #f1f5ef;
+  --primary: #3d7a28;
+  --primary-hover: #2f6420;
+  --info-bg: #eef6e9;
+  --shadow: 0 1px 2px rgba(23,35,27,0.04), 0 8px 24px rgba(23,35,27,0.05);
+}
+body { background: var(--bg); color: var(--text); }
+.ikon { display: block; flex: none; }
+header {
+  position: sticky; top: 0; z-index: 50;
+  background: linear-gradient(120deg, #4f9a35 0%, var(--kt-green-dark) 55%, #2f5c22 100%);
+  padding: 14px 32px; box-shadow: 0 6px 24px rgba(47,92,34,0.25);
+}
+header h1 { display: flex; align-items: center; gap: 12px; font-size: 17px; font-weight: 700; letter-spacing: -0.1px; }
+header .h1-ikon {
+  display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; flex: none;
+  border-radius: 10px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22);
+}
+header .nav-links { gap: 8px; }
+header .nav-links a {
+  display: inline-flex; align-items: center; gap: 7px; margin-left: 0; padding: 8px 13px; border-radius: 10px;
+  font-weight: 600; font-size: 12.5px; color: #fff;
+  background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.18);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+header .nav-links a:hover { background: rgba(255,255,255,0.2); transform: translateY(-1px); }
+.dil-sec { margin-left: 4px; }
+.container { max-width: 1280px; margin: 24px auto; }
+/* Sekmeler: hamburger menü kutucukları gibi — ikon + etiket, aktif olan dolu yeşil */
+.tabs {
+  display: flex; flex-wrap: nowrap; gap: 4px; padding: 6px; margin-bottom: 20px; border: 1px solid var(--border);
+  border-radius: 14px; background: var(--panel); box-shadow: var(--shadow); overflow-x: auto; scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab-btn {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; padding: 8px 12px; border: 1px solid transparent;
+  border-radius: 10px; background: transparent; color: #475569; font-size: 12.5px; font-weight: 600; white-space: nowrap; flex: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.tab-btn:hover { background: var(--hover); color: var(--text); }
+.tab-btn.active {
+  background: linear-gradient(135deg, #4f9a35, var(--kt-green-dark)); color: #fff; border-color: transparent;
+  box-shadow: 0 4px 12px rgba(69,122,46,0.28); font-weight: 600;
+}
+.tab-btn.active .tab-badge { background: #fff; color: var(--kt-green-dark); }
+/* Kartlar */
+.panel { border-radius: 14px; border: 1px solid var(--border); box-shadow: var(--shadow); padding: 22px 24px; }
+.panel h2 { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; letter-spacing: -0.1px; }
+.panel h2 .icon {
+  display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; flex: none;
+  border-radius: 10px; background: var(--info-bg); color: var(--primary); font-size: 0;
+}
+.summary-card { border-radius: 12px; border: 1px solid var(--border); padding: 14px 16px; }
+.summary-card .label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; }
+.summary-card .value { font-weight: 700; letter-spacing: -0.3px; }
+.summary-card.highlight { background: var(--info-bg); border-color: #c5ddb8; }
+.latest-callout, .result-panel, .force-box { border-radius: 12px; }
+.upload-zone { border-radius: 14px; border-width: 1.5px; background: #fafcf9; transition: border-color 0.15s ease, background 0.15s ease; }
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--primary); background: var(--info-bg); }
+.upload-zone .icon { display: flex; justify-content: center; color: var(--primary); margin-bottom: 10px; }
+button, .btn { border-radius: 9px; font-weight: 600; transition: background 0.15s ease, box-shadow 0.15s ease; }
+button.secondary { border-radius: 9px; }
+input[type=text], input[type=email], input[type=password], input[type=number], select, textarea { border-radius: 9px !important; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary) !important; box-shadow: 0 0 0 3px rgba(61,122,40,0.14); }
+.progress-bar { border-radius: 999px; }
+.history-table, .spot-check-table { border-collapse: separate; border-spacing: 0; }
+.history-table th, .spot-check-table th {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted);
+  background: #f7f9f6;
+}
+.history-table tbody tr:hover td { background: #fafcf9; }
+.history-status { border-radius: 999px; font-weight: 600; }
+.seg-group { border-radius: 10px; }
+.seg-btn { border-radius: 8px; }
+.roles-scroll { border-radius: 12px; }
+/* Dokunmatik ekranlar (telefon + tablet, 2026-10-03): dokunma hedefleri en az ~32 px */
+@media (max-width: 1024px) {
+  .dil-sec button { min-height: 34px; padding: 0 13px; }
+  button, .btn, .seg-btn, .role-btn { min-height: 34px; }
+  .board-btn { min-height: 34px; min-width: 36px; }
+  label:has(> input[type=checkbox]), .force-box { min-height: 36px; align-items: center; }
+  .roles-matrix input[type=checkbox] { width: 28px; height: 28px; }
+  .role-select, select { min-height: 34px; }
+  #new-group-banks label, #groups-content label { min-height: 36px; }
+}
+@media (max-width: 640px) {
+  header { padding: 12px 16px; position: static; }   /* telefonda başlık yüksek: sabitlenmez */
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; overflow: visible; }
+  .tab-btn { flex: initial; }
+  .tab-btn { border: 1px solid var(--border); white-space: normal; text-align: left; }
+  .tab-btn.active { border-color: transparent; }
+  .panel { padding: 16px; }
+}
+
+/* Odak bankaya göre rakip önerisi (2026-10-03) */
+.focus-rakip:empty { display: none; }
+.focus-rakip { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+.focus-rakip-bas { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; font-size: 13px; }
+.focus-rakip-kaynak { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--border); color: var(--muted); }
+.focus-rakip-kaynak.yz { background: #e6f2ee; color: #2f6b58; }
+.focus-rakip-oner { margin-left: auto; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--primary); background: var(--panel);
+  color: var(--primary); cursor: pointer; font-size: 12px; font-weight: 600; min-height: 32px; }
+.focus-rakip-yuk { font-size: 12.5px; color: var(--muted); padding: 6px 0; }
+.focus-rakip-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.focus-rakip-liste li { border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; background: var(--panel); }
+.focus-rakip-liste li.kapali { opacity: .55; }
+.focus-rakip-liste label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: 600; min-height: 28px; }
+.focus-rakip-liste input { width: 16px; height: 16px; margin: 0; flex: none; }
+.focus-rakip-ad { flex: 1; min-width: 0; }
+.focus-rakip-skor { font-size: 11px; font-weight: 700; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; padding: 0 6px; }
+.focus-rakip-gerekce { font-size: 12px; color: var(--muted); margin: 2px 0 0 24px; line-height: 1.4; }
+.focus-rakip-ekle { margin-top: 8px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; min-height: 34px; background: var(--panel); color: inherit; }
+.focus-rakip-uyari { font-size: 12px; color: #b45309; margin: 6px 0; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>🏦 KT Rakip Analizi — Admin Paneli</h1>
+  <h1><span class="h1-ikon"><svg class="ikon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span><span>Kuveyt Türk Rakip Analizi — Admin Paneli</span></h1>
   <div class="nav-links">
     <img src="data:image/png;base64,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" alt="STRATEJİ" style="height:20px;width:auto;display:block;margin-right:8px;vertical-align:middle;">
-    <a href="/">← Dashboard'a Dön</a>
-    <a href="#" onclick="window.location.reload();return false;">↻ Yenile</a>
+    <a href="/"><svg class="ikon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Dashboard'a Dön</span></a>
+    <a href="#" onclick="window.location.reload();return false;"><svg class="ikon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg><span>Yenile</span></a>
+    <span class="dil-sec" role="group" aria-label="Dil / Language" translate="no">
+      <button type="button" data-dil="tr" onclick="ktDilSec('tr')">TR</button>
+      <button type="button" data-dil="en" onclick="ktDilSec('en')">EN</button>
+    </span>
   </div>
 </header>
 
 <div class="container">
 
   <div class="tabs" role="tablist">
-    <button class="tab-btn active" data-tab="durum" onclick="switchTab('durum')">📊 Veri Durumu</button>
-    <button class="tab-btn" data-tab="yukleme" onclick="switchTab('yukleme')">📤 Veri Yükleme</button>
-    <button class="tab-btn" data-tab="uyelik" onclick="switchTab('uyelik')">👥 Üyelik Başvuruları<span class="tab-badge" id="pending-badge" style="display:none"></span></button>
-    <button class="tab-btn" data-tab="gruplar" onclick="switchTab('gruplar')">🏷️ Banka Grupları</button>
-    <button class="tab-btn" data-tab="gecmis" onclick="switchTab('gecmis')">📜 Yükleme Geçmişi</button>
-    <button class="tab-btn" data-tab="pano" onclick="switchTab('pano')">🗒️ Görev Panosu</button>
-    <button class="tab-btn" data-tab="surumler" onclick="switchTab('surumler')">🗂️ Backlog</button>
-    <button class="tab-btn" data-tab="backlog" onclick="switchTab('backlog')">📖 Proje El Kitabı</button>
+    <button class="tab-btn active" data-tab="durum" data-perm="admin_veri" onclick="switchTab('durum')"><svg class="ikon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><span>Veri Durumu</span></button>
+    <button class="tab-btn" data-tab="yukleme" data-perm="admin_veri" onclick="switchTab('yukleme')"><svg class="ikon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg><span>Veri Yükleme</span></button>
+    <button class="tab-btn" data-tab="uyelik" data-perm="admin_kullanicilar" onclick="switchTab('uyelik')"><svg class="ikon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Üyelik Başvuruları</span><span class="tab-badge" id="pending-badge" style="display:none"></span></button>
+    <button class="tab-btn" data-tab="roller" data-perm="admin_kullanicilar" onclick="switchTab('roller')"><svg class="ikon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg><span>Roller</span></button>
+    <button class="tab-btn" data-tab="gruplar" data-perm="admin_gruplar" onclick="switchTab('gruplar')"><svg class="ikon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg><span>Banka Grupları</span></button>
+    <button class="tab-btn" data-tab="gecmis" data-perm="admin_veri" onclick="switchTab('gecmis')"><svg class="ikon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg><span>Yükleme Geçmişi</span></button>
+    <button class="tab-btn" data-tab="pano" data-perm="admin_proje" onclick="switchTab('pano')"><svg class="ikon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7"/><path d="M12 7v4"/><path d="M16 7v9"/></svg><span>Görev Panosu</span></button>
+    <button class="tab-btn" data-tab="surumler" data-perm="admin_proje" onclick="switchTab('surumler')"><svg class="ikon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></svg><span>Backlog</span></button>
+    <button class="tab-btn" data-tab="backlog" data-perm="admin_proje" onclick="switchTab('backlog')"><svg class="ikon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg><span>Proje El Kitabı</span></button>
   </div>
 
   <!-- VERİ DURUMU -->
   <div class="tab-panel" data-tab-panel="durum">
   <div class="panel">
-    <h2><span class="icon">📊</span> Veri Durumu</h2>
+    <h2><span class="icon"><svg class="ikon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span> Veri Durumu</h2>
     <div id="recovery-banner"></div>
     <div id="coverage-content">
       <div class="loading">Yükleniyor…</div>
@@ -611,7 +922,7 @@ button.secondary:hover { background: var(--hover); }
   <div class="tab-panel" data-tab-panel="yukleme" hidden>
   <!-- YENİ DOSYA YÜKLEME -->
   <div class="panel">
-    <h2><span class="icon">📤</span> Yeni Dosya Yükleme</h2>
+    <h2><span class="icon"><svg class="ikon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg></span> Yeni Dosya Yükleme</h2>
     <p style="color:var(--muted);margin:0 0 12px;font-size:13px">
       Beklenen format: <code style="background:var(--hover);padding:2px 6px;border-radius:3px">Banka Adı - DD.MM.YYYY.xlsx</code>
       &nbsp;(örn. <code style="background:var(--hover);padding:2px 6px;border-radius:3px">Kuveyt Türk - 30.09.2025.xlsx</code>)
@@ -619,7 +930,7 @@ button.secondary:hover { background: var(--hover); }
 
     <div class="upload-zone" id="dropZone">
       <input type="file" id="fileInput" accept=".xlsx" multiple />
-      <div class="icon">📁</div>
+      <div class="icon"><svg class="ikon" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><path d="M12 10v6"/><path d="m9 13 3-3 3 3"/></svg></div>
       <p><strong>Dosyaları buraya sürükle</strong> veya tıkla</p>
       <p class="small">Bir veya birden fazla xlsx (1-27 banka tek seferde) — her dosyanın bankası ve çeyreği adından otomatik tespit edilir</p>
     </div>
@@ -650,7 +961,7 @@ button.secondary:hover { background: var(--hover); }
 
   <!-- ZIP UPLOAD - BULK REPLACE -->
   <div class="panel">
-    <h2><span class="icon">📦</span> ZIP Yükle — Tüm Raw Veriyi Yenile</h2>
+    <h2><span class="icon"><svg class="ikon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7"/><path d="m7.5 4.27 9 5.15"/></svg></span> ZIP Yükle — Tüm Raw Veriyi Yenile</h2>
     <p style="color:var(--muted);margin:0 0 12px;font-size:13px">
       Tek seferde <strong>tüm raw veriyi</strong> yenilemek için ZIP yükle. ZIP'in içindeki xlsx dosyaları doğrudan okunur — Bloomberg/FactSet eklentileri olmadan extract edilen xlsx'lerin <code style="background:var(--hover);padding:2px 6px;border-radius:3px">#NAME?</code> sorununu bypass eder.
     </p>
@@ -664,7 +975,7 @@ button.secondary:hover { background: var(--hover); }
 
     <div class="upload-zone" id="zipDropZone">
       <input type="file" id="zipFileInput" accept=".zip" />
-      <div class="icon">📦</div>
+      <div class="icon"><svg class="ikon" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7"/><path d="m7.5 4.27 9 5.15"/></svg></div>
       <p><strong>ZIP dosyasını buraya sürükle</strong> veya tıkla</p>
       <p class="small">Tüm 27 banka × 48 dönem tek ZIP içinde olabilir (~150 MB)</p>
     </div>
@@ -688,7 +999,7 @@ button.secondary:hover { background: var(--hover); }
 
   <!-- TÜM VERİDEN YENİDEN HESAPLA -->
   <div class="panel">
-    <h2><span class="icon">🔄</span> Tüm Veriden Yeniden Hesapla</h2>
+    <h2><span class="icon"><svg class="ikon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></span> Tüm Veriden Yeniden Hesapla</h2>
     <p style="color:var(--muted);margin:0 0 12px;font-size:13px">
       <code style="background:var(--hover);padding:2px 6px;border-radius:3px">/data/raw/</code> altındaki tüm xlsx dosyalarını tarayıp parquet'i baştan üretir, ardından tüm measure'ları yeniden hesaplar. <strong>Pipeline'da bug fix yapıldıktan sonra</strong> kullanın. (Yeni veri yüklemek için <strong>📦 ZIP Yükle</strong> bölümünü kullanın.)
     </p>
@@ -719,7 +1030,7 @@ button.secondary:hover { background: var(--hover); }
 
   <!-- BDR-KISAYOL JSON TEST YÜKLEME - Faz 1, destekleyici/test (2026-09-12) -->
   <div class="panel" style="border:2px dashed #7c3aed;background:#faf5ff">
-    <h2><span class="icon">🧪</span> BDR JSON Test Yükleme <span style="font-size:12px;font-weight:400;color:#7c3aed">(deneysel — üretime yazmaz)</span></h2>
+    <h2><span class="icon"><svg class="ikon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></svg></span> BDR JSON Test Yükleme <span style="font-size:12px;font-weight:400;color:#7c3aed">(deneysel — üretime yazmaz)</span></h2>
     <p style="color:var(--muted);margin:0 0 12px;font-size:13px">
       BDR-Kısayol aracının ürettiği <code style="background:var(--hover);padding:2px 6px;border-radius:3px">&lt;DÖNEM&gt;.json</code> dosyasını
       (örn. <code style="background:var(--hover);padding:2px 6px;border-radius:3px">2026-2C.json</code>) yükleyip, hesaplanan ölçüleri
@@ -731,7 +1042,7 @@ button.secondary:hover { background: var(--hover); }
 
     <div class="upload-zone" id="ciktiDropZone">
       <input type="file" id="ciktiFileInput" accept=".json" />
-      <div class="icon">🧪</div>
+      <div class="icon"><svg class="ikon" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></svg></div>
       <p><strong>JSON dosyasını buraya sürükle</strong> veya tıkla</p>
       <p class="small">Tek dosya, tek dönem — 27 bankanın tümünü içerir</p>
     </div>
@@ -748,7 +1059,7 @@ button.secondary:hover { background: var(--hover); }
 
   <!-- SUNUCU TAŞIMA - EXPORT/IMPORT (2026-08-25) -->
   <div class="panel">
-    <h2><span class="icon">🚚</span> Sunucu Taşıma</h2>
+    <h2><span class="icon"><svg class="ikon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></span> Sunucu Taşıma</h2>
     <p style="color:var(--muted);margin:0 0 16px;font-size:13px">
       Veriyi <strong>SSH gerekmeden</strong>, tarayıcı üzerinden başka bir sunucuya taşımak için.
       Dışa aktar → indirilen ZIP'i hedef sunucunun admin panelinden içe aktar. Elle "proje klasörünü
@@ -779,7 +1090,7 @@ button.secondary:hover { background: var(--hover); }
         </label>
         <div class="upload-zone" id="importDropZone" style="padding:16px">
           <input type="file" id="importFileInput" accept=".zip" />
-          <div class="icon" style="font-size:22px">📥</div>
+          <div class="icon"><svg class="ikon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></div>
           <p style="margin:4px 0"><strong>ZIP dosyasını buraya sürükle</strong> veya tıkla</p>
         </div>
         <div id="import-result" style="margin-top:10px"></div>
@@ -791,11 +1102,12 @@ button.secondary:hover { background: var(--hover); }
   <!-- ÜYELİK BAŞVURULARI -->
   <div class="tab-panel" data-tab-panel="uyelik" hidden>
   <div class="panel">
-    <h2><span class="icon">👥</span> Üyelik Başvuruları</h2>
+    <h2><span class="icon"><svg class="ikon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Üyelik Başvuruları</h2>
     <p style="margin:0 0 12px;font-size:13px;color:var(--muted)">
       Dashboard'u görüntülemek isteyenler <a href="/signup" target="_blank">/signup</a> üzerinden başvurur.
-      Onaylanana kadar giriş yapamazlar. Onaylı bir üyeye "Admin Yap" ile TAM admin panel yetkisi
-      (upload/rebuild/ZIP/üyelik onayı/grup düzenleme) verebilirsin — aksi halde sadece dashboard görüntülerler.
+      Onaylanana kadar giriş yapamazlar. Yeni üyeler <b>Görüntüleyici</b> rolüyle başlar (yalnız pano).
+      Asistan, Ölçü Oluştur, dışa aktarma ve admin paneli erişimi için Rol sütunundan rol seçin;
+      rollerin neleri içerdiği <a href="#" onclick="switchTab('roller');return false;">🔐 Roller</a> sekmesinden düzenlenir.
     </p>
 
     <div style="margin:0 0 20px;padding-bottom:16px;border-bottom:1px solid var(--border)">
@@ -819,15 +1131,52 @@ button.secondary:hover { background: var(--hover); }
   </div>
   </div>
 
+  <!-- ROLLER (2026-09-30) -->
+  <div class="tab-panel" data-tab-panel="roller" hidden>
+  <div class="panel">
+    <h2><span class="icon"><svg class="ikon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span> Roller</h2>
+    <p style="margin:0 0 12px;font-size:13px;color:var(--muted)">
+      Her sütun bir rol. Kutucuklarla özellik ve admin paneli izinlerini açıp kapatın, asistanın günlük soru
+      sınırını girin ve sütunun altındaki <b>Kaydet</b>'e basın. Admin rolünün izinleri kilitlidir.
+      Kendi izinlerinizde olmayan bir izni başka role veremezsiniz. Dışa aktarma izinleri arayüzdeki
+      düğmeleri gizler; pano verisi tarayıcıya zaten geldiği için tam bir veri kısıtı değildir.
+    </p>
+    <div class="new-role-bar">
+      <input type="text" id="new-role-name" placeholder="Yeni rol adı (ör. Şube Analisti)" maxlength="40" style="min-width:220px">
+      <select id="new-role-template" title="Başlangıç izinleri"></select>
+      <button class="role-btn primary" onclick="createRole()">+ Rol Ekle</button>
+      <span id="new-role-result" style="font-size:12.5px"></span>
+    </div>
+    <div id="roles-content"><div class="loading">Yükleniyor…</div></div>
+  </div>
+  </div>
+
   <!-- BANKA GRUPLARI -->
   <div class="tab-panel" data-tab-panel="gruplar" hidden>
   <div class="panel">
-    <h2><span class="icon">🏷️</span> Banka Grupları</h2>
+    <h2><span class="icon"><svg class="ikon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg></span> Banka Grupları</h2>
     <p style="margin:0 0 12px;font-size:13px;color:var(--muted)">
       "Rakip Bankalar" gibi grupların üyeliğini düzenle veya yeni özel bir grup oluştur.
       Değişiklik TÜM kullanıcıların dashboard'unda aynı şekilde görünür (kişiye özel değildir).
       Kaydettikten sonra grup toplamlarının yeniden hesaplanması birkaç saniye sürer.
     </p>
+    <div id="focus-box" style="margin:0 0 16px;padding:14px;border:1px solid var(--primary);border-radius:8px;background:var(--info-bg)">
+      <h3 style="margin:0 0 6px;font-size:14px">🎯 Varsayılan Odak Banka</h3>
+      <p style="margin:0 0 10px;font-size:12.5px;color:var(--muted)">
+        Dashboard bu banka etrafında okunur: vurgu rengi (bankanın marka rengi), "sırası" rozeti, hızlı seçimler, varsayılan
+        seçimler ve AI asistan odak bankayı kullanır. Başka bir banka seçince odak grubu o bankanın adını alır, "… Hariç …
+        Bankaları" grubu o bankanın segmentine göre kurulur ve yapay zeka o bankaya göre "Rakip Bankalar" setini gerekçeleriyle önerir (listeyi işaretleyerek değiştirebilirsiniz).
+        Buradaki seçim <b>varsayılandır</b>: rolünde <b>Odak banka seçimi</b> izni olan kullanıcılar (🔐 Roller sekmesi)
+        menüdeki 🎯 Odak düğmesiyle kendi odak bankalarını seçebilir; izni olmayanlar bu bankayı görür.
+      </p>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <select id="focus-select" onchange="focusRakipOner()" style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;min-width:220px"></select>
+        <button id="focus-apply" onclick="setFocusBank()" style="padding:7px 14px;border-radius:6px;border:1px solid var(--primary);background:var(--panel);color:var(--primary);cursor:pointer;font-size:13px;font-weight:600">Odak bankayı uygula</button>
+        <span id="focus-current" style="font-size:12.5px;color:var(--muted)"></span>
+      </div>
+      <div id="focus-rakip" class="focus-rakip"></div>
+      <div id="focus-result" style="margin-top:10px"></div>
+    </div>
     <div id="groups-content">
       <div class="loading">Yükleniyor…</div>
     </div>
@@ -845,7 +1194,7 @@ button.secondary:hover { background: var(--hover); }
   <!-- YÜKLEME GEÇMİŞİ -->
   <div class="tab-panel" data-tab-panel="gecmis" hidden>
   <div class="panel">
-    <h2><span class="icon">📜</span> Yükleme Geçmişi</h2>
+    <h2><span class="icon"><svg class="ikon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg></span> Yükleme Geçmişi</h2>
     <div id="history-content">
       <div class="loading">Yükleniyor…</div>
     </div>
@@ -855,7 +1204,7 @@ button.secondary:hover { background: var(--hover); }
   <!-- GÖREV PANOSU (kanban) -->
   <div class="tab-panel" data-tab-panel="pano" hidden>
   <div class="panel">
-    <h2><span class="icon">🗒️</span> Görev Panosu</h2>
+    <h2><span class="icon"><svg class="ikon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7"/><path d="M12 7v4"/><path d="M16 7v9"/></svg></span> Görev Panosu</h2>
     <p style="margin:0 0 12px;font-size:13px;color:var(--muted)">
       Yapılacak işleri elle ekle, kartları sürükleyerek (ya da ←/→ butonlarıyla) sütunlar arasında taşı.
       Sadece adminler görür; "Backlog" sekmesi YAPILMIŞ sürümlerin günlüğüdür, burası ise henüz yapılmamış işlerin çalışma alanı.
@@ -869,12 +1218,12 @@ button.secondary:hover { background: var(--hover); }
   <!-- BACKLOG (sürüm günlüğü) -->
   <div class="tab-panel" data-tab-panel="surumler" hidden>
   <div class="panel">
-    <h2><span class="icon">🗂️</span> Backlog</h2>
+    <h2><span class="icon"><svg class="ikon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></svg></span> Backlog</h2>
     <p style="margin:0 0 12px;font-size:13px;color:var(--muted)">
       Sürüm sürüm, aşama aşama ne yapıldığı — kısa madde listesi halinde, sadece adminler görür.
       Üyelere gösterilen "Yenilikler" penceresinde sadece en son sürüm (versiyon/tarih olmadan) görünür.
     </p>
-    <div id="version-log-content">
+    <div id="version-log-content" translate="no">
       <div class="loading">Yükleniyor…</div>
     </div>
   </div>
@@ -883,11 +1232,11 @@ button.secondary:hover { background: var(--hover); }
   <!-- YOL HARİTASI / BACKLOG -->
   <div class="tab-panel" data-tab-panel="backlog" hidden>
   <div class="panel">
-    <h2><span class="icon">📖</span> Proje El Kitabı</h2>
+    <h2><span class="icon"><svg class="ikon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span> Proje El Kitabı</h2>
     <p style="margin:0 0 12px;font-size:13px;color:var(--muted)">
       Projenin ne olduğu, nasıl çalıştığı, nasıl işletildiği, bugüne kadar ne yapıldığı ve yol haritası — <code style="background:var(--hover);padding:2px 6px;border-radius:3px">docs/PROJE_EL_KITABI.md</code>'den okunur, kod ile birlikte deploy edilir.
     </p>
-    <div id="backlog-content" class="markdown-body">
+    <div id="backlog-content" class="markdown-body" translate="no">
       <div class="loading">Yükleniyor…</div>
     </div>
   </div>
@@ -899,13 +1248,17 @@ button.secondary:hover { background: var(--hover); }
 'use strict';
 
 const $ = (id) => document.getElementById(id);
+document.querySelectorAll('.dil-sec button').forEach(b => {
+  const on = b.getAttribute('data-dil') === KT_DIL;
+  b.classList.toggle('on', on); b.setAttribute('aria-pressed', on);
+});
 const fmt = {
-  number: (n) => n == null ? '—' : new Intl.NumberFormat('tr-TR').format(Math.round(n)),
+  number: (n) => n == null ? '—' : new Intl.NumberFormat(KT_LOCALE).format(Math.round(n)),
   pct: (n) => n == null ? '—' : (n * 100).toFixed(1) + '%',
   date: (s) => {
     if (!s) return '—';
     const d = new Date(s);
-    return d.toLocaleDateString('tr-TR', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
+    return d.toLocaleDateString(KT_LOCALE, { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
   },
   bytes: (b) => {
     if (b == null) return '—';
@@ -945,7 +1298,7 @@ async function loadCoverage() {
     renderRecoveryNotice(data.recovery_notice);
     renderCoverage(data, target);
   } catch (err) {
-    target.innerHTML = `<div class="result-panel error">Coverage yüklenemedi: ${err.message}</div>`;
+    target.innerHTML = `<div class="result-panel error">Coverage yüklenemedi: ${escapeHtml(err.message)}</div>`;
   }
 }
 
@@ -1240,7 +1593,7 @@ function showError(msg) {
   $('upload-result').innerHTML = `
     <div class="result-panel error">
       <h3>❌ Yükleme başarısız</h3>
-      <pre style="white-space:pre-wrap;margin:0;font-size:12px;color:var(--error)">${msg}</pre>
+      <pre style="white-space:pre-wrap;margin:0;font-size:12px;color:var(--error)">${escapeHtml(msg)}</pre>
     </div>
   `;
 }
@@ -1377,7 +1730,7 @@ function showZipError(msg) {
   $('zip-result').innerHTML = `
     <div class="result-panel error">
       <h3>❌ ZIP yükleme başarısız</h3>
-      <pre style="white-space:pre-wrap;margin:0;font-size:12px;color:var(--error)">${msg}</pre>
+      <pre style="white-space:pre-wrap;margin:0;font-size:12px;color:var(--error)">${escapeHtml(msg)}</pre>
     </div>
   `;
 }
@@ -1451,8 +1804,8 @@ function showCiktiSuccess(data) {
     const oranStr = (k.eksik_oran * 100).toFixed(0);
     return `
     <tr>
-      <td class="mono" style="font-size:12px">${k.tablo}</td>
-      <td class="mono" style="font-size:12px">${k.kalem}</td>
+      <td class="mono" style="font-size:12px" translate="no">${k.tablo}</td>
+      <td class="mono" style="font-size:12px" translate="no">${k.kalem}</td>
       <td>${k.pb}</td>
       <td class="value">${eksik}/${k.aranan}</td>
       <td class="value">%${oranStr}</td>
@@ -1462,7 +1815,7 @@ function showCiktiSuccess(data) {
   $('cikti-result').innerHTML = `
     <div class="result-panel success">
       <h3>✓ ${data.donem} işlendi — ${data.banka_sayisi} banka, ${data.satir_sayisi} ham satır</h3>
-      <p style="font-size:13px;color:var(--muted)">${data.not}</p>
+      <p style="font-size:13px;color:var(--muted)" translate="no">${data.not}</p>
       <div class="summary-grid" style="margin-top:12px">
         <div class="summary-card success">
           <div class="label">Uyuşan</div>
@@ -1489,7 +1842,7 @@ function showCiktiSuccess(data) {
       <h4 style="margin:20px 0 6px;font-size:14px">📋 Ham Kalem Kapsama Özeti (${data.kalem_kapsama.length} kalem eksik/kısmi bulundu)</h4>
       <p style="font-size:12px;color:var(--muted);margin:0 0 8px">
         Bir kalemin burada listelenmesi HER ZAMAN hata anlamına gelmez — bazı ölçüler
-        (ör. <span class="mono" style="font-size:12px">Krediler Ve Alacaklar (Toplam)</span>)
+        (ör. <span class="mono" style="font-size:12px" translate="no">Krediler Ve Alacaklar (Toplam)</span>)
         legacy bir kaleme otomatik düşer (fallback) ve hücre sonucu yine doğru çıkar.
         Aşağıdaki hücre tablosundaki "eksik kalemler" sütunu, hangi eksiğin GERÇEKTEN o
         hücreyi bozduğunu gösterir.
@@ -1542,12 +1895,12 @@ function renderCiktiSatirlar() {
 
   const html = rows.slice(0, 3000).map(r => {
     const eksik = (r.eksik_kalemler || []).map(e =>
-      `<span class="mono" style="font-size:11px;background:var(--hover);padding:1px 5px;border-radius:3px;margin:1px;display:inline-block">${e.tablo}: ${e.kalem}${e.pb !== 'Toplam' ? ' (' + e.pb + ')' : ''}</span>`
+      `<span class="mono" translate="no" style="font-size:11px;background:var(--hover);padding:1px 5px;border-radius:3px;margin:1px;display:inline-block">${e.tablo}: ${e.kalem}${e.pb !== 'Toplam' ? ' (' + e.pb + ')' : ''}</span>`
     ).join(' ');
     return `
     <tr>
       <td>${CIKTI_DURUM_ETIKET[r.durum] || r.durum}</td>
-      <td class="mono" style="font-size:12px">${r.measure}</td>
+      <td class="mono" style="font-size:12px" translate="no">${r.measure}</td>
       <td>${r.banka}</td>
       <td>${r.tarih}</td>
       <td class="value">${fmt.number(r.json_degeri)}</td>
@@ -1590,7 +1943,7 @@ function showCiktiError(msg) {
   $('cikti-result').innerHTML = `
     <div class="result-panel error">
       <h3>❌ İşlem başarısız</h3>
-      <pre style="white-space:pre-wrap;margin:0;font-size:12px;color:var(--error)">${msg}</pre>
+      <pre style="white-space:pre-wrap;margin:0;font-size:12px;color:var(--error)">${escapeHtml(msg)}</pre>
     </div>
   `;
 }
@@ -1704,7 +2057,7 @@ function showRebuildError(msg) {
   $('rebuild-result').innerHTML = `
     <div class="result-panel error">
       <h3>❌ Rebuild başarısız</h3>
-      <pre style="white-space:pre-wrap;margin:0;font-size:12px;color:var(--error)">${msg}</pre>
+      <pre style="white-space:pre-wrap;margin:0;font-size:12px;color:var(--error)">${escapeHtml(msg)}</pre>
     </div>
   `;
 }
@@ -1759,7 +2112,7 @@ async function handleImportZip(file) {
         <div style="margin-top:6px;color:var(--muted)">
           Kaynak: ${manifest.bank_count ?? '?'} banka, ${manifest.measure_count ?? '?'} ölçü,
           son tarih ${manifest.date_range ? manifest.date_range[1] : '?'}
-          (dışa aktarım zamanı: ${manifest.exported_at ? new Date(manifest.exported_at).toLocaleString('tr-TR') : '?'})
+          (dışa aktarım zamanı: ${manifest.exported_at ? new Date(manifest.exported_at).toLocaleString(KT_LOCALE) : '?'})
         </div>
         <div style="margin-top:6px">Uygulanan dosyalar: ${(data.applied_files || []).join(', ')}</div>
         <p style="margin:10px 0 0;font-size:12px">Dashboard'da güncel veriyi görmek için <a href="/" target="_blank">ana sayfaya</a> gidin ve hard refresh yapın (Ctrl+Shift+R).</p>
@@ -1950,18 +2303,21 @@ function renderUsersTable() {
     } else {
       actions = `<button onclick="setUserStatus(${u.id}, 'approve')" style="padding:4px 10px;border-radius:5px;border:1px solid var(--success);background:var(--success-bg);color:var(--success);cursor:pointer;font-size:12px">Onayla</button>`;
     }
-    // Rol değiştirme — SADECE onaylı kullanıcılar için anlamlı (2026-08-12).
-    // admin rolü Basic Auth hesabıyla EŞ DEĞER tam yetki verir (upload/
-    // rebuild/ZIP/üyelik onayı/grup düzenleme) — bkz. app.py::require_admin_access.
+    // Rol (2026-09-30): onaylı kullanıcılarda rol seçici. Kendi izinlerinizi
+    // aşan roller ve sizden geniş yetkili kullanıcılar seçilemez (sunucu da
+    // aynı kuralı uygular).
     let roleCell, roleAction = '';
     if (u.status === 'approved') {
-      const isAdmin = u.role === 'admin';
-      roleCell = isAdmin
-        ? `<span class="history-status ok">👑 Admin</span>`
-        : `<span class="history-status" style="background:var(--bg);color:var(--muted)">Üye</span>`;
-      roleAction = isAdmin
-        ? `<button onclick="setUserRole(${u.id}, 'member')" style="padding:4px 10px;border-radius:5px;border:1px solid var(--warning);background:var(--warning-bg);color:var(--warning);cursor:pointer;font-size:12px;margin-left:6px">Admin Yetkisini Kaldır</button>`
-        : `<button onclick="setUserRole(${u.id}, 'admin')" style="padding:4px 10px;border-radius:5px;border:1px solid var(--primary);background:var(--info-bg);color:var(--primary);cursor:pointer;font-size:12px;margin-left:6px">Admin Yap</button>`;
+      const cur = _roles.find(r => r.id === u.role);
+      const self = u.email === _myIdentity;
+      const canTouch = !self && (!cur || cur.izinler.every(p => _myPerms.has(p)));
+      const opts = _roles.map(r => {
+        const ok = r.izinler.every(p => _myPerms.has(p));
+        return `<option value="${r.id}"${r.id === u.role ? ' selected' : ''}${ok ? '' : ' disabled'}>${escapeHtml(r.ad)}</option>`;
+      }).join('');
+      roleCell = _roles.length
+        ? `<select class="role-select" ${canTouch ? '' : `disabled title="${self ? 'Kendi rolünüzü değiştiremezsiniz' : 'Sizden geniş yetkili kullanıcı'}"`} onchange="setUserRole(${u.id}, this.value, this)">${opts}</select>`
+        : escapeHtml(u.role);
     } else {
       roleCell = `<span style="color:var(--muted);font-size:12px">—</span>`;
     }
@@ -1974,8 +2330,8 @@ function renderUsersTable() {
       : '';
     html += `<tr>
       <td>${fmt.date(u.created_at)}</td>
-      <td>${escapeHtml(u.name)}</td>
-      <td>${escapeHtml(u.email)}</td>
+      <td translate="no">${escapeHtml(u.name)}</td>
+      <td translate="no">${escapeHtml(u.email)}</td>
       <td><span class="history-status ${info.cls}">${info.label}</span></td>
       <td>${roleCell}</td>
       <td>${actions}${roleAction}${resetAction}</td>
@@ -1998,11 +2354,12 @@ async function setUserStatus(userId, action) {
   }
 }
 
-async function setUserRole(userId, role) {
-  const msg = role === 'admin'
-    ? 'Bu kullanıcıya TAM admin panel yetkisi (upload/rebuild/ZIP/üyelik onayı/grup düzenleme) verilecek. Onaylıyor musunuz?'
-    : 'Bu kullanıcının admin yetkisi kaldırılacak, sadece dashboard görüntüleme yetkisi kalacak. Onaylıyor musunuz?';
-  if (!confirm(msg)) return;
+async function setUserRole(userId, role, selectEl) {
+  const r0 = _roles.find(r => r.id === role);
+  const rolAd = r0 ? r0.ad : role;
+  const msg = ktT(`Kullanıcının rolü "${rolAd}" olarak değiştirilecek. Onaylıyor musunuz?`,
+                  `The user's role will be changed to "${ktCevir(rolAd)}". Do you confirm?`);
+  if (!confirm(msg)) { if (selectEl) renderUsersTable(); return; }
   try {
     const r = await fetch(`/api/admin/users/${userId}/role`, {
       method: 'POST',
@@ -2013,14 +2370,173 @@ async function setUserRole(userId, role) {
       const err = await r.json().catch(() => ({}));
       throw new Error(err.detail || `HTTP ${r.status}`);
     }
-    loadUsers();
+    await loadUsers();
+    loadRoles();
   } catch (err) {
     alert('İşlem başarısız: ' + err.message);
+    renderUsersTable();
+  }
+}
+
+// ============================================================
+// ROLLER (2026-09-30)
+// ============================================================
+let _roles = [];
+let _permCatalog = [];
+let _myPerms = new Set();
+let _myIdentity = '';   // /api/admin/me — kendi satırında rol seçici kapalı
+let _roleDrafts = {};   // rol id → { ad, izinler:Set, asistan_gunluk } (kaydedilmemiş değişiklik)
+
+async function loadRoles() {
+  const target = $('roles-content');
+  try {
+    const r = await fetch('/api/admin/roles');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    _roles = data.roles || [];
+    _permCatalog = data.izinler || [];
+    _myPerms = new Set(data.benim_izinlerim || []);
+    _roleDrafts = {};
+    renderRoles();
+    if (_usersCache.length) renderUsersTable();
+  } catch (err) {
+    target.innerHTML = `<div class="result-panel error">Roller yüklenemedi: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function roleDraft(role) {
+  return _roleDrafts[role.id] || { ad: role.ad, izinler: new Set(role.izinler), asistan_gunluk: role.asistan_gunluk };
+}
+function roleEditable(role) {
+  return role.izinler.every(p => _myPerms.has(p));
+}
+function roleDirty(role) {
+  const d = _roleDrafts[role.id];
+  if (!d) return false;
+  const a = [...d.izinler].sort().join(','), b = [...role.izinler].sort().join(',');
+  return d.ad !== role.ad || a !== b || Number(d.asistan_gunluk) !== role.asistan_gunluk;
+}
+
+function renderRoles() {
+  const target = $('roles-content');
+  const tpl = $('new-role-template');
+  tpl.innerHTML = '<option value="">Boş izinlerle başla</option>' +
+    _roles.map(r => `<option value="${r.id}">İzinleri kopyala: ${escapeHtml(r.ad)}</option>`).join('');
+  let html = `<div class="roles-scroll"><table class="roles-matrix"><thead><tr><th class="perm-col">İzin</th>`;
+  for (const r of _roles) {
+    const d = roleDraft(r), ed = roleEditable(r) && r.id !== 'admin';
+    html += `<th class="role-col${roleDirty(r) ? ' dirty' : ''}">
+      <input class="role-name" value="${escapeAttr(r.hazir && d.ad === r.ad ? ktCevir(d.ad) : d.ad)}" ${roleEditable(r) ? '' : 'disabled'} maxlength="40"
+        oninput="editRole('${r.id}', 'ad', this.value)" title="${r.hazir ? 'Hazır rol' : 'Özel rol'}">
+      <div class="role-meta">${r.kullanici} kullanıcı${r.hazir ? ' · hazır' : ''}${ed ? '' : ' · kilitli'}</div></th>`;
+  }
+  html += `</tr></thead><tbody>`;
+  let sec = '';
+  for (const p of _permCatalog) {
+    if (p.bolum !== sec) {
+      sec = p.bolum;
+      html += `<tr class="sec-row"><td class="perm-col">${escapeHtml(sec)}</td>${_roles.map(() => '<td></td>').join('')}</tr>`;
+    }
+    html += `<tr><td class="perm-col">${escapeHtml(p.ad)}<div class="perm-desc">${escapeHtml(p.aciklama)}</div></td>`;
+    for (const r of _roles) {
+      const d = roleDraft(r);
+      const dis = r.id === 'admin' || !roleEditable(r) || !_myPerms.has(p.id);
+      html += `<td class="role-col${roleDirty(r) ? ' dirty' : ''}"><input type="checkbox" ${d.izinler.has(p.id) ? 'checked' : ''} ${dis ? 'disabled' : ''}
+        aria-label="${escapeAttr(r.ad + ': ' + p.ad)}" onchange="editRolePerm('${r.id}', '${p.id}', this.checked)"></td>`;
+    }
+    html += `</tr>`;
+  }
+  html += `<tr><td class="perm-col">Asistan günlük soru sınırı<div class="perm-desc">Kullanıcı başına, 24 saatte; 0 = asistan kapalı</div></td>`;
+  for (const r of _roles) {
+    const d = roleDraft(r);
+    html += `<td class="role-col${roleDirty(r) ? ' dirty' : ''}"><input class="role-quota" type="number" min="0" max="2000" step="1"
+      value="${d.asistan_gunluk}" ${roleEditable(r) ? '' : 'disabled'} oninput="editRole('${r.id}', 'asistan_gunluk', this.value)"></td>`;
+  }
+  html += `</tr><tr><td class="perm-col"></td>`;
+  for (const r of _roles) {
+    const dirty = roleDirty(r);
+    html += `<td class="role-col"><div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+      <button class="role-btn primary" id="role-save-${r.id}" ${dirty ? '' : 'disabled'} onclick="saveRole('${r.id}')">Kaydet</button>
+      ${dirty ? `<button class="role-btn" onclick="resetRole('${r.id}')">Vazgeç</button>` : ''}
+      ${!r.hazir && roleEditable(r) ? `<button class="role-btn danger" ${r.kullanici ? 'disabled title="Önce kullanıcılara başka rol verin"' : ''} onclick="deleteRole('${r.id}')">Sil</button>` : ''}
+    </div></td>`;
+  }
+  html += `</tr></tbody></table></div><div id="roles-result" style="margin-top:10px"></div>`;
+  target.innerHTML = html;
+}
+
+function editRole(id, key, value) {
+  // Metin/sayı girişinde tablo yeniden çizilmez (odak kaybolmasın); yalnız Kaydet düğmesi güncellenir.
+  const role = _roles.find(r => r.id === id);
+  const d = roleDraft(role);
+  d[key] = value;
+  _roleDrafts[id] = d;
+  const btn = $('role-save-' + id);
+  if (btn) btn.disabled = !roleDirty(role);
+}
+function editRolePerm(id, perm, on) {
+  const role = _roles.find(r => r.id === id);
+  const d = roleDraft(role);
+  if (on) d.izinler.add(perm); else d.izinler.delete(perm);
+  _roleDrafts[id] = d;
+  renderRoles();
+}
+function resetRole(id) { delete _roleDrafts[id]; renderRoles(); }
+
+async function saveRole(id) {
+  const role = _roles.find(r => r.id === id);
+  const d = roleDraft(role);
+  const out = $('roles-result');
+  try {
+    const r = await fetch(`/api/admin/roles/${encodeURIComponent(id)}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ad: d.ad.trim(), izinler: [...d.izinler], asistan_gunluk: Number(d.asistan_gunluk) }),
+    });
+    if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || `HTTP ${r.status}`); }
+    await loadRoles();
+    $('roles-result').innerHTML = `<div class="result-panel success" style="padding:10px 14px">✓ "${escapeHtml(d.ad)}" kaydedildi. Kullanıcılar değişikliği sayfayı yenilediğinde görür.</div>`;
+  } catch (err) {
+    out.innerHTML = `<div class="result-panel error">Kaydedilemedi: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+async function createRole() {
+  const ad = $('new-role-name').value.trim();
+  const tplId = $('new-role-template').value;
+  const out = $('new-role-result');
+  if (!ad) { out.innerHTML = '<span style="color:var(--error)">Rol adı girin.</span>'; return; }
+  const tpl = _roles.find(r => r.id === tplId);
+  const izinler = tpl ? tpl.izinler.filter(p => _myPerms.has(p)) : [];
+  try {
+    const r = await fetch('/api/admin/roles', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ad, izinler, asistan_gunluk: tpl ? tpl.asistan_gunluk : 0 }),
+    });
+    if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || `HTTP ${r.status}`); }
+    $('new-role-name').value = '';
+    out.innerHTML = '<span style="color:var(--success)">✓ Rol eklendi — izinleri tablodan düzenleyin.</span>';
+    await loadRoles();
+  } catch (err) {
+    out.innerHTML = `<span style="color:var(--error)">${escapeHtml(err.message)}</span>`;
+  }
+}
+
+async function deleteRole(id) {
+  const role = _roles.find(r => r.id === id);
+  if (!confirm(ktT(`"${role.ad}" rolü silinecek. Onaylıyor musunuz?`,
+                   `The "${ktCevir(role.ad)}" role will be deleted. Do you confirm?`))) return;
+  try {
+    const r = await fetch(`/api/admin/roles/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || `HTTP ${r.status}`); }
+    await loadRoles();
+  } catch (err) {
+    $('roles-result').innerHTML = `<div class="result-panel error">Silinemedi: ${escapeHtml(err.message)}</div>`;
   }
 }
 
 async function resetUserPassword(userId, userName) {
-  const newPassword = prompt(`${userName} için yeni şifre belirleyin (en az 8 karakter).\nBu şifreyi kendisine ayrıca iletmeniz gerekir.`);
+  const newPassword = prompt(ktT(`${userName} için yeni şifre belirleyin (en az 8 karakter).\nBu şifreyi kendisine ayrıca iletmeniz gerekir.`,
+                                 `Set a new password for ${userName} (at least 8 characters).\nYou will need to send this password to them separately.`));
   if (newPassword === null) return;  // vazgeçildi
   if (newPassword.length < 8) {
     alert('Şifre en az 8 karakter olmalı.');
@@ -2036,7 +2552,8 @@ async function resetUserPassword(userId, userName) {
       const err = await r.json().catch(() => ({}));
       throw new Error(err.detail || `HTTP ${r.status}`);
     }
-    alert(`${userName} için şifre güncellendi. Yeni şifreyi kendisine iletin.`);
+    alert(ktT(`${userName} için şifre güncellendi. Yeni şifreyi kendisine iletin.`,
+              `Password updated for ${userName}. Send them the new password.`));
   } catch (err) {
     alert('İşlem başarısız: ' + err.message);
   }
@@ -2054,10 +2571,143 @@ async function loadGroups() {
     const r = await fetch('/api/admin/groups');
     if (!r.ok) throw new Error('HTTP ' + r.status);
     _groupsCache = await r.json();
+    renderFocus();
     renderGroups();
     renderNewGroupBanks();
   } catch (err) {
     target.innerHTML = `<div class="result-panel error">Gruplar yüklenemedi: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function renderFocus() {
+  const g = _groupsCache;
+  const sel = $('focus-select');
+  if (!g || !sel) return;
+  sel.innerHTML = g.all_banks.map(b =>
+    `<option value="${escapeHtml(b)}" ${b === g.focus ? 'selected' : ''}>${escapeHtml(b)}</option>`).join('');
+  $('focus-current').textContent = 'Şu an odak: ' + g.focus;
+  _focusRakip = { banka: g.focus, oneri: null, secili: ((g.members || {})['Rakip Bankalar'] || []).slice() };
+  renderFocusRakip();
+}
+
+// Odak bankaya göre rakip önerisi (2026-10-03): banka seçilince yapay zeka o bankaya göre "Rakip Bankalar"
+// setini gerekçeleriyle önerir; admin işaretleyip ekleyip çıkarabilir, "Odak bankayı uygula" listeyle kaydeder.
+let _focusRakip = { banka: null, oneri: null, secili: [] };
+let _focusRakipNo = 0;
+
+function _mevcutRakipler() {
+  return (((_groupsCache || {}).members || {})['Rakip Bankalar'] || []).slice();
+}
+
+async function focusRakipOner(zorla) {
+  const bank = $('focus-select').value;
+  const g = _groupsCache || {};
+  if (!zorla && bank === g.focus) {
+    _focusRakip = { banka: bank, oneri: null, secili: _mevcutRakipler() };
+    renderFocusRakip();
+    return;
+  }
+  const no = ++_focusRakipNo;
+  _focusRakip = { banka: bank, oneri: { yukleniyor: true }, secili: [] };
+  renderFocusRakip();
+  try {
+    const r = await fetch('/api/admin/rakip-oneri?banka=' + encodeURIComponent(bank) + (window.KT_DIL === 'en' ? '&dil=en' : ''));
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.detail || `HTTP ${r.status}`);
+    if (no !== _focusRakipNo) return;
+    _focusRakip = { banka: bank, oneri: j, secili: (j.oneriler || []).map(o => o.banka) };
+  } catch (err) {
+    if (no !== _focusRakipNo) return;
+    _focusRakip = { banka: bank, oneri: { hata: err.message }, secili: bank === g.focus ? _mevcutRakipler() : [] };
+  }
+  renderFocusRakip();
+}
+
+function focusRakipDegistir(banka, acik) {
+  const l = _focusRakip.secili.filter(b => b !== banka);
+  if (acik) l.push(banka);
+  _focusRakip.secili = acik ? (_focusRakip.secili.includes(banka) ? _focusRakip.secili : l) : l;
+  renderFocusRakip();
+}
+
+function renderFocusRakip() {
+  const el = $('focus-rakip');
+  const g = _groupsCache;
+  if (!el || !g) return;
+  const { banka, oneri, secili } = _focusRakip;
+  if (oneri && oneri.yukleniyor) {
+    el.innerHTML = `<div class="focus-rakip-bas"><b>Rakip Bankalar · ${escapeHtml(banka)}</b></div>
+      <div class="focus-rakip-yuk">${ktT('✨ Yapay zeka rakipleri seçiyor…', '✨ AI is choosing peer banks…')}</div>`;
+    return;
+  }
+  const oneriler = (oneri && oneri.oneriler) || [];
+  const gerekce = Object.fromEntries(oneriler.map(o => [o.banka, o]));
+  const gosterilen = oneriler.length ? oneriler.map(o => o.banka) : (banka === g.focus ? _mevcutRakipler() : []);
+  secili.forEach(b => { if (!gosterilen.includes(b)) gosterilen.push(b); });
+  const eklenebilir = (g.all_banks || []).filter(b => b !== banka && !gosterilen.includes(b));
+  const kaynak = oneri && oneri.oneriler
+    ? `<span class="focus-rakip-kaynak${oneri.kaynak === 'yapay_zeka' ? ' yz' : ''}">${oneri.kaynak === 'yapay_zeka'
+        ? ktT('✨ Yapay zeka önerisi', '✨ AI suggestion') : ktT('Veriye dayalı öneri', 'Data-based suggestion')}</span>` : '';
+  el.innerHTML = `<div class="focus-rakip-bas"><b>Rakip Bankalar · ${escapeHtml(banka)}</b>${kaynak}
+      <button type="button" class="focus-rakip-oner" onclick="focusRakipOner(true)">${oneriler.length
+        ? ktT('↻ Yeniden öner', '↻ Suggest again') : ktT('✨ Yapay zekadan öneri al', '✨ Get AI suggestion')}</button></div>
+    ${oneri && oneri.hata ? `<div class="result-panel error" style="padding:8px 12px">${escapeHtml(oneri.hata)}</div>` : ''}
+    ${oneri && oneri.uyari ? `<div class="focus-rakip-uyari">${escapeHtml(oneri.uyari)}</div>` : ''}
+    <ul class="focus-rakip-liste">${gosterilen.map(b => {
+      const o = gerekce[b], acik = secili.includes(b);
+      return `<li class="${acik ? '' : 'kapali'}"><label><input type="checkbox" ${acik ? 'checked' : ''}
+          onchange="focusRakipDegistir(${escapeHtml(JSON.stringify(b))}, this.checked)">
+          <span class="focus-rakip-ad">${escapeHtml(b)}</span>${o && o.skor != null ? `<span class="focus-rakip-skor" title="${ktT('Veriden benzerlik skoru (0-100)', 'Data-based similarity score (0-100)')}">${Math.round(o.skor)}</span>` : ''}</label>
+        ${o && o.gerekce ? `<div class="focus-rakip-gerekce">${escapeHtml(o.gerekce)}</div>` : ''}</li>`;
+    }).join('')}</ul>
+    ${eklenebilir.length ? `<select class="focus-rakip-ekle" onchange="if (this.value) focusRakipDegistir(this.value, true)">
+        <option value="">${ktT('+ Rakip ekle…', '+ Add peer…')}</option>
+        ${eklenebilir.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('')}</select>` : ''}
+    ${secili.length ? '' : `<div class="focus-rakip-uyari">${ktT('En az bir rakip banka seçin.', 'Select at least one peer bank.')}</div>`}`;
+}
+
+async function setFocusBank() {
+  const sel = $('focus-select');
+  const bank = sel.value;
+  const resultEl = $('focus-result');
+  const ayniOdak = bank === (_groupsCache && _groupsCache.focus);
+  const rakipler = _focusRakip.banka === bank ? _focusRakip.secili.filter(b => b !== bank) : [];
+  const mevcut = _mevcutRakipler();
+  const rakipDegisti = rakipler.length && (rakipler.length !== mevcut.length || rakipler.some((b, i) => b !== mevcut[i]));
+  if (!bank || (ayniOdak && !rakipDegisti)) {
+    resultEl.innerHTML = `<div class="result-panel" style="padding:8px 12px">Seçilen banka zaten odak banka.</div>`;
+    return;
+  }
+  if (_focusRakip.oneri && _focusRakip.oneri.yukleniyor) return;
+  if (!rakipler.length) {
+    resultEl.innerHTML = `<div class="result-panel error" style="padding:8px 12px">${ktT('En az bir rakip banka seçin.', 'Select at least one peer bank.')}</div>`;
+    return;
+  }
+  const soru = ayniOdak
+    ? ktT(`"Rakip Bankalar" grubu güncellensin mi? (${rakipler.join(', ')}) Grup değerleri yeniden hesaplanır.`,
+          `Update the "Peer Banks" group? (${rakipler.join(', ')}) Group values are recalculated.`)
+    : ktT(`Odak banka "${bank}" olarak değiştirilsin mi? Rakip Bankalar: ${rakipler.join(', ')}. Grup yapısı yeniden kurulur ve grup değerleri yeniden hesaplanır (birkaç saniye).`,
+          `Change the focus bank to "${bank}"? Peer Banks: ${rakipler.join(', ')}. The group structure is rebuilt and group values are recalculated (a few seconds).`);
+  if (!confirm(soru)) return;
+  const btn = $('focus-apply');
+  btn.disabled = true; btn.textContent = 'Uygulanıyor…';
+  try {
+    const r = await fetch('/api/admin/focus-bank', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bank, rakipler }),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.detail || `HTTP ${r.status}`);
+    const liste = (j.degisiklikler || []).map(x => `<li>${escapeHtml(x)}</li>`).join('');
+    resultEl.innerHTML = `<div class="result-panel success" style="padding:10px 14px"><strong>✓ Odak banka: ${escapeHtml(bank)}.</strong>
+      <ul style="margin:6px 0 0 18px;padding:0;font-size:12.5px">${liste}</ul>
+      <div style="margin-top:6px;font-size:12.5px">Dashboard sekmelerini yenileyince (Cmd+Shift+R) görünür.</div></div>`;
+    await loadGroups();
+  } catch (err) {
+    resultEl.innerHTML = `<div class="result-panel error">Odak banka değiştirilemedi: ${escapeHtml(err.message)}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Odak bankayı uygula';
   }
 }
 
@@ -2113,10 +2763,10 @@ function renderGroups() {
               <span style="width:10px;height:10px;border-radius:50%;background:${color};display:inline-block"></span>
               <strong style="font-size:13.5px">${escapeHtml(name)}</strong>
               <span style="font-size:12px;color:var(--muted)">(${members.length} banka)</span>
-              ${isProtected ? '<span style="font-size:11px;color:var(--muted);font-style:italic">temel grup</span>' : ''}
+              ${isProtected ? '<span style="font-size:11px;color:var(--muted);font-style:italic">odak banka grubu</span>' : ''}
             </div>
             <div>
-              <button onclick="editGroup('${escapeHtml(name).replace(/'/g, "\\'")}')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--primary);background:var(--info-bg);color:var(--primary);cursor:pointer;font-size:12px">Düzenle</button>
+              ${isProtected ? '' : `<button onclick="editGroup('${escapeHtml(name).replace(/'/g, "\\'")}')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--primary);background:var(--info-bg);color:var(--primary);cursor:pointer;font-size:12px">Düzenle</button>`}
               ${deleteBtn}
             </div>
           </div>
@@ -2167,7 +2817,8 @@ async function saveGroup(name) {
 }
 
 async function deleteGroup(name) {
-  if (!confirm(`"${name}" grubunu silmek istediğine emin misin? Bu işlem geri alınamaz.`)) return;
+  if (!confirm(ktT(`"${name}" grubunu silmek istediğine emin misin? Bu işlem geri alınamaz.`,
+                   `Are you sure you want to delete the "${ktCevir(name)}" group? This cannot be undone.`))) return;
   try {
     const r = await fetch(`/api/admin/groups/${encodeURIComponent(name)}`, { method: 'DELETE' });
     if (!r.ok) {
@@ -2239,7 +2890,7 @@ async function loadHistory() {
     const data = await r.json();
     renderHistory(data, target);
   } catch (err) {
-    target.innerHTML = `<div class="result-panel error">Geçmiş yüklenemedi: ${err.message}</div>`;
+    target.innerHTML = `<div class="result-panel error">Geçmiş yüklenemedi: ${escapeHtml(err.message)}</div>`;
   }
 }
 
@@ -2257,8 +2908,8 @@ function renderHistory(data, target) {
     const statusText = u.status === 'ok' ? '✓ Başarılı' : '✗ Hata';
     html += `<tr>
       <td>${fmt.date(u.timestamp)}</td>
-      <td>${u.user || '—'}</td>
-      <td title="${u.filename || ''}" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.filename || '—'}</td>
+      <td translate="no">${u.user || '—'}</td>
+      <td translate="no" title="${u.filename || ''}" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.filename || '—'}</td>
       <td>${u.banka || '—'}</td>
       <td>${u.tarih ? fmt.quarter(u.tarih.substring(0, 7)) : '—'}</td>
       <td>${fmt.bytes(u.file_size)}</td>
@@ -2378,11 +3029,13 @@ function wrapBacklogHeadingLevel(container, tagName) {
 // GÖREV PANOSU (Jira tarzı kanban) — 2026-09-22
 // ============================================================
 const BOARD_COLS = [
-  { id: 'yapilacak', title: 'Yapılacaklar', icon: '📋' },
-  { id: 'planlanan', title: 'Planlananlar', icon: '🗓️' },
-  { id: 'yapildi',   title: 'Yapıldı',      icon: '✅' },
+  { id: 'yapilacak', title: 'Yapılacaklar',       dat: "Yapılacaklar'a",       icon: '📋' },
+  { id: 'planlanan', title: 'Yapılma Aşamasında', dat: 'Yapılma Aşamasına',    icon: '🛠️' },   // kimlik 'planlanan' veri uyumu için aynı kaldı
+  { id: 'yapildi',   title: 'Yapıldı',            dat: "Yapıldı'ya",           icon: '✅' },
 ];
 const BOARD_PRIO = { yuksek: 'Yüksek', orta: 'Orta', dusuk: 'Düşük' };
+// "Yapıldı'ya taşı" / "Move to Done" (ek sütuna göre: dat)
+function tasiBaslik(sutun) { return ktT(`${sutun.dat} taşı`, `Move to ${ktCevir(sutun.title)}`); }
 
 let boardState = { columns: { yapilacak: [], planlanan: [], yapildi: [] } };
 // Hangi sütunda ekleme formu açık / hangi kart düzenleniyor — render bu
@@ -2413,7 +3066,7 @@ function boardShortDate(iso) {
   if (!iso) return '';
   const d = new Date(iso);
   if (isNaN(d)) return '';
-  return d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+  return d.toLocaleDateString(KT_LOCALE, { day: '2-digit', month: '2-digit', year: '2-digit' });
 }
 
 function renderBoard() {
@@ -2462,18 +3115,18 @@ function boardCardHtml(card, colIndex) {
   const prev = BOARD_COLS[colIndex - 1];
   const next = BOARD_COLS[colIndex + 1];
   return `<div class="board-card prio-${prio}" draggable="true" data-id="${card.id}">
-    <div class="board-card-title">${escapeHtml(card.baslik || '')}</div>
-    ${card.aciklama ? `<div class="board-card-desc">${escapeHtml(card.aciklama)}</div>` : ''}
+    <div class="board-card-title" translate="no">${escapeHtml(card.baslik || '')}</div>
+    ${card.aciklama ? `<div class="board-card-desc" translate="no">${escapeHtml(card.aciklama)}</div>` : ''}
     <div class="board-card-meta">
       <span class="board-chip prio-${prio}">${BOARD_PRIO[prio] || 'Orta'}</span>
-      ${card.etiket ? `<span class="board-chip label">${escapeHtml(card.etiket)}</span>` : ''}
+      ${card.etiket ? `<span class="board-chip label" translate="no">${escapeHtml(card.etiket)}</span>` : ''}
       <span class="board-card-date">${boardShortDate(card.updated_at)}</span>
     </div>
     <div class="board-card-actions">
       <button class="board-btn" onclick="boardMove('${card.id}','${prev ? prev.id : ''}')"
-        ${prev ? `title="${escapeHtml(prev.title)}'a taşı"` : 'disabled'}>←</button>
+        ${prev ? `title="${escapeAttr(tasiBaslik(prev))}"` : 'disabled'}>←</button>
       <button class="board-btn" onclick="boardMove('${card.id}','${next ? next.id : ''}')"
-        ${next ? `title="${escapeHtml(next.title)}'a taşı"` : 'disabled'}>→</button>
+        ${next ? `title="${escapeAttr(tasiBaslik(next))}"` : 'disabled'}>→</button>
       <button class="board-btn spacer" onclick="boardOpenEdit('${card.id}')" title="Düzenle">✏️</button>
       <button class="board-btn danger" onclick="boardDelete('${card.id}')" title="Sil">🗑️</button>
     </div>
@@ -2620,13 +3273,29 @@ function boardDropIndex(colEl, clientY, draggedIdValue) {
 // ============================================================
 // INIT
 // ============================================================
-loadCoverage();
-loadUsers();
-loadGroups();
-loadHistory();
-loadBoard();
-loadVersionLog();
-loadBacklog();
+// Rol bazlı sekmeler (2026-09-30): yalnız izin verilen sekmeler görünür ve yüklenir.
+(async function initAdmin() {
+  let perms = null;
+  try {
+    const r = await fetch('/api/admin/me');
+    if (r.ok) { const me = await r.json(); perms = new Set(me.izinler || []); _myIdentity = me.kimlik || ''; }
+  } catch (e) {}
+  const can = (p) => !perms || perms.has(p);
+  document.querySelectorAll('.tab-btn[data-perm]').forEach(btn => {
+    btn.hidden = !can(btn.getAttribute('data-perm'));
+  });
+  const first = document.querySelector('.tab-btn[data-perm]:not([hidden])');
+  if (first) switchTab(first.getAttribute('data-tab'));
+  if (!can('admin_kullanicilar')) {
+    ['export-include-users', 'import-include-users'].forEach(id => {
+      const el = $(id); if (el && el.closest('label')) el.closest('label').style.display = 'none';
+    });
+  }
+  if (can('admin_veri')) { loadCoverage(); loadHistory(); }
+  if (can('admin_kullanicilar')) { loadRoles().then(loadUsers); }
+  if (can('admin_gruplar')) loadGroups();
+  if (can('admin_proje')) { loadBoard(); loadVersionLog(); loadBacklog(); }
+})();
 </script>
 
 </body>

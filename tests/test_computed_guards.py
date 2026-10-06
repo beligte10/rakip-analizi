@@ -17,6 +17,9 @@ import pytest
 from fastapi import HTTPException
 
 import app as A
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
 
 
 def _bank_data(bankalar, tarihler, olculer=('toplam_aktifler', 'krediler')):
@@ -163,3 +166,66 @@ def test_bozuk_yedek_atlanir_saglam_olan_bulunur(izole_data, monkeypatch):
 
     A._recover_computed_if_corrupt()
     assert json.loads(A.DATA_COMPUTED.read_text(encoding='utf-8'))['bank_data'] == saglam
+
+
+# --- Doğrulamalı önbellek (2026-09-29): /api/data ve ana sayfa 304 döner ---
+
+def _istek(headers=None):
+    from starlette.requests import Request
+    raw = [(k.lower().encode(), v.encode()) for k, v in (headers or {}).items()]
+    return Request({'type': 'http', 'method': 'GET', 'path': '/', 'headers': raw})
+
+
+def test_dosya_degismediyse_304(tmp_path):
+    f = tmp_path / 'computed.json'
+    f.write_text('{"a": 1}')
+    ilk = A._revalidated_file(f, 'application/json', _istek())
+    assert ilk.status_code == 200
+    assert 'no-store' not in ilk.headers['cache-control']
+    etag = ilk.headers['etag']
+    ikinci = A._revalidated_file(f, 'application/json', _istek({'If-None-Match': etag}))
+    assert ikinci.status_code == 304 and ikinci.headers['etag'] == etag
+
+
+def test_dosya_degistiyse_yeni_icerik(tmp_path):
+    import os
+    f = tmp_path / 'computed.json'
+    f.write_text('{"a": 1}')
+    etag = A._revalidated_file(f, 'application/json', _istek()).headers['etag']
+    f.write_text('{"a": 22}')
+    os.utime(f, (1, 1))
+    yanit = A._revalidated_file(f, 'application/json', _istek({'If-None-Match': etag}))
+    assert yanit.status_code == 200
+
+
+# --- Ortak hesaplama yolu (2026-09-29): ilk kurulumda computed.json yokken ---
+
+def _mini_parquet(path, bankalar, tarihler):
+    import pandas as pd
+    rows = [('Mevduat', 'Ana Tablo', 'Bilanço', 'Toplam Aktifler', 'Toplam', 1000.0 + i, b, pd.Timestamp(t))
+            for b in bankalar for i, t in enumerate(tarihler)]
+    df = pd.DataFrame(rows, columns=['Banka Türü', 'Tablo Türü', 'Tablo Adı', 'Kalem Adı',
+                                     'Para Birimi', 'Tutar', 'Banka Adı', 'Tarih'])
+    for c in ['Banka Türü', 'Tablo Türü', 'Tablo Adı', 'Kalem Adı', 'Para Birimi', 'Banka Adı']:
+        df[c] = df[c].astype('category')
+    df.to_parquet(path, index=False)
+
+
+def test_ilk_kurulumda_hesaplama_bos_kalmaz(izole_data, monkeypatch):
+    # Eskiden ZIP yükleme compute_all'a banka listesini vermiyordu; computed.json
+    # yokken banka listesi boş baseline'dan türetiliyor, sonuç boş çıkıp
+    # "Hesaplama boş sonuç verdi" hatası veriyordu.
+    catalog = json.loads((ROOT / 'catalog.seed.json').read_text(encoding='utf-8'))
+    bankalar = [b['banka_adi'] for b in catalog['banks']][:2]
+    parquet = izole_data / 'veriler.parquet'
+    _mini_parquet(parquet, bankalar, ['2025-12-31', '2026-03-31'])
+    monkeypatch.setattr(A, 'DATA_PARQUET', parquet)
+    assert not A.DATA_COMPUTED.exists()
+
+    sonuc = A._run_pipeline_and_save(catalog, force=False, passthrough_only=False)
+
+    ta = sonuc['bank_data']['toplam_aktifler']
+    assert ta[bankalar[0]]['2026-03-31'] == 1001.0
+    yazilan = json.loads(A.DATA_COMPUTED.read_text(encoding='utf-8'))
+    assert yazilan['bank_data']['toplam_aktifler'][bankalar[1]]['2025-12-31'] == 1000.0
+    assert yazilan['meta'] and 'group_data' in yazilan and yazilan['timestamp'] == sonuc['timestamp']

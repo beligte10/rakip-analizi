@@ -16,7 +16,7 @@ Dosya adlandırma: logo dosyasının adı catalog.json'daki banka adıyla
 BİREBİR aynı olmalı (Türkçe karakterler dahil).
 
     frontend/logos/Kuveyt Türk.svg
-    frontend/logos/QNB Finansbank.png
+    frontend/logos/QNB.png
     frontend/logos/Denizbank.svg
     frontend/logos/TEB.png
     frontend/logos/Vakıf Katılım.svg

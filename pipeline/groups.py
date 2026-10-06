@@ -22,10 +22,12 @@ from __future__ import annotations
 from typing import Callable, Dict, List, Optional, Tuple
 
 from .lookup import (
-    LookupContext, krediler,
+    LookupContext, krediler, donuk_alacaklar,
     ttm_flow, avg_balance,
 )
 from .measures import (
+    npl_payda, opex_yoy_num_den, gelir_yoy_num_den, reel_buyume,
+    serbest_sermaye, finansal_varliklar, _vade_dilimi, toplam_rav, tp_yp_kredi_getirisi_num_den, tp_yp_mevduat_maliyeti_num_den,
     m_konut_kredileri, m_tasit_kredileri, m_ihtiyac_kredileri,
     m_bireysel_kredi_kartlari, m_tuketici_kredileri, m_tuzel_krediler,
     m_grup_1_krediler, m_grup_2_krediler, m_toplam_kaynak,
@@ -37,13 +39,16 @@ from .measures import (
     _KUR_KREDI_USD, _KUR_KREDI_EURO, _KUR_KREDI_TOPLAM,
     _faiz_getirili_aktif_detay,
     _faiz_maliyetli_pasif_detay,
+    faiz_maliyetli_pasif_num_den,
+    kur_ayrimli_krediler,
+    getirili_aktif_getirisi_pb_num_den, maliyetli_pasif_maliyeti_pb_num_den,
     _duzeltilmis_net_faiz_geliri,
     _yp_net_genel_pozisyon,
     _kredi_riski, _piyasa_riski, _operasyonel_risk,
     _LIKIDITE_ACIGI_KALEM, _birikimli_vadeli_mevduat,
-    _npl_net_olusum_yillik, _opex, _cor_pay,
+    _npl_net_olusum_yillik, _opex, _cor_pay, npl_karsiligi, cekirdek_sermaye, regulasyon_ozkaynak,
     _grup_2_tuzel, _tuzel_krediler_kk_haric, m_rav,
-    _compound_spread_pct,
+    _compound_spread_pct, kaynak_pacal_num_den, m_gayrinakdi_krediler,
 )
 
 
@@ -56,7 +61,7 @@ NumDenFn = Callable[[LookupContext, str, str], Tuple[Optional[float], Optional[f
 
 # --- Bilanço basit rasyolar ---
 def _nd_npl(ctx, b, t):
-    return ctx.bilanco(b, t, 'Donuk Alacaklar'), krediler(ctx, b, t)
+    return donuk_alacaklar(ctx, b, t), npl_payda(ctx, b, t)
 
 
 def _nd_npl_formasyonu(ctx, b, t):
@@ -69,14 +74,13 @@ def _nd_npl_formasyonu(ctx, b, t):
 def _nd_npl_satis_terkin(ctx, b, t):
     silinen_abs = abs(_aktiften_silinen(ctx, b, t))
     return (
-        ctx.bilanco(b, t, 'Donuk Alacaklar') + silinen_abs,
-        krediler(ctx, b, t) + silinen_abs,
+        donuk_alacaklar(ctx, b, t) + silinen_abs,
+        npl_payda(ctx, b, t) + silinen_abs,
     )
 
 
 def _nd_npl_karsilama(ctx, b, t):
-    bzk = abs(ctx.bilanco(b, t, 'Beklenen Zarar Karşılıkları (-)'))
-    return bzk, ctx.bilanco(b, t, 'Donuk Alacaklar')
+    return npl_karsiligi(ctx, b, t), donuk_alacaklar(ctx, b, t)
 
 
 def _nd_krediler_ta(ctx, b, t):
@@ -88,9 +92,7 @@ def _nd_diger_aktifler_ta(ctx, b, t):
 
 
 def _nd_finansal_varliklar(ctx, b, t):
-    fv = (ctx.bilanco(b, t, 'Finansal Varlıklar (Net)')
-        + ctx.bilanco(b, t, 'İtfa Edilmiş Maliyeti ile Ölçülen Finansal Varlıklar'))
-    return fv, ctx.bilanco(b, t, 'Toplam Aktifler')
+    return finansal_varliklar(ctx, b, t), ctx.bilanco(b, t, 'Toplam Aktifler')
 
 
 def _nd_menkul_kiymetler(ctx, b, t):
@@ -136,7 +138,7 @@ def _nd_grup2_toplam(ctx, b, t):
 
 
 def _nd_grup2_cekirdek(ctx, b, t):
-    return m_grup_2_krediler(ctx, b, t), ctx.sermaye(b, t, 'Çekirdek Sermaye Toplamı')
+    return m_grup_2_krediler(ctx, b, t), cekirdek_sermaye(ctx, b, t)
 
 
 def _nd_usd_yp(ctx, b, t):
@@ -149,7 +151,7 @@ def _nd_euro_yp(ctx, b, t):
 
 def _nd_yp_net_pozisyon_ozkaynak(ctx, b, t):
     # Net Genel Pozisyon (Bilanço+Nazım, ±) / Toplam Ozkaynaklar (regülasyon özk.).
-    return _yp_net_genel_pozisyon(ctx, b, t), ctx.ozkaynak_detay(b, t, 'Toplam Ozkaynaklar')
+    return _yp_net_genel_pozisyon(ctx, b, t), regulasyon_ozkaynak(ctx, b, t)
 
 
 def _nd_grup2_tuketici(ctx, b, t):
@@ -199,13 +201,14 @@ def _nd_dis_ticaret(ctx, b, t):
 
 
 def _nd_mali_kesim(ctx, b, t):
-    mk = ctx.grup12(b, t, 'Mali Kesime Verilen Krediler,  Standart Nitelikli Krediler, Toplam')
+    mk = (ctx.grup12(b, t, 'Mali Kesime Verilen Krediler,  Standart Nitelikli Krediler, Toplam')
+          + _grup2_kategori(ctx, b, t, 'Mali Kesime Verilen Krediler'))
     return mk, _brut_krediler(ctx, b, t)
 
 
 def _nd_tp_krediler_toplam(ctx, b, t):
-    # 2026-08-14: TP Brüt Krediler / Toplam Brüt Krediler (banka ile hizalı)
-    return _brut_krediler(ctx, b, t, 'TP'), _brut_krediler(ctx, b, t)
+    # TP Brüt Krediler / Toplam Brüt Krediler; TP kur riski ayrımıyla (2026-09-30, banka ile hizalı)
+    return kur_ayrimli_krediler(ctx, b, t, 'TP'), _brut_krediler(ctx, b, t)
 
 
 # --- Pasif basit ---
@@ -284,9 +287,9 @@ def _nd_iea_getiri(ctx, b, t):
 
 
 def _nd_mp_maliyet(ctx, b, t):
-    fgd = ttm_flow(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Faiz Giderleri'))
-    avg_mp = avg_balance(ctx, b, t, lambda bb, tt: _faiz_maliyetli_pasif_detay(ctx, bb, tt))
-    return fgd, avg_mp
+    # 2026-09-30: pay kaynağa verilen faizler (banka tanımıyla ortak, bkz.
+    # measures.faiz_maliyetli_pasif_num_den).
+    return faiz_maliyetli_pasif_num_den(ctx, b, t)
 
 
 def _nd_faiz_gid_gel(ctx, b, t):
@@ -313,6 +316,11 @@ def _nd_reklam_aktif(ctx, b, t):
 
 def _nd_personel_kar(ctx, b, t):
     return ctx.gelir(b, t, 'Personel Giderleri (-)'), ctx.gelir(b, t, 'Net Dönem Karı / Zararı')
+
+
+def _nd_insan_sermayesi(ctx, b, t):
+    # Net Dönem Kârı / Personel Giderleri (kat) — grup: Σ pay / Σ payda × 1
+    return ctx.gelir(b, t, 'Net Dönem Karı / Zararı'), ctx.gelir(b, t, 'Personel Giderleri (-)')
 
 
 def _nd_reklam_kar(ctx, b, t):
@@ -361,6 +369,17 @@ def _nd_kredi_pacal(ctx, b, t):
     fg = ttm_flow(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Kredilerden Alınan Faizler'))
     avg_kred = avg_balance(ctx, b, t, lambda bb, tt: krediler(ctx, bb, tt))
     return fg, avg_kred
+
+
+def _nd_net_faiz_ort_rav(ctx, b, t):
+    return (ttm_flow(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Net Faiz Geliri/Gideri')),
+            avg_balance(ctx, b, t, lambda bb, tt: m_rav(ctx, bb, tt)))
+
+
+def _nd_gayrinakdi_komisyon(ctx, b, t):
+    # Payda dönem SONU bakiyesi (bkz. measures.m_gayrinakdi_komisyon_gayrinakdi)
+    return (ttm_flow(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Gayri Nakdi Kredilerden')),
+            m_gayrinakdi_krediler(ctx, b, t))
 
 
 def _nd_cost_of_risk(ctx, b, t):
@@ -421,7 +440,7 @@ def _nd_kred_kaynak(ctx, b, t):
 def _nd_tp_kred_kaynak(ctx, b, t):
     # 2026-08-15: 'Kaynak' tanımı m_toplam_kaynak ile hizalandı (Para Piyasalarına
     # Borçlar çıkarıldı) — banka m_tp_krediler_tp_kaynak ile tutarlı (2026-08-12 fix).
-    pay = krediler(ctx, b, t, 'TP')
+    pay = kur_ayrimli_krediler(ctx, b, t, 'TP')   # 2026-09-30: kur riski ayrımı
     den = (ctx.bilanco(b, t, 'Mevduat', 'TP')
          + ctx.bilanco(b, t, 'Alınan Krediler', 'TP')
          + ctx.bilanco(b, t, 'İhraç Edilen Menkul Kıymetler (Net)', 'TP'))
@@ -430,7 +449,7 @@ def _nd_tp_kred_kaynak(ctx, b, t):
 
 def _nd_yp_kred_altindisi(ctx, b, t):
     # 2026-08-15: Para Piyasalarına Borçlar çıkarıldı (banka m_yp_krediler_yp_altindisi_kaynak ile hizalı)
-    pay = krediler(ctx, b, t, 'YP')
+    pay = kur_ayrimli_krediler(ctx, b, t, 'YP')   # 2026-09-30: kur riski ayrımı
     yp_kaynak = (ctx.bilanco(b, t, 'Mevduat', 'YP')
                + ctx.bilanco(b, t, 'Alınan Krediler', 'YP')
                + ctx.bilanco(b, t, 'İhraç Edilen Menkul Kıymetler (Net)', 'YP'))
@@ -476,24 +495,20 @@ def _nd_maliyetli_pasif(ctx, b, t):
 
 
 def _nd_serbest_sermaye(ctx, b, t):
-    serbest = (ctx.bilanco(b, t, 'Özkaynaklar')
-             - ctx.bilanco(b, t, 'Ortaklık Yatırımları')
-             - ctx.bilanco(b, t, 'Maddi Duran Varlıklar (Net)')
-             - ctx.bilanco(b, t, 'Maddi Olmayan Duran Varlıklar (Net)'))
-    return serbest, ctx.bilanco(b, t, 'Toplam Aktifler')
+    return serbest_sermaye(ctx, b, t), ctx.bilanco(b, t, 'Toplam Aktifler')
 
 
 # --- 2026-08-14 measures.docx yeni 20 rasyo — grup ağırlıklı agregasyon ---
 def _nd_kredi_riski_toplam_risk(ctx, b, t):
-    return _kredi_riski(ctx, b, t), _piyasa_riski(ctx, b, t) + _operasyonel_risk(ctx, b, t) + _kredi_riski(ctx, b, t)
+    return _kredi_riski(ctx, b, t), toplam_rav(ctx, b, t)
 
 
 def _nd_piyasa_riski_toplam_risk(ctx, b, t):
-    return _piyasa_riski(ctx, b, t), _piyasa_riski(ctx, b, t) + _operasyonel_risk(ctx, b, t) + _kredi_riski(ctx, b, t)
+    return _piyasa_riski(ctx, b, t), toplam_rav(ctx, b, t)
 
 
 def _nd_operasyonel_risk_toplam_risk(ctx, b, t):
-    return _operasyonel_risk(ctx, b, t), _piyasa_riski(ctx, b, t) + _operasyonel_risk(ctx, b, t) + _kredi_riski(ctx, b, t)
+    return _operasyonel_risk(ctx, b, t), toplam_rav(ctx, b, t)
 
 
 def _nd_brut_krediler_ta(ctx, b, t):
@@ -509,7 +524,7 @@ def _nd_nakit_degerler_ta(ctx, b, t):
 
 
 def _nd_yp_krediler_toplam(ctx, b, t):
-    return _brut_krediler(ctx, b, t, 'YP'), _brut_krediler(ctx, b, t)
+    return kur_ayrimli_krediler(ctx, b, t, 'YP'), _brut_krediler(ctx, b, t)
 
 
 def _nd_birikimli_vadeli(ctx, b, t):
@@ -539,20 +554,19 @@ def _make_nd_likidite(kalem):
     return fn
 
 
-# Vadeli mevduat vade dilimleri (4) — num = mvy dilim, den = Vadeli Mevduat.
-# NOT: mvy tablosu (konvansiyonel) — katılım bankalarında num=0 (banka seviyesiyle
-# aynı sınır; _LIKIDITE_ACIGI_KALEM notuna paralel).
+# Vadeli mevduat vade dilimleri (4) — num = dilim (mevduat bankasında mvy, katılımda
+# katılım fonu tablosu; 2026-10-01, bkz. measures._vade_dilimi), den = Vadeli Mevduat.
 _VADELI_DILIM_KALEM = {
-    'vadeli_1ay_toplam_vadeli': 'Toplam, 1 Aya Kadar',
-    'vadeli_1_3ay_toplam_vadeli': 'Toplam, 1-3 Ay',
-    'vadeli_3_6ay_toplam_vadeli': 'Toplam, 3-6 Ay',
-    'vadeli_6_12ay_toplam_vadeli': 'Toplam, 6 Ay-1 Yıl',
+    'vadeli_1ay_toplam_vadeli': '1ay',
+    'vadeli_1_3ay_toplam_vadeli': '1_3',
+    'vadeli_3_6ay_toplam_vadeli': '3_6',
+    'vadeli_6_12ay_toplam_vadeli': '6_12',
 }
 
 
-def _make_nd_vadeli(kalem):
+def _make_nd_vadeli(dilim):
     def fn(ctx, b, t):
-        return ctx.mvy(b, t, kalem), m_vadeli_mevduat(ctx, b, t)
+        return _vade_dilimi(ctx, b, t, dilim), m_vadeli_mevduat(ctx, b, t)
     return fn
 
 
@@ -605,12 +619,15 @@ RATIO_NUM_DEN: Dict[str, NumDenFn] = {
     'nim_bzk_sonrasi': _nd_nim_bzk_sonrasi,
     'faiz_getirili_aktif_getirisi': _nd_iea_getiri,
     'faiz_maliyetli_pasif_maliyeti': _nd_mp_maliyet,
-    'kaynak_pacal_maliyet': _nd_mp_maliyet,
+    'kaynak_pacal_maliyet': kaynak_pacal_num_den,
     'faiz_gideri_faiz_geliri': _nd_faiz_gid_gel,
     'faaliyet_gid_ort_aktif': _nd_faaliyet_aktif,
     'personel_ort_aktif': _nd_personel_aktif,
     'reklam_ort_aktif': _nd_reklam_aktif,
     'personel_net_kar': _nd_personel_kar,
+    'insan_sermayesi_yatirim_getirisi': _nd_insan_sermayesi,
+    'opex_yoy_buyumesi': opex_yoy_num_den,
+    'gelir_yoy_buyumesi': gelir_yoy_num_den,
     'reklam_net_kar': _nd_reklam_kar,
     'net_ucret_ort_aktif': _nd_net_ucret_aktif,
     'net_ucret_operasyonel': _nd_net_ucret_op,
@@ -620,6 +637,10 @@ RATIO_NUM_DEN: Dict[str, NumDenFn] = {
     'rorwa': _nd_rorwa,
     'ort_rav_ort_ozkaynak': _nd_ort_rav_ort_ozkaynak,
     'kredi_pacal_getiri': _nd_kredi_pacal,
+    # 2026-09-27: bu ikisi tabloda yoktu, grup değeri basit ortalamaya
+    # düşüyordu (PDF: Mevduat Bankaları Net Faiz/Ort. RAV %7,39, dashboard %9,73).
+    'net_faiz_ort_rav': _nd_net_faiz_ort_rav,
+    'gayrinakdi_komisyon_gayrinakdi': _nd_gayrinakdi_komisyon,
     'cost_of_risk': _nd_cost_of_risk,
     'donuk_intikal_ort_krediler': _nd_donuk_intikal,
     'donuk_tahsilat_ort_krediler': _nd_donuk_tahsilat,
@@ -658,6 +679,12 @@ RATIO_NUM_DEN: Dict[str, NumDenFn] = {
 }
 
 
+# Rekabet Analizi ölçüleri (2026-10-06): pay/payda ve ölçek kayıtları pipeline/rekabet_olculer.py'de.
+from . import rekabet_olculer as _rekabet  # noqa: E402
+
+RATIO_NUM_DEN.update(_rekabet.RATIO_NUM_DEN)
+
+
 # Rasyo display ölçeği: varsayılan 100 (yüzde). 'kat'/oran olarak gösterilen
 # measure'lar için 1.0 — bank seviyesi safe_ratio(scale=1.0) ile tutarlı olmalı.
 RATIO_SCALE: Dict[str, float] = {
@@ -665,16 +692,14 @@ RATIO_SCALE: Dict[str, float] = {
     'faiz_getirili_ozkaynak': 1.0,   # birim='kat' → 10,2 kat
     'toplam_fonlama_faiz_maliyetli_pasif': 1.0,  # birim='kat'
     'ort_rav_ort_ozkaynak': 1.0,  # birim='kat'
+    'insan_sermayesi_yatirim_getirisi': 1.0,  # birim='kat' → 1,2 kat
 }
+RATIO_SCALE.update(_rekabet.RATIO_SCALE)
 
 
-# TP/YP spread'lerin bileşenleri (vadeli bakiye türetimi, Katılım/mevduat
-# ayrımı) banka bazında dallandığından grup için hâlâ basit ortalama.
-# spread/kredi_mevduat_spread bkz. COMPOUND_SPREADS.
-SIMPLE_AVG_RATIOS = {
-    'tp_spread',
-    'yp_spread',
-}
+# 2026-09-30: tp_spread/yp_spread de COMPOUND_SPREADS'e taşındı (vadeli mevduat
+# tanımı PDF'ten çözüldü); basit ortalamayla kalan ölçü şu an yok.
+SIMPLE_AVG_RATIOS: set = set()
 
 # Şube/personel başına özel handling
 PER_BRANCH_RATIOS = {
@@ -734,6 +759,16 @@ def _agg_size(bank_data, mid, members, tarih, first_date_map=None):
     return sum(vals) if vals else None
 
 
+def _agg_size_mevcut(bank_data, mid, members, tarih, first_date_map=None):
+    """Rekabet Analizi tutar ölçüleri (2026-10-07): verisi olmayan üye gruptan HARİÇ tutulur, kalanların toplamı
+    alınır (BDR'den elle yüklenen ölçülerde bazı bankalar boş; _agg_size bu durumda tüm grubu boş bırakırdı).
+    Hiçbir üyede veri yoksa None."""
+    series = bank_data.get(mid, {})
+    vals = [series.get(b, {}).get(tarih) for b in _active_members(members, tarih, first_date_map)]
+    vals = [v for v in vals if v is not None]
+    return sum(vals) if vals else None
+
+
 def _agg_ratio(ctx, mid, members, tarih, first_date_map=None):
     """Stok/akım rasyo: Σnum / Σden × 100.
 
@@ -775,11 +810,6 @@ def _sum_ratio(ctx, fn, members, tarih, first_date_map, scale):
     return (num_sum / den_sum) * scale
 
 
-def _nd_mevduat_pacal(ctx, b, t):
-    fgd = ttm_flow(ctx, b, t, lambda bb, tt: ctx.gelir(bb, tt, 'Mevduata Verilen Faizler'))
-    return fgd, avg_balance(ctx, b, t, lambda bb, tt: ctx.bilanco(bb, tt, 'Mevduat'))
-
-
 # Bileşik spread'ler: grup değeri = ((1+grup getirisi)/(1+grup maliyeti)−1),
 # her iki oran da ÜYELERİN pay/paydaları toplanarak hesaplanır — PBI'ın
 # grup satırını (filtre = grup üyeleri) değerlendirme biçimi. Önceden
@@ -787,8 +817,46 @@ def _nd_mevduat_pacal(ctx, b, t):
 # aşırı değerler (ör. TOM Bank) grubu çarpıtıyordu.
 COMPOUND_SPREADS: Dict[str, Tuple[NumDenFn, NumDenFn]] = {
     'spread': (_nd_iea_getiri, _nd_mp_maliyet),
-    'kredi_mevduat_spread': (_nd_kredi_pacal, _nd_mevduat_pacal),
+    'kredi_mevduat_spread': (_nd_kredi_pacal, kaynak_pacal_num_den),   # 2026-09-27: maliyet = kaynak
+    'tp_spread': (lambda c, b, t: tp_yp_kredi_getirisi_num_den(c, b, t, 'TP'),
+                  lambda c, b, t: tp_yp_mevduat_maliyeti_num_den(c, b, t, 'TP')),
+    'yp_spread': (lambda c, b, t: tp_yp_kredi_getirisi_num_den(c, b, t, 'YP'),
+                  lambda c, b, t: tp_yp_mevduat_maliyeti_num_den(c, b, t, 'YP')),
 }
+
+
+# Basit fark spread'leri (2026-09-30, kullanıcı formülü): grup değeri =
+# grup getirisi − grup maliyeti; ikisi de üyelerin pay/paydaları toplanarak.
+DIFF_SPREADS: Dict[str, Tuple[NumDenFn, NumDenFn]] = {
+    'tp_getirili_maliyetli_spread': (lambda c, b, t: getirili_aktif_getirisi_pb_num_den(c, b, t, 'TP'),
+                                     lambda c, b, t: maliyetli_pasif_maliyeti_pb_num_den(c, b, t, 'TP')),
+    'yp_getirili_maliyetli_spread': (lambda c, b, t: getirili_aktif_getirisi_pb_num_den(c, b, t, 'YP'),
+                                     lambda c, b, t: maliyetli_pasif_maliyeti_pb_num_den(c, b, t, 'YP')),
+}
+
+
+def _agg_diff_spread(ctx, mid, members, tarih, first_date_map=None):
+    nd_getiri, nd_maliyet = DIFF_SPREADS[mid]
+    getiri = _sum_ratio(ctx, nd_getiri, members, tarih, first_date_map, 100.0)
+    maliyet = _sum_ratio(ctx, nd_maliyet, members, tarih, first_date_map, 100.0)
+    if getiri is None or maliyet is None:
+        return None
+    return getiri - maliyet
+
+
+# Büyüme türevleri (2026-10-02): reel OPEX büyümesi ve makas, grup düzeyinde ÖNCE üyelerin
+# pay/paydaları toplanıp grup büyümesi bulunur, sonra TÜFE ile reel'e çevrilir / iki büyümenin
+# farkı alınır (bank değerlerinin ortalaması alınmaz).
+DERIVED_GROWTH = {'reel_opex_buyumesi', 'opex_gelir_makasi'}
+
+
+def _agg_derived_growth(ctx, mid, members, tarih, first_date_map=None):
+    opex = _sum_ratio(ctx, opex_yoy_num_den, members, tarih, first_date_map, 100.0)
+    if mid == 'reel_opex_buyumesi':
+        from .makro import tufe_yillik
+        return reel_buyume(opex, tufe_yillik(tarih))
+    gelir = _sum_ratio(ctx, gelir_yoy_num_den, members, tarih, first_date_map, 100.0)
+    return None if opex is None or gelir is None else gelir - opex
 
 
 def _agg_compound_spread(ctx, mid, members, tarih, first_date_map=None):
@@ -880,6 +948,56 @@ def _agg_per_unit(ctx, mid, members, tarih, first_date_map=None):
 # = {'value': v}` şeklinde AYRI bir yapı döner (bank_data'ya karışmaz).
 # app.py ve scripts/recompute.py bu TEK fonksiyonu kullanır.
 
+# --------------------------------------------------------------------------
+# Dışa aktarım (Excel) grupları (2026-10-04): panodaki banka sınıfı filtreleriyle (Tümü / Katılım / Mevduat /
+# Rakip Bankalar / İlk 20 Banka) aynı kombinasyonlar, GRUP TOPLAMI olarak. Katılım ve Mevduat zaten grup;
+# eksik olanlar burada türetilir. Üyelikleri tarihe bağlı olabilir (İlk 20 Banka her dönemin aktif sıralamasıdır),
+# bu yüzden catalog'a yazılmaz; yalnız group_data'ya girer ve meta.export_groups ile istemciye bildirilir.
+# --------------------------------------------------------------------------
+EXPORT_TUM = 'Tüm Bankalar'
+EXPORT_TOP20 = 'İlk 20 Banka'
+
+
+def _odak_rakip_adi(catalog) -> str:
+    from .focus import focus_of, kisa_ad
+    return f'Rakip Bankalar + {kisa_ad(focus_of(catalog))}'
+
+
+def export_grup_adlari(catalog) -> List[str]:
+    """Excel dışa aktarımın ek grupları (sıralı). Rakip Bankalar grubu yoksa odak+rakip grubu atlanır."""
+    if isinstance(catalog, list):
+        return []
+    members = (catalog.get('groups', {}) or {}).get('members', {}) or {}
+    ad = [EXPORT_TUM, EXPORT_TOP20]
+    if members.get('Rakip Bankalar'):
+        ad.append(_odak_rakip_adi(catalog))
+    return [a for a in ad if a not in members]
+
+
+def _export_uyelikleri(catalog, bank_data, dates, real_banks) -> Dict[str, Dict[str, List[str]]]:
+    """{grup adı: {tarih: [üye bankalar]}}."""
+    from .focus import focus_of
+    members = (catalog.get('groups', {}) or {}).get('members', {}) or {}
+    gercek = sorted(b for b in real_banks if any(
+        x.get('banka_adi') == b and x.get('tur') != 'Grup' for x in catalog.get('banks', [])))
+    ta = bank_data.get('toplam_aktifler', {})
+    out: Dict[str, Dict[str, List[str]]] = {}
+    for ad in export_grup_adlari(catalog):
+        per: Dict[str, List[str]] = {}
+        for d in dates:
+            if ad == EXPORT_TUM:
+                per[d] = gercek
+            elif ad == EXPORT_TOP20:
+                rows = sorted(((b, ta.get(b, {}).get(d)) for b in gercek if ta.get(b, {}).get(d) is not None),
+                              key=lambda x: x[1], reverse=True)
+                per[d] = [b for b, _ in rows[:20]]
+            else:   # odak + rakipler
+                odak = focus_of(catalog)
+                per[d] = [odak] + [b for b in members.get('Rakip Bankalar', []) if b != odak]
+        out[ad] = per
+    return out
+
+
 def build_group_data(
     bank_data: Dict[str, Dict[str, Dict[str, Optional[float]]]],
     catalog,
@@ -918,6 +1036,32 @@ def build_group_data(
         b_dates = [d for d, v in ta_series.get(b, {}).items() if v is not None]
         first_date_map[b] = min(b_dates) if b_dates else None
 
+    def _deger(mid, tip, members, tarih):
+        if mid in _rekabet.GRUPSUZ:
+            return None
+        if mid in _rekabet.GRUP_OZEL:
+            return _rekabet.GRUP_OZEL[mid](ctx, members, tarih, first_date_map, _sum_ratio, _active_members)
+        if mid in PER_BRANCH_RATIOS:
+            return _agg_per_unit(ctx, mid, members, tarih, first_date_map)
+        if mid in COMPOUND_SPREADS:
+            return _agg_compound_spread(ctx, mid, members, tarih, first_date_map)
+        if mid in DIFF_SPREADS:
+            return _agg_diff_spread(ctx, mid, members, tarih, first_date_map)
+        if mid in DERIVED_GROWTH:
+            return _agg_derived_growth(ctx, mid, members, tarih, first_date_map)
+        if mid in SIMPLE_AVG_RATIOS:
+            return (_agg_size(bank_data, mid, members, tarih, first_date_map)
+                    if mid == 'npl_formasyonu'
+                    else _agg_simple_avg(bank_data, mid, members, tarih, first_date_map))
+        if tip == 'buyukluk' and mid in _rekabet.IDS:
+            return _agg_size_mevcut(bank_data, mid, members, tarih, first_date_map)
+        if tip == 'buyukluk':
+            return _agg_size(bank_data, mid, members, tarih, first_date_map)
+        if mid in RATIO_NUM_DEN:
+            return _agg_ratio(ctx, mid, members, tarih, first_date_map)
+        return _agg_simple_avg(bank_data, mid, members, tarih, first_date_map)
+
+    ekstra = _export_uyelikleri(catalog, bank_data, dates, real_banks)
     group_data: Dict[str, Dict[str, dict]] = {}
     for mid_meta in measures_list:
         mid = mid_meta['id']
@@ -928,20 +1072,18 @@ def build_group_data(
                 continue
             gd = {}
             for tarih in dates:
-                if mid in PER_BRANCH_RATIOS:
-                    v = _agg_per_unit(ctx, mid, members, tarih, first_date_map)
-                elif mid in COMPOUND_SPREADS:
-                    v = _agg_compound_spread(ctx, mid, members, tarih, first_date_map)
-                elif mid in SIMPLE_AVG_RATIOS:
-                    v = (_agg_size(bank_data, mid, members, tarih, first_date_map)
-                         if mid == 'npl_formasyonu'
-                         else _agg_simple_avg(bank_data, mid, members, tarih, first_date_map))
-                elif tip == 'buyukluk':
-                    v = _agg_size(bank_data, mid, members, tarih, first_date_map)
-                elif mid in RATIO_NUM_DEN:
-                    v = _agg_ratio(ctx, mid, members, tarih, first_date_map)
-                else:
-                    v = _agg_simple_avg(bank_data, mid, members, tarih, first_date_map)
+                v = _deger(mid, tip, members, tarih)
+                if v is not None:
+                    gd[tarih] = {'value': v}
+            if gd:
+                group_data[mid][gname] = gd
+        for gname, per in ekstra.items():       # dışa aktarım grupları: üyelik tarihe göre değişebilir
+            gd = {}
+            for tarih in dates:
+                uyeler = per.get(tarih)
+                if not uyeler:
+                    continue
+                v = _deger(mid, tip, uyeler, tarih)
                 if v is not None:
                     gd[tarih] = {'value': v}
             if gd:

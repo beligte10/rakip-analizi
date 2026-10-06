@@ -41,7 +41,7 @@ class TracingLookupContext(LookupContext):
         value = 0.0
         if idx is not None and len(idx) > 0:
             try:
-                v = idx.loc[(banka, self._norm_tarih(tarih), kalem, pb)]
+                v = idx.loc[(banka, self._norm_tarih(tarih), self._k(kalem), pb)]
                 value = float(v.sum()) if isinstance(v, pd.Series) else float(v)
                 hit = True
             except KeyError:

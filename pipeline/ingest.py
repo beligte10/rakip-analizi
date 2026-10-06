@@ -23,6 +23,8 @@ from pathlib import Path
 from typing import Iterable, List, Optional
 
 import pandas as pd
+
+from .banka_adlari import kanonik
 import openpyxl
 
 
@@ -46,7 +48,7 @@ def parse_filename(filename: str) -> Optional[tuple[str, str]]:
     m = FILENAME_RE.match(filename.strip())
     if not m:
         return None
-    banka = m.group(1).strip()
+    banka = kanonik(m.group(1).strip())   # 'QNB Finansbank - …' → 'QNB'
     d, mo, y = m.group(2), m.group(3), m.group(4)
     return banka, f'{y}-{mo}-{d}'
 
@@ -76,7 +78,7 @@ def load_xlsx(path: Path | str, banka: str, tarih: str,
     df['Tutar'] = pd.to_numeric(df['Tutar'], errors='coerce')
     df = df.dropna(subset=['Tutar', 'Kalem Adı'])
 
-    df['Banka Adı'] = banka
+    df['Banka Adı'] = kanonik(banka)
     df['Tarih'] = pd.Timestamp(tarih)
 
     if banka_turu and df['Banka Türü'].isna().any():
@@ -210,7 +212,7 @@ def rebuild_parquet(raw_dir: Path | str, parquet_path: Path | str,
     for banka_dir in sorted(raw_dir.iterdir()):
         if not banka_dir.is_dir():
             continue
-        banka = banka_dir.name
+        banka = kanonik(banka_dir.name)
         bt = bank_turu_map.get(banka)
         for f in sorted(banka_dir.glob('*.xlsx')):
             parsed = parse_filename(f.name)

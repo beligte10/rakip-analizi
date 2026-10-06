@@ -611,6 +611,7 @@ def build_meta(ctx: DatatableContext, catalog: dict, bank_data: dict,
     groups = catalog.get('groups', {}) or {}
     meta['groups'] = groups.get('members', {})
     meta['group_order'] = groups.get('order', list(meta['groups'].keys()))
+    meta['focus_bank'] = groups.get('focus') or 'Kuveyt Türk'
     if groups.get('colors'):
         meta['group_colors'] = groups['colors']
     meta['dates'] = dates

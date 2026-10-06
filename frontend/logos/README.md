@@ -48,3 +48,16 @@ Adı eşleşmeyen dosyalar atlanır ve script uyarı verir.
   hata vermez, eksik logo sorun çıkarmaz.
 - Logolar ilgili bankaların tescilli markalarıdır; bu dashboard içinde
   yalnızca ilgili kurumu tanımlamak (rekabet analizi) amacıyla kullanılır.
+
+## Kaynaklar (2026-10-03)
+
+Rozet için logoların yalnız sembol kısmı kırpılıp 96×96 şeffaf PNG'ye çevrildi (yazı logoları 18-28 px
+rozette okunmuyor).
+
+- Wikimedia Commons: Türkiye Finans, Albaraka (Al Baraka Banking Group), Emlak Katılım, Dünya Katılım,
+  Vakıfbank, Ziraat Bankası, İş Bankası, Halk Bank, Alternatif Bank, Burgan Bank, Enpara, Fibabanka,
+  HSBC, Şekerbank
+- Bankaların kendi siteleri: ING Bank (ing.com.tr kurumsal logosundaki aslan), Hayat Finans
+  (hayatfinans.com.tr logo), TOM Bank (tombank.com.tr logo — "T" harfi)
+- Odeabank: bankanın resmi mobil uygulama ikonu (App Store, siyah zemin "odea"; sitedeki logo
+  yalnız yazıdan oluşuyor)

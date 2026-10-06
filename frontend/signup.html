@@ -13,7 +13,155 @@
     if (ios && m) m.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
   })();
 </script>
-<title>Başvuru — KT Rakip Analizi</title>
+<!-- Dil (TR/EN): sözlük + sayfa çeviri motoru; scripts/i18n_gom.py doldurur, elle düzenlemeyin. -->
+<script>/*I18N_SAYFA*/
+window.KT_I18N = {"bankalar":["Akbank","Albaraka","Alternatif Bank","Burgan Bank","Denizbank","Dünya Katılım","Emlak Katılım","Enpara","Fibabanka","Garanti Bankası","HSBC","Halk Bank","Hayat Finans","ING Bank","Kuveyt Türk","Odeabank","QNB","TEB","TOM Bank","Türkiye Finans","Vakıf Katılım","Vakıfbank","Yapı Kredi","Ziraat Bankası","Ziraat Katılım","İş Bankası","Şekerbank"],"sozluk":{"Ad Soyad":"Full name","Admin yetkisi gerekiyor":"Admin permission required","Başka bir ağır işlem (yükleme/rebuild) sürüyor. Bitmesini bekleyip tekrar deneyin.":"Another heavy operation (upload/rebuild) is running. Wait for it to finish and try again.","Başlık boş olamaz":"Title cannot be empty","Başvur":"Apply","Başvuru Alındı ✓":"Application Received ✓","Başvuru başarısız":"Application failed","Başvuru yapın":"Apply for access","Başvuru — Kuveyt Türk Rakip Analizi":"Apply — Kuveyt Türk Peer Analysis","Başvurunuz alındı, admin onayı bekleniyor.":"Your application has been received and is awaiting admin approval.","Başvurunuz alındı. Admin onayından sonra giriş yapabilirsiniz.":"Your application has been received. You can sign in after an admin approves it.","Başvurunuz reddedildi":"Your application was rejected","Beklenmeyen bir hata oluştu.":"An unexpected error occurred.","Bilinmeyen banka:":"Unknown bank:","Bu adla bir rol zaten var":"A role with this name already exists","Bu e-posta ile zaten bir başvuru/hesap mevcut":"An application or account with this email already exists","Bu hesabın şifresi sunucu yapılandırmasından (start.sh → KT_PASSWORD) yönetilir.":"This account's password is managed in the server configuration (start.sh → KT_PASSWORD).","Bu isimde bir grup zaten var":"A group with this name already exists","Bu işlem için rolünüzde yetki yok":"Your role does not allow this action","Bu özellik rolünüzde açık değil":"This feature is not enabled for your role","Catalog'ta tanımlı olmayan banka(lar):":"Bank(s) not defined in the catalog:","Dil / Language":"Dil / Language","Dosya gönderilmedi":"No file was sent","Dönüştürme/karşılaştırma hatası:":"Conversion/comparison error:","E-posta":"Email","E-posta veya şifre hatalı":"Incorrect email or password","EVDS_API_KEY tanımlı değil":"EVDS_API_KEY is not set","En az 8 karakter":"At least 8 characters","Geçerli bir e-posta adresi girin":"Enter a valid email address","Geçerli dosya yok. Atlananlar:":"No valid files. Skipped:","Geçersiz JSON:":"Invalid JSON:","Geçersiz banka(lar):":"Invalid bank(s):","Geçersiz izin":"Invalid permission","Geçersiz kullanıcı veya rol":"Invalid user or role","Geçersiz rol":"Invalid role","Geçersiz sütun":"Invalid column","Geçersiz veya bozuk ZIP dosyası":"Invalid or corrupt ZIP file","Giriş Yap":"Sign in","Giriş başarısız":"Sign-in failed","Giriş yapmalısınız":"You need to sign in","Giriş yapılıyor…":"Signing in…","Giriş yapın":"Sign in","Giriş — Kuveyt Türk Rakip Analizi":"Sign in — Kuveyt Türk Peer Analysis","Grup adı boş olamaz":"Group name cannot be empty","Grup bulunamadı":"Group not found","Grup en az 1 üye içermeli":"A group must have at least 1 member","Gönderiliyor…":"Sending…","Günlük soru sınırı sayı olmalı":"Daily question limit must be a number","Hazır roller silinemez":"Built-in roles cannot be deleted","Hesabınız henüz onay bekliyor — admin onayladıktan sonra giriş yapabilirsiniz":"Your account is awaiting approval — you can sign in once an admin approves it","Hesabınız yok mu?":"Don't have an account?","Hesaplama boş sonuç verdi (toplam_aktifler için 0 dönem). Mevcut veri KORUNDU, yazma iptal edildi. Olası neden: data/raw boş ya da parquet eksik.":"The calculation returned an empty result (0 periods for toplam_aktifler). Existing data was KEPT and the write was cancelled. Likely cause: data/raw is empty or the parquet file is missing.","JSON boş veya tanınmayan formatta":"JSON is empty or in an unrecognised format","JSON'da 'donem'/'kayitlar' anahtarları yok":"JSON has no 'donem'/'kayitlar' keys","Kart bulunamadı":"Card not found","Katalog güncellemesi zaten çalışıyor":"A catalog update is already running","Kendi izinlerinizden geniş bir rol atayamazsınız":"You cannot assign a role with more permissions than your own","Kendi izinlerinizden geniş bir rol tanımlayamazsınız":"You cannot define a role with more permissions than your own","Kendi rolünüzü değiştiremezsiniz":"You cannot change your own role","Kullanıcı bulunamadı":"User not found","Kullanıcıları dışa aktarmak için \"Kullanıcılar ve roller\" izni gerekir":"Exporting users requires the \"Users and roles\" permission","Kullanıcıları içe aktarmak için \"Kullanıcılar ve roller\" izni gerekir":"Importing users requires the \"Users and roles\" permission","Kuveyt Türk Rakip Analizi — Giriş":"Kuveyt Türk Peer Analysis — Sign in","Kuveyt Türk Rakip Analizi — Üyelik Başvurusu":"Kuveyt Türk Peer Analysis — Membership Application","Mevcut şifre hatalı":"Current password is incorrect","Oturum geçersiz — tekrar giriş yapın":"Session expired — please sign in again","Pipeline hatası:":"Pipeline error:","Rakip Bankalar grubuna geri eklendi":"re-added to Peer Banks","Rakip Bankalar grubundan çıkarıldı":"removed from Peer Banks","Rebuild hatası:":"Rebuild error:","Rol adı 1–40 karakter olmalı":"Role name must be 1–40 characters","Rol bulunamadı":"Role not found","Sadece .json kabul edilir":"Only .json is accepted","Sadece .zip dosyası kabul edilir":"Only .zip files are accepted","Sadece .zip kabul edilir":"Only .zip is accepted","Sadece kuveytturk.com.tr uzantılı kurumsal e-posta adresleriyle başvuru yapılabilir":"Only corporate email addresses ending in kuveytturk.com.tr can apply","Sadece kuveytturk.com.tr uzantılı kurumsal e-posta adresleriyle üye eklenebilir":"Only corporate email addresses ending in kuveytturk.com.tr can be added","Sadece kuveytturk.com.tr uzantılı kurumsal e-posta kabul edilir":"Only corporate email addresses ending in kuveytturk.com.tr are accepted","Sayfa bulunamadı":"Page not found","Sizden daha geniş yetkili bir kullanıcı üzerinde işlem yapamazsınız":"You cannot act on a user with more permissions than you","Sizden daha geniş yetkili bir rolü düzenleyemezsiniz":"You cannot edit a role with more permissions than yours","Veri henüz yüklenmemiş.":"No data has been uploaded yet.","ZIP içinde .xlsx dosyası yok":"The ZIP contains no .xlsx files","ZIP içinde computed.json yok":"The ZIP contains no computed.json","ZIP upload hatası:":"ZIP upload error:","ZIP yapısı:":"ZIP structure:","Zaten onaylı bir hesabınız var mı?":"Already have an approved account?","ad.soyad@kuveytturk.com.tr":"name.surname@kuveytturk.com.tr","adında bir grup zaten var":"already exists as a group name","bank_data içinde hiç dolu hücre yok":"bank_data has no filled cells","bank_data yok veya boş":"bank_data is missing or empty","catalog yok":"catalog is missing","catalog.json yok":"catalog.json is missing","computed.json bozuk (geçersiz JSON)":"computed.json is corrupt (invalid JSON)","computed.json boş görünüyor (bank_data yok) — içe aktarma iptal edildi":"computed.json looks empty (no bank_data) — import cancelled","computed.json yok":"computed.json is missing","computed.json yok — dışa aktarılacak veri yok. Önce veri yükleyin/rebuild yapın.":"computed.json is missing — nothing to export. Upload data or rebuild first.","computed.json yok — önce /admin/rebuild çalıştırın":"computed.json is missing — run /admin/rebuild first","computed.json yok. Admin paneli üzerinden veri yükleyin.":"computed.json is missing. Upload data from the admin panel.","data/raw altında banka klasörü yok":"There are no bank folders under data/raw","data/raw boş. Önce raw xlsx dosyalarını yükleyin.":"data/raw is empty. Upload the raw xlsx files first.","docs/PROJE_EL_KITABI.md bulunamadı":"docs/PROJE_EL_KITABI.md not found","kök nesne dict değil":"root object is not a dict","manifest.json bulunamadı — bu dosya /admin/export-data ile mi üretildi?":"manifest.json not found — was this file produced by /admin/export-data?","meta yok":"meta is missing","odak banka grubudur, silinemez (önce odak bankayı değiştirin)":"is the focus bank group and cannot be deleted (change the focus bank first)","Çok fazla başarısız giriş denemesi. Lütfen birkaç dakika sonra tekrar deneyin.":"Too many failed sign-in attempts. Please try again in a few minutes.","İsim boş olamaz":"Name cannot be empty","Şifre":"Password","Şifreniz güncellendi.":"Your password has been updated."}};
+// Sayfa çevirisi (2026-10-02): giriş, başvuru ve admin sayfaları için TR/EN.
+// scripts/i18n_gom.py bu dosyayı sayfanın <head>'ine, önüne KT_I18N = {sozluk, bankalar} koyarak gömer.
+// Pano (index_v30.html) kendi React tabanlı çevirisini kullanır; dil seçimi ortaktır (localStorage 'kt_dil').
+//
+// İngilizce seçiliyken:
+//  - Sayfadaki metin düğümleri ve placeholder/title/alt/aria-label öznitelikleri sözlükle çevrilir
+//    (önce boşlukları sadeleştirilmiş tam eşleşme, yoksa ifade düzeyinde; banka adları korunur).
+//  - Sonradan eklenen içerik (innerHTML, textContent) MutationObserver ile çevrilir.
+//  - alert / confirm / prompt mesajları satır satır çevrilir.
+//  - translate="no" işaretli öğelerin içi (kullanıcı içeriği, sürüm notları, el kitabı) dokunulmaz.
+//  - İlk çeviri bitene kadar gövde gizli tutulur (Türkçe metin bir an görünmesin).
+(function() {
+  var DIL = 'tr';
+  try { DIL = localStorage.getItem('kt_dil') === 'en' ? 'en' : 'tr'; } catch (e) { /* depolama kapalı */ }
+  var EN = DIL === 'en';
+  var veri = window.KT_I18N || {};
+  var SOZLUK = veri.sozluk || {};
+  window.KT_DIL = DIL;
+  window.KT_LOCALE = EN ? 'en-US' : 'tr-TR';
+  window.ktT = function(tr, en) { return EN ? en : tr; };
+  window.ktDilSec = function(d) {
+    try { localStorage.setItem('kt_dil', d); } catch (e) { /* depolama kapalı */ }
+    window.location.reload();
+  };
+
+  // <kt-cevir> (tests/test_i18n.py bu bloğu JS motorunda çalıştırır)
+  var _re = null, _korRe = null, _bellek = {}, _sayi = 0;
+  function _kacis(t) { return t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function _sade(t) { return t.replace(/\s+/g, ' ').trim(); }
+  function cevir(s) {
+    if (!EN || typeof s !== 'string' || !/[A-Za-zÇĞİÖŞÜçğıöşü]/.test(s)) return s;
+    var m = /^(\s*)([\s\S]*?)(\s*)$/.exec(s);
+    var on = m[1], oz = _sade(m[2]), son = m[3];
+    if (Object.prototype.hasOwnProperty.call(_bellek, oz)) return _birlestir(on, oz, _bellek[oz], son);
+    var out = SOZLUK[oz];
+    if (out == null) {
+      if (!_re) {
+        var anahtar = Object.keys(SOZLUK).filter(function(k) { return k.trim(); })
+          .sort(function(a, b) { return b.length - a.length; });
+        _re = new RegExp(anahtar.map(function(k) {
+          return (/^\p{L}/u.test(k) ? '(?<!\\p{L})' : '') + _kacis(k) + (/\p{L}$/u.test(k) ? '(?!\\p{L})' : '');
+        }).join('|'), 'gu');
+        var bankalar = (veri.bankalar || []).slice().sort(function(a, b) { return b.length - a.length; });
+        _korRe = bankalar.length ? new RegExp(bankalar.map(_kacis).join('|'), 'g') : null;
+      }
+      var korunan = [];
+      out = _korRe ? oz.replace(_korRe, function(x) { korunan.push(x); return '\uE000' + (korunan.length - 1) + '\uE001'; }) : oz;
+      // "<X> Hariç Katılım Bankaları" → "Participation Banks excl. <X>"
+      out = out.replace(/(\S+) Hariç (Katılım|Mevduat)( Bankaları)?/g, function(x, ad, seg, tam) {
+        return (seg === 'Katılım' ? 'Participation' : 'Deposit') + (tam ? ' Banks' : '') + ' excl. ' + ad;
+      });
+      out = out.replace(_re, function(x) { return SOZLUK[x]; });
+      out = out.replace(/\uE000(\d+)\uE001/g, function(x, i) { return korunan[+i]; });
+      // Türkçede sayıdan sonra isim tekildir ("1 banka"); İngilizcede 1 için çoğul eki düşer.
+      out = out.replace(/(^|[^\d.,])1 (bank|period|measure|group|page|row|item|file|user|card|cell|role)s\b/g,
+                        function(x, o, ad) { return o + '1 ' + ad; });
+      if (window.__ktEksik && /[ÇĞİÖŞÜçğıöşü]/.test(out)) window.__ktEksik[oz] = out;
+    }
+    if (_sayi < 20000) { _bellek[oz] = out; _sayi++; }
+    return _birlestir(on, oz, out, son);
+  }
+  // Türkçe parça boşlukla başlayıp İngilizcesi noktalamayla başlıyorsa (" üzerinden başvurur." → ". They…")
+  // öndeki boşluk atılır: "/signup ." yerine "/signup.".
+  function _birlestir(on, oz, out, son) {
+    var nokta = /^[.,;:!?)]/;
+    return (nokta.test(out) && !nokta.test(oz) ? '' : on) + out + son;
+  }
+  // <\/kt-cevir>
+  window.ktCevir = cevir;
+  if (!EN) return;
+
+  document.documentElement.lang = 'en';
+  document.documentElement.classList.add('kt-ceviri');
+  var stil = document.createElement('style');
+  stil.textContent = 'html.kt-ceviri body { visibility: hidden; }';
+  (document.head || document.documentElement).appendChild(stil);
+
+  var OZNITELIK = ['placeholder', 'title', 'alt', 'aria-label'];
+  var ATLA = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, NOSCRIPT: 1 };
+  function atlanir(el) {
+    for (; el && el.nodeType === 1; el = el.parentNode) {
+      if (ATLA[el.tagName] || el.getAttribute('translate') === 'no') return true;
+    }
+    return false;
+  }
+  function metinCevir(n) {
+    var v = n.nodeValue, c = cevir(v);
+    if (c !== v) n.nodeValue = c;
+  }
+  function oznitelikCevir(el, ad) {
+    var v = el.getAttribute(ad);
+    if (v) { var c = cevir(v); if (c !== v) el.setAttribute(ad, c); }
+  }
+  function agacCevir(kok) {
+    if (!kok) return;
+    if (kok.nodeType === 3) { if (!atlanir(kok.parentNode)) metinCevir(kok); return; }
+    if (kok.nodeType !== 1 || atlanir(kok)) return;
+    var w = document.createTreeWalker(kok, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+      acceptNode: function(n) {
+        if (n.nodeType === 1 && (ATLA[n.tagName] || n.getAttribute('translate') === 'no')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var n = kok;
+    do {
+      if (n.nodeType === 3) metinCevir(n);
+      else {
+        for (var i = 0; i < OZNITELIK.length; i++) oznitelikCevir(n, OZNITELIK[i]);
+        if (n.tagName === 'INPUT' && /^(button|submit|reset)$/i.test(n.type)) oznitelikCevir(n, 'value');
+      }
+    } while ((n = w.nextNode()));
+  }
+  new MutationObserver(function(kayitlar) {
+    for (var i = 0; i < kayitlar.length; i++) {
+      var k = kayitlar[i];
+      if (k.type === 'childList') {
+        for (var j = 0; j < k.addedNodes.length; j++) agacCevir(k.addedNodes[j]);
+      } else if (k.type === 'characterData') {
+        if (!atlanir(k.target.parentNode)) metinCevir(k.target);
+      } else if (k.type === 'attributes' && !atlanir(k.target)) {
+        oznitelikCevir(k.target, k.attributeName);
+      }
+    }
+  }).observe(document.documentElement, {
+    childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: OZNITELIK
+  });
+
+  function cokSatir(t) { return typeof t === 'string' ? t.split('\n').map(cevir).join('\n') : t; }
+  var _alert = window.alert, _confirm = window.confirm, _prompt = window.prompt;
+  window.alert = function(t) { return _alert.call(window, cokSatir(t)); };
+  window.confirm = function(t) { return _confirm.call(window, cokSatir(t)); };
+  window.prompt = function(t, v) { return _prompt.call(window, cokSatir(t), v); };
+
+  function hazir() {
+    document.title = cevir(document.title);
+    agacCevir(document.body);
+    document.documentElement.classList.remove('kt-ceviri');
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hazir);
+  else hazir();
+  // Güvenlik: bir hata olsa bile sayfa gizli kalmasın.
+  setTimeout(function() { document.documentElement.classList.remove('kt-ceviri'); }, 2000);
+})();
+/*/I18N_SAYFA*/</script>
+<title>Başvuru — Kuveyt Türk Rakip Analizi</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAbZUlEQVR42r2bd3xV9Rn/39/vOXcmZBAyCAmBsDcEIYAMASu2Yq2jFW1r1bZWbdVfrWhrtah1IT8HtG5x4gYrUAHZyN57hpFJQhKyc3PvPeP7++PeXBMIkID9HTgvRu495/t9vs/4PM/zeYRtW7ThUlzkpZTCxkapcz9CIBBCIBCEfouLfV2rvyhaIQB1sRtW4a8KIZBCa+sDsJQV2kmjUP4HwriQANq8eVvZSCERQjb7/5M1hWwr3kR1sJoADdjKxlY2AFJIpJDEO+NJj+lCemwXkj0pzYSmwp8XFycM0VYBqLbZhQptHImUoUUX1OVxtOYQB8r2cKBiH4dPH6DerMUh3EQ5omnnbEeUHo0QAp9Zj8+op6LhNA7lxOlwEhsVw6i0sYxLu4q0dukk6skgBCgwlRES8g8giJYEoNp64prUI//eVPod7+18m8PV+xFS0dnblQ7tOjCk4zCGJ48i3pmAV4vCo3kjJ6ywsW2LvOpc8qqOU+4v5UDNHtYVrEYZAs2t0Su+D/cM/jNdY7rhll4ALNtEnqFpbRXCmQJQbbFxACk1av01LMtfxMqiJWwp3khmfHfGpk1kVKfR9Irrh0dGnWXfCEGZ7xQKRZI3GaXUWWZTa1Szt2wnc/d/xs7KrQRMPz3b9+HarjdwbeaNOB2usBBEW/xeMyFclABsZaFJBwDfHPqat/bM4pRZwtj08Uzqci1jO03AIZ2Rx1nKCm0QEXGMCHhk1f24NTdPj3sJyzYj5tQYEfTwO0BR7itj0bEFfHXsM45WH6F3XD/+lv0kQ1OGR/xDG7The2nZttV4q9bcpmUopZSqDlaqaeumqkHvZ6j71tyhDlbsVUrZSimlbNtWhhVUpm0o0zaUZZuR27CCSimlZu96TWV9mqmyPs9UHx58SymllGEFmn3WtA1lWEFl2aZqvOoDdWrx8QXqtsXXq6Ef9VQzt09XQSuglFLKtAzV2n007rtRA1Rb7H3nqa1M3z6NwqpC/jD0Pm7tdQcaOpZtolDn9NSWsnBIJ9uKN/Dg2ntQmo2FjTQl0y+fxeVp4zFto8WTDIVVO6wVAr/p4+ND7/PGnpmMT/0RU0c8RqI7BVtZbXGOrdeZxs0vOjafu5bchmmbvD7pPX7d63dIW2LaRjjet+ydFQqHdFBn1fDm3lnUq1oQoRBoyADP7XiCk3WF6FJHhcNjs5WGsYSlLAw7iFNz89v+9/LKFW+wsWgNdy37FXvLdyGFhq1aD+5ka4Jc4+a/PDyHJ9Y/wuguY3htwkcMSBiKYRsocX77a7TreqOO59dNY1fFNryOKGxlo5SNS3dx0pfPrB0vEFTBULg7h1IKBJrQUNiYtsHlqVfw9tWfkORO4k/L7mBF4RI06WhRiOcSgLqQt9ekzrt7XufZjf/g8tRxPD36JZK8yZi2gSa0C3pgpRSa0Fl4fB6L8+fjcXojICgUzmyinNGsKF7Ef45/hiZ0lLqQFwtpm2Vb9E4YwAvjXmV4ykieWPUIq3K/RUq9NZqg5AVRndRZnreI13e+wpXpP2Ha6OlEyWhMO9gqr2urkN3uLt/O7P2v4vK6sLFbFJJTd/LijmdZXbgUTerNhHROQQiBYQWJdcYz7fLpDEu5nGnr/8rW0xvRpOOCz5DnU1tN6uw7vYtnNz7O1T0n8+TY6cS548JIrHXYXgpJ0AowZ+87lAfL0IWjxYRIoZBCx7YtPtzzDj6zPqQJrfDPmtQwbYNoZzuenfgiwzpl88x3f+dI5cELClKe69QEkvzq4zy08o90TezGI9lP4nVEteil7XCcb/xu46JDm9KoC9awv2wvHofnvItRykbXNOqCtRh2ECHEWXDbVjaWss56jhQSww7ilh7uz5pKwN/AY6sfpLLhNFJo58xC5flU66NDs/FZdTww/FGiZNRZ0FMphVIKXTojcFiXjrANq8hnohztSIlOxbDMsIM7nzobZLTvQrQj+nsbVqAJHV060KUDh3SiS0ezjBNAEyFNyIjpxrMTZ3LaKGPmtukR6NOSNukt273G6sJlLDg+jwez/8rAdoOxbCMCVRUqtKjwptfkL2djwVoqAqfJTOjODb2nkOQKxWTLNnDpbsamTmDn/q24HeK8Ds6ybPonDkYTDgzbQBMSJRXF/kL+e+Iryn2ldPR2YkzqBLrF9gKIhOBGx2jaBkOShnNX1v28vP45ru15I0OTs7Fss5lWNUJhdaYATGnwx+V3EKVH89IVb9J0xbay0YWOEJLjVTksPjGfz498RL1dj6ZpBK0AfWL68afBDzGq0zhM28AhXeRUHOR3K6dgCAPRQvARCCxlEaO356Wxr9Ov/UAMO4hDOll07Gv+vef/UhwsjKh+rCOOn3X/Bb/scSfJ3lQADDsYjkqhsw5aAe759jd4o7zMGjcbDS38XtGyCTQ6vjUFy9ldvoPfD/gTGloopiqFROKQThpsH58dfo/7l93J7MNvYDpMvC4vTt1JjCuWnPojTF//JDlVh3BIJ5Zt0r19b/olDsJvNrQYPYQUBI0Ao1Iup3f7Pli2iSY0Dlft542dr1BmnCLGEUecM544Z3ssTD4+9C5/XPUb5ubMoaz+VDj/CG3RVjYePYpfDfwtmwrWs7ZoFUJI7DPUTzb3wpJSXzGzNs/gmozr6Z8wOKReSDTpIKiC/OfwZ/yfFb/nlV0vUC7KiXJ6kUqGQU2oiuPRPZRSwhtbX8G0rRA8RjA580Y02bJDEkpgY9MlqhsaDixlIYXG4vz5FJp5eB1RWMrEUhaWMpFoRDmiKWwo4IXtT3HPil+z+MT80FqFjkRiKoMxaeMZ3/kq3tv7BgaBcPRSLQhAhZa5pmA5xbUn+XHnn0YckyZ1yoOlPLvlMZ7e9hi7q3ficDjQhd7M6zcDPrrOhop1bCpZG8bviqzEoUQ7Y7CUeRZcNjGJ0qIZkjQMhcKpudhSup55Rz/F44jizLpFY1RwSCdul5sio4Bpm6Yybe1UqvyVaFJHColLuLmz/90U1eSz5/ROhBDNtEB+74ElAthYspaeyX0YkDQYW9nUmXUszJ3HbxfdzFc5X2DrNqYyCFh+FHaL2F8RMhclFF8f+4KA7cNWikRXRwbGD8FvNTcDKSRBI0BWwnAGJmehlI2lTGbvf5V6ow5daGcJufGdtm1imgamaRAUAebmfsKUBZN5dfdLlDaUoJRNn4QB9E7px+cHP2z23UgUaMT6+8t3s/3kFu4d/uewyllU+Svw+Xzc0uMObCxOBYop9heRV3OCqvpKyoNlOBw6DuFsFpttZePQddYUrWBZ7mImZ94IwNWdrmXdydXNNiSEIGgajEweFxaIxuK8+Wwt3US0IwarCaQViJC/sIIIIMmZSqIrhd7t+5AWnQECgnaAYDDIqboSktwpSDRGpYzl1R0vc6z6CN1ie4ZSYSFCAmhczNbiTfgsH1kJ2RFgktEuk4y+mWfZbMD0k1N1iMV5C1iZt5TS4CncDhdSyIggBAJ0+GD/24zqOI54TwJDU7PpFt2D3IbjOKUz7K2DpEankZ02CoWiwapj7tGP0c6IFlJITGUSbDBIcqVwz2UPMLLjGKJlDG7d02JYNewgUmh09fRAWIJDVfvoFtsz4pdko/NTKA5V76Nf0kAyY3tgKyuUbCgTww4StAIELH8YnChcuov+HQYzdeg/+Ne42UxOvR6lwGf60GQoQbKVjVu6OV6fw7LiJQgECe5E+sT3x7TCsTuM5YfEDSO1XScEgoUnvmJ36Q48Dm8YlYYywHqjHg9e7ux1N29OnMO1GTfR3pGAS3Nh2gZ+s4GA5cewAhhWMJKsKaW4LHU4GZ6uHD2d08wMZKPK1ZhVFNYWMLHLJDShNTtFTUh0qePS3ARsP3XB2mbq3j2hF9PGPM/LV7xO//hBVDdUQ9g/hACTxhc5H1EaKEETOoMThyHRIlrm0t1c2/t63JqHcv8pvjz8MZoum516VbCSfu0H8tLYN7l36F9Ij8sI/zyESXTpwK17cGlupNTQpBbxM7YycepuRnQezYnKo/hUbeTQI0iwKlBJlVXB0I7DInb5PeoTaFJjbs7HrDi+hLJgKR2jOzIwKYvxaVfRPbY3UkiyO4yh2+W9eW/PG/y34CtqVQ1RehQeh5ecioO8uvNFnhwxgzFp40ncm0yVqsCyLNJjMuiXMAhL2cza8gKFdfm4HR5sbAKWnzhXe27pcTu/7XsvUY52AARVgBJfEYV1BRTWFlDdUIlXRnFZcja9OvRrlrM0GtHAlMGsLFhKdbAar6sdKNCVUiCgqKYAww6S4EpqXsgIn+DcnDm8tetf+GnAEAYnfEf57tRKPjz8NsOSRjI+ZRLj0ibSwZvI1BGPM6HbVby5cyY7yrficOrEueNZlbuc6zO3MzhpKAMSB7H61HJsbCamTyJWj2dF3hIW5y/EG+XBUAam32Rkylj+kv0onaO6hYoqwTpW5y1jxcklHKjcS51Zg2EbIb+kfMTsjeeBAX/lxn63ngV92+kx+Ix6qgKVdHSlhfb2+LTHn5BCY/HxBfiNBm7ofjOSUNgJJToOvjzyEbN2zcAvGkALmYVTc+LWPFjKIqf6EGsKV7Ahdy1R7mg6xaaTEd2VK9KvJEpEkV+bR0WgHFMaFNcVManzZJJjk1iStxCX7uLeQQ+S4Erind2vcqLhGLZlEaPimdLz19yf9TDJ3k4YymBdwSqe2vAoX+bOIbf+GAahjFHTQirv1N1Y0mRNyXKcmouspOHh9looR9Clzjcn5tMjoSc9YnuHaxVhKFDuK6WDJxGHcKJsG5sQyFiSt4CXtz+HcIhmKK6pj4h2xIBTccI4wj+3/o0vj83hF5m/YkLGJO4cdC+DOl7GvCMfs654DVtKNrDn9HYGJQ6le0xPymvK6BrdjQ0nV7OqdCkYMC7tSn7R+9cMTQlFo3VFq/j4yLvsKd9BUAVxu9yhEns4G4wgSwUaOi5d8O9dM0j1pHFVl8mhSIBNojeJ5Khkyn1lZ2eDftOP2+lFIDFUAKfmYu/pnby442lshx0uVqpz9glQ4NBDvYDdFds4VLafxTkLuHPoHxiaNJyspKGsLVrJrB0zmHfkM4YmjaCLqzudEzNxa14WHvsPdoPNHX3u5vahf8AlXazOXc7XOZ+zqWIdJgYu3YVLuM5Kg5utBRspNHSHgzf2zSQtpjN9myRWMc5Y6oK1ZwvAUhZ6OL11ai5O1hbwxIaHqbGq8YRVXQjRio6DDGmEQ7G5Zh371u1kYvqPub7rFMZ2+hH9Egfx2uaX2VK0nuy0UbidXvaV70YaGh9cM5c+CQPYX7Gbt3b+m22lGwlIPx6HBydOVLiUdqF1KAUuzUV+/Qn+sfkh3p34BTHOOAAc0onZ2IRRTaKAlDJSSa036nhm0+McqN5LlDOKaqsqnEKqNnWfBAK/v4H3DrzO3KOfMDjmMm7v/wceGvkYhTX5DEwZgiY08mpyeXDUX8mpOMJti27gYN1eGiwfbt2DRNBgNjR594XWIRpPFE3qHKzcx9NrH+WRUdNI8CSHS+vm2Rog+D5VPFSzD687ismZ12OjEE1zaMVZeLqlqrBo8jdNatQHa2kI+pmb8wm2tMjueDm60kEJ0mPTmb9vHktPLMLWLPq3G4weqeUplGhNB1+E45Zq9iOncJNfmc+a3BXc0OdWgpYfM5xYCdFEAA5Npz5YB0Df+IE8P2ZmRNaNmz3zTy6CtGCpUGhqBEKhU3Bw3YCf85O+1+EWHjSpEbD84cJJG/kJWGf5BwsTES6AB8PQuHH9uo2NRCPWHUdO8WEUNh7haeLlz25wNH3Bhaq2EknADrD6xDIu6ziCDlFJbDu5iZ2ntqA7QiiuNlBDersuXNfjJkxlsDpvJVmpw4l1xEfsvi2Gdy6z8JsNlDeUMdwz8ux0uFtsT45V57C5aD0IEc7AVJP7fJZ+7l+2snFKJzuLt3H7kl+wunApGR0yqLQrmbHtaZ7a/Ci7yrfTv8MgcmoOMnX5H1l69Bs8mifUtA1Xglt7hwomzW8zDJRONZzkVH0xUY7oyOHpjRLrEd8LwwqSX5PHiE5jwrp/0bycM0rWGj8fNIUFS+by+PqHuK77TdzS53YGdBhMSV0xv+n3exYXzufFLc/ga/DxjzHP4pTuEJLj0tfQqKWnfCVYyiLJndKkuxTeZKeodNq7EzhWcQTVtl77BTs3trLoEt2DEUmjOW2Uc6T8MFUNFUzIuJrM2O78Ze3dPLHhEQK2n2h3O3rG9eF/cR0s24dHeOjfYdD3HAQRDpwu3UMHdxLHa45iKAOndEZg5KVeje2xiek/ptZfxxPjnudYWQ5/2XYP205vQukWHt1LZUMFN/SfQveY3mHc8cNsXIbdeW79cdp5Y4l1xoW0QoAkXI7Wpc6VXX5MjVGFz6q7KA/fsgZIDMtgRe4SslKH8c7Vn7A1bzP3Lfk9myvW4va6UArcpoeHBv+dm3rdyuf7PwxXj7VLoSY2607VmFVsL9nMqNQxCCEj5tVMz0d0Gk1J3Um2lGyIFB0v/fQtXLqbbcWbeGzVn/n62OcMS8vmH+OfoW/cAOrqapiUdg3vX/MFY1LHM/Xb+9lY/B0e3fMDvd8GIViTu5KT1UWMTh1/dmdIhOlnnaLS6OBJZl3+aq5Kv/aH8QMqhDKv6Xst/1n2Kbs27+CypGzuG/ww06/4F9tObmJkxzF8m/8NHx54h4L6XG7u90tkuM11qWvQCHEJ1hatZFjqCC5LyQ6367Xvw2AoXJm0c8Yyqctktp3cTFWg8rxNxbbysTp7M0lypuJxu9lbsYvfLb+Flzc/x+AOw2gw/SzJWchx31H6Jw5mRMroCFK71NOXUuPA6b1sLd7ATzKvCzdHrBb6AuGX3dD7Zgxl8OH+d5qzui56/yLUutZjubrTtdTX+TClgcOjsapoKXcv/yX7qncxY+Kr3JxxG1ekXEmn6M74zPpmaPFSItBH+2bjcLgYlTruLMHKpojNsk06eJKY0u83LDj6JaX+4nAX1r4kASilmLvvEyZ0u4p/j3+XQbFDqfPV4/S6OGkV8fe1D7K7dDv/HDODsRkTmLH+KXzBOkS4bnfRpy808mpOsK54NTf3/TUJ7sRQObyJ65NnSkwpxY09p5DgTeSl9c/jN/1wCZpgKQuH5iQuKpZHlz9IpVnB8+Nm8cCQh3HaLjrpacyc8BZDOl7Ga7tfYurKP3Ks6ijx7oQ2kZ3OhVA/2jebWFcMN3SfQmP5r7mkzsED/OroZ2rAOxlqQc48pZRSwTM4fK29TdtQStmq2l+prvvPBNXzwwR1yzfXqGNVR9SxisPqaMUhtTx3sfrVouvUsE97qIFzMtSiY19f0jsbuYibStaqER/3Uf89Me+cPEK9JbtRymZy1+tZm7uKd/e9zuCULNKjMjBV27m5AoFlW8S44pjU7RpO7s+jd/t+JLqTqGgo58Udz7KlZAO6Q8dSFgOThjC6y/hISfxiQVe1VcE/t/yNISnDuLrLdSH+YAte9Sx+QNNW2eHTB7hr2a8YlTaG50bPbEZEaJMTVAZ+K0BQ+Tl8+gC94vuyIm8JH+x9m1KjBK/TS22wll7t+/LoqKeIVXFE6e1o702INEZay19uZJk8vukhthZs4O2rP6V7fK9zEqvluYhNlm3SK6Ev92dNZX7Ol3x27L2QQ7TVRfgDwQe73uGbwwsY2XEMZb5SPj88h6JgYaj+rxQ/6/5z3pz4AXX1NTy99nECVqBN9YBweRQpNGZufZ7vTiznyTEz6B7fC9u2zq1N5+LSNtqTspV6fefLatinPdSK/MVhTm/wLA7wue6gGeLxzt79mur5bqJ6cMUf1O5T21W1WaWe3z5NTfximNp46jt1vDJH/X31n9WIOX3VW/tmRmy2tX6m0e6/yftKXTanu/r6+Ket4g+flyQdEYKy1dObH1UDPkxX3+YuVEopZVmmMsNE5vMKIExkXlW4RI2e208N/7ynGvPpIPXypufViZqjqqguXxXU5aorv8xWQz7IVBPmDVVHag62WgCmFWziuD9Vgz/IVC9ueSZyUBciTWvTpk17EnjifNUVpSA75XLKg2XM2vkCPp+P4Z1GokvnBR1jyGdAWnRn9pzeRU7NAaJd0ewu2cF3eStIiU6lV/t+9O3Qn5zKQ/RM6MOtPe4IkynVee0/lMQ5sbF578BrTN86jZu6/5L7sh5GkzIyhHVerNQatniI8KCBgM+Pf8CL3z3HxG5X8XD2NOKdCZEqa0uLFULgNxvwWw3k1Bxi+vonyfUdx+l0IJCoIPRpN5A7su6iV/s+1Ft1tNcTcOluXLq7RSge6RhLnTLfKV7e9ixLTyxmSt9f8uCwx5BorWWNty7OCAQ2IX79zZm/4W+jn2RVwTLuWnYr3+YvRBM6mgiFsZboMrp08v6Ot9lespVZV8/mwaxHSXVmYBgGUggqzDJ2l24nydORY6VHmLriTxgqGBIQzRlqjWEuSIBl+d9w36o7WX1yOc9f+TIPDZsGNmG018pI1ZaBCcs2lWWFhhd2lm1Tt/33ejXovc7qmS1/V1XBishQg2kZKmD6lWEFlRH2AQuPzFP9309X0zY+rPaX7lZF1QXqb2seUC9ue0ZVBMvVwcp9avqWaWr8nCw1Y+uTkee0NDRx8PQ+9dCqe1XWez3ULV//VG0uWR/xSxc7MNGmkRmlFFJq+Kxa5h7+lA/2v0WUsx1T+t7GxM6TSHalNvmshaUU1YFK/rz6braXbcaNhxfG/YuJGVdT0lDE/Jy5zD8yj6pgBU7NyYxx/yYrORvTNnBqrnA+YbPj1FYWnVjA0hP/xak7ubXf7dzQ4xbine0jlJf/LzND36eaEoGk2FfEu3te59vchcTq8fRPHkTfhAFkp4yma2wmDi3E33t//5ssOr6Ae4Y8QN+E/mwt3sjbB/5FQV0+cY72BCw/w5JG8MoV70TeU2fVsKpgKQsPzGN/+T5SOnRkYtokrsqYTPcwU/QipsfE/2Rs7mjtITaf3MDSvG/YVbIdr/DSsV0nJnSZxKhOY4h2R+OQLhCKN7a9wtqTqxAOcMoQhd4X9PGT9Bv4SeZPya06Sm7DMbYUbiSvIpfM9t35Wa+b+FG3a0jUUiLmexEjtuKHH5wMZ1mNHZcgfnaWbGNT0Tp2VmxhX+ledOEgJToFt8NNVbCCqkAVmpRY4akRO0y89govmnTgM+tIbZfOsA4jGZk6muz00XhFFCgV4SZe6szgDz4629ir14QeeVWtVcWR00c4fPoAJxsKyKs+Tll9CU7dhUf3ghBIJF7hJdYdR0p0R4aljSTF24lEZ/L3o3OKcyY0/4vR2UuaH25KWmg6VRqhrpnByKBDqOpkY4sQCfvM9KRxnlBc/AC1uNTp8R9MGJHxeBHm/ykifL2m9NemHID/xaabXv8PVTLLUyJlY0EAAAAASUVORK5CYII=" />
 <style>
 :root {
   --bg: #f8f9fa;
@@ -82,14 +230,28 @@ button:disabled { opacity: 0.6; cursor: default; }
 .footer-link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--muted); }
 .footer-link a { color: var(--kt-green); text-decoration: none; font-weight: 500; }
 .footer-link a:hover { text-decoration: underline; }
+/* Dil seçici (2026-10-02): kartın sağ üst köşesi */
+.card { position: relative; }
+.dil-sec { position: absolute; top: 12px; right: 12px; display: inline-flex; gap: 2px; padding: 3px;
+  border-radius: 999px; background: #f1f5f0; border: 1px solid var(--border); }
+.dil-sec button { width: auto; margin: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer;
+  font: 700 11px/1 inherit; letter-spacing: 0.5px; padding: 5px 9px; border-radius: 999px; }
+.dil-sec button:hover:not(.on) { color: var(--text); background: rgba(0,0,0,0.05); }
+.dil-sec button.on { background: var(--kt-green); color: #fff; cursor: default; }
+.dil-sec button { min-height: 30px; padding: 0 11px; }
+.footer-link a { display: inline-block; padding: 8px 4px; }
 @media (max-width: 560px) { input, select, textarea { font-size: 16px !important; } }
 </style>
 </head>
 <body>
   <div class="card">
+    <span class="dil-sec" role="group" aria-label="Dil / Language" translate="no">
+      <button type="button" data-dil="tr" onclick="ktDilSec('tr')">TR</button>
+      <button type="button" data-dil="en" onclick="ktDilSec('en')">EN</button>
+    </span>
     <div class="brand">
       <div class="logo-chip"><img class="brand-logo" alt="Strateji" src="data:image/png;base64,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"></div>
-      <div class="sub">KT Rakip Analizi — Üyelik Başvurusu</div>
+      <div class="sub">Kuveyt Türk Rakip Analizi — Üyelik Başvurusu</div>
     </div>
     <form id="signupForm">
       <label for="name">Ad Soyad</label>
@@ -107,6 +269,10 @@ button:disabled { opacity: 0.6; cursor: default; }
   </div>
 
 <script>
+document.querySelectorAll('.dil-sec button').forEach(b => {
+  const on = b.getAttribute('data-dil') === KT_DIL;
+  b.classList.toggle('on', on); b.setAttribute('aria-pressed', on);
+});
 const form = document.getElementById('signupForm');
 const msg = document.getElementById('msg');
 const btn = document.getElementById('submitBtn');
