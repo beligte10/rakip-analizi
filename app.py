@@ -76,6 +76,7 @@ from pipeline import custom_measure_rules
 from pipeline.focus import apply_focus_bank, focus_of, rakipleri_normalle, set_rakipler, RAKIP_GRUBU
 from pipeline.banka_adlari import BANKA_AD_ESLEME, kanonik as kanonik_banka
 from assistant import llm as assistant_llm, service as assistant_service
+from assistant import anahtarlar as asistan_anahtarlar
 from assistant.knowledge import Store as AssistantStore
 
 
@@ -104,6 +105,8 @@ DATA_HISTORY = DATA_DIR / 'upload_history.json'
 DATA_USERS = DATA_DIR / 'users.json'
 # Rol tanımları ve izinleri (2026-09-30) — bkz. roles.py.
 DATA_ROLES = DATA_DIR / 'roles.json'
+# Asistan API anahtarları (admin panelden, 2026-10-07) — sır: export paketine girmez.
+DATA_ASISTAN_ANAHTAR = DATA_DIR / '.asistan_anahtarlari.json'
 # Görev panosu (Jira tarzı kanban) — admin panelden elle girilen yapılacaklar.
 # whats_new.json'dan (yapılmış işlerin SÜRÜM günlüğü) ayrıdır: bu, henüz
 # yapılmamış/planlanan işlerin çalışma alanı, o yüzden kodla değil veriyle
@@ -524,6 +527,8 @@ def ensure_data_dir():
 
     users_mod.ensure_users_file(DATA_USERS)
     roles_mod.ensure_roles_file(DATA_ROLES)
+    # Panelden girilmiş asistan anahtarları süreç ortamına (sunucu ortamını ezer).
+    asistan_anahtarlar.uygula(DATA_ASISTAN_ANAHTAR)
 
     # Admin, kendi Basic Auth şifresiyle üyelik sistemi (session tabanlı)
     # üzerinden de dashboard'a girebilsin — ayrı bir üye hesabı açıp kendi
@@ -1554,7 +1559,52 @@ def admin_delete_role(role_id: str, admin_user: str = Depends(require_admin_perm
 @app.get('/api/admin/me')
 def admin_me(admin_user: str = Depends(require_admin_access)):
     """Admin panelinin hangi sekmeleri göstereceği (Basic Auth kökü: hepsi)."""
-    return {'kimlik': admin_user, 'izinler': sorted(identity_perms(admin_user))}
+    return {'kimlik': admin_user, 'izinler': sorted(identity_perms(admin_user)),
+            'tam_admin': _tam_admin_mi(admin_user)}
+
+
+def _tam_admin_mi(identity: str) -> bool:
+    """Basic Auth kökü ya da rolü Admin olan üye. Sır yönetimi (API anahtarları)
+    gibi tek tek izinle verilemeyecek işler için."""
+    if identity == USERNAME:
+        return True
+    user = users_mod.get_user_by_email(DATA_USERS, identity)
+    return bool(user) and roles_mod.resolve_id(DATA_ROLES, user.get('role')) == roles_mod.ADMIN_ROL
+
+
+def require_tam_admin(identity: str = Depends(require_admin_access)) -> str:
+    if not _tam_admin_mi(identity):
+        raise HTTPException(status_code=403, detail='Bu işlem yalnız Admin rolüne açık')
+    return identity
+
+
+class AsistanAnahtarPayload(BaseModel):
+    degerler: Dict[str, Optional[str]]
+
+
+def _asistan_anahtar_yaniti() -> dict:
+    cfg = assistant_llm.LLMConfig.from_env()
+    return {'anahtarlar': asistan_anahtarlar.durum(DATA_ASISTAN_ANAHTAR),
+            'asistan_acik': cfg is not None, 'model': cfg.model if cfg else None}
+
+
+@app.get('/api/admin/asistan-anahtarlari')
+def admin_asistan_anahtarlari(admin_user: str = Depends(require_tam_admin)):
+    """Anahtarların kaynağı (panel / sunucu / yok) ve maskeli hali — düz değer dönmez."""
+    return _asistan_anahtar_yaniti()
+
+
+@app.put('/api/admin/asistan-anahtarlari')
+def admin_asistan_anahtarlari_kaydet(payload: AsistanAnahtarPayload,
+                                     admin_user: str = Depends(require_tam_admin)):
+    """Değer verilen anahtarı kaydeder, boş/null verileni panelden siler (sunucu
+    ortamındaki değer varsa o geri gelir). Yeniden başlatma gerekmez."""
+    hata = asistan_anahtarlar.kaydet(DATA_ASISTAN_ANAHTAR, payload.degerler)
+    if hata:
+        raise HTTPException(status_code=400, detail=hata)
+    degisen = ', '.join(sorted(payload.degerler))
+    print(f'[admin] {admin_user} asistan anahtarlarını güncelledi: {degisen}', flush=True)
+    return _asistan_anahtar_yaniti()
 
 
 class AdminResetPasswordPayload(BaseModel):
