@@ -28,6 +28,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py .
 COPY users.py .
 COPY roles.py .
+COPY security.py .
 COPY catalog.seed.json .
 COPY whats_new.json .
 COPY pipeline/ pipeline/
