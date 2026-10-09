@@ -91,6 +91,7 @@ DATA_DIR = Path(os.environ.get('DATA_DIR', APP_ROOT / 'data')).resolve()
 DATA_RAW = DATA_DIR / 'raw'
 DATA_PARQUET = DATA_DIR / 'veriler.parquet'
 DATA_COMPUTED = DATA_DIR / 'computed.json'
+DATA_BOS_NEDEN = DATA_DIR / 'bos_nedenleri.json'   # Rekabet ölçülerinde boş hücrelerin nedenleri (pipeline/bos_nedenleri.py)
 DATA_BACKUPS = DATA_DIR / 'backups'   # rebuild/upload öncesi computed.json yedekleri (denetim #10)
 DATA_CATALOG = DATA_DIR / 'catalog.json'
 # Config kaynağı (git-tracked, repo kökünde — data/ volume'unun DIŞINDA, deploy'da
@@ -1225,6 +1226,13 @@ def api_catalog(request: Request, user: dict = Depends(require_member)):
         return _filtreli_json_yanit(DATA_CATALOG, gizli, request)
     return FileResponse(DATA_CATALOG, media_type='application/json', headers=NO_CACHE)
 
+@app.get('/api/bos-nedenleri')
+def api_bos_nedenleri(request: Request, user: dict = Depends(require_member)):
+    """Rekabet Analizi ölçülerinde değeri boş hücrelerin nedenleri: {ölçü: {banka: {tarih: [kod, metin]}}}. Rekabet izni yoksa boş."""
+    if _gizli_olculer(user) or not DATA_BOS_NEDEN.exists():
+        return JSONResponse({}, headers=NO_CACHE)
+    return _revalidated_file(DATA_BOS_NEDEN, 'application/json', request)
+
 
 @app.get('/api/measure-info')
 def api_measure_info(user: dict = Depends(require_member)):
@@ -2348,6 +2356,12 @@ def _run_pipeline_and_save(catalog: dict, *, force: bool, passthrough_only: bool
 
     meta = _rebuild_dynamic_meta(old.get('meta', {}), new_bank_data, catalog)
     group_data = build_group_data(new_bank_data, catalog, ctx)
+    try:    # boş hücre nedenleri ("Tanımsız" / "Veri yok" etiketleri); başarısız olursa ana akış etkilenmez
+        from pipeline.bos_nedenleri import uret as _bos_uret
+        _bos = _bos_uret(ctx, catalog, new_bank_data)
+        DATA_BOS_NEDEN.write_text(json.dumps(_bos, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    except Exception as e:   # noqa: BLE001
+        print(f'[uyarı] bos_nedenleri.json üretilemedi: {e}')
     composition_data, currency_data = build_composition_payload(ctx, catalog)
 
     timestamp = datetime.now().isoformat()

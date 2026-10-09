@@ -2110,6 +2110,10 @@ bir not eklenecek.
 modal (BDR'nin yanından Çıkış'ın sonuna, logo bloğunun hemen öncesine
 taşındı). Yeni bir sürüm notu eklemek için `whats_new.json`'a en üste yeni
 bir `{date, title, items}` girdisi eklenip commit/push yeterli.
+
+**YAZIM KURALI (2026-10-09):** `whats_new.json` maddelerinde (1) admin paneliyle ilgili değişikliklerden bahsedilmez; yalnızca görsel iyileştirmeler,
+yapay zekâ (Asistan/AI) araçları ve kullanıcıya dönük diğer iyileştirmeler yazılır. (2) "Power BI / PBI ile eşleşti, hizalandı, birebir uyumlu" gibi
+karşılaştırma ifadeleri kullanılmaz; düzeltme yalnızca ne olduğuyla anlatılır (ör. "hesap düzeltildi, daha isabetli").
 **Düzeltme (aynı gün):** İlk içerik yanlışlıkla admin-only özellikleri
 (Sunucu Taşıma, Yol Haritası sekmesi) anlatıyordu — normal dashboard
 kullanıcısı `/admin`'e erişemediği için bunları hiç göremezdi. İçerik

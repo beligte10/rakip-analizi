@@ -4,7 +4,6 @@
     "date": "2026-09-29",
     "title": "Asistan, rol bazlı erişim, PDF raporuyla düzeltilen hesaplamalar",
     "items": [
-      "Rol bazlı erişim: admin panelindeki yeni 🔐 Roller sekmesinde hazır roller (Görüntüleyici, Analist, Veri Yöneticisi, Admin) ve yeni eklenen roller için asistan, dış veri (EVDS), Ölçü Oluştur, Excel ve PNG/PDF dışa aktarma ile admin paneli bölümleri (veri, banka grupları, kullanıcılar, proje sekmeleri) kutucuklarla açılıp kapatılıyor.",
       "Asistan için rol başına günlük soru sınırı; kullanıcılara rol, Üyelik Başvuruları'ndaki Rol sütunundan seçiliyor. Yeni ve mevcut üyeler Görüntüleyici rolüyle başlar; menüde yalnız rolün izin verdiği düğmeler görünür.",
       "Karşılaştır sekmesi kaldırıldı.",
       "Yeni Asistan (sağ alttaki 💬 butonu): soruları Türkçe yanıtlar — ölçü bulur, banka ve grup değerlerini getirir, bankaları sıralar, istenen grafiği açar. Tarif ettiğiniz yeni ölçüyü taslak olarak hazırlar; önizleyip tek tıkla kaydedersiniz.",
@@ -22,14 +21,13 @@
       "Gelir kompozisyonunda negatif bileşenler (ör. ticari zarar) artık eksi olarak gösteriliyor.",
       "Pazar payı varsayılan olarak 27 bankaya göre; banka listesinde Katılım / Mevduat / Rakip / İlk 20 filtresi seçiliyken seçili bankalar içindeki paya göre hesaplanıyor.",
       "Daha hızlı: veri yüklemeden sonraki yeniden hesaplama yaklaşık 40 saniyeden 3 saniyeye indi; sayfa verisi sıkıştırılarak gönderiliyor ve veri değişmediyse tekrar indirilmiyor.",
-      "İhtiyaç Kredileri artık tüketici kredileri tablosundaki \"Diğer\" satırını da içeriyor (Kuveyt Türk Haziran 2026: 4.402 → 4.732 mn); Serbest Sermaye / Toplam Aktifler hesabında Yatırım Amaçlı Gayrimenkuller de düşülüyor (Garanti, Vakıfbank ve Halk Bank değerleri değişti). İkisi de Power BI raporuyla birebir uyumlu.",
+      "İhtiyaç Kredileri artık tüketici kredileri tablosundaki \"Diğer\" satırını da içeriyor (Kuveyt Türk Haziran 2026: 4.402 → 4.732 mn); Serbest Sermaye / Toplam Aktifler hesabında Yatırım Amaçlı Gayrimenkuller de düşülüyor (Garanti, Vakıfbank ve Halk Bank değerleri değişti).",
       "Grup 2 Tüketici / Tüketici Kredileri paydası artık bankanın bildirdiği tüketici kredisi toplamından hesaplanıyor (BDR'lerle doğrulandı). Yapı Kredi'nin Haziran 2026 kaynak dosyasındaki kopya KMH satırı artık oranı düşürmüyor: %9,31 → %12,74.",
-      "TP ve YP Kredi Mevduat Spread'i Power BI raporuyla hizalandı: vadeli mevduat bakiyesi döviz tevdiat, bankalar mevduatı ve kıymetli maden hesapları ayrıştırılarak hesaplanıyor (PDF ile ortanca fark 7–15 bps'ten ~1 bps'e indi). Grup değerleri artık basit ortalama değil, üyelerin toplamlarıyla hesaplanıyor (Mevduat Bankaları TP: −49 → −254 bps, rapor −248).",
-      "Finansal Varlıklar / Toplam Aktifler Power BI ile hizalandı: nakit ve nakit benzerlerinin beklenen zarar karşılığı düşülmeden hesaplanıyor (fark 0,01–0,03 puan; PDF ile 52/52).",
+      "TP ve YP Kredi Mevduat Spread'i daha isabetli hesaplanıyor: vadeli mevduat bakiyesi döviz tevdiat, bankalar mevduatı ve kıymetli maden hesapları ayrıştırılarak bulunuyor, TP/YP brüt krediler ve katılım kıymetli maden kâr payı hesaba katılıyor (PDF ile ortanca fark 7–15 bps'ten ~1 bps'e indi). Grup değerleri artık basit ortalama değil, üyelerin toplamlarıyla hesaplanıyor (Mevduat Bankaları TP: −49 → −254 bps).",
+      "Finansal Varlıklar / Toplam Aktifler düzeltildi: nakit ve nakit benzerlerinin beklenen zarar karşılığı düşülmeden hesaplanıyor (PDF ile 52/52 banka tutuyor).",
       "BDR sağlamasında bulunan üç hata düzeltildi: Toplam Risk artık piyasa ve operasyonel riski iki kez saymıyor (kredi, piyasa ve operasyonel risk payları BDR ile aynı); Toplam Kredi Kartları BDR'deki kredi kartı kredilerine eşit (önceki formül bireysel kartları iki kez sayıyordu); katılım bankalarında vadeli mevduatın vade dağılımı artık hesaplanıyor (önceden 0'dı).",
-      "Odak banka: admin panelinde Banka Grupları → 🎯 Odak Banka'dan Kuveyt Türk yerine başka bir banka seçilebiliyor. Seçilen bankada yeşil vurgu, \"… sırası\" rozeti, hızlı seçimler, varsayılan seçimler ve AI asistan o banka etrafında çalışır; odak grubu bankanın adını alır, \"… Hariç … Bankaları\" grubu bankanın segmentine göre kurulur, odak banka Rakip Bankalar grubundan çıkar.",
+      "Odak banka: Kuveyt Türk yerine başka bir banka odak olarak seçilebiliyor. Seçilen bankada yeşil vurgu, \"… sırası\" rozeti, hızlı seçimler, varsayılan seçimler ve AI asistan o banka etrafında çalışır; odak grubu bankanın adını alır, \"… Hariç … Bankaları\" grubu bankanın segmentine göre kurulur, odak banka Rakip Bankalar grubundan çıkar.",
       "Anlık görünümün altındaki \"Rakip Bankalar: …\" bilgi satırı kaldırıldı.",
-      "TP ve YP Kredi Mevduat Spread'i Power BI DAX tanımlarına birebir getirildi (vadeli mevduat bakiyesi, TP/YP brüt krediler, katılım kıymetli maden kâr payı): Haziran 2026 PDF'inde tüm banka ve trend noktaları tutuyor.",
       "Mali Kesim / Toplam Krediler ve Grup 2 / Tüzel Krediler yakın izlemedeki mali kesim kredilerini PDF'teki gibi sayıyor (ING Mart 2026, QNB, Akbank, Vakıfbank).",
       "BDR sağlamasıyla ham veri düzeltmeleri: TEB (2024-06, 2025-03 gelir tablosu; V. Grup intikal), Denizbank (V. Grup intikal; 2025-12 şube/personel), Enpara (2025-09 şube), Halk (2025-03 net kâr).",
       "Yeni ölçü: İnsan Sermayesi Yatırım Getirisi (Şube & Personel) = Net Dönem Karı / Personel Giderleri; yüzde yerine kat olarak gösterilir (ör. 1,78 kat). Şube & Personel kategorisinde kat birimli ölçülerin çeyreklik değişim ve büyüme etiketleri de kat olarak gösteriliyor.",
@@ -37,11 +35,11 @@
       "PDF artık yatırımcı sunumu düzeninde: her sayfada logolu başlık bandı (ölçü adı, kategori · görünüm · dönem, rapor tarihi), yeşil çizgi, kaynak notlu alt bilgi ve sayfa numarası. Etkileşimli filtre düğmeleri çıkarılıp seçili olanlar sade bir özet şeridi olarak gösteriliyor; Anlık Görünüm, Trend ve Kompozisyon sayfaya sığacak genişlikte yakalanıyor.",
       "PDF oluştur artık önce bir ölçü seçim penceresi açıyor: ölçüleri (ve kompozisyonları) seçip Anlık Görünüm ve/veya Trend görünümlerini işaretliyorsun; her ölçü/görünüm tek sayfa olacak şekilde çok sayfalı tek PDF üretiliyor, seçili dönemde verisi olmayan ölçüler atlanıyor.",
       "Verisi olmayan dönemler artık hiçbir görünümde gösterilmiyor: bir ölçünün tüm bankalarda boş ya da 0 geldiği yıllar (eski BDDK dosyalarında kalemin bulunmadığı 2013-2017 gibi) Yıl/Çeyrek seçicisinde, Trend aralığında ve eksenlerinde yer almıyor; Kompozisyonda bir bileşenin eksik olduğu dönemler (ör. Kredi Kompozisyonu'nda 2013-2017) dönem listesinden çıkarıldı.",
-      "Asistan EVDS bilgisi geliştirildi: TCMB'nin 54 bin serilik kataloğu (kategori, veri grubu, seri) üzerinden aranıyor; kur, enflasyon, faiz, mevduat/kredi gibi sorularda doğru seri kodu seçiliyor, arşivlenmiş/eski seri uyarıları ve frekans-toplulaştırma kuralları yanıtlara yansıyor. Katalog admin panelinden (ya da scripts/evds_katalog_guncelle.py ile) yenilenebilir.",
+      "Asistan EVDS bilgisi geliştirildi: TCMB'nin 54 bin serilik kataloğu (kategori, veri grubu, seri) üzerinden aranıyor; kur, enflasyon, faiz, mevduat/kredi gibi sorularda doğru seri kodu seçiliyor, arşivlenmiş/eski seri uyarıları ve frekans-toplulaştırma kuralları yanıtlara yansıyor.",
       "Yeni Gelir Tablosu ölçüleri: OPEX Büyümesi (YoY), Reel OPEX Büyümesi (TÜFE'ye göre), Faaliyet Gelirleri Büyümesi (YoY) ve Makas (gelir büyümesi − OPEX büyümesi, puan) — tüm bankalar ve gruplar için. Gruplarda önce üyelerin toplamları büyütülür, sonra reel/makas hesaplanır.",
       "NPL Rasyosu ve Donuk Alacaklar artık 2013–2017 dönemleri için de hesaplanıyor (eski BDDK dosyalarında 'Takipteki Krediler' adıyla geçen kalem kullanılıyor).",
       "PDF dışa aktarma yeniden tasarlandı: 16:9 sunum slaytları (bölüm etiketi, büyük başlık, dönem rozeti, sol altta STRATEJİ logosu, sağda kaynak ve sayfa no). Kartlar slaytı boşluk bırakmadan doldurur; sıralama iki sütuna bölünür, Rakip Bankalar CAGR kartlarında 3 dönemlik çubuk grafik görünür. PDF bitince oluşturulan slaytların önizlemesi pencerede sırayla belirir.",
-      "Odak banka artık kullanıcı bazında: rolünde 'Odak banka seçimi' izni olan kullanıcılar menüdeki 🎯 Odak düğmesiyle kendi odak bankasını seçer; seçim yalnız o kullanıcıyı etkiler. Admin panelindeki seçim varsayılandır.",
+      "Odak banka artık kullanıcı bazında: rolünde 'Odak banka seçimi' izni olan kullanıcılar menüdeki 🎯 Odak düğmesiyle kendi odak bankasını seçer; seçim yalnız o kullanıcıyı etkiler.",
       "Odak bankanın marka rengi: odak bankanın satırı, barı, grup kartı ve etiketleri bankanın kurumsal rengine geçer (renkler bankaların resmi logo/kimlik dosyalarından alındı); üst çubuk ve butonlar Kuveyt Türk yeşilinde kalır.",
       "PDF penceresinde dönem ve banka sınıfı (Tümü / Katılım / Mevduat / Rakip Bankalar / İlk 20 Banka) seçilebiliyor; sınıf Anlık Görünüm sıralamasına, YtD grafiğine ve Trend çizgilerine uygulanır.",
       "'QNB Finansbank' adı tüm platformda 'QNB' olarak gösteriliyor (eski adla gelen BDDK dosyaları otomatik eşleniyor).",
@@ -51,17 +49,17 @@
       "Reel TL ve USD bazı: TL cinsinden ölçülerde ölçü çubuğundaki 'TL · Reel TL · USD' seçicisiyle değerler enflasyondan arındırılmış (son dönem fiyatlarıyla, TCMB TÜFE) ya da dolar bazında (TCMB USD/TRY) gösterilir. Sıralama, YtD/YoY/QoQ büyümeler (→ reel büyüme), grup kartları, CAGR ve Trend birlikte değişir; stok kalemler dönem sonu, akım kalemler yılbaşından ortalama endeks/kurla çevrilir.",
       "Trend PNG indirmesinin alt şeridinde STRATEJİ logosu yer alıyor (sağda kaynak notu); yeni Trend tasarımındaki ızgara çizgileri ve eksen renkleri PNG'de de korunuyor.",
       "PDF penceresinde 'Tümü' artık Trend slaytında da tüm bankaları çizer; yeni 'Banka seç…' seçeneğiyle istenen bankalar tek tek (ya da 'Tümünü seç' ile hepsi) seçilip Anlık Görünüm sıralaması, YtD grafiği ve Trend'e uygulanabilir.",
-      "İngilizce sürüm: menüdeki 🌐 TR | EN anahtarıyla pano İngilizceye geçer (seçim tarayıcıda saklanır). Tüm arayüz metinleri, 170 ölçü adı, kategoriler, banka grupları, kompozisyonlar ve bileşenler; tarih, sayı ve yüzde biçimleri (June 2026, 1,472,314, 8.89%); PDF slaytları, Trend PNG'leri ve Excel/CSV çıktıları İngilizce olur. Giriş, başvuru ve admin sayfalarında da aynı TR | EN anahtarı var (sunucu mesajları dahil). Ölçü bilgi kartlarının içeriği, Asistan, Yenilikler/Backlog notları, Proje El Kitabı ve görev kartları Türkçe kalır.",
-      "Menü (☰) kategorilere ayrıldı: en üstte Araçlar (BDR · Odak · Ölçü Oluştur), ardından Dışa Aktarım (Excel, PDF), Görünüm (Tema, Yenilikler, dil) ve Hesap (Şifre, Admin, Çıkış). PDF slaytları iki kat çözünürlükte (3840×2160) üretiliyor, yazılar artık bulanıklaşmıyor; 'Tümü' / 'İlk 20 Banka' etiketi slaytta tekrarlanmıyor ve sıralama numaraları daha kalın.",
-      "Telefon ve tablet görünümü elden geçirildi: tablet yatayda (1024 px) taşan ölçü satırı ve kartlar düzeltildi, tüm düğme ve seçiciler dokunmaya uygun boyuta (en az ~32 px) getirildi, telefonda Asistan düğmesi yalnız ikon. Pano, giriş ve admin sayfaları 4 ekran boyutunda otomatik düzen testinden geçiyor.",
+      "İngilizce sürüm: menüdeki 🌐 TR | EN anahtarıyla pano İngilizceye geçer (seçim tarayıcıda saklanır). Tüm arayüz metinleri, 170 ölçü adı, kategoriler, banka grupları, kompozisyonlar ve bileşenler; tarih, sayı ve yüzde biçimleri (June 2026, 1,472,314, 8.89%); PDF slaytları, Trend PNG'leri ve Excel/CSV çıktıları İngilizce olur. Giriş ve başvuru sayfalarında da aynı TR | EN anahtarı var (sunucu mesajları dahil). Ölçü bilgi kartlarının içeriği, Asistan, Yenilikler/Backlog notları, Proje El Kitabı ve görev kartları Türkçe kalır.",
+      "Menü (☰) kategorilere ayrıldı: en üstte Araçlar (BDR · Odak · Ölçü Oluştur), ardından Dışa Aktarım (Excel, PDF), Görünüm (Tema, Yenilikler, dil) ve Hesap (Şifre, Çıkış). PDF slaytları iki kat çözünürlükte (3840×2160) üretiliyor, yazılar artık bulanıklaşmıyor; 'Tümü' / 'İlk 20 Banka' etiketi slaytta tekrarlanmıyor ve sıralama numaraları daha kalın.",
+      "Telefon ve tablet görünümü elden geçirildi: tablet yatayda (1024 px) taşan ölçü satırı ve kartlar düzeltildi, tüm düğme ve seçiciler dokunmaya uygun boyuta (en az ~32 px) getirildi, telefonda Asistan düğmesi yalnız ikon. Pano ve giriş sayfaları 4 ekran boyutunda otomatik düzen testinden geçiyor.",
       "Asistan yanıtı hazırlarken artık her şeyi yazmıyor: tek satırlık bir durum gösteriyor (Düşünüyorum… / Hesaplıyorum… / Yanıtı yazıyorum…). Satıra basınca hangi adımları attığı — ara notları ve hangi ölçü, banka ve dönemle hesap yaptığı — açılıyor; yanıt bitince 'Nasıl hesapladım · n adım' olarak katlanmış kalıyor.",
       "Eski dönem verileri tamamlandı: 2013-2017 BDDK şablonundaki farklı kalem adları eşlendi; NPL karşılama, kredi riski maliyeti, RAV ve RAV'a bağlı rasyolar, SYR, iştirakler ve tüketici kredileri gibi ölçülerde boş görünen ~4.900 hücre doldu, 2018 geçiş dönemindeki personel gideri ve kredi toplamı hataları düzeltildi.",
       "Asistan kıdemli banka analisti gibi yanıtlıyor: kârlılık (DuPont), marj, aktif kalitesi, verimlilik, fonlama ve sermaye başlıklarında odak bankayı gruplar ve geçen yılla kıyaslıyor, sürücüleri ve stratejik çıkarımı ayrı veriyor; veriye dayanmayan yanıtlar engelleniyor. Sohbetteki 'Yeni' düğmesi 'Yenile' oldu.",
-      "Odak bankaya göre rakipler: 🎯 Odak penceresinde (ve admin panelindeki varsayılan odak seçiminde) banka seçilince yapay zeka o bankanın ölçeğine, segmentine ve iş modeline göre 'Rakip Bankalar' setini gerekçeleriyle önerir; liste işaretlenerek değiştirilebilir, Uygula ile grup değerleri ve asistan bu listeye göre çalışır.",
+      "Odak bankaya göre rakipler: 🎯 Odak penceresinde banka seçilince yapay zeka o bankanın ölçeğine, segmentine ve iş modeline göre 'Rakip Bankalar' setini gerekçeleriyle önerir; liste işaretlenerek değiştirilebilir, Uygula ile grup değerleri ve asistan bu listeye göre çalışır.",
       "Kompozisyon sekmesi yenilendi: Trend ile aynı düzen (başlık, kayan Bileşen/Döviz seçici, hazır dönem düğmeleri, sağda aramalı banka/grup paneli); panellerde son dönem bileşen toplamı, kılavuz çizgileri, yuvarlatılmış çubuklar ve ilk seçili döneme göre pay değişimini gösteren etkileşimli lejant (bir bileşenin üzerine gelince tüm panellerde vurgulanır).",
       "Tüm bankaların logoları eklendi: 18 bankanın baş harf rozeti yerine artık kendi logo sembolü görünüyor (Wikimedia Commons ve bankaların kendi sitelerinden).",
       "Excel dışa aktarım ekranı yenilendi: numaralı adım kartları (banka/grup, dönem, kalem), logolu seçim çipleri, hazır dönem düğmeleri, canlı özet ve satır tahmini, yapışkan 'Tabloyu Oluştur' çubuğu; sonuç tablosu zebra satırlı ve yapışkan başlıklı, belirgin 'Excel indir' düğmesi.",
-      "Güvenlik iyileştirmeleri: giriş/kayıt/admin girişi için IP bazlı hız sınırı, güvenlik başlıkları ve Origin denetimi (CSRF), yükleme boyut ve ZIP bombası sınırları, tahmin edilebilir varsayılan admin şifresinin kaldırılması, hesap varlığını sızdıran yanıt süresi farkının giderilmesi.",
+      "Güvenlik iyileştirmeleri: giriş/kayıt için IP bazlı hız sınırı, güvenlik başlıkları ve Origin denetimi (CSRF), yükleme boyut ve ZIP bombası sınırları, tahmin edilebilir varsayılan şifrenin kaldırılması, hesap varlığını sızdıran yanıt süresi farkının giderilmesi.",
       "Excel dışa aktarımda gruplar ve bankalar tek seçimde birleşti: Mevduat Bankaları + Vakıf Katılım gibi grup ve bankaları birlikte seçebilirsiniz (tek tabloda grup toplamı ve banka satırları). Bankalar aktif büyüklüğüne göre, Kuveyt Türk başta sıralanır; Tüm Bankalar, İlk 20 Banka ve Rakip Bankalar + KT grupları eklendi, tekrarlayan filtre kısayolları kaldırıldı.",
       "Rekabet Analizi çalışmasındaki ölçüler eklendi (39 yeni ölçü, toplam 209): zorunlu karşılık sürüklemesi ve TCMB getirisi, getirili aktif bazlı ve swap düzeltilmiş marj, donuk alacak hareketi (tahsilat/intikal, portföy temizliği, net oluşum), 3. aşama ve Grup 2 karşılama, personel/şube başına OPEX ile kadro-ücret etkisi, efektif vergi, iştirak payı, reel net kâr büyümesi, YP fonlama payı, RAV yoğunluğu ve diğerleri. Basel III kaldıraç, LCR, serbest karşılık ve TÜFEX tamponu (BDDK verisinde yok) elle yüklenen bağımsız denetim verisiyle 30.06.2026 için dolu. Ölçü bilgi kartları, İngilizce adlar ve AI asistanı (yeni 'zorunlu_karsilik' paketi) güncellendi."
     ]
@@ -82,8 +80,7 @@
       "Telefonda YtD büyüme grafiği yatay liste: 27 bankanın hepsi ve Kuveyt Türk görünür; banka adları kısaltılmış, kesilmiyor.",
       "Grafiklerde parmakla dokunup sürükleyerek dönemler arasında gezinilebiliyor.",
       "Butonlar ve sekmeler dokunmaya uygun boyutta; tablet için iki sütunlu düzen.",
-      "Rakip Bankalar listesi admin paneldeki gruptan geliyor (grup değişirse kartlar ve dipnot da değişir).",
-      "Admin paneli telefonda kullanılabilir: tüm sekmeler görünür, Görev Panosu yana kaydırmalı."
+      "Rakip Bankalar listesi tanımlı gruptan geliyor (grup değişirse kartlar ve dipnot da değişir)."
     ]
   },
   {
@@ -94,19 +91,19 @@
       "Yeni ölçü: YP Mevduat / Toplam Mevduat (TP Mevduat / Toplam Mevduat'ın yanında).",
       "Ölçü Oluştur yenilendi: ölçü listelerinde arama, kaydetmeden önce canlı önizleme, geçersiz kombinasyonlarda anında açıklama ve otomatik ad önerisi.",
       "Özel ölçülerde birim artık doğru: tutar/tutar yüzde, adet/adet ve rasyo/rasyo kat, TL/adet birim başına tutar; oranlarda yüzde ya da kat seçilebiliyor.",
-      "Gelir tablosu kalemi bilanço kalemine oranlandığında PBI'daki gibi son 12 ay / 12 aylık ortalama kullanılıyor (ör. Net Kâr / Toplam Aktifler = ROAA).",
+      "Gelir tablosu kalemi bilanço kalemine oranlandığında son 12 ay / 12 aylık ortalama kullanılıyor (ör. Net Kâr / Toplam Aktifler = ROAA).",
       "Özel ölçüler için otomatik bilgi kartı ve kaydettikten sonra tek tıkla dashboard'da açma."
     ]
   },
   {
     "version": "v2.0",
     "date": "2026-09-23",
-    "title": "Rasyolar PBI raporuyla birebir hizalandı",
+    "title": "Rasyo hesapları gözden geçirilip düzeltildi",
     "items": [
       "\"İlk 20 Banka\" filtresi artık seçili dönemde aktif büyüklüğü en yüksek 20 bankayı gösteriyor (önceden seçili kalemin ilk 20'si geliyordu); bankalar seçili ölçüye göre sıralı.",
-      "20'ye yakın rasyonun hesabı PBI raporunun kendi değerleriyle karşılaştırılarak düzeltildi: Net NPL Formasyon, Cost of Risk, Maliyetli Pasif Maliyeti, Tüzel Kredi/Tüzel Mevduat, Grup 2 Tüzel, TP Pasifler, Faiz Gideri/Geliri, Komisyon Gideri/Geliri, Operasyonel Giderler ve bunlara bağlı oranlar.",
+      "20'ye yakın rasyonun hesabı gözden geçirilip düzeltildi: Net NPL Formasyon, Cost of Risk, Maliyetli Pasif Maliyeti, Tüzel Kredi/Tüzel Mevduat, Grup 2 Tüzel, TP Pasifler, Faiz Gideri/Geliri, Komisyon Gideri/Geliri, Operasyonel Giderler ve bunlara bağlı oranlar.",
       "\"Düzeltilmiş Maliyet / Gelir Rasyosu\" artık her çeyrek hesaplanıyor (Haziran 2026 dahil).",
-      "Banka grubu değerleri (ör. Mevduat Bankaları RORWA, TP Alınan Krediler, Spread) PBI'daki grup değerleriyle aynı yöntemle hesaplanıyor.",
+      "Banka grubu değerleri (ör. Mevduat Bankaları RORWA, TP Alınan Krediler, Spread) üyelerin toplamlarından hesaplanıyor.",
       "Yeni ölçü: Ortalama RAV / Ortalama Özkaynaklar. \"Faiz Getirili Aktifler / Özkaynaklar\" ölçüsünün adı \"Ortalama Faiz (Kar Payı) Getirili Aktifler / Ortalama Özkaynaklar\" olarak düzeltildi.",
       "Kat birimli oranların çeyreklik değişimi artık baz puan olarak gösteriliyor; zarar eden bankaların bulunduğu büyüklüklerde sıralama barları doğru güncelleniyor."
     ]
@@ -114,13 +111,12 @@
   {
     "version": "v1.9",
     "date": "2026-09-22",
-    "title": "Mobil görünüm iyileştirmeleri ve admin görev panosu",
+    "title": "Mobil görünüm iyileştirmeleri",
     "items": [
       "Banka listesi başlıkları seçilen filtreye göre değişiyor (ör. \"Katılım Bankaları Büyüklükleri\").",
       "Mobilde üst başlıkta yalnızca KT logosu kalıyor; tarih, ölçü arama ve kategori seçimleri aynı hizada.",
       "Mobilde YtD büyüme grafiğindeki rakamlar barlarının tam üstünde duruyor.",
-      "Rakip Bankalar Yıllık Görünüm tekrar sabit son 3 yıl (dönem seçici kaldırıldı).",
-      "Admin paneline Jira tarzı Görev Panosu eklendi (Yapılacaklar / Planlananlar / Yapıldı, sürükle-bırak)."
+      "Rakip Bankalar Yıllık Görünüm tekrar sabit son 3 yıl (dönem seçici kaldırıldı)."
     ]
   },
   {
@@ -128,7 +124,7 @@
     "date": "2026-09-21",
     "title": "TP/YP Kredi Mevduat Spread'i daha isabetli",
     "items": [
-      "\"TP/YP Kredi Mevduat Spread'i\" ölçülerinin hesabı gerçek PBI raporuyla karşılaştırılarak düzeltildi; değerler artık çok daha yakın (önceden ~100-250 baz puan yüksek çıkıyordu).",
+      "\"TP/YP Kredi Mevduat Spread'i\" ölçülerinin hesabı düzeltildi; değerler artık çok daha isabetli (önceden ~100-250 baz puan yüksek çıkıyordu).",
       "Katılım bankalarında (Kuveyt Türk dahil) bu ölçü hâlâ bir yaklaşıklık kullanıyor — ham veri kısıtı nedeniyle mevduat bankalarındaki kadar isabetli değil."
     ]
   },
@@ -196,8 +192,8 @@
     "date": "2026-09-12",
     "title": "Üyelik sistemi, mobil uyum ve formül düzeltmeleri (2026-08-25 → 2026-09-12 özeti)",
     "items": [
-      "Üyeler artık kayıt olup admin onayıyla giriş yapabiliyor; adminler diğer üyelere rol atayabiliyor.",
-      "KT marka logosu/renkleri arayüze eklendi; \"Rakip Bankalar\" gibi banka grupları admin panelden düzenlenebiliyor.",
+      "Üyeler artık kayıt olup onayla giriş yapabiliyor; kullanıcılara rol atanabiliyor.",
+      "KT marka logosu/renkleri arayüze eklendi; \"Rakip Bankalar\" gibi banka grupları düzenlenebiliyor.",
       "Sermaye yeterliliği, maliyet/gelir, RORWA gibi bazı ölçüler ham veriyle daha isabetli hesaplanacak şekilde düzeltildi.",
       "Dashboard mobil uyumlu hale getirildi (hamburger menü, kırpılan yazılar düzeltildi).",
       "Banka sıralama listeleri ve trend grafikleri daha okunaklı, tutarlı bir tasarıma kavuştu.",

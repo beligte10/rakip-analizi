@@ -35,6 +35,7 @@ def izole_data(tmp_path, monkeypatch):
     monkeypatch.setattr(A, 'DATA_COMPUTED', tmp_path / 'computed.json')
     monkeypatch.setattr(A, 'DATA_BACKUPS', backups)
     monkeypatch.setattr(A, 'DATA_DIR', tmp_path)
+    monkeypatch.setattr(A, 'DATA_BOS_NEDEN', tmp_path / 'bos_nedenleri.json')   # test hesaplaması gerçek data/ dosyasını ezmesin
     return tmp_path
 
 

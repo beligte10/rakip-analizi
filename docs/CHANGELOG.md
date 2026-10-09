@@ -2,6 +2,150 @@
 
 Sürüm geçmişi. Her commit'in özetini barındırır.
 
+## Rekabet Analizi — tüm bankalar için tamlık (2026-10-09)
+
+- **TÜFEX türetimi (son 8 çeyrek):** `scripts/bdr_rekabet_cikar.py` BDR dipnotundaki "yıllık %X enflasyon tahmini" varsayımı ve "TÜFE tahmininin %1 değişmesi → vergi öncesi kâr ≈ N"
+  duyarlılığından TÜFEX'i türetir: (gerçekleşen yıllık TÜFE − varsayım) × duyarlılık. Denizbank/QNB doğrudan açıklar ("referans endekse göre yapılsaydı … net dönem karı X artarak/azalarak";
+  azalış negatif tampon). Akbank, QNB, ING, TEB yıl sonlarında fiili enflasyon kullandığını yazdığından 2024-12 / 2025-12 için 0; İş Bankası yıl sonunda da kendi varsayımını açıkladığı
+  için türetildi. Yıl sonu duyarlılığı yayımlamayan Garanti, Yapı Kredi, Vakıfbank, Ziraat, Denizbank ile Halk/Burgan/Odeabank/Şekerbank (ve İş 2024-09) boş kalır ("Veri yok").
+  Akbank 2024-09 duyarlılığı "yaklaşık 1 milyar" olarak yuvarlak açıklandığı için yaklaşık değerdir. Haziran 2026 elle doğrulanmış değerler korunmuştur.
+
+- **"Tanımsız" / "Veri yok" etiketleri (2026-10-09):** Rekabet Analizi ölçülerinde değeri olmayan bankalar artık yalnızca listeden çıkarılmıyor; Anlık
+  Görünüm'ün altında açılır bir şerit ("Değeri olmayan bankalar (N)") bu bankaları ve nedenini gösteriyor. **Tanımsız** = matematiksel olarak
+  tanımlı değil (şubesiz banka, önceki yıl kârı ≤ 0, önceki yıl personeli yok, Grup 2 kredisi yok, altın hesabı yok, payda sıfır);
+  **Veri yok** = kaynak veri yok / açıklanmıyor (TÜFEX varsayımı verilmemiş, BDR verisi yüklenmemiş, banka henüz faaliyette değil). Nedenler
+  `pipeline/bos_nedenleri.py` kurallarıyla hesaplama sırasında üretilip `data/bos_nedenleri.json`'a yazılır (son 12 çeyrek, yalnız boş hücreler;
+  `app._run_pipeline_and_save` ve `scripts/recompute.py`), `/api/bos-nedenleri` ile (yalnız Rekabet izni olanlara) sunulur; İngilizce çeviriler
+  `frontend/i18n/arayuz_en.json`'a eklendi. Genel metne düşen hücre kalmadı: yeni faaliyete başlayan bankalarda (Hayat Finans, Dünya Katılım, TOM, Enpara)
+  Örtük TCMB Getirisi (ortalama TCMB hesabı 0) ve fonlama oranları (toplam fonlama 0) "Tanımsız" olarak sınıflandı. Test izolasyonu: `test_computed_guards`
+  gerçek `data/bos_nedenleri.json` dosyasını ezmesin diye fixture `DATA_BOS_NEDEN`'i geçici klasöre alır.
+- **Altın Hesapları Vadesiz Payı:** mevduat bankaları için vadesiz altın tutarı artık BDDK verisindeki mevduat vade tablosundan
+  (`Kıym. Mad. Depo Hesabı, Vadesiz`) alınıyor; önceki sürüm "bu kırılım BDDK verisinde yok" varsayımıyla yalnız elle yüklenen
+  2026-06-30 verisine bağlıydı. Değerler elle yüklenenlerle birebir; böylece 27 bankanın 26'sı ve TÜM dönemler dolu (eksik: kıymetli
+  maden hesabı olmayan TOM). Haziran 2026'da dolu banka 15 → 26.
+- **Elle yüklenen 6 ölçü için son 8 çeyrek (2024-09-30 → 2026-06-30):** `scripts/bdr_rekabet_cikar.py` BDR arşivindeki (`~/Desktop/BDR-Arsiv/raporlar`)
+  solo belgelerden Basel kaldıraç, LCR, LCR-YP ve serbest karşılığı çıkarır (LCR/kaldıraç tablo satırından; serbest karşılık dipnot ve denetçi raporu
+  cümlelerinden, "milyon TL" / "bin TL" birimi ayrımıyla). Doğrulama: 2026-06-30'da çıkarılan değerler elle yüklenenlerle 26 bankanın 4 ölçüsünde
+  birebir. Arşivdeki tuzaklar giderildi: aynı klasörde başka çeyreğe ait dosya (2025-2C klasöründe Eylül 2025 raporları) dönem kontrolüyle atlanır,
+  dosya adı ipucu önceliklidir (Aktif Bank dosyası Türkiye Finans sanılmasın), Halk Bank ve bazı TEB çeyrekleri .docx'tir (macOS `textutil`).
+  Anlamsız aykırılar yüklenmedi: Enpara LCR 2025-03/06/09 (banka faaliyete başlamadan, %7.808-34.221) ve TOM LCR-YP 2024-12 (%986.886).
+  Boş kalanlar: Enpara (faaliyet öncesi dönemler), Fibabanka LCR 2025-09 (PDF'te tablo yok), Enpara serbest karşılığı (belirsiz).
+  TÜFEX: Hazine endeksiyle değerleyen ya da TÜFE'li kıymeti olmayan 13 banka yapısal sıfır (tahmini enflasyon kullanmayan çeyreklerde); tahmini enflasyon
+  kullanıp varsayımı açıklamayan (Burgan, Odeabank, Şekerbank, Halk; Fibabanka'nın bazı çeyrekleri, Emlak 2024-12) boş. `kar_tamponu_net_kar` artık
+  yalnız serbest karşılık VE TÜFEX bilindiğinde hesaplanır (kısmi tampon göstermemek için). Rekabet ölçülerinde son 8 çeyrek doluluk: %94,8.
+
+## PDF'ten veri — 2026-10-08 — Bilanço + Gelir Tablosu (1. aşama)
+
+**Amaç:** Bankaların konsolide olmayan BDR PDF'lerinden banka bazında veri üretmek (yeni dönem için BDDK Excel/ZIP'e bağımlılığı
+azaltmak). Mevcut `cikti_ingest` yolu (BDR-Kısayol JSON'u) geçmiş dönem verisi üzerine bindirilince ölçü bazında %25 uyum
+veriyordu; PDF'i doğrudan okuyan yeni yol başlatıldı.
+
+**Eklenenler:** `pipeline/pdf_ingest.py` (okuyucu, doğrulama, eşleme), `pipeline/pdf_haritalari.json` (BDDK kodu → sistem kalem adı,
+mevcut BDDK verisiyle DEĞER eşleştirmesiyle öğrenildi), `scripts/bdr_pdf_isle.py` (klasör işleme, `--olcu-sinavi`, `--harita-ogren`),
+`tests/test_pdf_ingest.py`. Üretim verisine yazmaz.
+
+**Ölçülen doğruluk (Haziran 2026, 22 banka PDF'i, BDDK verisi referans):**
+- Bilanço ve gelir tablosu 22 bankada okunuyor; her banka kendini doğruluyor (aktif toplamı = pasif toplamı; net faiz kimliği).
+- Ortak kalemlerde BDDK değeriyle uyum ≥ %95 (Ziraat, Vakıfbank, Albaraka, Denizbank testli).
+- Ölçü bazında (209 ölçü × 22 banka): 113 ölçü tüm bankalarda birebir, hücre uyumu %73,7. Kalan ölçüler Bilanço/Gelir dışındaki
+  dipnot tablolarına bağlı (donuk alacak, kredi detayı, vade yapıları, TCMB, sermaye yeterliliği, şube/personel, kur riski ...).
+
+**Yapılmadı / sıradaki:** dipnot tabloları (ölçü başına etkisi: tüketici kredi detayı 16, Grup 1-2 krediler 11, donuk alacak hareketi 8,
+mevduat ve toplanan fon vade yapısı 29'ar, TCMB 18, diğer faaliyet gider detayı 20, şube/personel 15, sermaye 10-11, kalan vade 7).
+Bilanço'daki aşama karşılıkları (1./2./3. aşama), 'Donuk Alacaklar' ve 'Krediler Ve Alacaklar' (canlı) kalemleri de dipnottan gelir.
+Okuma yeni dönemin BDDK verisi olmadan yapılabilir, ama eşleme haritası yalnız bu çıktıların biçimine göre öğrenildi; yeni
+bir bankanın raporu farklı düzenle gelirse kendi doğrulamasında takılır ve veri üretmez.
+
+**2. aşama — dipnot tabloları (2026-10-08, kısmi):** `pipeline/pdf_dipnot.py` (hücre çıkarma + "ayak izi" öğrenme),
+`pipeline/pdf_dipnot_hedefler.json` (ölçülerin okuduğu 19 dipnot tablosu, 266 hücre; TracingLookupContext ile üretildi),
+`pipeline/pdf_dipnot_ozellikleri.json` (öğrenilen ayak izleri + her birinin doğruluğu), `scripts/bdr_pdf_dipnot.py`.
+Dipnot satırlarında başlık metni bankadan bankaya değiştiği için her hedef (tablo, kalem, para birimi) BDDK verisiyle değer
+eşleştirmesiyle öğrenilir; doğruluk **bir banka dışarıda bırakılarak** ölçülür (22 banka):
+tcmb %99, bilanço dışı %95, kur riski %94, Grup 1-2 krediler %93, kalan vade %93, sermaye oranları %93, özkaynak %91, gider detayı
+%91, kredi faizi %91, sermaye (RAV) %89, faiz TP/YP %86, donuk alacak hareketi %83, mevduat vade yapısı %77, tüketici kredi detayı %72,
+katılma hesabı kar payı %67, toplanan fon vade yapısı %46, şube/personel %0 (PDF'te tablo değil, cümle içinde).
+Ölçü bazında (BDDK'nın TÜM satırları PDF verisiyle değiştirilerek): yalnız ana tablolar 46 ölçü / hücre %36; dipnotlar eklenince
+66 ölçü / hücre %61. Üretimde yalnız doğruluğu eşiğin (`dipnot_esik`, varsayılan KAPALI) üstündeki ayak izleri kullanılır.
+**Bilinen boşluklar:** İş Bankası'nın PDF'i birçok dipnotu farklı kelimelerle veriyor (en çok hatalı banka); bilançodaki
+Donuk Alacaklar / aşama karşılıkları / canlı krediler kalemleri henüz dipnottan türetilmiyor; şube-personel sayıları cümle
+içinden regex ile okunmalı; aynı ölçüdeki tek bir hatalı hücre tüm ölçüyü bozduğundan ölçü bazında %100'e henüz yaklaşılamadı.
+**Aşama 3 (2026-10-08) — şube/personel ve bilanço türetilmiş kalemleri:**
+- `pipeline/pdf_sube.py`: Şube/Personel Sayısı düzyazıdan okunur (kalıp başına oy, eşit oyda boş). Haziran 2026'da 22 banka × 2
+  = 44 hücrenin 40'ı BDDK ile birebir; 4'ü eksik/farklı: Halk (personel PDF'te yalnız "22 binin üzerinde"), TOM ve Enpara
+  (şube yok → boş bırakılır), ING (PDF'in kendi cümlesi 1.414 çalışan, BDDK 2.416).
+- `Krediler Ve Alacaklar (Toplam)` bilanço 2. bölüm satırlarından türetilir (Krediler + Kiralama + Faktoring; eski biçimde
+  Donuk − Özel karşılık): bilanço hücre uyumu 3112 → 3138 / 3502. Kalan farklar İş Bankası (PDF yuvarlaması ~3 mn TL) ve TOM.
+- `Donuk Alacaklar` ve 3 aşama karşılığı dipnot ayak izi olarak öğrenildi (`bilanco` tablosu): bir-banka-dışarıda %80; "aşama
+  toplamı ≈ bilanço beklenen zarar karşılığı" çapraz kontrolü yalnız 12/22 bankada tutarlı seçim verdi (BDDK ile PDF aşama
+  rakamları bazı bankalarda farklı: ör. Vakıfbank 1. aşama) — bu yüzden eşik kapısının (varsayılan kapalı) altında kalır.
+- Canlı `Krediler Ve Alacaklar` (= Krediler − Donuk) Donuk güvenilir okunamadığından henüz üretilmiyor.
+- **Donuk Alacaklar (2026-10-08, ikinci tur):** `pipeline/pdf_donuk.py` kredi riski tablosundan ("Temerrüt etmiş | etmemiş |
+  değer düşüklüğü | net", satır Krediler; tablo yoksa iki ayrı düzyazı cümlesinin kesişimi) brüt donuk alacağı okur: 22/22 banka
+  BDDK ile birebir. Aynı tablonun "değer düşüklüğü" sütunu 1.+2.+3. aşama toplamıdır; aşama karşılıkları, öğrenilmiş aday
+  hücreler arasından toplamı bu sütuna eşit olan TEK kombinasyon olarak seçilir (3. aşama 18/18, 1.-2. aşama 14/15 ve 15 bankada
+  üretilir; Vakıfbank 1. aşama ve Enpara 2. aşamada PDF kendi içinde tutarlı, BDDK değeri farklı). Canlı `Krediler Ve Alacaklar`
+  = Krediler − Donuk (yalnız Toplam). Ayrıca `Vergi Varlığı` (= Cari + Ertelenmiş), `Beklenen Zarar Karşılıkları (-)` (işaret
+  ve 2.4/2.5 kod farkı) ve `Expected Loss Provisions (-)` ad ile türetilir. Bilanço hücre uyumu (Haziran 2026, tüm tablolar
+  PDF'ten) 3138 → 3273 / 3502 (%93,5). Kalan farklar: TP/YP kırılımı olmayan kalemler (Donuk/canlı krediler yalnız Toplam),
+  Türev finansal varlıklar/yükümlülükler (BDDK ile PDF bileşimi farklı), İş Bankası PDF yuvarlaması.
+- **Vade yapısı tabloları (2026-10-08, üçüncü tur):** `pipeline/pdf_sablon.py` Mevduatın ve Toplanan Fonların Vade Yapısı
+  tablolarını hücre hücre tahmin etmek yerine BÜTÜN tablo olarak okur: kalem adları BDDK verisinden şablona çevrilir
+  (`pipeline/pdf_sablonlar.json`, `scripts/bdr_pdf_dipnot.py --sablon-uret`), PDF satırları etiket benzerliğiyle sıra korunarak
+  hizalanır (aynı adlı kalemler sistemdeki gibi toplanır) ve ÜÇ doğrulamadan geçmeyen tablo için hiç satır üretilmez: (1) her
+  satırda sütunlar toplamı = Toplam sütunu, (2) Toplam satırı = üst düzey satırların toplamı, (3) önceki dönem tablosu
+  elenir. Haziran 2026: Mevduat bankalarında 15/17 PDF okundu, 2160/2160 hücre BDDK ile birebir; katılım bankalarında 5/6
+  PDF, 1220/1220 hücre birebir (eski öğrenmeyle %77 ve %46). Okunamayanlar: Yapı Kredi (8 sütunlu, TP/YP alt toplamlı farklı
+  düzen) ve İş Bankası (boş hücreler yazılmadığından sütun konumu metinden çıkmıyor), Emlak Katılım (PDF'in kendi satır toplamı
+  tutmuyor).
+- **Tüketici kredileri tablosu (2026-10-08):** aynı motorun satır-modu (`pdf_sablon.sablon_kur_satir`): kalem başına "Toplam"
+  sütunu, ebeveyn satır = alt satırların toplamı (PDF'te ebeveyn yoksa alt satırlardan türetilir), "Kredili Mevduat Hesabı-TP
+  (Gerçek Kişi/Personel)" kırılımları para birimine göre toplanır, kısa+orta=toplam her satırda doğrulanır. 21/23 PDF okundu,
+  918/924 hücre BDDK ile birebir. 6 farktan 3'ü Yapı Kredi'de BDDK verisinin kaymasıdır (PDF'te Dövize Endeksli bloğu var,
+  BDDK Excel'i değeri "YP" satırına yazmış) — PDF anlamca doğru okunur, BDDK ile birebir eşleşmez. Okunamayanlar: İş Bankası
+  (4 sütunlu tablo), HSBC. Tüm tablolar PDF'ten okununca (eşik 0) hücre uyumu %76,7 → %79,1.
+- **Katılma hesabı kar payı vade yapısı (2026-10-08):** satır kimliği etiketten (para birimi bölümü "Türk parası/Yabancı para" +
+  Bankalar/Gerçek kişi/Resmi/Ticari/Diğer/Kıymetli maden/Toplam/Genel toplam) çıkarılır, sütunlar başlıktan okunur (9 aya kadar,
+  birikimli gibi PDF'te olmayan sütunlar sıfır), her satırda sütun toplamı ve TP/YP/Genel toplam kontrolleri aranır. 4/6 katılım
+  bankası PDF'i okundu, 448/448 hücre BDDK ile birebir (eski yöntemde %67); Emlak Katılım ve Hayat Finans PDF'lerinde bu tablo
+  hiç yok.
+- **Mevduata ödenen faizin vade yapısı (2026-10-08):** (para birimi bölümü, tür) × 8 sütun; Yapı Kredi/Burgan gibi 9. "Önceki
+  Dönem" sütunu atılır. Her satırda sütun toplamı, TP/YP toplamı ve Genel Toplam kontrolü; 15/17 PDF okundu, 1679/1680 hücre
+  BDDK ile birebir (eski yöntemde %88). Okunamayan: İş Bankası (boş hücreler yazılmıyor), Odeabank (satır toplamı tutmuyor).
+  Not: "Resmî" gibi şapkalı yazımlar normalleştirilir; önceki dönem tablosu yalnızca başlıktan ÖNCEKİ satırlara bakılarak elenir.
+- **Ölçü bazında yeniden sınav (2026-10-08, Haziran 2026, 22 banka × 209 ölçü, BDDK'nın TÜM satırları PDF verisiyle değiştirilerek):**
+  `scripts/bdr_pdf_isle.py --olcu-sinavi --dipnot-esik 0` artık ölçü×banka sonuçlarını sınıflandırır (tam / %1 içinde / eksik / yanlış),
+  ölçü ve banka bazında dağılımı yazar ve `cikti/olcu_sinavi.json`'a ayrıntı bırakır. Sonuç: 4543 ölçü×banka çiftinin **%90,4'ü
+  BDDK ile birebir**, %1,1'i %1 içinde, %0,6'sı eksik (PDF'ten değer çıkmadı), **%7,8'i yanlış değer**; 209 ölçünün 87'si tüm
+  bankalarda birebir, 150'si bankaların en az %90'ında birebir. DÜZELTME: önceki turlarda bildirilen "%64 → %79" hücre uyumu,
+  klasörde yalnız Mart 2026 PDF'i olan QNB'nin Haziran BDDK satırlarının silinip yerine boş veri konmasıyla (sınav artığı) ~209
+  hücre kadar düşük çıkıyordu; sınav artık yalnız sınanan dönemin satırlarını kullanır. Bu turda ayrıca: gelir tablosunda gider
+  işaretleri (abs), Kredi Ve Diğer Alacaklar Değer Düşüş Karşılığı (= IX + X), 'Diğer' (= 4.1.2 + 4.2.2) ve vergi kalemleri
+  (vergi öncesi − dönem net, ertelenmiş gider ≥ 0 / gelir ≤ 0); bilançoda Donuk/canlı krediler TP/YP, Diğer Finansal Varlıklar,
+  Türev (yalnız 1.4.1 / 7.1), Kiralama Borçları, Faktoring. En çok yanlış üreten ölçüler: tp/yp getirili-maliyetli spread, donuk
+  portföy temizliği, satış/terkin öncesi donuk ve NPL, spread ölçüleri (faiz dipnotları ve donuk akım tablosu).
+- **Faiz dipnotları ve donuk alacak akımı (2026-10-08):** `faiz_tpyp` / `kredi_faiz_tpyp` tablolarının hücre-bazlı öğrenmesi yerine
+  beş tablo ayrı ayrı okunur (Bankalardan, Kullanılan Kredilere, Menkul Değerlerden, Kredilerden alınan faiz/kar payı; İhraç edilen
+  menkul kıymetler; İştirak ve bağlı ortaklık faizleri): TP/YP sütunları, "Faiz" ya da "Kâr payı" başlıkları, tablo toplamı =
+  satırların toplamı ve **tablo toplamı = gelir tablosundaki ilgili satır** (1.1, 1.3 [ya da 1.2+1.3], 1.5, 2.2, 2.4) kontrolü.
+  İhraç faizi tablosu hiç yoksa ve gelir tablosunda 2.4 sıfırsa TP/YP sıfır yazılır. Okunan banka sayısı ve BDDK uyumu (Haziran
+  2026): Bankalardan 21/23 (210/210), Kullanılan Krediler 20/23 (280/280), Menkul 22/23 (308/308), Kredilerden Alınan 18/23
+  (180/180), İştirak 20/23 (36/36), İhraç 12/23 (23/24). `donuk_akim`: "Toplam donuk alacak hareketleri" (III/IV/V. grup × 19 BDDK
+  satırı) tablosu doğrudan okunur, akış dengesi (önceki + intikal + giriş − çıkış − tahsilat − kayıttan düşülen − satılan ± kur
+  farkı = dönem sonu; dönem sonu − karşılık = net) her grupta doğrulanır, "Aktiften Silinen" = kayıttan düşülen + satılan, parantezli
+  çıkışlar ve "31 Aralık 2025 / 30 Haziran 2026" etiketli satırlar desteklenir: 19/23 PDF, 1081/1083 hücre birebir. Ölçü sınavı:
+  **%90,4 → %91,3 birebir, yanlış değer %7,8 → %7,3**; donuk portföy temizliği ve satış/terkin öncesi donuk/NPL ölçüleri
+  bankaların çoğunda artık birebir. Kalan yanlışlar ağırlıkla İş Bankası (155/209), TOM Bank, Emlak Katılım, Garanti ve Yapı Kredi'nin
+  farklı tablo düzenlerinden (boş hücreler yazılmayan tablolar, 8 sütunlu mevduat vadesi, 1./2. aşama karşılıklar) gelir.
+- **İş Bankası ve boş hücre yazmayan tablolar (2026-10-08):** pdftotext'in sütun konumlarından yararlanan "konumlu okuma"
+  (`pdf_sablon.ham_konumlu_satirlar` / `kolonlara_ata`): sayıların sağ kenarı konumları (en çok sayılı satırlardan sütun merkezi)
+  bulunur, eksik hücreli satırlar en yakın merkeze atanır; iki sayı aynı sütuna düşerse başka tabloya geçilmiş sayılıp kesilir.
+  Mevduat vade yapısı (7 gün ihbarlı sütunu hiç yazılmayan düzen dahil) 17/17 PDF, mevduat faiz vadesi 16/17, tüketici kredileri
+  22/23 (4 sütunlu "Faiz ve Gelir Tahakkuk" düzeni dahil), faiz tabloları (Bankalardan 23/23, Kullanılan Krediler 21/23, Kredilerden
+  Alınan 19/23) ve donuk alacak akımı (her akım satırının altında alt satırlar olan düzen, 20/23) artık İş Bankası ve Yapı Kredi'yi
+  de okur. Ölçü sınavı: **%91,3 → %92,8 birebir, yanlış değer %7,3 → %6,0**; İş Bankası 155 → 194/209, Yapı Kredi 171 → 194/209.
+**Hedef:** ölçü bazında %100'e yakın doğruluk için tablo başına yapısal okuyucu ve çapraz tablo tutarlılık denetimleri
+(ör. vade yapısı toplamı = bilanço mevduatı) gerekiyor; bu iş sürüyor.
+
 ## Yeni ölçüler — 2026-10-06 — Rekabet Analizi çalışmasından 39 ölçü
 
 **Kaynak:** `Rekabet Analizi/KT_Rekabet_Analizi_Teknik_Devir.md` (KT Rekabet Analizi · 2026 İlk Yarı) ölçüm sözlüğü.

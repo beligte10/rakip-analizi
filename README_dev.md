@@ -94,6 +94,8 @@ kt_cockpit_repo/
 
 ## Bakım
 
+**Yenilikler (`whats_new.json`) yazım kuralı:** admin paneliyle ilgili değişikliklerden bahsedilmez (yalnız görsel iyileştirmeler, AI araçları ve diğer kullanıcıya dönük iyileştirmeler); "Power BI / PBI ile eşleşti, hizalandı" gibi ifadeler kullanılmaz.
+
 Yeni measure, banka veya grup eklemek için: [`docs/EXTENDING.md`](docs/EXTENDING.md)
 
 ## Lisans

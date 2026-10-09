@@ -370,12 +370,15 @@ def nd_krediler_toplam_fonlama(ctx, b, t):
 
 
 def _altin_vadesiz(ctx, b, t):
-    """Altın (kıymetli maden) hesaplarının vadesiz kısmı. Katılım bankalarında fon vade tablosundan; mevduat
-    bankalarında bu kırılım BDDK verisinde yok, elle yüklenen BDR verisi (manuel_olculer.json) kullanılır."""
+    """Altın (kıymetli maden) hesaplarının vadesiz kısmı. Katılım bankalarında fon vade tablosundan (Toplanan Fonların Vade Yapısı),
+    mevduat bankalarında mevduat vade tablosundan ('Kıym. Mad. Depo Hesabı, Vadesiz') — ikisi de BDDK verisinde bulunur, böylece tüm
+    dönemler için hesaplanır. Bulunamazsa elle yüklenen BDR verisi (manuel_olculer.json) yedek olarak kullanılır."""
     if ctx.bank_turu.get(b) == 'Katılım':
         v = ctx.tfv(b, t, 'Kıymetli Maden DH Vadesiz')
-        if v:
-            return v
+    else:
+        v = ctx.mvy(b, t, 'Kıym. Mad. Depo Hesabı, Vadesiz')
+    if v:
+        return v
     return manuel_veri.deger('altin_vadesiz_tutar', b, t)
 
 
@@ -406,11 +409,13 @@ def _manuel(mid):
 
 
 def nd_kar_tamponu_net_kar(ctx, b, t):
-    """(Serbest karşılık bakiyesi + TÜFEX tamponu) / dönem net kârı (YtD). Yalnız manuel veri olan dönemde."""
+    """(Serbest karşılık bakiyesi + TÜFEX tamponu) / dönem net kârı (YtD). Yalnız İKİ bileşen de bilindiğinde hesaplanır: TÜFEX'i
+    bilinmeyen (açıklamayan / tahmini enflasyon kullanıp varsayımı vermeyen) bankada kısmi tampon göstermek tamponu olduğundan düşük
+    gösterirdi. Yapısal sıfır (TÜFEX = 0) açıkça 0 olarak yüklüdür."""
     sk, tx = manuel_veri.deger('serbest_karsilik', b, t), manuel_veri.deger('tufex_tamponu', b, t)
-    if sk is None and tx is None:
+    if sk is None or tx is None:
         return None, None
-    return _nd((sk or 0.0) + (tx or 0.0), _net_kar(ctx, b, t))
+    return _nd(sk + tx, _net_kar(ctx, b, t))
 
 
 # ============================================================

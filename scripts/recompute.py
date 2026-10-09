@@ -106,6 +106,14 @@ def main():
     with open(out_path, 'w') as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
+    try:    # Rekabet ölçülerinde boş hücre nedenleri ("Tanımsız" / "Veri yok" etiketleri) — app.py ile aynı çıktı
+        from pipeline.bos_nedenleri import uret
+        bos = uret(ctx, catalog, out)
+        with open(args.data_dir / 'bos_nedenleri.json', 'w', encoding='utf-8') as f:
+            json.dump(bos, f, ensure_ascii=False, separators=(',', ':'))
+    except Exception as e:  # noqa: BLE001
+        print(f"⚠️  bos_nedenleri.json üretilemedi: {e}")
+
     print(f"✅ Bitti. {sum(len(v) for v in out.values())} (measure, banka) çifti")
 
 

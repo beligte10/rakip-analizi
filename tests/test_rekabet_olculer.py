@@ -48,7 +48,8 @@ def test_manuel_veri_yuklenir():
     assert manuel_veri.deger('basel_kaldirac_orani', KT, T) == pytest.approx(6.29)
     assert manuel_veri.deger('lcr', 'QNB', T) == pytest.approx(129.2)
     assert manuel_veri.deger('serbest_karsilik', 'Denizbank', T) == pytest.approx(8700e6)   # mn TL → TL
-    assert manuel_veri.deger('lcr', KT, '2026-03-31') is None
+    assert manuel_veri.deger('lcr', KT, '2026-03-31') == pytest.approx(240.68)   # son 8 çeyrek BDR arşivinden dolduruldu (2026-10-09)
+    assert manuel_veri.deger('lcr', KT, '2023-12-31') is None                    # 8 çeyrek öncesi boş
     assert manuel_veri.deger('lcr', 'Halk Bank', T) == pytest.approx(159.62)   # 17 banka PDF'ten (2026-10-07)
     assert manuel_veri.deger('lcr', 'Olmayan Banka', T) is None
     assert manuel_veri.deger('serbest_karsilik', 'Enpara', T) is None            # bakiye belirsiz → boş
@@ -150,3 +151,69 @@ def test_rekabet_tutar_grubu_verisi_olmayan_uyeyi_dislar():
     assert G._agg_size_mevcut(bd, 'serbest_karsilik', ['B'], T) is None
     # sistemin genel kuralı (diğer ölçüler) değişmedi: eksik üye grubu boşaltır
     assert G._agg_size(bd, 'serbest_karsilik', ['A', 'B', 'C'], T) is None
+
+
+def test_tufex_yapisal_sifir_ve_tahmin_kullanan_bos():
+    assert manuel_veri.deger('tufex_tamponu', 'Dünya Katılım', T) == 0.0                 # Hazine endeksiyle değerler, tahmini enflasyon yok
+    assert manuel_veri.deger('tufex_tamponu', 'Fibabanka', '2025-12-31') is None        # o çeyrekte "tahmini enflasyon oranı" kullanmış, varsayımı açıklamamış
+    assert manuel_veri.deger('tufex_tamponu', 'Burgan Bank', T) is None                  # tahmin kullanıyor, varsayım açıklamıyor
+
+
+@veri_var
+def test_kar_tamponu_iki_bilesen_gerektirir(ctx):
+    f = MEASURE_FUNCS['kar_tamponu_net_kar']
+    assert f(ctx, 'Burgan Bank', T) is None       # TÜFEX bilinmiyor → kısmi tampon gösterilmez
+    assert f(ctx, 'Dünya Katılım', T) is not None  # serbest karşılık 0 + TÜFEX 0 (yapısal sıfır)
+
+
+@veri_var
+def test_altin_vadesiz_payi_mevduat_bankalarinda_bddk_verisinden(ctx):
+    f = MEASURE_FUNCS['altin_vadesiz_payi']
+    assert f(ctx, 'Halk Bank', T) == pytest.approx(91.2, abs=0.1)      # elle yükleme yokken de hesaplanır
+    assert f(ctx, 'Halk Bank', '2025-12-31') is not None               # geçmiş dönemler de dolu
+
+
+@veri_var
+def test_bos_neden_kurallari(ctx):
+    from pipeline import bos_nedenleri as B
+    assert B.neden(ctx, 'sube_basina_opex', 'TOM Bank', T)[0] == 'tanimsiz'                       # şubesiz banka
+    assert B.neden(ctx, 'net_kar_yoy_buyumesi', 'TOM Bank', T)[0] == 'tanimsiz'                   # önceki yıl zarar
+    assert B.neden(ctx, 'tufex_tamponu', 'Burgan Bank', T)[0] == 'veri_yok'                       # tahmin kullanıyor, açıklamıyor
+    assert B.neden(ctx, 'lcr', 'Kuveyt Türk', '2023-12-31')[0] == 'veri_yok'                      # BDR verisi yüklenmeyen dönem
+    assert B.neden(ctx, 'altin_vadesiz_payi', 'TOM Bank', T)[0] == 'tanimsiz'                     # altın hesabı yok
+
+
+def test_bos_neden_arayuz_ve_ceviri_eslesmesi():
+    """Sunucunun ürettiği her neden metni arayüz sözlüğünde İngilizce karşılığa sahip olmalı."""
+    import re
+    from pipeline import bos_nedenleri as B
+    sozluk = json.loads((ROOT / 'frontend' / 'i18n' / 'arayuz_en.json').read_text(encoding='utf-8'))
+    kaynak = (ROOT / 'pipeline' / 'bos_nedenleri.py').read_text(encoding='utf-8')
+    metinler = {m for m in re.findall(r"(?:TANIMSIZ|VERI_YOK),\s*'([^']+)'", kaynak)}
+    assert metinler, 'neden metni bulunamadı'
+    eksik = sorted(m for m in metinler if m not in sozluk)
+    assert not eksik, eksik
+
+
+@veri_var
+def test_bos_nedenlerinde_genel_metne_dusen_hucre_yok(ctx):
+    """Son 12 çeyrekte değeri boş her Rekabet hücresinin özel (kurala bağlı) bir nedeni olmalı."""
+    from pipeline import bos_nedenleri as B
+    bd = json.loads((ROOT / 'data' / 'computed.json').read_text(encoding='utf-8'))['bank_data']
+    cat = json.loads(CATALOG.read_text(encoding='utf-8'))
+    o = B.uret(ctx, cat, bd)
+    genel = [(m, b, t) for m, bs in o.items() for b, ts in bs.items() for t, (_k, x) in ts.items() if x.startswith('Gerekli kalemler')]
+    assert not genel, genel[:5]
+
+
+def test_tufex_cikarici_birim_ve_isaret():
+    """BDR dipnot cümlelerinden TÜFEX: milyar/bin TL birimi ve 'azalarak' işareti doğru okunur."""
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'scripts'))
+    import bdr_rekabet_cikar as C
+    c = ('değerlemesi yıllık %48,0 enflasyon tahminine göre yapılmıştır. TÜFE tahmininin %1 artması veya azalması durumunda, '
+         'vergi öncesi dönem karı yaklaşık 1 milyar (tam tutar) TL artacak.')
+    assert C.tufex_bilgisi(c) == (48.0, 1000.0)
+    d = ('Tutarlar Bin Türk Lirası olarak ifade edilmiştir. referans endekse göre yapılsaydı, değerleme farkları 47.296 TL artacak, '
+         'net dönem karı 280.471 TL azalarak 40.207.236 TL olacaktı.')
+    assert round(C.tufex_aciklanmis(d), 1) == -280.5
