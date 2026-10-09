@@ -4,6 +4,14 @@ Sürüm geçmişi. Her commit'in özetini barındırır.
 
 ## Rekabet Analizi — tüm bankalar için tamlık (2026-10-09)
 
+- **YtD Büyüme kartı ortalama seçici:** "Ortalamayı göster" düğmesi yerine Yok / Basit / Ağırlıklı / Basit + Ağırlıklı seçici. Ağırlıklı ortalama = Σ(büyüme × baz dönem değeri) / Σ baz
+  (= seçili bankaların toplamının büyümesi); baz ≤ 0 ve anomali bankalar dışarıda, miktar (adet) ölçülerinde yalnız basit ortalama. Basit turuncu, ağırlıklı mavi çizgi/çubuk.
+
+- **Rol bazlı ekran izinleri:** Admin → Roller tablosuna "Ekran" bölümü eklendi: Trend ve Kompozisyon sekmeleri, dört dashboard kartı (Banka sıralaması, YtD Büyüme / Rasyo özeti,
+  Banka Grupları, Rakip Bankalar) ve menüdeki BDR düğmesi rol başına açılıp kapatılır. Ölçü kategorileri de rol başına gizlenebilir (rolde `gizle:<kategori>` girdisi); gizli kategorinin
+  ölçüleri sunucudan hiç gönderilmez (Rekabet Analizi izniyle aynı mekanizma, `_gizli_olculer`). Mevcut tüm roller (özel roller dahil) yeni ekran izinlerini açık olarak alır;
+  'Ekran' izinleri ve `gizle:` kısıtları yetki yükseltme denetiminde sayılmaz. Kapalı sekme açılamaz (görünüm/kısayol dahil Anlık Görünüm'e düşer).
+
 - **TÜFEX türetimi (son 8 çeyrek):** `scripts/bdr_rekabet_cikar.py` BDR dipnotundaki "yıllık %X enflasyon tahmini" varsayımı ve "TÜFE tahmininin %1 değişmesi → vergi öncesi kâr ≈ N"
   duyarlılığından TÜFEX'i türetir: (gerçekleşen yıllık TÜFE − varsayım) × duyarlılık. Denizbank/QNB doğrudan açıklar ("referans endekse göre yapılsaydı … net dönem karı X artarak/azalarak";
   azalış negatif tampon). Akbank, QNB, ING, TEB yıl sonlarında fiili enflasyon kullandığını yazdığından 2024-12 / 2025-12 için 0; İş Bankası yıl sonunda da kendi varsayımını açıkladığı

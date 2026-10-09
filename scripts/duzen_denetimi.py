@@ -40,7 +40,8 @@ CHROME_ADAYLARI = [
 ]
 
 ME = {'id': 1, 'name': 'Denetim', 'email': 'denetim@local', 'role': 'admin',
-      'izinler': ['export_veri', 'export_gorsel', 'olcu_olustur', 'asistan', 'odak_banka'],
+      'izinler': ['export_veri', 'export_gorsel', 'olcu_olustur', 'asistan', 'odak_banka', 'sekme_trend', 'sekme_kompozisyon',
+                  'kart_siralama', 'kart_ytd', 'kart_gruplar', 'kart_rakipler', 'menu_bdr'],
       'odak_banka': None, 'odak_varsayilan': None, 'odak_secili': None}
 SABIT = {
     '/api/me': ME, '/api/my/measures': {'measures': []}, '/api/my/views': {'views': []},

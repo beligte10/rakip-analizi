@@ -524,5 +524,13 @@
  "🔍 Listede ara (ör. mevduat, kredi, faiz)": "🔍 Search the list (e.g. deposits, loans, interest)",
  "🗑 Sil": "🗑 Delete",
  "🚫 Görünümden çıkar": "🚫 Remove from view",
- "🧮 Ölçü Oluştur": "🧮 Create Measure"
+ "🧮 Ölçü Oluştur": "🧮 Create Measure",
+ "Ortalama: yok": "Average: none",
+ "Basit ortalama": "Simple average",
+ "Ağırlıklı ortalama": "Weighted average",
+ "Basit + Ağırlıklı": "Simple + Weighted",
+ "Ağırlıklı ort.": "Weighted avg.",
+ "Ağ. ort. ": "Wtd. avg. ",
+ "Ortalama göstergesi": "Average indicator",
+ "Basit ortalama: bankalar eşit sayılır. Ağırlıklı ortalama: baz dönem büyüklüğüne göre (= toplamın büyümesi). Anomali dışı, görünen bankalar.": "Simple average: banks count equally. Weighted average: weighted by base-period size (= growth of the total). Banks shown, excluding anomalies."
 }

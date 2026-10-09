@@ -37,7 +37,7 @@ def test_hazir_roller_ve_varsayilan(ortam):
     _, roles = ortam
     ids = [r['id'] for r in R.list_roles(roles)]
     assert ids == ['goruntuleyici', 'analist', 'veri_yoneticisi', 'admin']
-    assert R.get_role(roles, 'goruntuleyici')['izinler'] == []
+    assert R.get_role(roles, 'goruntuleyici')['izinler'] == R.EKRAN_IZINLERI      # yalnız pano + ekran öğeleri
     assert set(R.get_role(roles, 'admin')['izinler']) == set(R.IZIN_ANAHTARLARI)
     assert R.resolve_id(roles, 'member') == 'goruntuleyici'        # eski kayıt
     assert R.resolve_id(roles, 'silinmis_rol') == 'goruntuleyici'
@@ -206,3 +206,40 @@ def test_asistan_gorunumu_gizli_olcuyu_bilmez(monkeypatch):
     assert kisitli.meta('zk_surukleme') is None
     assert kisitli.resolve_measure('zk_surukleme') is None
     assert all(r['id'] not in IDS for r in kisitli.search('zorunlu karşılık sürüklemesi tufex lcr', 15))
+
+
+# --- Ekran izinleri ve kategori gizleme (2026-10-09) --------------------------------------------
+def test_ekran_izinleri_mevcut_roles_json_de_tum_rollere_acik_eklenir(tmp_path):
+    """Ekran izinlerinden önce yazılmış roles.json: özel roller dahil herkes mevcut ekran öğelerini görmeye devam eder."""
+    yol = tmp_path / 'roles.json'
+    bilinen = [k for k in R.IZIN_ANAHTARLARI if k not in R.EKRAN_IZINLERI]
+    yol.write_text(json.dumps({'bilinen_izinler': bilinen, 'roles': [
+        {'id': 'goruntuleyici', 'ad': 'Görüntüleyici', 'izinler': [], 'asistan_gunluk': 0},
+        {'id': 'ozel', 'ad': 'Özel', 'izinler': ['asistan'], 'asistan_gunluk': 5}]}), encoding='utf-8')
+    for rid in ('goruntuleyici', 'ozel', 'analist', 'admin'):
+        assert set(R.EKRAN_IZINLERI) <= set(R.get_role(yol, rid)['izinler']), rid
+
+
+def test_ekran_izni_kapatilabilir_ve_yetki_yukseltmeye_sayilmaz(ortam):
+    users, roles = ortam
+    role, err = R.create_role(roles, 'Dar', ['admin_kullanicilar'], 0)       # ekran izni yok
+    assert not err and not set(R.EKRAN_IZINLERI) & set(role['izinler'])
+    assert not set(R.yetki_izinleri(R.get_role(roles, 'goruntuleyici')['izinler']))   # salt-görünüm yetki sayılmaz
+
+
+def test_kategori_gizleme_rol_ve_sunucu_filtresi(ortam, monkeypatch):
+    users, roles = ortam
+    role, err = R.create_role(roles, 'Kısıtlı', ['rekabet_analizi', 'gizle:Gelir Tablosu'], 0)
+    assert not err and R.gizli_kategoriler(role['izinler']) == ['Gelir Tablosu']
+    assert R.update_role(roles, role['id'], 'Kısıtlı', ['gizle:Bilanço'], 0)[1] == ''
+    assert R.gizli_kategoriler(R.get_role(roles, role['id'])['izinler']) == ['Bilanço']
+    _, err = R.create_role(roles, 'Kötü', ['gizle:'], 0)
+    assert err == 'Geçersiz izin'
+    monkeypatch.setattr(A, '_load_catalog', lambda: {'measures': [
+        {'id': 'a', 'kategori': 'Bilanço'}, {'id': 'b', 'kategori': 'Gelir Tablosu'}]})
+    uid = _uye(users, 'k@kuveytturk.com.tr', role['id'])
+    user = U.get_user_by_id(users, uid)
+    gizli = A._gizli_olculer(user)
+    assert 'a' in gizli and 'b' not in gizli
+    assert A._gizlenebilir_kategoriler() == ['Bilanço', 'Gelir Tablosu']
+    assert 'gizle:Bilanço' not in A.user_perms(user)       # kısıt, yetki değil

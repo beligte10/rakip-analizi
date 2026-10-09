@@ -179,7 +179,8 @@ def user_role(user: Optional[dict]) -> dict:
 
 
 def user_perms(user: Optional[dict]) -> set:
-    return set(user_role(user)['izinler'])
+    """Kullanıcının YETKİ izinleri ('gizle:<kategori>' kısıtları hariç, bkz. roles.yetki_izinleri)."""
+    return set(roles_mod.yetki_izinleri(user_role(user)['izinler']))
 
 
 def _admin_identity(request: Request, credentials: Optional[HTTPBasicCredentials],
@@ -1158,10 +1159,24 @@ _filtreli_onbellek: Dict[tuple, bytes] = {}
 _filtreli_kilit = threading.Lock()
 
 
+def _gizlenebilir_kategoriler() -> List[str]:
+    """Admin panelinde rol bazında gizlenebilecek ölçü kategorileri (Rekabet Analizi kendi iznine sahiptir)."""
+    sira: List[str] = []
+    for m in (_load_catalog().get('measures') or []):
+        k = m.get('kategori')
+        if k and k != 'Rekabet Analizi' and k not in sira:
+            sira.append(k)
+    return sira
+
+
 def _gizli_olculer(user: Optional[dict]) -> frozenset:
-    """Kullanıcının rolünde kapalı olan ölçülerin id'leri (şimdilik: Rekabet Analizi kategorisi)."""
+    """Kullanıcının rolünde kapalı olan ölçülerin id'leri: Rekabet Analizi (izne bağlı) + rolde gizlenen kategoriler."""
     from pipeline.rekabet_olculer import IDS
-    return frozenset() if REKABET_IZNI in user_perms(user) else frozenset(IDS)
+    gizli = set() if REKABET_IZNI in user_perms(user) else set(IDS)
+    kategoriler = set(roles_mod.gizli_kategoriler(user_role(user)['izinler']))
+    if kategoriler:
+        gizli |= {m['id'] for m in (_load_catalog().get('measures') or []) if m.get('kategori') in kategoriler}
+    return frozenset(gizli)
 
 
 def _olcu_filtrele(veri, gizli: frozenset):
@@ -1184,7 +1199,7 @@ def _olcu_filtrele(veri, gizli: frozenset):
 def _filtreli_json_yanit(path: Path, gizli: frozenset, request: Request):
     """İzni olmayan kullanıcıya gizli ölçüleri çıkarılmış JSON (dosya değişene kadar bellekte önbellekli, ETag'li)."""
     st = os.stat(path)
-    anahtar = (str(path), st.st_mtime_ns, st.st_size, len(gizli))
+    anahtar = (str(path), st.st_mtime_ns, st.st_size, hash(gizli))
     with _filtreli_kilit:
         govde = _filtreli_onbellek.get(anahtar)
         if govde is None:
@@ -1194,7 +1209,7 @@ def _filtreli_json_yanit(path: Path, gizli: frozenset, request: Request):
             for k in [k for k in _filtreli_onbellek if k[0] == str(path)]:
                 _filtreli_onbellek.pop(k, None)
             _filtreli_onbellek[anahtar] = govde
-    etag = '"f%x-%x-%d"' % (st.st_mtime_ns, st.st_size, len(gizli))
+    etag = '"f%x-%x-%x"' % (st.st_mtime_ns, st.st_size, hash(gizli) & 0xffffffff)
     inm = request.headers.get('if-none-match')
     if inm and etag in [t.strip() for t in inm.split(',')]:
         return Response(status_code=304, headers={'ETag': etag, **REVALIDATE})
@@ -1501,7 +1516,7 @@ def admin_set_user_role(user_id: int, payload: RolePayload,
         raise HTTPException(status_code=400, detail='Kendi rolünüzü değiştiremezsiniz')
     if not roles_mod.exists(DATA_ROLES, payload.role):
         raise HTTPException(status_code=400, detail='Geçersiz rol')
-    if not set(roles_mod.get_role(DATA_ROLES, payload.role)['izinler']) <= identity_perms(admin_user):
+    if not set(roles_mod.yetki_izinleri(roles_mod.get_role(DATA_ROLES, payload.role)['izinler'])) <= identity_perms(admin_user):
         raise HTTPException(status_code=403, detail='Kendi izinlerinizden geniş bir rol atayamazsınız')
     ok = users_mod.set_role(DATA_USERS, user_id, payload.role, DATA_ROLES)
     if not ok:
@@ -1523,12 +1538,12 @@ class RoleDefPayload(BaseModel):
 def admin_list_roles(admin_user: str = Depends(require_admin_perm('admin_kullanicilar'))):
     counts = users_mod.count_by_role(DATA_USERS)
     roles = [dict(r, kullanici=counts.get(r['id'], 0)) for r in roles_mod.list_roles(DATA_ROLES)]
-    return {'roles': roles, 'izinler': roles_mod.catalog(),
+    return {'roles': roles, 'izinler': roles_mod.catalog(), 'kategoriler': _gizlenebilir_kategoriler(),
             'benim_izinlerim': sorted(identity_perms(admin_user))}
 
 
 def _assert_perms_subset(izinler: List[str], identity: str) -> None:
-    if not set(izinler) <= identity_perms(identity):
+    if not set(roles_mod.yetki_izinleri(izinler)) <= identity_perms(identity):
         raise HTTPException(status_code=403, detail='Kendi izinlerinizden geniş bir rol tanımlayamazsınız')
 
 
@@ -1546,7 +1561,7 @@ def admin_create_role(payload: RoleDefPayload,
 def admin_update_role(role_id: str, payload: RoleDefPayload,
                       admin_user: str = Depends(require_admin_perm('admin_kullanicilar'))):
     mine = identity_perms(admin_user)
-    if roles_mod.exists(DATA_ROLES, role_id) and not set(roles_mod.get_role(DATA_ROLES, role_id)['izinler']) <= mine:
+    if roles_mod.exists(DATA_ROLES, role_id) and not set(roles_mod.yetki_izinleri(roles_mod.get_role(DATA_ROLES, role_id)['izinler'])) <= mine:
         raise HTTPException(status_code=403, detail='Sizden daha geniş yetkili bir rolü düzenleyemezsiniz')
     _assert_perms_subset(payload.izinler, admin_user)
     role, err = roles_mod.update_role(DATA_ROLES, role_id, payload.ad, payload.izinler, payload.asistan_gunluk)

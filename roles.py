@@ -38,6 +38,13 @@ IZINLER: List[Tuple[str, str, str, str]] = [
     ('export_gorsel', 'Görsel dışa aktarma (PNG / PDF)', 'Özellikler', 'Grafik PNG ve sayfa PDF çıktısı'),
     ('odak_banka', 'Odak banka seçimi', 'Özellikler',
      'Kullanıcı kendi odak bankasını seçebilir; izni olmayan admin panelindeki varsayılanı görür'),
+    ('sekme_trend', 'Trend sekmesi', 'Ekran', 'Trend görünümü (ölçü zaman serisi) sekmesi'),
+    ('sekme_kompozisyon', 'Kompozisyon sekmesi', 'Ekran', 'Kompozisyon (bileşen dağılımı) sekmesi'),
+    ('kart_siralama', 'Kart: Banka sıralaması', 'Ekran', 'Anlık Görünüm\'ün solundaki banka sıralaması listesi'),
+    ('kart_ytd', 'Kart: YtD Büyüme / Rasyo özeti', 'Ekran', 'Tüm Banka YtD Büyüme kartı (rasyolarda Banka Grupları Rasyo kartı)'),
+    ('kart_gruplar', 'Kart: Banka Grupları', 'Ekran', 'Banka Grupları büyüme / çeyreklik değişim kartı'),
+    ('kart_rakipler', 'Kart: Rakip Bankalar', 'Ekran', 'Rakip Bankalar yıllık görünüm ve CAGR kartı'),
+    ('menu_bdr', 'Menü: BDR', 'Ekran', 'Menüdeki BDR düğmesi'),
     ('admin_veri', 'Veri durumu, yükleme ve yedekler', 'Admin paneli',
      'Veri Durumu, Veri Yükleme, Yükleme Geçmişi; yeniden hesaplama ve veri yedeği'),
     ('admin_gruplar', 'Banka grupları', 'Admin paneli', 'Grup üyeliklerini düzenleme, grup ekleme/silme'),
@@ -47,17 +54,41 @@ IZINLER: List[Tuple[str, str, str, str]] = [
 ]
 IZIN_ANAHTARLARI = [k for k, *_ in IZINLER]
 ADMIN_IZINLERI = [k for k in IZIN_ANAHTARLARI if k.startswith('admin_')]
+# Ekran izinleri (2026-10-09): sonradan eklendi; mevcut TÜM rollere (özel roller dahil) varsayılan olarak açık eklenir,
+# böylece bugün görünen ekran öğeleri kimseden kapanmaz.
+EKRAN_IZINLERI = [k for k, _ad, bolum, _a in IZINLER if bolum == 'Ekran']
+# Ölçü kategorisi gizleme: rolün 'izinler' listesindeki 'gizle:<kategori>' girdileri (varsayılan: hepsi görünür).
+GIZLE_ON_EK = 'gizle:'
+
+
+def yetki_izinleri(izinler) -> List[str]:
+    """Yetki yükseltme denetimlerinde sayılan izinler: 'gizle:<kategori>' kısıtları ve salt-görünüm 'Ekran' izinleri
+    (sekme/kart/menü) bir yetki genişletmesi değildir, sayılmaz."""
+    return [k for k in (izinler or []) if not str(k).startswith(GIZLE_ON_EK) and k not in EKRAN_IZINLERI]
+
+
+def gizli_kategoriler(izinler) -> List[str]:
+    return [str(k)[len(GIZLE_ON_EK):] for k in (izinler or []) if str(k).startswith(GIZLE_ON_EK)]
+
+
+def _izin_gecerli(k) -> bool:
+    return k in IZIN_ANAHTARLARI or (isinstance(k, str) and k.startswith(GIZLE_ON_EK) and 1 < len(k) - len(GIZLE_ON_EK) <= 80)
+
+
+def _izin_sirala(izinler) -> List[str]:
+    kume = set(izinler or [])
+    return [k for k in IZIN_ANAHTARLARI if k in kume] + sorted(k for k in kume if str(k).startswith(GIZLE_ON_EK) and _izin_gecerli(k))
 
 VARSAYILAN_ROL = 'goruntuleyici'
 ADMIN_ROL = 'admin'
 GUNLUK_MIN, GUNLUK_MAX = 0, 2000
 
-_ANALIST = ['asistan', 'asistan_dis_veri', 'rekabet_analizi', 'olcu_olustur', 'export_veri', 'export_gorsel', 'odak_banka']
+_ANALIST = ['asistan', 'asistan_dis_veri', 'rekabet_analizi', 'olcu_olustur', 'export_veri', 'export_gorsel', 'odak_banka'] + list(EKRAN_IZINLERI)
 # Sonradan eklenen izinler: mevcut roles.json'daki HAZIR rollere varsayılanları bir kez eklenir
 # (bkz. _normalize, 'bilinen_izinler'); admin'in sonradan kaldırdığı izin geri gelmez.
-SONRADAN_EKLENEN = {'odak_banka', 'rekabet_analizi'}
+SONRADAN_EKLENEN = {'odak_banka', 'rekabet_analizi'} | set(EKRAN_IZINLERI)
 HAZIR_ROLLER: List[dict] = [
-    {'id': 'goruntuleyici', 'ad': 'Görüntüleyici', 'izinler': [], 'asistan_gunluk': 0, 'hazir': True},
+    {'id': 'goruntuleyici', 'ad': 'Görüntüleyici', 'izinler': list(EKRAN_IZINLERI), 'asistan_gunluk': 0, 'hazir': True},
     {'id': 'analist', 'ad': 'Analist', 'izinler': list(_ANALIST), 'asistan_gunluk': 50, 'hazir': True},
     {'id': 'veri_yoneticisi', 'ad': 'Veri Yöneticisi',
      'izinler': _ANALIST + ['admin_veri', 'admin_gruplar'], 'asistan_gunluk': 100, 'hazir': True},
@@ -85,13 +116,15 @@ def _normalize(data: dict) -> dict:
     for r in roles:
         if yeni and r.get('id') in hazir_izin:
             r['izinler'] = list(r.get('izinler') or []) + [k for k in yeni if k in hazir_izin[r['id']]]
+        elif yeni:   # özel roller: yalnız ekran izinleri varsayılan açık gelir
+            r['izinler'] = list(r.get('izinler') or []) + [k for k in yeni if k in EKRAN_IZINLERI]
     have = {r['id'] for r in roles}
     for h in HAZIR_ROLLER:
         if h['id'] not in have:
             roles.append(json.loads(json.dumps(h)))
     for r in roles:
         r['hazir'] = r['id'] in {h['id'] for h in HAZIR_ROLLER}
-        r['izinler'] = [k for k in IZIN_ANAHTARLARI if k in set(r.get('izinler') or [])]
+        r['izinler'] = _izin_sirala(r.get('izinler'))
         r['asistan_gunluk'] = _gunluk(r.get('asistan_gunluk'))
         r['ad'] = str(r.get('ad') or r['id'])[:40]
         if r['id'] == ADMIN_ROL:
@@ -155,7 +188,7 @@ def _check_payload(ad: str, izinler, gunluk) -> Tuple[Optional[str], List[str], 
     ad = (ad or '').strip()
     if not ad or len(ad) > 40:
         return 'Rol adı 1–40 karakter olmalı', [], 0
-    if not isinstance(izinler, list) or any(k not in IZIN_ANAHTARLARI for k in izinler):
+    if not isinstance(izinler, list) or any(not _izin_gecerli(k) for k in izinler):
         return 'Geçersiz izin', [], 0
     try:
         g = int(gunluk)
@@ -163,7 +196,7 @@ def _check_payload(ad: str, izinler, gunluk) -> Tuple[Optional[str], List[str], 
         return 'Günlük soru sınırı sayı olmalı', [], 0
     if not GUNLUK_MIN <= g <= GUNLUK_MAX:
         return f'Günlük soru sınırı {GUNLUK_MIN}–{GUNLUK_MAX} arasında olmalı', [], 0
-    return None, [k for k in IZIN_ANAHTARLARI if k in izinler], g
+    return None, _izin_sirala(izinler), g
 
 
 def create_role(path: Path, ad: str, izinler: list, gunluk) -> Tuple[Optional[dict], str]:
