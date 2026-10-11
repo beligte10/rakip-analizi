@@ -4,6 +4,8 @@ Sürüm geçmişi. Her commit'in özetini barındırır.
 
 ## Rekabet Analizi — tüm bankalar için tamlık (2026-10-09)
 
+- **Yenilemede başa dönmeme (2026-10-11):** Pano; sekme (Anlık/Trend/Kompozisyon/Dışa Aktar), ölçü, dönem ve kompozisyonu tarayıcı sekmesinin `sessionStorage`'ında (`kt_durum`) saklar, sayfa yenilenince aynı görünümle açılır. Admin paneli de kaldığı sekmeye döner (`kt_admin_sekme`). Geçersiz/silinmiş değerler yok sayılır; yeni sekme/oturum varsayılanla başlar.
+
 - **Admin paneli yenilendi (2026-10-11):** "BDR-Kısayol JSON test yükleme" paneli ve betiği kaldırıldı (sunucudaki `/admin/cikti-test-upload` uç noktası dokunulmadan duruyor).
   Görünüm modernleştirildi: geniş ekranda sol dikey menü, yuvarlak/yumuşak kartlar, tek vurgu rengi, sekme geçiş animasyonu. Veri Yükleme sekmesi: adım göstergesi (1–4),
   yuvarlak simgeli yükleme alanı, anahtar tipi "Veri azalmasına izin ver" onayı, uyarı kutuları ve panel kenar vurguları (standart yeşil, gelişmiş amber).

@@ -10961,20 +10961,26 @@
     // yığınında hemen ardından render edilir.
     window.__KT_DARK__ = (theme === 'dark');
 
-    var modeState = useState('snapshot');
+    // Sayfa yenilenince başa dönülmez (2026-10-11): sekme, ölçü, dönem ve kompozisyon bu sekmenin
+    // sessionStorage'ında tutulur; geçersiz/silinmiş değerler yok sayılır.
+    var KALICI = (function() {
+      try { return JSON.parse(sessionStorage.getItem('kt_durum') || '{}') || {}; } catch (e) { return {}; }
+    })();
+    var modeState = useState(['snapshot', 'trend', 'composition', 'export'].indexOf(KALICI.mode) >= 0 ? KALICI.mode : 'snapshot');
     // Rolde kapalı sekme açılamaz (görünüm/PDF kısayolları dahil): Anlık Görünüm'e düşer (2026-10-09)
     var mode = (modeState[0] === 'trend' && !can('sekme_trend')) || (modeState[0] === 'composition' && !can('sekme_kompozisyon'))
       ? 'snapshot' : modeState[0];
     var setMode = modeState[1];
 
-    var tarihState = useState(DATA.meta.default_date || DATA.meta.dates[DATA.meta.dates.length - 1]);
+    var tarihState = useState(DATA.meta.dates.indexOf(KALICI.tarih) >= 0 ? KALICI.tarih
+      : (DATA.meta.default_date || DATA.meta.dates[DATA.meta.dates.length - 1]));
     var tarih = tarihState[0];
     var setTarih = tarihState[1];
 
     var defaultMeasure = DATA.meta.available_measures.indexOf('toplam_aktifler') >= 0
       ? 'toplam_aktifler'
       : DATA.meta.available_measures[0];
-    var mState = useState(defaultMeasure);
+    var mState = useState(DATA.meta.available_measures.indexOf(KALICI.measure) >= 0 ? KALICI.measure : defaultMeasure);
     var activeMeasure = mState[0];
     // ⇄ Önceki ölçüye dön (2026-09-29, kullanıcı isteği: "iki grafik arasında
     // hızlı gidip gelme"). Ölçü her değiştiğinde bir öncekini hatırlar;
@@ -11004,9 +11010,14 @@
     });
 
     // Aktif kompozisyon (Kompozisyon modu)
-    var compState = useState('aktif');
+    var compState = useState(DATA.meta.compositions && DATA.meta.compositions[KALICI.comp] ? KALICI.comp : 'aktif');
     var activeComposition = compState[0];
     var setActiveComposition = compState[1];
+    useEffect(function() {
+      try {
+        sessionStorage.setItem('kt_durum', JSON.stringify({ mode: modeState[0], tarih: tarih, measure: activeMeasure, comp: activeComposition }));
+      } catch (e) { /* depolama kapalı: yenilemede başa dönülür */ }
+    }, [modeState[0], tarih, activeMeasure, activeComposition]);
 
     // 2026-09-08: Trend ve Kompozisyon sekmelerinin seçimleri BURADA tutulur.
     // Eskiden her görünüm kendi useState'ini kullanıyordu; sekme değişince

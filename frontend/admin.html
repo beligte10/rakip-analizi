@@ -1445,6 +1445,7 @@ const fmt = {
 // SEKMELER (2026-08-12)
 // ============================================================
 function switchTab(name) {
+  try { sessionStorage.setItem('kt_admin_sekme', name); } catch (e) { /* depolama kapalı */ }
   document.querySelectorAll('.tab-panel').forEach(el => {
     el.hidden = el.getAttribute('data-tab-panel') !== name;
   });
@@ -3322,7 +3323,11 @@ function asistanAnahtarSil(ad) {
     // data-tam-admin: yalnız Admin rolü (ör. API anahtarları) — tek izinle verilemez
     btn.hidden = !can(btn.getAttribute('data-perm')) || (btn.hasAttribute('data-tam-admin') && !tamAdmin);
   });
-  const first = document.querySelector('.tab-btn[data-perm]:not([hidden])');
+  // Yenilemede kaldığı sekmeye dön (görünür değilse ilk görünür sekme)
+  let kayitli = null;
+  try { kayitli = sessionStorage.getItem('kt_admin_sekme'); } catch (e) {}
+  const first = (kayitli && document.querySelector('.tab-btn[data-perm][data-tab="' + kayitli + '"]:not([hidden])'))
+    || document.querySelector('.tab-btn[data-perm]:not([hidden])');
   if (first) switchTab(first.getAttribute('data-tab'));
   if (!can('admin_kullanicilar')) {
     ['export-include-users', 'import-include-users'].forEach(id => {
