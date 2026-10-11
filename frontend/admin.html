@@ -896,6 +896,167 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
 .focus-rakip-gerekce { font-size: 12px; color: var(--muted); margin: 2px 0 0 24px; line-height: 1.4; }
 .focus-rakip-ekle { margin-top: 8px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; min-height: 34px; background: var(--panel); color: inherit; }
 .focus-rakip-uyari { font-size: 12px; color: #b45309; margin: 6px 0; }
+
+/* ============================================================
+   Modern görünüm (2026-10-11) — yalnız görsel katman; işlev ve yapı aynı.
+   Geniş ekranda sol dikey menü, yumuşak yüzeyler, tek vurgu rengi (KT yeşili).
+   ============================================================ */
+:root {
+  --bg: #f2f5f0;
+  --panel: #ffffff;
+  --border: #e4e9e1;
+  --text: #17231a;
+  --muted: #667569;
+  --hover: #f1f5ef;
+  --accent: #3f8a2b;
+  --accent-dark: #2f6b1f;
+  --accent-soft: #eaf4e5;
+  --radius: 16px;
+  --shadow: 0 1px 2px rgba(20,35,22,.05), 0 10px 28px rgba(20,35,22,.06);
+}
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: radial-gradient(1200px 500px at 85% -10%, rgba(98,174,65,.10), transparent 60%), var(--bg);
+  letter-spacing: -0.003em; -webkit-font-smoothing: antialiased;
+}
+header {
+  position: sticky; top: 0; z-index: 50;
+  background: linear-gradient(120deg, #2b5f1c 0%, #3f8a2b 55%, #58a73c 100%);
+  padding: 12px 32px; box-shadow: 0 6px 24px rgba(31,70,20,.22);
+}
+header h1 { font-size: 17px; font-weight: 650; letter-spacing: -0.01em; }
+.panel {
+  border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow);
+  padding: 24px 28px; margin-bottom: 22px; background: var(--panel);
+}
+.panel h2 { font-size: 18px; font-weight: 650; letter-spacing: -0.01em; margin-bottom: 18px; }
+.panel h2 .icon {
+  display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;
+  border-radius: 10px; background: var(--accent-soft); color: var(--accent-dark);
+}
+.summary-card { border-radius: 14px; border: 1px solid var(--border); background: #fafcf9; padding: 14px 18px; }
+.summary-card .label { font-size: 11px; letter-spacing: .08em; font-weight: 600; }
+.summary-card .value { font-size: 24px; font-weight: 650; letter-spacing: -0.02em; }
+.summary-card.highlight { background: var(--accent-soft); border-color: #cfe6c6; }
+.summary-card.success { background: #eaf7ef; border-color: #bfe6cd; }
+button, .btn {
+  background: var(--accent); border-radius: 10px; font-weight: 600; letter-spacing: -0.003em;
+  box-shadow: 0 1px 2px rgba(31,70,20,.18);
+}
+button:hover, .btn:hover { background: var(--accent-dark); }
+button:disabled { background: #b7c0b8; box-shadow: none; }
+button.secondary { background: #fff; color: var(--text); border: 1px solid var(--border); box-shadow: none; }
+button.secondary:hover { background: var(--hover); }
+input[type=text], input[type=email], input[type=password], input[type=number], select, textarea {
+  border: 1px solid var(--border); background: #fcfdfb; transition: border-color .15s, box-shadow .15s, background .15s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent) !important; background: #fff; box-shadow: 0 0 0 4px rgba(63,138,43,.14); }
+.upload-zone { border-radius: 16px; border: 2px dashed #c9d8c3; background: #fafcf9; transition: border-color .15s, background .15s, transform .15s; }
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: var(--accent-soft); }
+.panel table:not(.coverage-table):not(.roles-matrix) { border-collapse: separate; border-spacing: 0; width: 100%; }
+.panel table:not(.coverage-table):not(.roles-matrix) th {
+  text-align: left; font-size: 11px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); background: #f7faf6; padding: 10px 14px; border-bottom: 1px solid var(--border);
+}
+.panel table:not(.coverage-table):not(.roles-matrix) td { padding: 11px 14px; border-bottom: 1px solid #eef2ec; }
+.panel table:not(.coverage-table):not(.roles-matrix) tbody tr { transition: background .12s; }
+.panel table:not(.coverage-table):not(.roles-matrix) tbody tr:hover { background: #f6faf4; }
+.coverage-wrap, .roles-scroll { border-radius: 14px; border-color: var(--border); }
+.tab-panel:not([hidden]) { animation: panelGir .22s ease-out both; }
+@keyframes panelGir { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .tab-panel:not([hidden]) { animation: none; } }
+* { scrollbar-width: thin; scrollbar-color: #c4d0bf transparent; }
+
+.tab-btn, .tab-btn:hover { box-shadow: none; }
+body { min-height: 100vh; background-attachment: fixed; }
+
+/* Sol dikey menü (geniş ekran) */
+@media (min-width: 1100px) {
+  .container { max-width: 1480px; display: grid; grid-template-columns: 248px minmax(0, 1fr); column-gap: 28px; align-items: start; padding: 0 28px; }
+  .tabs {
+    grid-column: 1; grid-row: 1 / span 20; position: sticky; top: 86px; margin-bottom: 0;
+    flex-direction: column; flex-wrap: nowrap; gap: 4px; padding: 10px; overflow: visible;
+    border-radius: var(--radius); box-shadow: var(--shadow);
+  }
+  .tab-panel { grid-column: 2; min-width: 0; }
+  .tab-btn { width: 100%; justify-content: flex-start; padding: 11px 14px; font-size: 13.5px; border-radius: 11px; position: relative; color: #46564a; }
+  .tab-btn .tab-badge { margin-left: auto; }
+  .tab-btn:hover { background: var(--hover); color: var(--text); }
+  .tab-btn.active {
+    background: var(--accent-soft); color: var(--accent-dark); box-shadow: none; border-color: #d7eacf; font-weight: 650;
+  }
+  .tab-btn { background: transparent; }
+  .tab-btn.active::before {
+    content: ''; position: absolute; left: -10px; top: 9px; bottom: 9px; width: 4px; border-radius: 0 4px 4px 0; background: var(--accent);
+  }
+  .tab-btn.active .tab-badge { background: var(--accent-dark); color: #fff; }
+}
+@media (max-width: 1099px) {
+  .tab-btn.active { background: linear-gradient(135deg, #4f9a35, #2f6b1f); }
+  header { padding: 10px 16px; position: static; }
+}
+
+/* ---- Veri Yükleme sekmesi (2026-10-11): kademeli adımlar, anahtar tipi onay kutusu, uyarı kutuları ---- */
+[data-tab-panel="yukleme"] .panel { position: relative; padding-left: 32px; }
+[data-tab-panel="yukleme"] .panel::before {
+  content: ''; position: absolute; left: 0; top: 22px; bottom: 22px; width: 5px; border-radius: 0 5px 5px 0; background: var(--accent);
+}
+[data-tab-panel="yukleme"] .panel:nth-of-type(n+2)::before { background: #e0a21b; }
+[data-tab-panel="yukleme"] .panel:last-of-type::before { background: #6b8cae; }
+[data-tab-panel="yukleme"] code {
+  background: #eef4ea !important; color: var(--accent-dark); border-radius: 7px !important; padding: 2px 8px !important;
+  font-size: 12px; border: 1px solid #dbe8d4;
+}
+[data-tab-panel="yukleme"] .panel > p { line-height: 1.6; max-width: 92ch; }
+[data-tab-panel="yukleme"] p[style*="color:var(--warning)"] {
+  color: #8a5a06 !important; background: #fff7e3; border: 1px solid #f3dfa3; border-radius: 12px; padding: 10px 14px;
+}
+[data-tab-panel="yukleme"] .upload-zone {
+  padding: 44px 24px; border: 2px dashed #bcd2b4; border-radius: 18px;
+  background: linear-gradient(180deg, #fbfdfa, #f3f8f0);
+}
+[data-tab-panel="yukleme"] .upload-zone:hover, [data-tab-panel="yukleme"] .upload-zone.dragover {
+  border-color: var(--accent); background: linear-gradient(180deg, #f3faee, #e6f3df); transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(63,138,43,.12);
+}
+[data-tab-panel="yukleme"] .upload-zone .icon {
+  width: 68px; height: 68px; margin: 0 auto 14px; border-radius: 50%; align-items: center;
+  background: #fff; color: var(--accent); box-shadow: 0 6px 18px rgba(63,138,43,.16), inset 0 0 0 1px #d7eacf;
+}
+[data-tab-panel="yukleme"] .upload-zone p strong { font-size: 15px; }
+[data-tab-panel="yukleme"] .upload-zone .small { max-width: 60ch; margin: 6px auto 0; line-height: 1.5; }
+/* Adım göstergesi */
+[data-tab-panel="yukleme"] .progress-stages { gap: 8px; margin: 18px 0 6px; justify-content: stretch; }
+[data-tab-panel="yukleme"] .progress-stages .stage {
+  flex: 1; text-align: center; padding: 8px 10px; border-radius: 999px; background: #f1f5ef; color: var(--muted);
+  font-weight: 600; font-size: 12px; border: 1px solid transparent; transition: background .2s, color .2s;
+}
+[data-tab-panel="yukleme"] .progress-stages .stage.active { background: var(--accent-soft); color: var(--accent-dark); border-color: #cfe6c6; }
+[data-tab-panel="yukleme"] .progress-stages .stage.done { background: var(--accent); color: #fff; }
+[data-tab-panel="yukleme"] .progress-bar { height: 10px; background: #e9efe6; }
+[data-tab-panel="yukleme"] .progress-fill { background: linear-gradient(90deg, var(--accent), #7cc65c); border-radius: 999px; }
+/* Onay kutusu anahtar görünümünde */
+.force-box {
+  display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border-radius: 14px;
+  background: #fff9ec; border: 1px solid #f3e2b0; line-height: 1.55; font-size: 13px;
+}
+.force-box input[type=checkbox] {
+  appearance: none; -webkit-appearance: none; flex: none; width: 40px; height: 24px; margin-top: 1px; border-radius: 999px;
+  background: #d3d9d0; position: relative; cursor: pointer; transition: background .18s; border: 0; padding: 0;
+}
+.force-box input[type=checkbox]::after {
+  content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .18s;
+}
+.force-box input[type=checkbox]:checked { background: #d97706; }
+.force-box input[type=checkbox]:checked::after { transform: translateX(16px); }
+.force-box input[type=checkbox]:focus-visible { outline: 3px solid rgba(217,119,6,.35); outline-offset: 2px; }
+.result-panel { border-radius: 14px; padding: 18px 20px; }
+@media (max-width: 720px) {
+  [data-tab-panel="yukleme"] .panel { padding-left: 22px; }
+  [data-tab-panel="yukleme"] .progress-stages { flex-wrap: wrap; }
+  [data-tab-panel="yukleme"] .progress-stages .stage { flex: 1 1 45%; }
+}
 </style>
 </head>
 <body>
@@ -1047,35 +1208,6 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
     </label>
 
     <div id="rebuild-result"></div>
-  </div>
-
-  <!-- BDR-KISAYOL JSON TEST YÜKLEME - Faz 1, destekleyici/test (2026-09-12) -->
-  <div class="panel" style="border:2px dashed #7c3aed;background:#faf5ff">
-    <h2><span class="icon"><svg class="ikon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></svg></span> BDR JSON Test Yükleme <span style="font-size:12px;font-weight:400;color:#7c3aed">(deneysel — üretime yazmaz)</span></h2>
-    <p style="color:var(--muted);margin:0 0 12px;font-size:13px">
-      BDR-Kısayol aracının ürettiği <code style="background:var(--hover);padding:2px 6px;border-radius:3px">&lt;DÖNEM&gt;.json</code> dosyasını
-      (örn. <code style="background:var(--hover);padding:2px 6px;border-radius:3px">2026-2C.json</code>) yükleyip, hesaplanan ölçüleri
-      mevcut <code style="background:var(--hover);padding:2px 6px;border-radius:3px">computed.json</code> ile karşılaştırır.
-    </p>
-    <p style="color:#7c3aed;margin:0 0 16px;font-size:13px;font-weight:600">
-      ✓ Bu işlem computed.json / veriler.parquet / data/raw'a HİÇBİR ŞEKİLDE yazmaz — sadece bir karşılaştırma raporu üretir.
-    </p>
-
-    <div class="upload-zone" id="ciktiDropZone">
-      <input type="file" id="ciktiFileInput" accept=".json" />
-      <div class="icon"><svg class="ikon" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></svg></div>
-      <p><strong>JSON dosyasını buraya sürükle</strong> veya tıkla</p>
-      <p class="small">Tek dosya, tek dönem — 27 bankanın tümünü içerir</p>
-    </div>
-
-    <div id="cikti-progress" style="display:none;margin-top:16px">
-      <div class="progress-bar">
-        <div class="progress-fill" id="cikti-fill" style="width:0%;background:linear-gradient(90deg,#7c3aed,#c084fc)"></div>
-      </div>
-      <p style="text-align:center;font-size:13px;color:var(--muted)" id="cikti-status">Hazırlanıyor…</p>
-    </div>
-
-    <div id="cikti-result"></div>
   </div>
 
   <!-- SUNUCU TAŞIMA - EXPORT/IMPORT (2026-08-25) -->
@@ -1765,219 +1897,6 @@ function showZipError(msg) {
   $('zip-result').innerHTML = `
     <div class="result-panel error">
       <h3>❌ ZIP yükleme başarısız</h3>
-      <pre style="white-space:pre-wrap;margin:0;font-size:12px;color:var(--error)">${escapeHtml(msg)}</pre>
-    </div>
-  `;
-}
-
-// ============================================================
-// BDR-KISAYOL JSON TEST YÜKLEME — Faz 1, destekleyici/test (üretime yazmaz)
-// ============================================================
-const ciktiDropZone = $('ciktiDropZone');
-const ciktiFileInput = $('ciktiFileInput');
-
-ciktiDropZone.onclick = () => ciktiFileInput.click();
-ciktiFileInput.onchange = (e) => { if (e.target.files[0]) handleCiktiUpload(e.target.files[0]); };
-
-ciktiDropZone.ondragover = (e) => { e.preventDefault(); ciktiDropZone.classList.add('dragover'); };
-ciktiDropZone.ondragleave = () => ciktiDropZone.classList.remove('dragover');
-ciktiDropZone.ondrop = (e) => {
-  e.preventDefault();
-  ciktiDropZone.classList.remove('dragover');
-  if (e.dataTransfer.files[0]) handleCiktiUpload(e.dataTransfer.files[0]);
-};
-
-async function handleCiktiUpload(file) {
-  if (!file.name.toLowerCase().endsWith('.json')) {
-    alert('Sadece .json dosyaları kabul edilir');
-    return;
-  }
-
-  $('cikti-progress').style.display = 'block';
-  $('cikti-result').innerHTML = '';
-  $('cikti-fill').style.width = '10%';
-  $('cikti-status').textContent = `${file.name} işleniyor (dönüştürme + hesaplama + karşılaştırma)...`;
-
-  const fd = new FormData();
-  fd.append('file', file);
-
-  try {
-    const r = await fetch('/admin/cikti-test-upload', { method: 'POST', body: fd });
-    $('cikti-fill').style.width = '90%';
-
-    if (!r.ok) {
-      const err = await r.json().catch(() => ({ detail: 'Bilinmeyen hata' }));
-      throw new Error(err.detail || `HTTP ${r.status}`);
-    }
-
-    const data = await r.json();
-    $('cikti-fill').style.width = '100%';
-    $('cikti-status').textContent = 'Tamamlandı!';
-    showCiktiSuccess(data);
-  } catch (err) {
-    $('cikti-fill').style.width = '0%';
-    $('cikti-status').textContent = '';
-    showCiktiError(err.message);
-  } finally {
-    ciktiFileInput.value = '';
-  }
-}
-
-let ciktiLastData = null;   // son yükleme yanıtı (filtreleme yeniden fetch gerektirmesin)
-const CIKTI_DURUM_ETIKET = {
-  FARKLI: '❌ Farklı', YENI: '🆕 Yeni', KAYNAKTA_YOK: '⚪ JSON\'da yok', UYUSUYOR: '✅ Uyuşuyor',
-};
-
-function showCiktiSuccess(data) {
-  ciktiLastData = data;
-  const oz = data.ozet || {};
-  const toplam = (oz.uyusan || 0) + (oz.farkli || 0);
-  const oran = toplam ? ((oz.uyusan / toplam) * 100).toFixed(1) : '0.0';
-
-  const kapsamaRows = (data.kalem_kapsama || []).map(k => {
-    const eksik = k.aranan - k.bulunan;
-    const oranStr = (k.eksik_oran * 100).toFixed(0);
-    return `
-    <tr>
-      <td class="mono" style="font-size:12px" translate="no">${k.tablo}</td>
-      <td class="mono" style="font-size:12px" translate="no">${k.kalem}</td>
-      <td>${k.pb}</td>
-      <td class="value">${eksik}/${k.aranan}</td>
-      <td class="value">%${oranStr}</td>
-    </tr>`;
-  }).join('');
-
-  $('cikti-result').innerHTML = `
-    <div class="result-panel success">
-      <h3>✓ ${data.donem} işlendi — ${data.banka_sayisi} banka, ${data.satir_sayisi} ham satır</h3>
-      <p style="font-size:13px;color:var(--muted)" translate="no">${data.not}</p>
-      <div class="summary-grid" style="margin-top:12px">
-        <div class="summary-card success">
-          <div class="label">Uyuşan</div>
-          <div class="value" style="font-size:18px">${oz.uyusan}</div>
-        </div>
-        <div class="summary-card warning">
-          <div class="label">Farklı</div>
-          <div class="value" style="font-size:18px">${oz.farkli}</div>
-        </div>
-        <div class="summary-card">
-          <div class="label">Yeni (baseline'da yok)</div>
-          <div class="value" style="font-size:18px">${oz.yeni}</div>
-        </div>
-        <div class="summary-card">
-          <div class="label">JSON'da yok</div>
-          <div class="value" style="font-size:18px">${oz.kaynakta_yok}</div>
-        </div>
-        <div class="summary-card highlight">
-          <div class="label">Uyum Oranı</div>
-          <div class="value" style="font-size:18px">%${oran}</div>
-        </div>
-      </div>
-
-      <h4 style="margin:20px 0 6px;font-size:14px">📋 Ham Kalem Kapsama Özeti (${data.kalem_kapsama.length} kalem eksik/kısmi bulundu)</h4>
-      <p style="font-size:12px;color:var(--muted);margin:0 0 8px">
-        Bir kalemin burada listelenmesi HER ZAMAN hata anlamına gelmez — bazı ölçüler
-        (ör. <span class="mono" style="font-size:12px" translate="no">Krediler Ve Alacaklar (Toplam)</span>)
-        legacy bir kaleme otomatik düşer (fallback) ve hücre sonucu yine doğru çıkar.
-        Aşağıdaki hücre tablosundaki "eksik kalemler" sütunu, hangi eksiğin GERÇEKTEN o
-        hücreyi bozduğunu gösterir.
-      </p>
-      <div style="max-height:280px;overflow:auto;border:1px solid var(--border);border-radius:6px">
-        <table class="spot-check-table"><thead>
-          <tr><th>Tablo</th><th>Kalem</th><th>P.Birimi</th><th style="text-align:right">Eksik/Aranan</th><th style="text-align:right">Eksik %</th></tr>
-        </thead><tbody>${kapsamaRows || '<tr><td colspan="5" style="text-align:center;color:var(--muted)">Hiç eksik kalem yok 🎉</td></tr>'}</tbody></table>
-      </div>
-
-      <h4 style="margin:20px 0 6px;font-size:14px">🔎 Hücre Detayları — kalem kalem tüm sonuçlar (${data.satirlar.length} hücre)</h4>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 10px">
-        <input type="text" id="cikti-search" placeholder="Ölçü veya banka adında ara…" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
-        <select id="cikti-durum-filter" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
-          <option value="problemli" selected>Sorunlu (Farklı+Yeni+JSON'da yok)</option>
-          <option value="FARKLI">Sadece Farklı</option>
-          <option value="YENI">Sadece Yeni</option>
-          <option value="KAYNAKTA_YOK">Sadece JSON'da yok</option>
-          <option value="tumu">Tümü (Uyuşanlar dahil)</option>
-        </select>
-        <button id="cikti-csv-btn" class="secondary" style="padding:6px 14px;font-size:13px">⬇️ CSV indir</button>
-        <span id="cikti-satir-sayaci" style="font-size:12px;color:var(--muted)"></span>
-      </div>
-      <div id="cikti-satirlar-container" style="max-height:600px;overflow:auto;border:1px solid var(--border);border-radius:6px">
-      </div>
-    </div>
-  `;
-
-  $('cikti-search').oninput = renderCiktiSatirlar;
-  $('cikti-durum-filter').onchange = renderCiktiSatirlar;
-  $('cikti-csv-btn').onclick = downloadCiktiCsv;
-  renderCiktiSatirlar();
-}
-
-function ciktiFiltrelenmisSatirlar() {
-  if (!ciktiLastData) return [];
-  const arama = ($('cikti-search').value || '').toLowerCase().trim();
-  const durumSecim = $('cikti-durum-filter').value;
-  return ciktiLastData.satirlar.filter(r => {
-    if (durumSecim === 'problemli' && r.durum === 'UYUSUYOR') return false;
-    if (durumSecim !== 'problemli' && durumSecim !== 'tumu' && r.durum !== durumSecim) return false;
-    if (arama && !(`${r.measure} ${r.banka}`.toLowerCase().includes(arama))) return false;
-    return true;
-  });
-}
-
-function renderCiktiSatirlar() {
-  const rows = ciktiFiltrelenmisSatirlar();
-  $('cikti-satir-sayaci').textContent = `${rows.length} / ${ciktiLastData.satirlar.length} hücre gösteriliyor`;
-
-  const html = rows.slice(0, 3000).map(r => {
-    const eksik = (r.eksik_kalemler || []).map(e =>
-      `<span class="mono" translate="no" style="font-size:11px;background:var(--hover);padding:1px 5px;border-radius:3px;margin:1px;display:inline-block">${e.tablo}: ${e.kalem}${e.pb !== 'Toplam' ? ' (' + e.pb + ')' : ''}</span>`
-    ).join(' ');
-    return `
-    <tr>
-      <td>${CIKTI_DURUM_ETIKET[r.durum] || r.durum}</td>
-      <td class="mono" style="font-size:12px" translate="no">${r.measure}</td>
-      <td>${r.banka}</td>
-      <td>${r.tarih}</td>
-      <td class="value">${fmt.number(r.json_degeri)}</td>
-      <td class="value">${fmt.number(r.mevcut_degeri)}</td>
-      <td class="value">${r.fark_yuzde != null ? r.fark_yuzde.toFixed(2) + '%' : '—'}</td>
-      <td>${eksik || '—'}</td>
-    </tr>`;
-  }).join('');
-
-  $('cikti-satirlar-container').innerHTML = `
-    <table class="spot-check-table"><thead>
-      <tr><th>Durum</th><th>Ölçü</th><th>Banka</th><th>Tarih</th><th style="text-align:right">JSON</th><th style="text-align:right">Mevcut</th><th style="text-align:right">Fark %</th><th>Eksik ham kalemler</th></tr>
-    </thead><tbody>${html || '<tr><td colspan="8" style="text-align:center;color:var(--muted)">Filtreye uyan hücre yok</td></tr>'}</tbody></table>
-    ${rows.length > 3000 ? `<p style="text-align:center;font-size:12px;color:var(--muted);padding:8px">İlk 3000 satır gösteriliyor — daraltmak için filtre/arama kullanın veya CSV indirin (${rows.length} satırın tümü CSV'de olur).</p>` : ''}
-  `;
-}
-
-function downloadCiktiCsv() {
-  const rows = ciktiFiltrelenmisSatirlar();
-  const header = ['durum','measure','banka','tarih','json_degeri','mevcut_degeri','fark_yuzde','eksik_kalemler'];
-  const csvRows = [header.join(',')];
-  for (const r of rows) {
-    const eksik = (r.eksik_kalemler || []).map(e => `${e.tablo}:${e.kalem}`).join(' | ');
-    const line = [r.durum, r.measure, r.banka, r.tarih, r.json_degeri, r.mevcut_degeri, r.fark_yuzde, eksik]
-      .map(v => `"${String(v ?? '').replace(/"/g, '""')}"`);
-    csvRows.push(line.join(','));
-  }
-  const blob = new Blob(['﻿' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `cikti-diagnostik-${ciktiLastData.donem}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-function showCiktiError(msg) {
-  $('cikti-result').innerHTML = `
-    <div class="result-panel error">
-      <h3>❌ İşlem başarısız</h3>
       <pre style="white-space:pre-wrap;margin:0;font-size:12px;color:var(--error)">${escapeHtml(msg)}</pre>
     </div>
   `;

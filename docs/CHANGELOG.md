@@ -4,6 +4,10 @@ Sürüm geçmişi. Her commit'in özetini barındırır.
 
 ## Rekabet Analizi — tüm bankalar için tamlık (2026-10-09)
 
+- **Admin paneli yenilendi (2026-10-11):** "BDR-Kısayol JSON test yükleme" paneli ve betiği kaldırıldı (sunucudaki `/admin/cikti-test-upload` uç noktası dokunulmadan duruyor).
+  Görünüm modernleştirildi: geniş ekranda sol dikey menü, yuvarlak/yumuşak kartlar, tek vurgu rengi, sekme geçiş animasyonu. Veri Yükleme sekmesi: adım göstergesi (1–4),
+  yuvarlak simgeli yükleme alanı, anahtar tipi "Veri azalmasına izin ver" onayı, uyarı kutuları ve panel kenar vurguları (standart yeşil, gelişmiş amber).
+
 - **YtD Büyüme kartı ortalama seçici:** "Ortalamayı göster" düğmesi yerine Yok / Basit / Ağırlıklı / Basit + Ağırlıklı seçici. Ağırlıklı ortalama = Σ(büyüme × baz dönem değeri) / Σ baz
   (= seçili bankaların toplamının büyümesi); baz ≤ 0 ve anomali bankalar dışarıda, miktar (adet) ölçülerinde yalnız basit ortalama. Basit turuncu, ağırlıklı mavi çizgi/çubuk.
 
