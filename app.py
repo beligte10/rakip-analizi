@@ -1539,7 +1539,9 @@ def admin_list_roles(admin_user: str = Depends(require_admin_perm('admin_kullani
     counts = users_mod.count_by_role(DATA_USERS)
     roles = [dict(r, kullanici=counts.get(r['id'], 0)) for r in roles_mod.list_roles(DATA_ROLES)]
     return {'roles': roles, 'izinler': roles_mod.catalog(), 'kategoriler': _gizlenebilir_kategoriler(),
-            'benim_izinlerim': sorted(identity_perms(admin_user))}
+            # Ekran izinleri salt-görünümdür (yetki sayılmaz) ama her rolde bulunur; panel "bu rolü düzenleyebilir miyim" kontrolünde
+            # onları da sahip say, yoksa üye oturumlu admin tüm rolleri kilitli görür.
+            'benim_izinlerim': sorted(identity_perms(admin_user) | set(roles_mod.EKRAN_IZINLERI))}
 
 
 def _assert_perms_subset(izinler: List[str], identity: str) -> None:

@@ -243,3 +243,13 @@ def test_kategori_gizleme_rol_ve_sunucu_filtresi(ortam, monkeypatch):
     assert 'a' in gizli and 'b' not in gizli
     assert A._gizlenebilir_kategoriler() == ['Bilanço', 'Gelir Tablosu']
     assert 'gizle:Bilanço' not in A.user_perms(user)       # kısıt, yetki değil
+
+
+def test_uye_admin_tum_rolleri_duzenleyebilir_gorur(ortam):
+    """Üye oturumlu admin (kök değil): benim_izinlerim ekran izinlerini de içerir; yoksa panel her rolü kilitli sayar."""
+    users, roles = ortam
+    _uye(users, 'ad@kuveytturk.com.tr', 'admin')
+    veri = A.admin_list_roles('ad@kuveytturk.com.tr')
+    benim = set(veri['benim_izinlerim'])
+    for r in veri['roles']:
+        assert set(R.yetki_izinleri(r['izinler'])) <= benim and set(r['izinler']) - {k for k in r['izinler'] if k.startswith('gizle:')} <= benim, r['id']
