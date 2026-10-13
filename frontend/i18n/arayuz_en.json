@@ -532,5 +532,8 @@
  "Ağırlıklı ort.": "Weighted avg.",
  "Ağ. ort. ": "Wtd. avg. ",
  "Ortalama göstergesi": "Average indicator",
- "Basit ortalama: bankalar eşit sayılır. Ağırlıklı ortalama: baz dönem büyüklüğüne göre (= toplamın büyümesi). Anomali dışı, görünen bankalar.": "Simple average: banks count equally. Weighted average: weighted by base-period size (= growth of the total). Banks shown, excluding anomalies."
+ "Basit ortalama: bankalar eşit sayılır. Ağırlıklı ortalama: baz dönem büyüklüğüne göre (= toplamın büyümesi). Anomali dışı, görünen bankalar.": "Simple average: banks count equally. Weighted average: weighted by base-period size (= growth of the total). Banks shown, excluding anomalies.",
+ "Tek ekran: Açık": "Single screen: On",
+ "Tek ekran: Kapalı": "Single screen: Off",
+ "Anlık Görünümü kaydırmasız, tek ekrana sığacak şekilde yeniden düzenler (masaüstü)": "Rearranges the Snapshot view to fit a single screen without scrolling (desktop)"
 }

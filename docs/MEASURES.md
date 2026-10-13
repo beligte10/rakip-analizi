@@ -333,6 +333,10 @@ SabitAktifler = B[Maddi Duran Varlıklar (Net)]
 | `krediler_mevduat` | Krediler / Mevduat | rasyo | % |
 | `syr` | Sermaye Yeterlilik Rasyosu (SYR) | rasyo | % |
 | `tp_mevduat_toplam_mevduat` | TP Mevduat / Toplam Mevduat | rasyo | % |
+| `tp_vadeli_tp_mevduat` | TP Vadeli Mevduat / TP Mevduat | rasyo | % |
+| `tp_vadesiz_tp_mevduat` | TP Vadesiz Mevduat / TP Mevduat | rasyo | % |
+| `yp_vadeli_yp_mevduat` | YP Vadeli Mevduat / YP Mevduat (KM Hariç) | rasyo | % |
+| `yp_vadesiz_yp_mevduat` | YP Vadesiz Mevduat / YP Mevduat (KM Hariç) | rasyo | % |
 | `vadesiz_mevduat_toplam_mevduat` | Vadesiz Mevduat / Toplam Mevduat | rasyo | % |
 | `cekirdek_syr` | Çekirdek Sermaye Yeterliliği Oranı | rasyo | % |
 

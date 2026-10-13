@@ -2,23 +2,21 @@
   {
     "version": "v2.3",
     "date": "2026-09-29",
-    "title": "Asistan, Odak banka, PDF sunumu ve yeni ölçüler",
+    "title": "Asistan, Odak banka, PDF sunumu ve tek ekran görünümü",
     "items": [
       "Kart ve ölçü başlıkları daha belirgin: büyük punto, yeşil vurgu çizgisi.",
+      "Anlık Görünüm için isteğe bağlı \"Tek ekran\" düzeni: menüdeki Görünüm bölümünden açıldığında kaydırma olmadan 27 bankanın tamamı tek ekranda görünür (masaüstü); varsayılan görünüm değişmedi.",
       "YtD Büyüme kartında ortalama seçici: basit ortalama, ağırlıklı ortalama (bankaların büyüklüğüne göre) ya da ikisi birlikte gösterilebiliyor.",
       "Yeni Asistan (sağ alttaki 💬): sorularınızı yanıtlar, ölçü ve banka değerlerini getirir, TCMB verilerini (kur, faiz, enflasyon) kullanır.",
       "🎯 Odak: kendi odak bankanızı seçin; yapay zeka seçtiğiniz bankaya göre rakip bankaları gerekçeleriyle önerir.",
       "PDF: ekrandaki görünümü 16:9 sunum slaytları olarak indirin; ölçü, dönem ve banka sınıfı seçilebilir.",
       "Trend ve Kompozisyon yenilendi; grafikleri ⬇ PNG olarak indirebilirsiniz.",
       "Ölçü Oluştur'a formül sekmesi eklendi; ⇄ ile (ya da Q tuşuyla) önceki ölçüye tek tıkla dönülüyor.",
-      "Rekabet Analizi ölçüleri eklendi (toplam 209 ölçü); değeri olmayan bankalar \"Tanımsız\" ya da \"Veri yok\" etiketiyle nedeniyle birlikte gösteriliyor.",
-      "Yeni ölçüler: İnsan Sermayesi Yatırım Getirisi, OPEX Büyümesi, Getirili Aktif – Maliyetli Pasif Spread'i ve daha fazlası.",
+      "Değeri olmayan bankalar \"Tanımsız\" ya da \"Veri yok\" etiketiyle, nedeni açıklanarak gösteriliyor.",
       "Reel TL ve USD bazı: değerleri enflasyona göre ya da dolar cinsinden görün.",
       "Banka filtreleri (Katılım / Mevduat / Rakip / İlk 20); bir bankaya sağ tıklayıp görünümden çıkarabilirsiniz.",
       "İngilizce sürüm: menüdeki 🌐 TR | EN anahtarıyla.",
       "Telefon ve tablet görünümü, menü ve Excel dışa aktarım ekranı yenilendi; tüm bankaların logoları eklendi.",
-      "Hesaplamalar gözden geçirilip düzeltildi: Kredi-Mevduat Spread'leri, yakın izleme oranları, İhtiyaç Kredileri ve diğer rasyolar.",
-      "2013–2017 dönemleri için de NPL ve diğer eski dönem verileri tamamlandı.",
       "Daha hızlı: veri yüklemeden sonra sayfa çok daha çabuk açılıyor."
     ]
   },
@@ -33,7 +31,7 @@
       "Trend grafiği telefonda okunur boyutta; seri adları ve son değerleri grafiğin altında.",
       "Rakip Bankalar Trend grafiği telefonda okunur, değer etiketleri üst üste binmiyor.",
       "Telefonda liste içinde ayrı kaydırılan kutular kaldırıldı; banka seçim çipleri yana kayıyor.",
-      "Dışa Aktar düzeltildi: Banka Grupları seçildiğinde değerler artık geliyor (önceden hepsi boştu); oran kolonları doğru birimle (%, kat) ve Türkçe ondalıkla; telefonda tablo oluşunca otomatik olarak tabloya iniliyor.",
+      "Dışa Aktar'da Banka Grupları seçildiğinde değerler artık görünüyor.",
       "Telefonda ölçü seçicileri tek satırlık özete katlanıyor — veriler ilk ekranda; 'Değiştir'e dokununca açılıyor.",
       "Telefonda YtD büyüme grafiği yatay liste: 27 bankanın hepsi ve Kuveyt Türk görünür; banka adları kısaltılmış, kesilmiyor.",
       "Grafiklerde parmakla dokunup sürükleyerek dönemler arasında gezinilebiliyor.",
@@ -44,26 +42,18 @@
   {
     "version": "v2.1",
     "date": "2026-09-24",
-    "title": "YP Mevduat payı ve yenilenen Ölçü Oluştur",
+    "title": "Yenilenen Ölçü Oluştur",
     "items": [
-      "Yeni ölçü: YP Mevduat / Toplam Mevduat (TP Mevduat / Toplam Mevduat'ın yanında).",
       "Ölçü Oluştur yenilendi: ölçü listelerinde arama, kaydetmeden önce canlı önizleme, geçersiz kombinasyonlarda anında açıklama ve otomatik ad önerisi.",
-      "Özel ölçülerde birim artık doğru: tutar/tutar yüzde, adet/adet ve rasyo/rasyo kat, TL/adet birim başına tutar; oranlarda yüzde ya da kat seçilebiliyor.",
-      "Gelir tablosu kalemi bilanço kalemine oranlandığında son 12 ay / 12 aylık ortalama kullanılıyor (ör. Net Kâr / Toplam Aktifler = ROAA).",
       "Özel ölçüler için otomatik bilgi kartı ve kaydettikten sonra tek tıkla dashboard'da açma."
     ]
   },
   {
     "version": "v2.0",
     "date": "2026-09-23",
-    "title": "Rasyo hesapları gözden geçirilip düzeltildi",
+    "title": "İlk 20 Banka filtresi",
     "items": [
-      "\"İlk 20 Banka\" filtresi artık seçili dönemde aktif büyüklüğü en yüksek 20 bankayı gösteriyor (önceden seçili kalemin ilk 20'si geliyordu); bankalar seçili ölçüye göre sıralı.",
-      "20'ye yakın rasyonun hesabı gözden geçirilip düzeltildi: Net NPL Formasyon, Cost of Risk, Maliyetli Pasif Maliyeti, Tüzel Kredi/Tüzel Mevduat, Grup 2 Tüzel, TP Pasifler, Faiz Gideri/Geliri, Komisyon Gideri/Geliri, Operasyonel Giderler ve bunlara bağlı oranlar.",
-      "\"Düzeltilmiş Maliyet / Gelir Rasyosu\" artık her çeyrek hesaplanıyor (Haziran 2026 dahil).",
-      "Banka grubu değerleri (ör. Mevduat Bankaları RORWA, TP Alınan Krediler, Spread) üyelerin toplamlarından hesaplanıyor.",
-      "Yeni ölçü: Ortalama RAV / Ortalama Özkaynaklar. \"Faiz Getirili Aktifler / Özkaynaklar\" ölçüsünün adı \"Ortalama Faiz (Kar Payı) Getirili Aktifler / Ortalama Özkaynaklar\" olarak düzeltildi.",
-      "Kat birimli oranların çeyreklik değişimi artık baz puan olarak gösteriliyor; zarar eden bankaların bulunduğu büyüklüklerde sıralama barları doğru güncelleniyor."
+      "\"İlk 20 Banka\" filtresi artık seçili dönemde aktif büyüklüğü en yüksek 20 bankayı gösteriyor (önceden seçili kalemin ilk 20'si geliyordu); bankalar seçili ölçüye göre sıralı."
     ]
   },
   {
@@ -75,32 +65,6 @@
       "Mobilde üst başlıkta yalnızca KT logosu kalıyor; tarih, ölçü arama ve kategori seçimleri aynı hizada.",
       "Mobilde YtD büyüme grafiğindeki rakamlar barlarının tam üstünde duruyor.",
       "Rakip Bankalar Yıllık Görünüm tekrar sabit son 3 yıl (dönem seçici kaldırıldı)."
-    ]
-  },
-  {
-    "version": "v1.8",
-    "date": "2026-09-21",
-    "title": "TP/YP Kredi Mevduat Spread'i daha isabetli",
-    "items": [
-      "\"TP/YP Kredi Mevduat Spread'i\" ölçülerinin hesabı düzeltildi; değerler artık çok daha isabetli (önceden ~100-250 baz puan yüksek çıkıyordu).",
-      "Katılım bankalarında (Kuveyt Türk dahil) bu ölçü hâlâ bir yaklaşıklık kullanıyor — ham veri kısıtı nedeniyle mevduat bankalarındaki kadar isabetli değil."
-    ]
-  },
-  {
-    "version": "v1.7",
-    "date": "2026-09-21",
-    "title": "Spread ölçüleri düzeltildi",
-    "items": [
-      "\"Spread\", \"Kredi Mevduat Spread'i\" ve \"Kredi Riski Maliyeti (Cost of Risk)\" ölçülerinin hesaplama formülleri düzeltildi — değerler artık daha isabetli."
-    ]
-  },
-  {
-    "version": "v1.6",
-    "date": "2026-09-21",
-    "title": "TP/YP Kredi Mevduat Spread'i hesaplanır hale geldi",
-    "items": [
-      "\"TP Kredi Mevduat Spread'i\" ve \"YP Kredi Mevduat Spread'i\" ölçüleri artık gerçek değer gösteriyor (önceden hep boştu).",
-      "Değerler, kredi getirisi ile vadeli mevduat maliyeti arasındaki farkı TP ve YP ayrı ayrı gösteriyor."
     ]
   },
   {
@@ -135,9 +99,8 @@
   {
     "version": "v1.2",
     "date": "2026-09-16",
-    "title": "Grup hesaplamaları, tüm bankalar ve interaktif Rakip Bankalar kartları",
+    "title": "Tüm bankalar ve interaktif Rakip Bankalar kartları",
     "items": [
-      "Banka grupları (Mevduat Bankaları, Katılım Bankaları vb.) artık bir üyede o ölçüde veri olmasa bile diğer üyelerle hesaplanıyor — veri yüklendikçe otomatik dahil oluyor.",
       "Banka sıralama listeleri artık ilk 20 değil TÜM bankaları gösteriyor (ilk görünümde 20 banka, aşağı kaydırınca tümüne ulaşılıyor).",
       "Rasyo bazlı Banka Grupları kartlarındaki boş alanlar azaltıldı.",
       "Rakip Bankalar kartları tek sıraya alındı; üzerine gelince/tıklayınca detaylı grafik açan interaktif baloncuklara geçildi.",
@@ -148,26 +111,21 @@
   {
     "version": "v1.1",
     "date": "2026-09-12",
-    "title": "Üyelik sistemi, mobil uyum ve formül düzeltmeleri (2026-08-25 → 2026-09-12 özeti)",
+    "title": "Üyelik sistemi ve mobil uyum (2026-08-25 → 2026-09-12 özeti)",
     "items": [
       "Üyeler artık kayıt olup onayla giriş yapabiliyor; kullanıcılara rol atanabiliyor.",
       "KT marka logosu/renkleri arayüze eklendi; \"Rakip Bankalar\" gibi banka grupları düzenlenebiliyor.",
-      "Sermaye yeterliliği, maliyet/gelir, RORWA gibi bazı ölçüler ham veriyle daha isabetli hesaplanacak şekilde düzeltildi.",
       "Dashboard mobil uyumlu hale getirildi (hamburger menü, kırpılan yazılar düzeltildi).",
-      "Banka sıralama listeleri ve trend grafikleri daha okunaklı, tutarlı bir tasarıma kavuştu.",
-      "Bazı bankalarda eksik görünen çeyreklik veriler ve grup toplamları düzeltildi.",
-      "BDR-Kısayol entegrasyonu eklendi (Faz 1)."
+      "Banka sıralama listeleri ve trend grafikleri daha okunaklı, tutarlı bir tasarıma kavuştu."
     ]
   },
   {
     "version": "v1.0",
     "date": "2026-08-25",
-    "title": "Yeni ölçüler ve arayüz iyileştirmeleri",
+    "title": "Arayüz iyileştirmeleri",
     "items": [
-      "160 finansal ölçü artık kullanılabilir (33 yeni ölçü: Toplam Risk, Likidite Açığı kalemleri, vade dilimleri, Toplam Brüt/Canlı Krediler ve daha fazlası).",
       "Ölçü seçicisine arama kutusu eklendi — istediğiniz ölçüye tüm kategorilerde hızlıca ulaşabilirsiniz.",
       "Şube & Personel ölçülerinde yıllık büyüme artık yüzde yerine miktar olarak gösteriliyor, daha net bir karşılaştırma sağlıyor.",
-      "CAGR (Bileşik Yıllık Büyüme) hesaplaması düzeltildi.",
       "Koyu modda bazı sekmelerin okunamaması sorunu giderildi.",
       "Bu \"Yenilikler\" penceresi eklendi — önemli güncellemeler artık buradan takip edilebilecek."
     ]

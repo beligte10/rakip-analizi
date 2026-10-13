@@ -32,6 +32,7 @@ from .measures import (
     m_bireysel_kredi_kartlari, m_tuketici_kredileri, m_tuzel_krediler,
     m_grup_1_krediler, m_grup_2_krediler, m_toplam_kaynak,
     m_vadeli_mevduat, m_toplam_fonlama,
+    mevduat_vade_bolumu,
     _grup2_kategori, _aktiften_silinen, _menkul_kiymetler,
     toplam_krediler_net_leasing, tuketici_kredileri_kk_haric,
     _diger_aktifler_kompozit,
@@ -230,6 +231,22 @@ def _nd_tp_mevduat(ctx, b, t):
 
 def _nd_yp_mevduat(ctx, b, t):
     return ctx.bilanco(b, t, 'Mevduat', 'YP'), ctx.bilanco(b, t, 'Mevduat')
+
+
+def _nd_tp_vadeli(ctx, b, t):
+    return mevduat_vade_bolumu(ctx, b, t, 'TP', True)
+
+
+def _nd_tp_vadesiz(ctx, b, t):
+    return mevduat_vade_bolumu(ctx, b, t, 'TP', False)
+
+
+def _nd_yp_vadeli(ctx, b, t):
+    return mevduat_vade_bolumu(ctx, b, t, 'YP', True)
+
+
+def _nd_yp_vadesiz(ctx, b, t):
+    return mevduat_vade_bolumu(ctx, b, t, 'YP', False)
 
 
 # --- Akım/TTM rasyolar ---
@@ -610,6 +627,10 @@ RATIO_NUM_DEN: Dict[str, NumDenFn] = {
     'vadesiz_mevduat_toplam_mevduat': _nd_vadesiz_mevduat_mev,
     'kiymetli_maden_toplam_mevduat': _nd_kiymetli_maden_mevduat,
     'tp_mevduat_toplam_mevduat': _nd_tp_mevduat,
+    'tp_vadeli_tp_mevduat': _nd_tp_vadeli,
+    'tp_vadesiz_tp_mevduat': _nd_tp_vadesiz,
+    'yp_vadeli_yp_mevduat': _nd_yp_vadeli,
+    'yp_vadesiz_yp_mevduat': _nd_yp_vadesiz,
     'yp_mevduat_toplam_mevduat': _nd_yp_mevduat,
     # Akım/TTM
     'roaa': _nd_roaa,

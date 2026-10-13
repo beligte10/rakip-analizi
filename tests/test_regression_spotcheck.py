@@ -52,7 +52,7 @@ GOLDEN = {
 # 2026-10-01: 165→166 — İnsan Sermayesi Yatırım Getirisi (Net Dönem Kârı / Personel Giderleri, kat).
 # 2026-09-30: 163→165 — TP ve YP Getirili Aktif – Maliyetli Pasif Spread'i
 # eklendi (kullanıcı formülü). Bilinçli artış.
-EXPECTED_MEASURE_COUNT = 209  # 170 + 39 Rekabet Analizi ölçüsü (2026-10-06)
+EXPECTED_MEASURE_COUNT = 213  # 170 + 39 Rekabet Analizi + 4 TP/YP vadeli-vadesiz mevduat kompozisyonu (2026-10-13)
 EXPECTED_BANK_COUNT = 27
 
 

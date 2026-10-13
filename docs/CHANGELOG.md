@@ -4,6 +4,14 @@ Sürüm geçmişi. Her commit'in özetini barındırır.
 
 ## Rekabet Analizi — tüm bankalar için tamlık (2026-10-09)
 
+- **TP/YP mevduat vadeli-vadesiz kompozisyonu — 4 yeni ölçü (2026-10-13, toplam 213):** `tp_vadeli_tp_mevduat`, `tp_vadesiz_tp_mevduat`, `yp_vadeli_yp_mevduat`, `yp_vadesiz_yp_mevduat` (Bilanço › Pasifler, rasyo %).
+  TP payda = TP Mevduat; YP payda = YP Mevduat − Kıymetli Maden (KM hariç, tp/yp_spread ile aynı tanım). Vadeli = `LookupContext.vadeli_mevduat_bakiyesi` (mevduat bankasında Power BI DAX vadesizleri, katılımda özel cari hesaplar), vadesiz = payda − vadeli; her banka ve grupta iki pay toplamı %100.
+  Grup değeri Σpay/Σpayda (`groups._nd_*`). Canlıda ölçülerin görünmesi için Admin'den yeniden hesaplama (Rebuild DEĞİL) gerekir.
+
+- **Anlık Görünüm "Tek ekran" düzeni — isteğe bağlı (2026-10-12):** Varsayılan Anlık Görünüm eski (kaydırmalı) düzenine döndürüldü; kaydırmasız düzen Menü → Görünüm → "Tek ekran" ile açılır, tercih `localStorage` (`kt_tek_ekran`) ve `body.tek-ekran` sınıfında tutulur.
+  Açıkken masaüstünde (fare, >900 px) `SnapshotView.tamEkranDuzenle` kullanılabilir yüksekliği (`--fit-h`) ölçer: üst satır sıralama | YtD grafiği, alt satır Banka Grupları | Rakip Bankalar; sol liste gerekirse 2–3 sütuna bölünür (`--fit-cols`, `--fit-row`),
+  dar YtD sütunlarında değer etiketleri dikey yazılır, kısa ekranda üst şeritler ve kartlar sıkılaşır. Dokunmatik cihaz ve PDF çıktısı hep eski düzende. Sıralama listesinde yatay barlar her iki düzende kaldırıldı (PDF'te durur).
+
 - **Yenilemede başa dönmeme (2026-10-11):** Pano; sekme (Anlık/Trend/Kompozisyon/Dışa Aktar), ölçü, dönem ve kompozisyonu tarayıcı sekmesinin `sessionStorage`'ında (`kt_durum`) saklar, sayfa yenilenince aynı görünümle açılır. Admin paneli de kaldığı sekmeye döner (`kt_admin_sekme`). Geçersiz/silinmiş değerler yok sayılır; yeni sekme/oturum varsayılanla başlar.
 
 - **Admin paneli yenilendi (2026-10-11):** "BDR-Kısayol JSON test yükleme" paneli ve betiği kaldırıldı (sunucudaki `/admin/cikti-test-upload` uç noktası dokunulmadan duruyor).

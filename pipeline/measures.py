@@ -616,6 +616,37 @@ def m_yp_mevduat_toplam_mevduat(ctx, b, t):
     return safe_ratio(ctx.bilanco(b, t, 'Mevduat', 'YP'), ctx.bilanco(b, t, 'Mevduat'))
 
 
+def mevduat_vade_bolumu(ctx, b, t, pb: str, vadeli: bool):
+    """TP/YP mevduatın vadeli / vadesiz kompozisyonu için (pay, payda) — 2026-10-13.
+
+    TP: payda = TP Mevduat; vadeli = ctx.vadeli_mevduat_bakiyesi(TP) (Power BI DAX / katılımda özel cari hariç — spread paydasıyla aynı
+    tanım); vadesiz = payda − vadeli.
+    YP: payda = YP Mevduat − Kıymetli Maden (YP Vadeli de KM hariç tanımlı, tp/yp_spread ile aynı); vadesiz = payda − vadeli.
+    Pay + tamamlayıcı pay her zaman payda'ya eşittir (iki oran toplamı %100)."""
+    if pb == 'TP':
+        den = ctx.bilanco(b, t, 'Mevduat', 'TP')
+    else:
+        den = ctx.bilanco(b, t, 'Mevduat', 'YP') - ctx.kiymetli_maden(b, t)
+    vad = ctx.vadeli_mevduat_bakiyesi(b, t, pb)
+    return (vad if vadeli else den - vad), den
+
+
+def m_tp_vadeli_tp_mevduat(ctx, b, t):
+    return safe_ratio(*mevduat_vade_bolumu(ctx, b, t, 'TP', True))
+
+
+def m_tp_vadesiz_tp_mevduat(ctx, b, t):
+    return safe_ratio(*mevduat_vade_bolumu(ctx, b, t, 'TP', False))
+
+
+def m_yp_vadeli_yp_mevduat(ctx, b, t):
+    return safe_ratio(*mevduat_vade_bolumu(ctx, b, t, 'YP', True))
+
+
+def m_yp_vadesiz_yp_mevduat(ctx, b, t):
+    return safe_ratio(*mevduat_vade_bolumu(ctx, b, t, 'YP', False))
+
+
 # ============================================================
 # RASYOLAR — Gelir Tablosu (YtD)
 # ============================================================
@@ -1970,6 +2001,10 @@ MEASURE_FUNCS: Dict[str, Callable] = {
     'kiymetli_maden_toplam_mevduat': m_kiymetli_maden_toplam_mevduat,
     'tp_mevduat_toplam_mevduat': m_tp_mevduat_toplam_mevduat,
     'yp_mevduat_toplam_mevduat': m_yp_mevduat_toplam_mevduat,
+    'tp_vadeli_tp_mevduat': m_tp_vadeli_tp_mevduat,
+    'tp_vadesiz_tp_mevduat': m_tp_vadesiz_tp_mevduat,
+    'yp_vadeli_yp_mevduat': m_yp_vadeli_yp_mevduat,
+    'yp_vadesiz_yp_mevduat': m_yp_vadesiz_yp_mevduat,
 
     # Gelir Tablosu rasyolar (YtD)
     'maliyet_gelir': m_maliyet_gelir,

@@ -2111,16 +2111,8 @@ modal (BDR'nin yanından Çıkış'ın sonuna, logo bloğunun hemen öncesine
 taşındı). Yeni bir sürüm notu eklemek için `whats_new.json`'a en üste yeni
 bir `{date, title, items}` girdisi eklenip commit/push yeterli.
 
-**YAZIM KURALI (2026-10-09):** `whats_new.json` maddelerinde (1) admin paneliyle ilgili değişikliklerden bahsedilmez; yalnızca görsel iyileştirmeler,
-yapay zekâ (Asistan/AI) araçları ve kullanıcıya dönük diğer iyileştirmeler yazılır. (2) "Power BI / PBI ile eşleşti, hizalandı, birebir uyumlu" gibi
-karşılaştırma ifadeleri kullanılmaz; düzeltme yalnızca ne olduğuyla anlatılır (ör. "hesap düzeltildi, daha isabetli").
-**Düzeltme (aynı gün):** İlk içerik yanlışlıkla admin-only özellikleri
-(Sunucu Taşıma, Yol Haritası sekmesi) anlatıyordu — normal dashboard
-kullanıcısı `/admin`'e erişemediği için bunları hiç göremezdi. İçerik
-gerçekten dashboard'da görünen değişikliklere çevrildi (yeni ölçüler,
-arama kutusu, CAGR düzeltmesi, koyu mod düzeltmesi vb.). **Ders:** Bu
-buton için içerik yazarken her zaman "normal üye bunu dashboard'da görebilir
-mi" testi uygulanmalı, admin panel değişiklikleri buraya girmemeli.
+**YAZIM KURALI (2026-10-13):** `whats_new.json` yalnızca KULLANICI DENEYİMİYLE ilgili maddeleri içerir (görsel iyileştirmeler, yeni ekran/özellik, Asistan/yapay zekâ araçları, hız, mobil/tablet). Hesaplama düzeltmeleri ("hesaplamalar gözden geçirildi"),
+formül/veri düzeltmeleri, yeni ölçü duyuruları, veri tamamlama, admin paneli değişiklikleri ve "Power BI / PBI ile eşleşti, hizalandı, birebir uyumlu" gibi ifadeler YAZILMAZ; bunlar `docs/CHANGELOG.md`'ye gider.
 
 #### 2. Role-bazlı ölçü erişimi + PDF export (BİRLEŞİK — birbirine bağımlı)
 **KARAR (2026-08-19):** Bu iki madde aslında tek bir özellik seti — ayrı ayrı

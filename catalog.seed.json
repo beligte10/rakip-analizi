@@ -1055,6 +1055,50 @@
       "sort_direction": "asc"
     },
     {
+      "id": "tp_vadeli_tp_mevduat",
+      "ad": "TP Vadeli Mevduat / TP Mevduat",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "tp_vadesiz_tp_mevduat",
+      "ad": "TP Vadesiz Mevduat / TP Mevduat",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
+      "id": "yp_vadeli_yp_mevduat",
+      "ad": "YP Vadeli Mevduat / YP Mevduat (KM Hariç)",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "asc"
+    },
+    {
+      "id": "yp_vadesiz_yp_mevduat",
+      "ad": "YP Vadesiz Mevduat / YP Mevduat (KM Hariç)",
+      "tip": "rasyo",
+      "akim_stok": "stok",
+      "birim": "%",
+      "kategori": "Bilanço",
+      "alt_kategori": "Pasifler",
+      "pazar_payi": false,
+      "sort_direction": "desc"
+    },
+    {
       "id": "tp_mevduat_altindisi_mevduat",
       "ad": "TP Mevduat / Altındışı Mevduat",
       "tip": "rasyo",

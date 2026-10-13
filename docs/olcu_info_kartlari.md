@@ -1232,6 +1232,86 @@
 
 ---
 
+## TP Vadeli Mevduat / TP Mevduat
+
+`id: tp_vadeli_tp_mevduat`
+
+**Tanım:** TL mevduatın vadeli (kâr payı/faiz alan) kısmının payı. TP vadesiz payı ile birlikte TL mevduat kompozisyonunu verir.
+
+**Formül:** TP Vadeli Mevduat / TP Mevduat
+
+**Hesaplama dönemi:** Dönem sonu bakiye
+
+**Kaynak:** Bilanço ve mevduat vade yapısı dipnotu
+
+**Kategori:** Bilanço › Pasifler · **Tip:** Rasyo (Stok) · **Birim:** %
+
+**Terimler:**
+
+- *TP Vadeli Mevduat:* TP Mevduat − TP Vadesiz Mevduat (mevduat bankasında vadesiz = Tasarruf + Resmi + Ticari + Diğer kurum vadesizleri + Bankalar Mevduatı − Yurtdışı Bankalar vadesiz; katılım bankasında kâr payı almayan Özel Cari Hesaplar).
+
+---
+
+## TP Vadesiz Mevduat / TP Mevduat
+
+`id: tp_vadesiz_tp_mevduat`
+
+**Tanım:** TL mevduatın vadesiz kısmının payı; yüksek pay daha ucuz fonlamaya işaret eder.
+
+**Formül:** TP Vadesiz Mevduat / TP Mevduat
+
+**Hesaplama dönemi:** Dönem sonu bakiye
+
+**Kaynak:** Bilanço ve mevduat vade yapısı dipnotu
+
+**Kategori:** Bilanço › Pasifler · **Tip:** Rasyo (Stok) · **Birim:** %
+
+**Terimler:**
+
+- *TP Vadeli Mevduat:* TP Mevduat − TP Vadesiz Mevduat (mevduat bankasında vadesiz = Tasarruf + Resmi + Ticari + Diğer kurum vadesizleri + Bankalar Mevduatı − Yurtdışı Bankalar vadesiz; katılım bankasında kâr payı almayan Özel Cari Hesaplar).
+
+---
+
+## YP Vadeli Mevduat / YP Mevduat (KM Hariç)
+
+`id: yp_vadeli_yp_mevduat`
+
+**Tanım:** Yabancı para (döviz) mevduatın vadeli kısmının payı; kıymetli maden hesapları hariçtir.
+
+**Formül:** YP Vadeli Mevduat (KM Hariç) / (YP Mevduat − Kıymetli Maden Mevduatı)
+
+**Hesaplama dönemi:** Dönem sonu bakiye
+
+**Kaynak:** Bilanço ve mevduat vade yapısı dipnotu
+
+**Kategori:** Bilanço › Pasifler · **Tip:** Rasyo (Stok) · **Birim:** %
+
+**Terimler:**
+
+- *YP Mevduat (KM Hariç):* YP Mevduat − Kıymetli Maden Mevduatı. YP Vadeli, bu tabandan YP Vadesiz çıkarılarak bulunur; vadeli + vadesiz payı %100'dür.
+
+---
+
+## YP Vadesiz Mevduat / YP Mevduat (KM Hariç)
+
+`id: yp_vadesiz_yp_mevduat`
+
+**Tanım:** Yabancı para (döviz) mevduatın vadesiz kısmının payı; kıymetli maden hesapları hariçtir.
+
+**Formül:** YP Vadesiz Mevduat (KM Hariç) / (YP Mevduat − Kıymetli Maden Mevduatı)
+
+**Hesaplama dönemi:** Dönem sonu bakiye
+
+**Kaynak:** Bilanço ve mevduat vade yapısı dipnotu
+
+**Kategori:** Bilanço › Pasifler · **Tip:** Rasyo (Stok) · **Birim:** %
+
+**Terimler:**
+
+- *YP Mevduat (KM Hariç):* YP Mevduat − Kıymetli Maden Mevduatı. YP Vadeli, bu tabandan YP Vadesiz çıkarılarak bulunur; vadeli + vadesiz payı %100'dür.
+
+---
+
 ## TP Mevduat / Altındışı Mevduat
 
 `id: tp_mevduat_altindisi_mevduat`

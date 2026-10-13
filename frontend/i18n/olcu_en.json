@@ -228,7 +228,11 @@
     "lcr_yp": "Liquidity Coverage Ratio (LCR, FX)",
     "serbest_karsilik": "General Reserves Balance (Free Provisions)",
     "tufex_tamponu": "CPI-Linked Securities (TUFEX) Buffer",
-    "kar_tamponu_net_kar": "Profit Buffer (Free Provisions + TUFEX) / Net Profit"
+    "kar_tamponu_net_kar": "Profit Buffer (Free Provisions + TUFEX) / Net Profit",
+    "tp_vadeli_tp_mevduat": "TL Time Deposits / TL Deposits",
+    "tp_vadesiz_tp_mevduat": "TL Demand Deposits / TL Deposits",
+    "yp_vadeli_yp_mevduat": "FC Time Deposits / FC Deposits (excl. Gold)",
+    "yp_vadesiz_yp_mevduat": "FC Demand Deposits / FC Deposits (excl. Gold)"
   },
   "kompozisyon": {
     "aktif": "Asset Composition",
