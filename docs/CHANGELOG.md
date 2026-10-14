@@ -4,6 +4,9 @@ Sürüm geçmişi. Her commit'in özetini barındırır.
 
 ## Rekabet Analizi — tüm bankalar için tamlık (2026-10-09)
 
+- **Tek ekran görünümü normal görünümle birebir (2026-10-14):** 2026-10-13 görsel dili kaldırıldı; başlıklar, kart içi yazı tipleri, renkler, değişim çubukları, YtD dikey çubuk grafiği (yatay liste kalktı) ve filtre çipleri normal görünümle aynı; tek ekran yalnızca yerleşimi sığdırır. Banka Grupları'nda Kuveyt Türk kutusu yeşile boyanmaz. Liste yazısı 13 px sabit.
+- **Tek ekran — tüm boyutlarda sığdırma (2026-10-14):** Anlık Görünüm içeriği büyük ekranlarda `zoom` ile ölçeklenir (mantıksal alan ≈1440×820; `zum = min(W/1440, H/820)`, 1–3×), böylece 1920×1080'den 4K'ya kadar yazılar okunur ve kartlar boş kalmaz; 3 sütunlu düzen artık gerçek genişliğe değil mantıksal genişliğe (≥1800) bağlı (`fit-genis`). Liste yazı boyutu sütun genişliğiyle sınırlı (adlar "…" ile kesilmez), satır payı genişletildi (6. satır ikinci sütuna taşıyordu), az satırlı filtrelerde satırlar kartı doldurur. ≤1200 px: ölçü satırı tek satır ve etiketsiz, Asistan düğmesi üst şeritte (içeriğe binmiyordu), rakip kartları taşmaz. Genişlik <1100 veya yükseklik <640 px'te tek ekran uygulanmaz, normal kaydırmalı görünüm açılır. 45 boyut×ölçü×filtre kombinasyonunda (1100×700 – 3440×1440) kırpılma, ekran dışı öğe ve gizli satır yok.
+
 - **Görev Panosu — yeni sütun "Kontrol Edilecekler" (2026-10-14):** sıra Yapılacaklar → Yapılma Aşamasında → **Kontrol Edilecekler** → Yapıldı (`BOARD_COLUMNS` + `BOARD_COLS`, kimlik `kontrol`). Eski `board.json`'da anahtar yoksa boş sütun olarak açılır (canlıda ek adım gerekmez); mevcut kartlar yerinde. Pano 4 sütunlu; telefonda yana kaydırmalı.
 
 - **Tek ekran yeniden tasarımı (2026-10-13):** kullanıcı eski görünümü amatör buldu. Yeni görsel dil (`.snap-fit.fit-on` kapsamında, normal düzen ve PDF dokunulmadı): sade kartlar (1 px kenarlık, 10 px köşe, gölge yok),

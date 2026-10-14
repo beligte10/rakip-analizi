@@ -1083,7 +1083,6 @@
     .snap-fit.fit-on .bank-row { height: var(--fit-row, 28px); min-height: 0; break-inside: avoid; }
     body.tek-ekran .snap-fit.fit-on .ranking-panel .bank-row-name,
     body.tek-ekran .snap-fit.fit-on .ranking-panel .bank-value { font-size: var(--fit-font, 13px); padding-top: 0; padding-bottom: 0; line-height: 1.2; }
-    body.tek-ekran .snap-fit.fit-on .ranking-panel .bank-delta-text { font-size: calc(var(--fit-font, 13px) - 1px); }
     .snap-fit.fit-on .bank-bar-cell { padding-top: 0; padding-bottom: 0; height: 100%; }
     .snap-fit.fit-on .bank-delta-cell { min-height: 0; height: 100%; padding-top: 0; padding-bottom: 0; }
     .snap-fit.fit-on[data-cols="1"] .bank-row { grid-template-columns: minmax(0, 1fr) calc(var(--fit-val, 90px) + 24px) 92px !important; }
@@ -1101,7 +1100,7 @@
     .snap-fit.fit-on .snap-ust .ytd-hlist { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: space-evenly; }
     .snap-fit.fit-on .snap-ust .ytd-hlist .ytd-hrow { min-height: 34px; }
     .snap-fit.fit-on .ytd-values-row { flex: none; }
-    .snap-fit.fit-on .ytd-value-cell { font-size: 11.5px; }
+    .snap-fit.fit-on .ytd-value-cell { }
     /* Dar sütunlarda (< 34 px) değer etiketleri dikey: her yükseklikte okunur, üst üste binmez */
     .snap-fit.fit-on .ytd-values-row.ytd-values-dar { height: 40px; }
     .snap-fit.fit-on .ytd-values-dar .ytd-value-cell {
@@ -1109,7 +1108,7 @@
     }
     .snap-fit.fit-on .ytd-bars-area { flex: 1 1 0; min-height: 60px; }
     .snap-fit.fit-on .ytd-labels-row { height: 92px; flex: none; }
-    .snap-fit.fit-on .ytd-label-text { font-size: 11.5px; }
+    .snap-fit.fit-on .ytd-label-text { }
     /* Üst kart: rasyo ölçüsünde Rakip Bankalar trend grafiği kartı doldurur (viewBox oranı JS'te kutuya eşitlenir) */
     .snap-fit.fit-on .snap-ust .rakip-trend-panel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; padding: 8px 12px; }
     .snap-fit.fit-on .snap-ust .trend-svg-wrap { flex: 1 1 auto; min-height: 0; }
@@ -1119,11 +1118,11 @@
     .snap-fit.fit-on .group-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; padding: 10px; }
     .snap-fit.fit-on .competitor-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; padding: 8px; }
     .snap-fit.fit-on .group-cell { padding: 10px 6px; }
-    .snap-fit.fit-on .group-cell-label { font-size: 11.5px; min-height: 0; margin-bottom: 4px; }
-    .snap-fit.fit-on .group-cell-value { font-size: 26px; }
+    .snap-fit.fit-on .group-cell-label { min-height: 0; margin-bottom: 4px; }
+    .snap-fit.fit-on .group-cell-value { }
     .snap-fit.fit-on .competitor-card-mini { padding: 8px 4px; gap: 4px; }
-    .snap-fit.fit-on .competitor-mini-cagr { font-size: 21px; }
-    .snap-fit.fit-on .competitor-mini-title { font-size: 11px; }
+    .snap-fit.fit-on .competitor-mini-cagr { }
+    .snap-fit.fit-on .competitor-mini-title { }
     .snap-fit.fit-on .bos-serit[open] { max-height: 150px; overflow: auto; }
   }
   /* Kısa ekran (≤ 900 px yükseklik): üst şeritler ve kartlar sıkılaşır (küçültme değil, boşluk azaltma) */
@@ -1137,173 +1136,73 @@
     .snap-fit.fit-on .panel-header { padding-top: 7px; padding-bottom: 7px; }
     .snap-fit.fit-on .bank-filter-tabs { padding: 5px 10px 4px; }
     .snap-fit.fit-on .group-cell { padding: 8px 6px; }
-    .snap-fit.fit-on .group-cell-value { font-size: 24px; }
+    .snap-fit.fit-on .group-cell-value { }
     .snap-fit.fit-on .competitor-card-mini { padding: 6px 4px; gap: 3px; }
-    .snap-fit.fit-on .competitor-mini-cagr { font-size: 20px; }
+    .snap-fit.fit-on .competitor-mini-cagr { }
   }
   /* Çok kısa ekran (≤ 800 px): alt kartlar daha da sıkılaşır; YtD grafiğine yer kalsın */
   @media (min-width: 901px) and (pointer: fine) and (max-height: 800px) {
-    .snap-fit.fit-on .panel-header { font-size: 13.5px; padding-top: 5px; padding-bottom: 5px; line-height: 1.2; }
+    .snap-fit.fit-on .panel-header { padding-top: 5px; padding-bottom: 5px; line-height: 1.2; }
     .snap-fit.fit-on .group-grid { padding: 6px; gap: 6px; }
     .snap-fit.fit-on .group-cell { padding: 6px; }
-    .snap-fit.fit-on .group-cell-label { margin-bottom: 2px; font-size: 11px; }
-    .snap-fit.fit-on .group-cell-value { font-size: 22px; }
+    .snap-fit.fit-on .group-cell-label { margin-bottom: 2px; }
+    .snap-fit.fit-on .group-cell-value { }
     .snap-fit.fit-on .competitor-grid { padding: 5px; gap: 5px; }
     .snap-fit.fit-on .competitor-card-mini { padding: 5px 3px; gap: 2px; }
     .snap-fit.fit-on .competitor-mini-hint { display: none; }
-    .snap-fit.fit-on .competitor-mini-cagr { font-size: 19px; }
-    .snap-fit.fit-on .competitor-mini-title { gap: 2px; font-size: 10.5px; }
+    .snap-fit.fit-on .competitor-mini-cagr { }
+    .snap-fit.fit-on .competitor-mini-title { gap: 2px; }
     .snap-fit.fit-on .bank-filter-tab { padding-top: 2px; padding-bottom: 2px; }
     .snap-fit.fit-on .ytd-labels-row { height: 84px; }
-    .snap-fit.fit-on .ytd-label-text { font-size: 11px; }
+    .snap-fit.fit-on .ytd-label-text { }
     .snap-fit.fit-on .ytd-values-row.ytd-values-dar { height: 36px; }
-    .snap-fit.fit-on .ytd-values-dar .ytd-value-cell { font-size: 11px; }
+    .snap-fit.fit-on .ytd-values-dar .ytd-value-cell { }
   }
   @media (min-width: 901px) and (pointer: fine) and (max-height: 760px) {
-    .snap-fit.fit-on .panel-header { font-size: 12.5px; letter-spacing: 0; }
+    .snap-fit.fit-on .panel-header { }
     .snap-fit.fit-on .snap-ust .bank-filter-tabs { display: none; }
   }
-  /* ---- Tek ekran görsel dili (2026-10-13): sade kartlar, sola yaslı başlıklar, sıra numaralı tablo, yatay çubuk listesi,
-     pastil değişim rozetleri, KPI kutucukları; her kartta iç kaydırma yok ---- */
+  /* ---- Tek ekran (2026-10-14): görünüm normal görünümle birebir aynı (başlıklar, kart içi yazılar, renkler); yalnızca yerleşim sığdırılır ---- */
   @media (min-width: 901px) and (pointer: fine) {
-    body.tek-ekran .main-panel { background: #f3f5f8; }
-    .snap-fit.fit-on .panel { border: 1px solid #e2e7ed; border-radius: 10px; box-shadow: 0 1px 2px rgba(15,31,47,0.04); overflow: hidden; }
-    .snap-fit.fit-on .panel-header, .snap-fit.fit-on .bank-ranking-header {
-      background: #fff; border-bottom: 1px solid #e9edf1; text-align: left; font-size: 13.5px; font-weight: 700; color: #0f1f2f;
-      letter-spacing: 0; padding: 9px 14px 9px 24px; position: relative; line-height: 1.3;
-    }
-    .snap-fit.fit-on .panel-header::before, .snap-fit.fit-on .bank-ranking-header::before {
-      content: ''; position: absolute; left: 12px; top: 50%; width: 4px; height: 14px; margin-top: -7px; border-radius: 2px; background: var(--odak, #62AE41);
-    }
-    .snap-fit.fit-on .bank-ranking-header > div { font-size: 13.5px; font-weight: 700; text-align: left; padding: 0; }
-    .snap-fit.fit-on .bank-ranking-header-delta { align-items: flex-end; padding: 0 !important; }
-    .snap-fit.fit-on .ytd-header-row { justify-content: space-between; gap: 8px; }
-    .snap-fit.fit-on .ytd-header-row > span:first-child { margin-right: auto; }
-    .snap-fit.fit-on .ytd-period-select, .snap-fit.fit-on .ytd-ort-select, .snap-fit.fit-on .bank-ranking-delta-period-select {
-      font-size: 11px !important; font-weight: 600 !important; color: #334155; background: #f1f4f7; border: 1px solid #e2e7ed !important; border-radius: 6px !important; padding: 2px 6px !important; min-height: 24px;
-    }
-    /* Süzgeç çipleri: bölmeli denetim görünümü; sağ karttaki kopya gizlenir (sol kartla bağlı) */
-    .snap-fit.fit-on .bank-filter-tabs { gap: 4px; padding: 6px 12px; border-bottom: 1px solid #eef1f4; background: #fff; }
-    .snap-fit.fit-on .bank-filter-tab { border: 1px solid transparent; background: #f1f4f7; color: #475569; border-radius: 6px; padding: 3px 10px; font-size: 11.5px; }
-    .snap-fit.fit-on .bank-filter-tab.active { background: #0f1f2f; border-color: #0f1f2f; color: #fff; }
-    .snap-fit.fit-on .snap-ust .bank-filter-tabs { display: none; }
-    /* Sıralama tablosu */
-    .snap-fit.fit-on .bank-rows-scroll { column-rule: none; column-gap: 20px; padding: 2px 0; }
-    .snap-fit.fit-on .bank-row { border-bottom: 1px solid #eef1f4; padding: 0 2px; }
-    .snap-fit.fit-on .bank-row.kt { background: rgba(var(--odak-rgb), 0.08); box-shadow: inset 3px 0 0 var(--odak, #62AE41); border-radius: 0; }
-    .snap-fit.fit-on .bank-row-sira { display: inline-block; min-width: 18px; margin-right: 4px; text-align: right; color: #94a3b8; font-weight: 600; font-variant-numeric: tabular-nums; font-size: calc(var(--fit-font, 13px) - 1px); }
-    .snap-fit.fit-on .bank-row.kt .bank-row-sira { color: var(--odak-metin, #457A2E); }
-    body.tek-ekran .snap-fit.fit-on .ranking-panel .bank-row-name { padding-left: 10px; padding-right: 4px; color: #1f2937; font-weight: 500; }
-    body.tek-ekran .snap-fit.fit-on .ranking-panel .bank-row.kt .bank-row-name { font-weight: 700; color: #0f1f2f; }
-    body.tek-ekran .snap-fit.fit-on .ranking-panel .bank-value { font-variant-numeric: tabular-nums; font-weight: 600; color: #0f1f2f; }
-    .snap-fit.fit-on .bank-delta-cell { border-left: none; justify-content: flex-end; padding-right: 8px !important; }
-    .snap-fit.fit-on .bank-delta-bar { display: none; }
-    .snap-fit.fit-on .bank-delta-text { padding: 1px 6px; border-radius: 999px; font-weight: 600; font-variant-numeric: tabular-nums; background: #f1f4f7; color: #64748b; line-height: 1.5; }
-    .snap-fit.fit-on .bank-delta-text.pos { background: #e6f4ee; color: #15705f; }
-    .snap-fit.fit-on .bank-delta-text.neg { background: #fcebeb; color: #b03a3a; }
-    .snap-fit.fit-on .rank-badge-row { background: #fff; border-top: 1px solid #eef1f4; padding: 6px 14px; }
-    .snap-fit.fit-on .rank-label { font-size: 12px; color: #64748b; }
-    .snap-fit.fit-on .rank-badge { font-size: 13px; padding: 2px 9px; border-radius: 6px; letter-spacing: 0; }
-    /* YtD yatay çubuk listesi */
-    .snap-fit.fit-on .ytd-hlist.fit { flex: 1 1 auto; min-height: 0; padding: 4px 14px 6px; }
-    .snap-fit.fit-on .ytd-hlist.fit .ytd-hrow { grid-template-columns: minmax(72px, 118px) minmax(40px, 1fr) 56px; gap: 8px; min-height: 0; font-size: 12.5px; border-bottom: 1px solid #f1f4f7; }
-    .snap-fit.fit-on .ytd-hlist.fit .ytd-hrow.kt { background: rgba(var(--odak-rgb), 0.08); box-shadow: inset 3px 0 0 var(--odak, #62AE41); border-radius: 0; }
-    .snap-fit.fit-on .ytd-hlist.fit .ytd-hname { padding-left: 10px; color: #1f2937; font-weight: 500; }
-    .snap-fit.fit-on .ytd-hlist.fit .ytd-hrow.kt .ytd-hname { font-weight: 700; color: #0f1f2f; }
-    .snap-fit.fit-on .ytd-hlist.fit .ytd-htrack { height: clamp(7px, 50%, 16px); }
-    .snap-fit.fit-on .ytd-hlist.fit .ytd-hbar { background: #2b4a6f; border-radius: 3px; }
-    .snap-fit.fit-on .ytd-hlist.fit .ytd-hbar.kt { background: var(--odak, #62AE41); }
-    .snap-fit.fit-on .ytd-hlist.fit .ytd-hval { font-size: 12.5px; font-weight: 700; color: #0f1f2f; padding-right: 6px; }
-    .snap-fit.fit-on .ytd-hlist.fit .ytd-hort { border-radius: 6px; }
-    /* KPI kutucukları: Banka Grupları ve Rakip Bankalar */
-    .snap-fit.fit-on .group-grid { gap: 10px; padding: 12px 14px 14px; }
-    .snap-fit.fit-on .group-cell { background: #fff; border: 1px solid #e2e7ed; border-radius: 8px; box-shadow: none; padding: 10px 8px; }
-    .snap-fit.fit-on .group-cell.kt { border-color: #d7eacf; background: rgba(var(--odak-rgb), 0.07); box-shadow: inset 0 3px 0 var(--odak, #62AE41); }
-    .snap-fit.fit-on .group-cell-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; font-weight: 700; min-height: 0; margin-bottom: 6px; }
-    .snap-fit.fit-on .group-cell-value { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
-    .snap-fit.fit-on .competitor-grid { gap: 8px; padding: 12px 14px 14px; }
-    .snap-fit.fit-on .competitor-card-mini { border: 1px solid #e2e7ed; border-radius: 8px; box-shadow: none; padding: 9px 4px 7px; gap: 4px; }
-    .snap-fit.fit-on .competitor-mini-title { font-size: 11px; font-weight: 600; color: #334155; gap: 4px; }
-    .snap-fit.fit-on .competitor-mini-cagr { font-size: 20px; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
-    .snap-fit.fit-on .competitor-mini-hint { font-size: 10.5px; letter-spacing: 0.06em; color: #94a3b8; }
-    /* Rasyo: trend grafiği kartı */
-    .snap-fit.fit-on .snap-ust .rakip-trend-panel { padding: 10px 14px 6px; }
-    /* Koyu tema */
-    body.dark.tek-ekran .main-panel { background: #0f1a24; }
-    body.dark .snap-fit.fit-on .panel { border-color: rgba(255,255,255,0.08); box-shadow: none; }
-    body.dark .snap-fit.fit-on .panel-header, body.dark .snap-fit.fit-on .bank-ranking-header { background: #1a2635; border-bottom-color: rgba(255,255,255,0.07); color: #e8eef1; }
-    body.dark .snap-fit.fit-on .bank-ranking-header > div { color: #e8eef1; }
-    body.dark .snap-fit.fit-on .ytd-period-select, body.dark .snap-fit.fit-on .ytd-ort-select, body.dark .snap-fit.fit-on .bank-ranking-delta-period-select { background: #223142; color: #c5d3dd; border-color: rgba(255,255,255,0.1) !important; }
-    body.dark .snap-fit.fit-on .bank-filter-tabs { background: #1a2635; border-bottom-color: rgba(255,255,255,0.07); }
-    body.dark .snap-fit.fit-on .bank-filter-tab { background: #223142; color: #b4c0cc; }
-    body.dark .snap-fit.fit-on .bank-filter-tab.active { background: #e8eef1; border-color: #e8eef1; color: #0f1f2f; }
-    body.dark .snap-fit.fit-on .bank-row, body.dark .snap-fit.fit-on .ytd-hlist.fit .ytd-hrow { border-bottom-color: rgba(255,255,255,0.05); }
-    body.dark .snap-fit.fit-on .bank-row.kt, body.dark .snap-fit.fit-on .ytd-hlist.fit .ytd-hrow.kt { background: rgba(var(--odak-rgb), 0.16); }
-    body.dark .snap-fit.fit-on .bank-row-sira { color: #64748b; }
-    body.dark.tek-ekran .snap-fit.fit-on .ranking-panel .bank-row-name, body.dark .snap-fit.fit-on .ytd-hlist.fit .ytd-hname { color: #c5d3dd; }
-    body.dark.tek-ekran .snap-fit.fit-on .ranking-panel .bank-row.kt .bank-row-name, body.dark .snap-fit.fit-on .ytd-hlist.fit .ytd-hrow.kt .ytd-hname { color: #fff; }
-    body.dark.tek-ekran .snap-fit.fit-on .ranking-panel .bank-value, body.dark .snap-fit.fit-on .ytd-hlist.fit .ytd-hval { color: #e8eef1; }
-    body.dark .snap-fit.fit-on .bank-delta-text { background: #223142; color: #94a3b8; }
-    body.dark .snap-fit.fit-on .bank-delta-text.pos { background: rgba(126,186,165,0.18); color: #7EBAA5; }
-    body.dark .snap-fit.fit-on .bank-delta-text.neg { background: rgba(252,165,165,0.16); color: #fca5a5; }
-    body.dark .snap-fit.fit-on .rank-badge-row { background: #1a2635; border-top-color: rgba(255,255,255,0.07); }
-    body.dark .snap-fit.fit-on .ytd-hlist.fit .ytd-hbar { background: #7f9cbd; }
-    body.dark .snap-fit.fit-on .group-cell { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08); }
-    body.dark .snap-fit.fit-on .group-cell.kt { background: rgba(var(--odak-rgb), 0.14); border-color: rgba(var(--odak-rgb), 0.4); }
-    body.dark .snap-fit.fit-on .group-cell-label { color: #94a3b8; }
-    body.dark .snap-fit.fit-on .competitor-card-mini { border-color: rgba(255,255,255,0.08); }
-    body.dark .snap-fit.fit-on .competitor-mini-title { color: #c5d3dd; }
-    /* ≤1200 px genişlikte üst şeritte başlık sağa yaslandığından Asistan düğmesi alt-sağa döner; alt boşluk ona ayrılır */
+    .snap-fit.fit-on .panel { overflow: hidden; }
+    .snap-fit.fit-on .bank-rows-scroll { column-gap: 20px; padding: 2px 0; }
+    .snap-fit.fit-on .group-cell.kt { border: 1px solid rgba(15,31,47,0.06); background: #f7f9fb; box-shadow: none; }   /* KT kutusu yeşile boyanmaz */
+    body.dark .snap-fit.fit-on .group-cell.kt { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.06); }
+    .snap-fit.fit-on .bos-serit[open] { max-height: 150px; overflow: auto; }
+    .snap-fit.fit-on .snap-ust .ytd-scroll-wrap { padding-right: 22px; }   /* eğik son etiket ('ING Bank') kırpılmasın */
+    /* ≤1200 px: Asistan düğmesi logo ile başlık arasındaki boş alanda (içeriğe binmez) */
     @media (max-width: 1200px) {
-      body.tek-ekran .chat-fab { top: auto; bottom: 12px; right: 12px; width: 42px; height: 42px; padding: 0; justify-content: center; font-size: 20px;
-        border: none; border-radius: 50%; background: var(--kt-green); box-shadow: 0 6px 18px rgba(20, 60, 20, 0.32); }
-      body.tek-ekran .chat-fab span { display: none; }   /* yalnız ikon; kartın köşesine biner, altta şerit ayrılmaz */
-      body.tek-ekran .chat-fab:hover { background: var(--kt-green-dark); }
+      body.tek-ekran .chat-fab { top: 11px; bottom: auto; left: 318px; right: auto; height: 38px; padding: 0 12px; font-size: 13px; }
     }
-    /* Çok geniş ekran (≥2200 px): üç sütun — sıralama | YtD | üst üste iki KPI kartı; kutucuklar iki/üç sütunlu ızgarada kartı doldurur */
-    @media (min-width: 2200px) {
-      body.tek-ekran:not(.pdf-slide):not(.pdf-capture) .snap-fit.fit-on .dashboard-grid {
+    /* Çok geniş mantıksal alan: üç sütun — sıralama | YtD | üst üste iki KPI kartı */
+    @media all {
+      body.tek-ekran:not(.pdf-slide):not(.pdf-capture) .snap-fit.fit-on.fit-genis .dashboard-grid {
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.8fr) !important;
         grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "rank ust alt1" "rank ust alt2";
       }
-      .snap-fit.fit-on .snap-alt1, .snap-fit.fit-on .snap-alt2 { min-height: 0; display: flex; flex-direction: column; }
-      .snap-fit.fit-on .snap-alt1 > .panel, .snap-fit.fit-on .snap-alt2 > .panel { flex: 1 1 auto; min-height: 0; }
-      .snap-fit.fit-on .group-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); align-content: stretch; }
-      .snap-fit.fit-on .competitor-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); align-content: stretch; }
-      .snap-fit.fit-on .group-cell-value { font-size: 30px; }
-      .snap-fit.fit-on .competitor-mini-cagr { font-size: 26px; }
-      .snap-fit.fit-on .competitor-mini-title { font-size: 12.5px; }
-      .snap-fit.fit-on .group-cell-label { font-size: 12px; }
-      .snap-fit.fit-on .competitor-mini-hint { font-size: 11px; }
+      .snap-fit.fit-on.fit-genis .snap-alt1, .snap-fit.fit-on.fit-genis .snap-alt2 { min-height: 0; display: flex; flex-direction: column; }
+      .snap-fit.fit-on.fit-genis .snap-alt1 > .panel, .snap-fit.fit-on.fit-genis .snap-alt2 > .panel { flex: 1 1 auto; min-height: 0; }
+      .snap-fit.fit-on.fit-genis .group-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); align-content: stretch; }
+      .snap-fit.fit-on.fit-genis .competitor-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); align-content: stretch; }
     }
-    /* Dar kutucukta banka adı kesilmek yerine iki satıra sarar */
     .snap-fit.fit-on .competitor-mini-title > span { white-space: normal; line-height: 1.15; max-height: 2.3em; overflow: hidden; }
   }
-  /* Tek ekran görsel dili — kısa ekranlarda KPI kutucukları sıkılaşır (liste satırlarına yer kalsın) */
-  @media (min-width: 901px) and (pointer: fine) and (max-height: 900px) {
-    .snap-fit.fit-on .group-grid { padding: 10px 12px 12px; gap: 8px; }
-    .snap-fit.fit-on .group-cell { padding: 8px 6px; }
-    .snap-fit.fit-on .group-cell-label { margin-bottom: 4px; }
-    .snap-fit.fit-on .group-cell-value { font-size: 22px; }
-    .snap-fit.fit-on .competitor-grid { padding: 10px 12px 12px; gap: 6px; }
-    .snap-fit.fit-on .competitor-card-mini { padding: 7px 3px 6px; gap: 3px; }
-    .snap-fit.fit-on .competitor-mini-cagr { font-size: 19px; }
-  }
-  @media (min-width: 901px) and (pointer: fine) and (max-height: 800px) {
-    .snap-fit.fit-on .group-grid { padding: 8px 10px 10px; gap: 6px; }
-    .snap-fit.fit-on .group-cell { padding: 6px 5px; }
-    .snap-fit.fit-on .group-cell-label { font-size: 11px; margin-bottom: 3px; }
-    .snap-fit.fit-on .group-cell-value { font-size: 20px; }
-    .snap-fit.fit-on .competitor-grid { padding: 8px 10px 10px; gap: 5px; }
-    .snap-fit.fit-on .competitor-card-mini { padding: 5px 3px 4px; gap: 2px; }
-    .snap-fit.fit-on .competitor-mini-cagr { font-size: 17px; }
-    .snap-fit.fit-on .competitor-mini-title { font-size: 10.5px; }
-    .snap-fit.fit-on .competitor-mini-hint { display: none; }
-    .snap-fit.fit-on .panel-header, .snap-fit.fit-on .bank-ranking-header { padding-top: 6px; padding-bottom: 6px; font-size: 13px; }
-    .snap-fit.fit-on .bank-filter-tabs { padding: 4px 12px; }
-    .snap-fit.fit-on .ytd-hlist.fit .ytd-hrow { font-size: 11.5px; }
-    .snap-fit.fit-on .ytd-hlist.fit .ytd-hval { font-size: 11.5px; }
-    .snap-fit.fit-on .rank-badge-row { padding: 4px 14px; }
+  /* Dar masaüstü (≤ 1200 px): ölçü satırı tek satırda ve etiketsiz sıkılaşır; alt kartlar taşmadan sığar (2026-10-14) */
+  @media (min-width: 901px) and (pointer: fine) and (max-width: 1200px) {
+    body.tek-ekran .control-bar { flex-wrap: nowrap; gap: 6px; padding: 4px 10px; }
+    body.tek-ekran .control-bar .control-label { display: none; }
+    body.tek-ekran .control-bar > .control-field { min-width: 0; flex: 0 1 auto; }
+    body.tek-ekran .control-bar > .control-field-search { flex: 0 1 120px; }
+    body.tek-ekran .control-bar > .control-field-measure { flex: 1 1 0; }
+    body.tek-ekran .control-bar select, body.tek-ekran .control-bar input { min-width: 0; max-width: 100%; }
+    body.tek-ekran .control-bar > .control-field:not(.control-field-search):not(.control-field-measure) select { max-width: 104px; }
+    .snap-fit.fit-on .competitor-mini-cagr { }
+    .snap-fit.fit-on .group-cell-value { }
+    .snap-fit.fit-on .group-cell-label { }
+    .snap-fit.fit-on .competitor-mini-title { }
+    .snap-fit.fit-on .competitor-grid { gap: 4px; padding: 6px 8px 8px; }
+    .snap-fit.fit-on .competitor-card-mini { min-width: 0; overflow: hidden; padding-left: 2px; padding-right: 2px; }
+    .snap-fit.fit-on .competitor-mini-cagr { }
   }
   /* Sol sıralama listesinde yatay barlar kaldırıldı (2026-10-12): ad, değer ve değişim; bar yalnız PDF çıktısında durur */
   body:not(.pdf-slide):not(.pdf-capture) .ranking-panel .bank-bar-track { display: none; }
@@ -8138,7 +8037,7 @@
     // Tek ekran düzeni (2026-10-13): döndürülmüş etiketli dikey sütunlar yerine her zaman yatay çubuk listesi;
     // 14'ten çok satırda iki sütunlu grid (satırlar kartın yüksekliğini eşit paylaşır, iç kaydırma yok).
     var fitMod = !!document.querySelector('.snap-fit.fit-on');
-    var yatayListe = isMobile || displayBars.length <= AZ_BANKA || fitMod;
+    var yatayListe = isMobile || displayBars.length <= AZ_BANKA;
     var snapEl = fitMod && document.querySelector('.snap-fit.fit-on');
     var fitListe = snapEl ? parseFloat(snapEl.style.getPropertyValue('--fit-liste')) || 0 : 0;
     var hToplam = displayBars.length + ortSeri.length;
@@ -9019,7 +8918,7 @@
     }, []);
     function tamEkranMi() {
       var b = document.body;
-      return TEK_EKRAN && window.innerWidth > 900 && !(window.matchMedia && window.matchMedia('(pointer: coarse)').matches) &&
+      return TEK_EKRAN && window.innerWidth >= 1100 && window.innerHeight >= 640 && !(window.matchMedia && window.matchMedia('(pointer: coarse)').matches) &&
         !b.classList.contains('pdf-slide') && !b.classList.contains('pdf-capture');
     }
     useEffect(function() {
@@ -9027,26 +8926,31 @@
         var w = fitRef.current;
         if (!w) return false;
         var kapsa = ['--fit-h', '--fit-cols', '--fit-row', '--fit-font', '--fit-val'];
-        if (!tamEkranMi()) { w.classList.remove('fit-on'); w.removeAttribute('data-cols'); kapsa.forEach(function(k){ w.style.removeProperty(k); }); return false; }
+        if (!tamEkranMi()) { w.classList.remove('fit-on', 'fit-genis'); w.removeAttribute('data-cols'); w.style.removeProperty('zoom'); kapsa.forEach(function(k){ w.style.removeProperty(k); }); return false; }
         w.classList.add('fit-on');
+        // Büyük ekranlarda tüm içerik ekrana oranla büyütülür (tasarım ~1440×820 mantıksal alan için): yazılar okunur, kartlar boş kalmaz
+        var zum = Math.max(1, Math.min(3, Math.min(window.innerWidth / 1440, window.innerHeight / 820)));
+        zum = Math.round(zum * 20) / 20;
+        if (zum > 1) w.style.setProperty('zoom', String(zum)); else w.style.removeProperty('zoom');
+        w.classList.toggle('fit-genis', window.innerWidth / zum >= 1800);   // çok geniş mantıksal alan: 3 sütun (sıralama | YtD | KPI kartları)
         var top = w.getBoundingClientRect().top + (window.pageYOffset || 0);
         var serit = w.querySelector('.bos-serit');                 // Rekabet ölçülerinde grid altındaki "değeri olmayan bankalar" şeridi
         var seritH = serit ? serit.offsetHeight + 10 : 0;
         var altBosluk = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;   // ≤1200 px: Asistan düğmesi altta, payı ayrılır
-        var fitH = Math.max(320, Math.floor(window.innerHeight - top - seritH - altBosluk - 12));
+        var fitH = Math.max(320, Math.floor((window.innerHeight - top - altBosluk - 12) / zum - seritH));   // iç ölçü: zoom'a bölünür
         w.style.setProperty('--fit-h', fitH + 'px');
         var kutu = scrollBoxRef.current;
         if (kutu) {
           // Sol liste: boşluk kalmayacak şekilde 1–3 sütun; satır yüksekliği ve yazı boyutu kullanılabilir alana göre (2026-10-13)
           var n = Math.max(1, kutu.querySelectorAll('.bank-row').length);
           var liste = Math.max(120, kutu.clientHeight);           // --fit-h yazıldı, okuma yeniden yerleşimi tetikler
-          var ROW_MAX = n <= 6 ? 76 : n <= 10 ? 52 : 40, RAHAT = 26, KABUL = 21, EN_AZ = 18;   // az satırda liste de kartı doldurur
+          var ROW_MAX = n <= 6 ? 110 : n <= 10 ? 80 : 56, RAHAT = 26, KABUL = 21, EN_AZ = 18;   // az satırda liste de kartı doldurur
           // Çok geniş kutuda (≥1100 px) tek sütun ad–değer arasını boş bırakır: satırlar zaten rahat (≥32 px) değilse 2 sütun
-          var enAzSutun = kutu.clientWidth >= 1100 && (liste - 4) / n < 32 ? 2 : 1;
+          var enAzSutun = kutu.clientWidth >= 1100 && (liste - 10) / n < 32 ? 2 : 1;
           var genis3 = kutu.clientWidth / 3 >= 290;                     // 3 sütun yalnız adlar sığacak kadar genişse
           var adaylar = [];
           for (var c = 1; c <= 3; c++) {
-            adaylar.push({ c: c, r: Math.min(ROW_MAX, Math.floor((liste - 4) / Math.ceil(n / c))) });
+            adaylar.push({ c: c, r: Math.min(ROW_MAX, Math.floor((liste - 10) / Math.ceil(n / c))) });
           }
           var uygun = adaylar.filter(function(a){ return a.c >= enAzSutun && (a.c < 3 || genis3); });
           // Önce rahat (≥26 px) en az sütunlu seçenek, yoksa kabul edilebilir (≥21 px), yoksa en yüksek satır
@@ -9062,7 +8966,10 @@
           w.classList.toggle('fit-tasma', tasma);
           var cols = secim.c, satir = Math.max(EN_AZ, secim.r);
           w.style.setProperty('--fit-liste', liste + 'px');
-          var font = Math.max(12, Math.min(cols === 3 ? 13 : 17, Math.round(satir * 0.44)));
+          var font = 13;   // normal görünümle aynı yazı boyutu
+          // Sütun genişliği: "Alternatif Bank" gibi en uzun ad + değer + değişim sütunu sığmalı (adlar "…" ile kesilmesin)
+          var sutunGen = kutu.clientWidth / cols;
+          font = Math.max(11, Math.min(font, Math.floor((sutunGen - 120) / 14.9)));
           w.style.setProperty('--fit-cols', String(cols));
           w.style.setProperty('--fit-row', satir + 'px');
           w.style.setProperty('--fit-font', font + 'px');
