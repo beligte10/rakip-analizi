@@ -4,6 +4,23 @@ Sürüm geçmişi. Her commit'in özetini barındırır.
 
 ## Rekabet Analizi — tüm bankalar için tamlık (2026-10-09)
 
+- **Görev Panosu — yeni sütun "Kontrol Edilecekler" (2026-10-14):** sıra Yapılacaklar → Yapılma Aşamasında → **Kontrol Edilecekler** → Yapıldı (`BOARD_COLUMNS` + `BOARD_COLS`, kimlik `kontrol`). Eski `board.json`'da anahtar yoksa boş sütun olarak açılır (canlıda ek adım gerekmez); mevcut kartlar yerinde. Pano 4 sütunlu; telefonda yana kaydırmalı.
+
+- **Tek ekran yeniden tasarımı (2026-10-13):** kullanıcı eski görünümü amatör buldu. Yeni görsel dil (`.snap-fit.fit-on` kapsamında, normal düzen ve PDF dokunulmadı): sade kartlar (1 px kenarlık, 10 px köşe, gölge yok),
+  sola yaslı başlıklar (yeşil işaret çubuğu), sıra numaralı sıralama tablosu (`.bank-row-sira` ekranda görünür), KT satırı sol yeşil şeritli, değişimler pastil rozet (`.bank-delta-text`, küçük çubuklar gizli),
+  YtD büyüme döndürülmüş etiketli dikey sütunlar yerine HER ZAMAN yatay çubuk listesi (`fitMod` → `yatayListe`; 14'ten çok satırda 2 sütunlu CSS grid, `grid-auto-flow: column`, satırlar kartı eşit paylaşır),
+  Banka Grupları / Rakip kutucukları KPI kartı (büyük harfli etiket, 24 px tabular değer; rakipte kısa banka adı), tüm kartlar `overflow: hidden` ve `minmax(0,1fr)` sütunlar (yana kaydırma yok), koyu tema eşdeğerleri.
+  Düzen mantığı önceki turdan: YtD/şerit/Asistan/satır-sütun kuralları; ek düzeltme — satır yüksekliği `(liste − 4) / satır` ve `column-fill: auto` (1280×720'de 27. banka gizli üçüncü sütuna düşüyordu).
+  Doğrulama: 1280×720 … 2560×1440 yedi boyut + rasyo/adet/Rekabet/filtre/koyu tema senaryoları (sayfa kayması 0, kırpılma yok) ve 23 senaryoluk karşıt iş akışı.
+  İş akışı bulguları ve düzeltmeler (2026-10-14): 2560×1440'ta tek sütunlu liste ad–değer arasını boş bırakıyordu → ≥2200 px'te üç sütunlu yerleşim (sıralama | YtD | üst üste KPI kartları, kutucuklar 3'lü ızgara) ve
+  YtD sütun sayısı satır aralığına göre (`--fit-liste`, <24 px → 2 sütun); 1100×700'de 5 banka gizli üçüncü sütuna düşüyordu → adlar sığmıyorsa tek sütun + iç kaydırma (`fit-tasma`, multicol kapalı) ve alt boşluk payı hesaba eklendi;
+  ≤1200 px genişlikte Asistan düğmesi başlıkla çakışıyordu → alt-sağa döner; 5 haneli bps rozeti kesiliyordu → değişim sütunu 68/56 px; KPI etiketleri ≥11 px, sıra numarası `--fit-font − 1`; CAGR boşsa gri tire, marka rengi
+  beyaz zeminde 4,5:1'e koyulaştırılır (`readableTextColor`); KT listede yokken boş "sırası:" satırı çizilmez; gruplanmayan ölçülerde (LCR vb.) Banka Grupları Rasyo kartı KT için bankanın değerini gösterir (Çeyreklik Değişim kartıyla tutarlı).
+  İkinci tur (7 senaryo): az satırlı filtrede (Rakip, 6 banka) liste satır tavanı 76/52 px ve yazı 17 px'e kadar (kart dolar); ≤1200 px'te Asistan yalnız ikon (42 px) olarak köşeye biner, altta şerit ayrılmaz; "CAGR" alt etiketi ≥10,5 px (≥2200 px'te 11 px).
+- **Mevduat Kompozisyonu + Döviz Dağılımı'nda vadeli/vadesiz ayrışması (2026-10-13):** `pipeline/composition.py`'ye `mevduat` kompozisyonu eklendi (bileşenler: TP Vadesiz, TP Vadeli, YP Vadesiz (KM hariç), YP Vadeli (KM hariç), Kıymetli Maden).
+  Döviz Dağılımı bu kompozisyonda 2 yerine 5 dilim gösterir: `currency_data[...].alt` (katalogda `currency_alt` tanımı) — TP/YP × vadeli/vadesiz + kıymetli maden; vadeli = `vadeli_mevduat_bakiyesi`, vadesiz = TP/YP Mevduat − vadeli (YP'de KM de düşülür).
+  Ham tabloların eksik olduğu banka/dönemlerde (negatif dilim çıkan; fon tablosu olmayan eski katılım dönemleri, çok yeni bankalar) hücre gösterilmez (`_alt_gecerli`, tolerans %0,5). Canlıda görünmesi için yeniden hesaplama gerekir (Rebuild değil).
+
 - **TP/YP mevduat vadeli-vadesiz kompozisyonu — 4 yeni ölçü (2026-10-13, toplam 213):** `tp_vadeli_tp_mevduat`, `tp_vadesiz_tp_mevduat`, `yp_vadeli_yp_mevduat`, `yp_vadesiz_yp_mevduat` (Bilanço › Pasifler, rasyo %).
   TP payda = TP Mevduat; YP payda = YP Mevduat − Kıymetli Maden (KM hariç, tp/yp_spread ile aynı tanım). Vadeli = `LookupContext.vadeli_mevduat_bakiyesi` (mevduat bankasında Power BI DAX vadesizleri, katılımda özel cari hesaplar), vadesiz = payda − vadeli; her banka ve grupta iki pay toplamı %100.
   Grup değeri Σpay/Σpayda (`groups._nd_*`). Canlıda ölçülerin görünmesi için Admin'den yeniden hesaplama (Rebuild DEĞİL) gerekir.

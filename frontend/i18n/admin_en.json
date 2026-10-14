@@ -408,5 +408,8 @@
   "Banka Grupları büyüme / çeyreklik değişim kartı": "Bank Groups growth / quarterly change card",
   "Rakip Bankalar yıllık görünüm ve CAGR kartı": "Peer Banks annual view and CAGR card",
   "Menüdeki BDR düğmesi": "BDR button in the menu",
-  "İşaretliyse bu kategorideki ölçüler rolde görünür; kaldırılırsa sunucu bu ölçüleri hiç göndermez": "When checked, measures in this category are visible to the role; when cleared, the server does not send them at all"
+  "İşaretliyse bu kategorideki ölçüler rolde görünür; kaldırılırsa sunucu bu ölçüleri hiç göndermez": "When checked, measures in this category are visible to the role; when cleared, the server does not send them at all",
+  "Kontrol Edilecekler": "To Review",
+  "Kontrol Edilecekler'e": "To Review",
+  "Kontrol Edilecekler'e taşı": "Move to To Review"
 }

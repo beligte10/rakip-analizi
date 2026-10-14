@@ -2767,6 +2767,66 @@
         }
       ]
     },
+    "mevduat": {
+      "id": "mevduat",
+      "ad": "Mevduat Kompozisyonu",
+      "kategori": "Bilanço",
+      "currency_supported": true,
+      "components": [
+        {
+          "id": "tp_vadesiz",
+          "ad": "TP Vadesiz Mevduat",
+          "color": "#1e3a5f"
+        },
+        {
+          "id": "tp_vadeli",
+          "ad": "TP Vadeli Mevduat",
+          "color": "#4f7fb5"
+        },
+        {
+          "id": "yp_vadesiz",
+          "ad": "YP Vadesiz Mevduat (KM Hariç)",
+          "color": "#f97316"
+        },
+        {
+          "id": "yp_vadeli",
+          "ad": "YP Vadeli Mevduat (KM Hariç)",
+          "color": "#fdba74"
+        },
+        {
+          "id": "yp_km",
+          "ad": "Kıymetli Maden Mevduatı",
+          "color": "#ca8a04"
+        }
+      ],
+      "currency_alt": [
+        {
+          "id": "tp_vadesiz",
+          "ad": "TP Vadesiz Mevduat",
+          "color": "#1e3a5f"
+        },
+        {
+          "id": "tp_vadeli",
+          "ad": "TP Vadeli Mevduat",
+          "color": "#4f7fb5"
+        },
+        {
+          "id": "yp_vadesiz",
+          "ad": "YP Vadesiz Mevduat (KM Hariç)",
+          "color": "#f97316"
+        },
+        {
+          "id": "yp_vadeli",
+          "ad": "YP Vadeli Mevduat (KM Hariç)",
+          "color": "#fdba74"
+        },
+        {
+          "id": "yp_km",
+          "ad": "Kıymetli Maden Mevduatı",
+          "color": "#ca8a04"
+        }
+      ]
+    },
     "kaynak": {
       "id": "kaynak",
       "ad": "Toplam Kaynak Kompozisyonu",

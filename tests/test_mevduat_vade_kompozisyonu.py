@@ -39,3 +39,19 @@ def test_grup_payları_toplam_yuz(veri):
                 if v is None or w is None:
                     continue
                 assert abs(v + w - 100) < 0.01, (grup, t, v, w)
+
+
+def test_mevduat_kompozisyonu_ve_doviz_alt_dilimleri(veri):
+    """Kompozisyon sekmesindeki 'Mevduat Kompozisyonu': bileşen yüzdeleri ve Döviz görünümündeki TP/YP × vadeli/vadesiz dilimleri %100 eder."""
+    cd, cu = veri['composition_data']['mevduat'], veri['currency_data']['mevduat']
+    assert 'mevduat' in veri['meta']['compositions'] and veri['meta']['compositions']['mevduat'].get('currency_alt')
+    sayac = 0
+    for tur in ('bank', 'group'):
+        for ad, seri in cu[tur].items():
+            for t, rec in seri.items():
+                assert rec['alt'] and abs(sum(x['pct'] for x in rec['alt']) - 100) < 0.01, (ad, t)
+                tp = sum(x['pct'] for x in rec['alt'] if x['id'].startswith('tp_'))
+                assert abs(tp - rec['tp_pct']) < 0.05, (ad, t, tp, rec['tp_pct'])     # alt dilimler TP/YP toplamıyla tutarlı
+                assert abs(sum(x['pct'] for x in cd[tur][ad][t]) - 100) < 0.01
+                sayac += 1
+    assert sayac > 500

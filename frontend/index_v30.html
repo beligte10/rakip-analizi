@@ -1047,51 +1047,84 @@
     max-height: 609px;
     overflow-y: auto;
   }
-  /* ---- Tek ekran düzeni (2026-10-11) ----
-     Masaüstünde (fare, >900 px) Anlık Görünüm kaydırmasızdır ve küçültülmez, YENİDEN DÜZENLENİR (bkz. SnapshotView.tamEkranDuzenle):
-     --fit-h = kullanılabilir yükseklik, --fit-cols = sol listenin sütun sayısı (1–3), --fit-row = satır yüksekliği.
-     Sağda YtD kartı kalan yüksekliği alır, Banka Grupları ve Rakip kartları doğal boyutta kalır. PDF çıktısı eski düzende. */
+  /* ---- Tek ekran düzeni (2026-10-11; 2026-10-13 yeniden düzenlendi) ----
+     Masaüstünde (fare, >900 px) ve Menü → Görünüm → Tek ekran açıkken Anlık Görünüm kaydırmasızdır ve küçültülmez, YENİDEN
+     DÜZENLENİR (bkz. SnapshotView.tamEkranDuzenle): --fit-h kullanılabilir yükseklik, --fit-cols sol listenin sütun sayısı (1–3),
+     --fit-row satır yüksekliği, --fit-font liste yazı boyutu. Üst satır: sıralama | .snap-ust (YtD grafiği; rasyoda Rakip trendi)
+     kalan yüksekliği alır; alt satır: iki .snap-alt kartı doğal yükseklikte ve eşit. Asistan düğmesi üst şeride taşınır (altta boşluk
+     kalmaz). Dokunmatik cihaz ve PDF çıktısı eski düzende. */
   @media (min-width: 901px) and (pointer: fine) {
-    body.tek-ekran { padding-bottom: 68px; }
+    body.tek-ekran { padding-bottom: 0; }
     body.tek-ekran:not(.pdf-slide):not(.pdf-capture) .main-panel { min-height: 0; }
-    /* Düzen: üst satır = sıralama | YtD grafiği (kalan yükseklik), alt satır = Banka Grupları | Rakip Bankalar (doğal yükseklik, eşit) */
-    body:not(.pdf-slide):not(.pdf-capture) .snap-fit.fit-on .dashboard-grid {
-      height: var(--fit-h); align-items: stretch; gap: 12px;
-      grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: "rank ytd" "grp comp";
+    body.tek-ekran .chat-fab {
+      top: 11px; bottom: auto; right: 176px; height: 38px; padding: 0 14px; font-size: 13px; box-shadow: none;
+      background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px;
     }
+    body.tek-ekran .chat-fab:hover { background: rgba(255,255,255,0.26); }
+    body.tek-ekran:not(.pdf-slide):not(.pdf-capture) .snap-fit.fit-on .dashboard-grid {
+      height: var(--fit-h); align-items: stretch; gap: 10px;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: "rank ust" "alt1 alt2";
+    }
+    .snap-fit.fit-on[data-cols="1"] .dashboard-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); }
+    .snap-fit.fit-on[data-cols="3"] .dashboard-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
     .snap-fit.fit-on .dashboard-grid > div:nth-child(2) { display: contents !important; }
-    .snap-fit.fit-on .dashboard-grid > div:first-child { grid-area: rank; }
-    .snap-fit.fit-on .snap-rc1 { grid-area: ytd; }
-    .snap-fit.fit-on .snap-rc2 { grid-area: grp; min-width: 0; }
-    .snap-fit.fit-on .snap-rc3 { grid-area: comp; min-width: 0; }
-    .snap-fit.fit-on .snap-rc2 > .panel, .snap-fit.fit-on .snap-rc3 > .panel { height: 100%; display: flex; flex-direction: column; }
-    .snap-fit.fit-on .snap-rc2 .group-grid, .snap-fit.fit-on .snap-rc3 .competitor-grid { flex: 1 1 auto; align-items: stretch; }
-    .snap-fit.fit-on .dashboard-grid > div:first-child { align-self: stretch !important; display: flex; flex-direction: column; min-height: 0; }
+    .snap-fit.fit-on .dashboard-grid > div:first-child { grid-area: rank; align-self: stretch !important; display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+    .snap-fit.fit-on .snap-ust { grid-area: ust; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+    .snap-fit.fit-on .snap-alt1 { grid-area: alt1; min-width: 0; }
+    .snap-fit.fit-on .snap-alt2 { grid-area: alt2; min-width: 0; }
+    /* Sol liste */
     .snap-fit.fit-on .ranking-panel { align-self: stretch; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
     .snap-fit.fit-on .bank-rows-scroll {
       flex: 1 1 auto; min-height: 0; max-height: none !important; overflow: hidden;
-      column-count: var(--fit-cols, 1); column-gap: 0; column-rule: 1px solid #e4e9ed;
+      column-count: var(--fit-cols, 1); column-fill: balance; column-gap: 0; column-rule: 1px solid #e4e9ed;
     }
+    body.dark .snap-fit.fit-on .bank-rows-scroll { column-rule-color: #2a3b4d; }
     .snap-fit.fit-on .bank-row { height: var(--fit-row, 28px); min-height: 0; break-inside: avoid; }
-    /* Çok sütunlu listede sütunlar daralır: ad / bar / değişim oranları yeniden dağıtılır, sol panel genişler */
-    .snap-fit.fit-on:not([data-cols="1"]) .dashboard-grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
-    .snap-fit.fit-on:not([data-cols="1"]) .bank-row { grid-template-columns: minmax(0, 1fr) 84px 58px !important; }
-    .snap-fit.fit-on:not([data-cols="1"]) .bank-bar-cell { grid-template-columns: minmax(0, 1fr); padding-right: 8px; }
-    .snap-fit.fit-on:not([data-cols="1"]) .bank-value { font-size: 11.5px; }
-    .snap-fit.fit-on[data-cols="3"] .dashboard-grid { grid-template-columns: minmax(0, 1.18fr) minmax(0, 1fr); }
-    .snap-fit.fit-on[data-cols="3"] .bank-row { grid-template-columns: minmax(0, 1fr) 76px 46px !important; }
-    .snap-fit.fit-on[data-cols="3"] .ranking-panel .bank-row-name { font-size: 12px; padding-left: 8px; padding-right: 2px; }
-    .snap-fit.fit-on[data-cols="3"] .ranking-panel .bank-value { font-size: 12px; }
-    .snap-fit.fit-on:not([data-cols="1"]) .bank-delta-cell { padding-left: 2px; padding-right: 2px; }
-    .snap-fit.fit-on .bank-row-name { padding-top: 0; padding-bottom: 0; }
+    body.tek-ekran .snap-fit.fit-on .ranking-panel .bank-row-name,
+    body.tek-ekran .snap-fit.fit-on .ranking-panel .bank-value { font-size: var(--fit-font, 13px); padding-top: 0; padding-bottom: 0; line-height: 1.2; }
+    body.tek-ekran .snap-fit.fit-on .ranking-panel .bank-delta-text { font-size: calc(var(--fit-font, 13px) - 1px); }
     .snap-fit.fit-on .bank-bar-cell { padding-top: 0; padding-bottom: 0; height: 100%; }
-    .snap-fit.fit-on .bank-bar-track, .snap-fit.fit-on .bank-bar { height: min(16px, calc(var(--fit-row, 28px) - 9px)); }
     .snap-fit.fit-on .bank-delta-cell { min-height: 0; height: 100%; padding-top: 0; padding-bottom: 0; }
-    .snap-fit.fit-on .snap-rc1 { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
-    .snap-fit.fit-on .snap-rc1 > .panel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-    .snap-fit.fit-on .snap-rc1 .ytd-scroll-wrap { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-    .snap-fit.fit-on .snap-rc1 .ytd-chart-container { flex: 1 1 auto; min-height: 0; max-height: none; }
-    .snap-fit.fit-on .snap-rc1 .group-grid { flex: 1 1 auto; align-items: stretch; }
+    .snap-fit.fit-on[data-cols="1"] .bank-row { grid-template-columns: minmax(0, 1fr) calc(var(--fit-val, 90px) + 24px) 92px !important; }
+    .snap-fit.fit-on:not([data-cols="1"]) .bank-row { grid-template-columns: minmax(0, 1fr) var(--fit-val, 90px) 68px !important; }
+    .snap-fit.fit-on:not([data-cols="1"]) .bank-bar-cell { grid-template-columns: minmax(0, 1fr); padding-right: 8px; }
+    .snap-fit.fit-on:not([data-cols="1"]) .bank-delta-cell { padding-left: 2px; padding-right: 2px; }
+    .snap-fit.fit-on[data-cols="3"] .bank-row { grid-template-columns: minmax(0, 1fr) var(--fit-val, 80px) 56px !important; }
+    .snap-fit.fit-on.fit-tasma .bank-rows-scroll { overflow-y: auto; column-count: auto !important; }   /* son çare: multicol kapalı, dikey iç kaydırma; hiçbir satır gizlenmez */
+    .snap-fit.fit-on[data-cols="3"] .ranking-panel .bank-row-name { padding-left: 8px; padding-right: 2px; }
+    /* Üst kart: YtD grafiği kalan yüksekliği doldurur */
+    .snap-fit.fit-on .snap-ust > .panel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+    .snap-fit.fit-on .snap-ust .ytd-panel-body { flex: 1 1 auto; min-height: 0; padding: 6px 8px 4px; justify-content: stretch; }
+    .snap-fit.fit-on .snap-ust .ytd-scroll-wrap { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow-x: hidden; }
+    .snap-fit.fit-on .snap-ust .ytd-chart-container { flex: 1 1 auto; min-height: 0; max-height: none; }
+    .snap-fit.fit-on .snap-ust .ytd-hlist { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: space-evenly; }
+    .snap-fit.fit-on .snap-ust .ytd-hlist .ytd-hrow { min-height: 34px; }
+    .snap-fit.fit-on .ytd-values-row { flex: none; }
+    .snap-fit.fit-on .ytd-value-cell { font-size: 11.5px; }
+    /* Dar sütunlarda (< 34 px) değer etiketleri dikey: her yükseklikte okunur, üst üste binmez */
+    .snap-fit.fit-on .ytd-values-row.ytd-values-dar { height: 40px; }
+    .snap-fit.fit-on .ytd-values-dar .ytd-value-cell {
+      writing-mode: vertical-rl; transform: rotate(180deg); font-size: 12px; display: flex; justify-content: flex-start; align-items: center;
+    }
+    .snap-fit.fit-on .ytd-bars-area { flex: 1 1 0; min-height: 60px; }
+    .snap-fit.fit-on .ytd-labels-row { height: 92px; flex: none; }
+    .snap-fit.fit-on .ytd-label-text { font-size: 11.5px; }
+    /* Üst kart: rasyo ölçüsünde Rakip Bankalar trend grafiği kartı doldurur (viewBox oranı JS'te kutuya eşitlenir) */
+    .snap-fit.fit-on .snap-ust .rakip-trend-panel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; padding: 8px 12px; }
+    .snap-fit.fit-on .snap-ust .trend-svg-wrap { flex: 1 1 auto; min-height: 0; }
+    /* Alt kartlar: eşit yükseklik, dar sütunda kırpılmadan daralır */
+    .snap-fit.fit-on .snap-alt1 > .panel, .snap-fit.fit-on .snap-alt2 > .panel { height: 100%; display: flex; flex-direction: column; }
+    .snap-fit.fit-on .snap-alt1 .group-grid, .snap-fit.fit-on .snap-alt2 .group-grid, .snap-fit.fit-on .competitor-grid { flex: 1 1 auto; align-items: stretch; }
+    .snap-fit.fit-on .group-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; padding: 10px; }
+    .snap-fit.fit-on .competitor-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; padding: 8px; }
+    .snap-fit.fit-on .group-cell { padding: 10px 6px; }
+    .snap-fit.fit-on .group-cell-label { font-size: 11.5px; min-height: 0; margin-bottom: 4px; }
+    .snap-fit.fit-on .group-cell-value { font-size: 26px; }
+    .snap-fit.fit-on .competitor-card-mini { padding: 8px 4px; gap: 4px; }
+    .snap-fit.fit-on .competitor-mini-cagr { font-size: 21px; }
+    .snap-fit.fit-on .competitor-mini-title { font-size: 11px; }
+    .snap-fit.fit-on .bos-serit[open] { max-height: 150px; overflow: auto; }
   }
   /* Kısa ekran (≤ 900 px yükseklik): üst şeritler ve kartlar sıkılaşır (küçültme değil, boşluk azaltma) */
   @media (min-width: 901px) and (pointer: fine) and (max-height: 900px) {
@@ -1100,43 +1133,177 @@
     body.tek-ekran .date-selector-bar { padding-top: 4px; padding-bottom: 4px; }
     body.tek-ekran .control-bar { padding-top: 5px; padding-bottom: 5px; }
     body.tek-ekran .main-panel { padding-top: 6px; }
+    body.tek-ekran .chat-fab { top: 4px; }
     .snap-fit.fit-on .panel-header { padding-top: 7px; padding-bottom: 7px; }
     .snap-fit.fit-on .bank-filter-tabs { padding: 5px 10px 4px; }
-    .snap-fit.fit-on .group-grid { padding: 8px; gap: 8px; }
-    .snap-fit.fit-on .group-cell { padding: 11px 8px; }
-    .snap-fit.fit-on .group-cell-label { min-height: 18px; margin-bottom: 3px; }
-    .snap-fit.fit-on .group-cell-value { font-size: 25px; }
-    .snap-fit.fit-on .competitor-grid { padding: 6px; }
-    .snap-fit.fit-on .competitor-card-mini { padding: 5px 4px; gap: 3px; }
-    .snap-fit.fit-on .competitor-mini-cagr { font-size: 21px; }
-    .snap-fit.fit-on .competitor-card-mini { padding: 9px 4px; gap: 4px; }
+    .snap-fit.fit-on .group-cell { padding: 8px 6px; }
+    .snap-fit.fit-on .group-cell-value { font-size: 24px; }
+    .snap-fit.fit-on .competitor-card-mini { padding: 6px 4px; gap: 3px; }
+    .snap-fit.fit-on .competitor-mini-cagr { font-size: 20px; }
   }
-  /* Çok kısa ekran (≤ 800 px): sağdaki kartlar daha da sıkılaşır; YtD grafiğine yer kalsın */
+  /* Çok kısa ekran (≤ 800 px): alt kartlar daha da sıkılaşır; YtD grafiğine yer kalsın */
   @media (min-width: 901px) and (pointer: fine) and (max-height: 800px) {
     .snap-fit.fit-on .panel-header { font-size: 13.5px; padding-top: 5px; padding-bottom: 5px; line-height: 1.2; }
     .snap-fit.fit-on .group-grid { padding: 6px; gap: 6px; }
-    .snap-fit.fit-on .group-cell { padding: 8px 6px; }
-    .snap-fit.fit-on .group-cell-label { min-height: 0; margin-bottom: 2px; font-size: 10.5px; }
-    .snap-fit.fit-on .group-cell-value { font-size: 21px; }
+    .snap-fit.fit-on .group-cell { padding: 6px; }
+    .snap-fit.fit-on .group-cell-label { margin-bottom: 2px; font-size: 11px; }
+    .snap-fit.fit-on .group-cell-value { font-size: 22px; }
     .snap-fit.fit-on .competitor-grid { padding: 5px; gap: 5px; }
-    .snap-fit.fit-on .competitor-card-mini { padding: 6px 3px; gap: 3px; }
+    .snap-fit.fit-on .competitor-card-mini { padding: 5px 3px; gap: 2px; }
     .snap-fit.fit-on .competitor-mini-hint { display: none; }
-    .snap-fit.fit-on .competitor-mini-cagr { font-size: 18px; }
-    .snap-fit.fit-on .competitor-mini-title { gap: 2px; font-size: 10px; }
+    .snap-fit.fit-on .competitor-mini-cagr { font-size: 19px; }
+    .snap-fit.fit-on .competitor-mini-title { gap: 2px; font-size: 10.5px; }
     .snap-fit.fit-on .bank-filter-tab { padding-top: 2px; padding-bottom: 2px; }
-    .snap-fit.fit-on .ytd-labels-row { height: 84px; flex: none; }
-    .snap-fit.fit-on .ytd-values-row { flex: none; }
-    .snap-fit.fit-on .ytd-values-row.ytd-values-dar { height: 36px; }
-    .snap-fit.fit-on .ytd-values-dar .ytd-value-cell {
-      writing-mode: vertical-rl; transform: rotate(180deg); font-size: 10.5px; display: flex; justify-content: flex-start; align-items: center;
-    }
-    .snap-fit.fit-on .ytd-bars-area { flex: 1 1 0; min-height: 44px; }
+    .snap-fit.fit-on .ytd-labels-row { height: 84px; }
     .snap-fit.fit-on .ytd-label-text { font-size: 11px; }
-    .snap-fit.fit-on .ytd-panel-body { padding: 6px 8px 4px; }
+    .snap-fit.fit-on .ytd-values-row.ytd-values-dar { height: 36px; }
+    .snap-fit.fit-on .ytd-values-dar .ytd-value-cell { font-size: 11px; }
   }
   @media (min-width: 901px) and (pointer: fine) and (max-height: 760px) {
     .snap-fit.fit-on .panel-header { font-size: 12.5px; letter-spacing: 0; }
-    .snap-fit.fit-on .snap-rc1 .bank-filter-tabs { display: none; }
+    .snap-fit.fit-on .snap-ust .bank-filter-tabs { display: none; }
+  }
+  /* ---- Tek ekran görsel dili (2026-10-13): sade kartlar, sola yaslı başlıklar, sıra numaralı tablo, yatay çubuk listesi,
+     pastil değişim rozetleri, KPI kutucukları; her kartta iç kaydırma yok ---- */
+  @media (min-width: 901px) and (pointer: fine) {
+    body.tek-ekran .main-panel { background: #f3f5f8; }
+    .snap-fit.fit-on .panel { border: 1px solid #e2e7ed; border-radius: 10px; box-shadow: 0 1px 2px rgba(15,31,47,0.04); overflow: hidden; }
+    .snap-fit.fit-on .panel-header, .snap-fit.fit-on .bank-ranking-header {
+      background: #fff; border-bottom: 1px solid #e9edf1; text-align: left; font-size: 13.5px; font-weight: 700; color: #0f1f2f;
+      letter-spacing: 0; padding: 9px 14px 9px 24px; position: relative; line-height: 1.3;
+    }
+    .snap-fit.fit-on .panel-header::before, .snap-fit.fit-on .bank-ranking-header::before {
+      content: ''; position: absolute; left: 12px; top: 50%; width: 4px; height: 14px; margin-top: -7px; border-radius: 2px; background: var(--odak, #62AE41);
+    }
+    .snap-fit.fit-on .bank-ranking-header > div { font-size: 13.5px; font-weight: 700; text-align: left; padding: 0; }
+    .snap-fit.fit-on .bank-ranking-header-delta { align-items: flex-end; padding: 0 !important; }
+    .snap-fit.fit-on .ytd-header-row { justify-content: space-between; gap: 8px; }
+    .snap-fit.fit-on .ytd-header-row > span:first-child { margin-right: auto; }
+    .snap-fit.fit-on .ytd-period-select, .snap-fit.fit-on .ytd-ort-select, .snap-fit.fit-on .bank-ranking-delta-period-select {
+      font-size: 11px !important; font-weight: 600 !important; color: #334155; background: #f1f4f7; border: 1px solid #e2e7ed !important; border-radius: 6px !important; padding: 2px 6px !important; min-height: 24px;
+    }
+    /* Süzgeç çipleri: bölmeli denetim görünümü; sağ karttaki kopya gizlenir (sol kartla bağlı) */
+    .snap-fit.fit-on .bank-filter-tabs { gap: 4px; padding: 6px 12px; border-bottom: 1px solid #eef1f4; background: #fff; }
+    .snap-fit.fit-on .bank-filter-tab { border: 1px solid transparent; background: #f1f4f7; color: #475569; border-radius: 6px; padding: 3px 10px; font-size: 11.5px; }
+    .snap-fit.fit-on .bank-filter-tab.active { background: #0f1f2f; border-color: #0f1f2f; color: #fff; }
+    .snap-fit.fit-on .snap-ust .bank-filter-tabs { display: none; }
+    /* Sıralama tablosu */
+    .snap-fit.fit-on .bank-rows-scroll { column-rule: none; column-gap: 20px; padding: 2px 0; }
+    .snap-fit.fit-on .bank-row { border-bottom: 1px solid #eef1f4; padding: 0 2px; }
+    .snap-fit.fit-on .bank-row.kt { background: rgba(var(--odak-rgb), 0.08); box-shadow: inset 3px 0 0 var(--odak, #62AE41); border-radius: 0; }
+    .snap-fit.fit-on .bank-row-sira { display: inline-block; min-width: 18px; margin-right: 4px; text-align: right; color: #94a3b8; font-weight: 600; font-variant-numeric: tabular-nums; font-size: calc(var(--fit-font, 13px) - 1px); }
+    .snap-fit.fit-on .bank-row.kt .bank-row-sira { color: var(--odak-metin, #457A2E); }
+    body.tek-ekran .snap-fit.fit-on .ranking-panel .bank-row-name { padding-left: 10px; padding-right: 4px; color: #1f2937; font-weight: 500; }
+    body.tek-ekran .snap-fit.fit-on .ranking-panel .bank-row.kt .bank-row-name { font-weight: 700; color: #0f1f2f; }
+    body.tek-ekran .snap-fit.fit-on .ranking-panel .bank-value { font-variant-numeric: tabular-nums; font-weight: 600; color: #0f1f2f; }
+    .snap-fit.fit-on .bank-delta-cell { border-left: none; justify-content: flex-end; padding-right: 8px !important; }
+    .snap-fit.fit-on .bank-delta-bar { display: none; }
+    .snap-fit.fit-on .bank-delta-text { padding: 1px 6px; border-radius: 999px; font-weight: 600; font-variant-numeric: tabular-nums; background: #f1f4f7; color: #64748b; line-height: 1.5; }
+    .snap-fit.fit-on .bank-delta-text.pos { background: #e6f4ee; color: #15705f; }
+    .snap-fit.fit-on .bank-delta-text.neg { background: #fcebeb; color: #b03a3a; }
+    .snap-fit.fit-on .rank-badge-row { background: #fff; border-top: 1px solid #eef1f4; padding: 6px 14px; }
+    .snap-fit.fit-on .rank-label { font-size: 12px; color: #64748b; }
+    .snap-fit.fit-on .rank-badge { font-size: 13px; padding: 2px 9px; border-radius: 6px; letter-spacing: 0; }
+    /* YtD yatay çubuk listesi */
+    .snap-fit.fit-on .ytd-hlist.fit { flex: 1 1 auto; min-height: 0; padding: 4px 14px 6px; }
+    .snap-fit.fit-on .ytd-hlist.fit .ytd-hrow { grid-template-columns: minmax(72px, 118px) minmax(40px, 1fr) 56px; gap: 8px; min-height: 0; font-size: 12.5px; border-bottom: 1px solid #f1f4f7; }
+    .snap-fit.fit-on .ytd-hlist.fit .ytd-hrow.kt { background: rgba(var(--odak-rgb), 0.08); box-shadow: inset 3px 0 0 var(--odak, #62AE41); border-radius: 0; }
+    .snap-fit.fit-on .ytd-hlist.fit .ytd-hname { padding-left: 10px; color: #1f2937; font-weight: 500; }
+    .snap-fit.fit-on .ytd-hlist.fit .ytd-hrow.kt .ytd-hname { font-weight: 700; color: #0f1f2f; }
+    .snap-fit.fit-on .ytd-hlist.fit .ytd-htrack { height: clamp(7px, 50%, 16px); }
+    .snap-fit.fit-on .ytd-hlist.fit .ytd-hbar { background: #2b4a6f; border-radius: 3px; }
+    .snap-fit.fit-on .ytd-hlist.fit .ytd-hbar.kt { background: var(--odak, #62AE41); }
+    .snap-fit.fit-on .ytd-hlist.fit .ytd-hval { font-size: 12.5px; font-weight: 700; color: #0f1f2f; padding-right: 6px; }
+    .snap-fit.fit-on .ytd-hlist.fit .ytd-hort { border-radius: 6px; }
+    /* KPI kutucukları: Banka Grupları ve Rakip Bankalar */
+    .snap-fit.fit-on .group-grid { gap: 10px; padding: 12px 14px 14px; }
+    .snap-fit.fit-on .group-cell { background: #fff; border: 1px solid #e2e7ed; border-radius: 8px; box-shadow: none; padding: 10px 8px; }
+    .snap-fit.fit-on .group-cell.kt { border-color: #d7eacf; background: rgba(var(--odak-rgb), 0.07); box-shadow: inset 0 3px 0 var(--odak, #62AE41); }
+    .snap-fit.fit-on .group-cell-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; font-weight: 700; min-height: 0; margin-bottom: 6px; }
+    .snap-fit.fit-on .group-cell-value { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+    .snap-fit.fit-on .competitor-grid { gap: 8px; padding: 12px 14px 14px; }
+    .snap-fit.fit-on .competitor-card-mini { border: 1px solid #e2e7ed; border-radius: 8px; box-shadow: none; padding: 9px 4px 7px; gap: 4px; }
+    .snap-fit.fit-on .competitor-mini-title { font-size: 11px; font-weight: 600; color: #334155; gap: 4px; }
+    .snap-fit.fit-on .competitor-mini-cagr { font-size: 20px; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+    .snap-fit.fit-on .competitor-mini-hint { font-size: 10.5px; letter-spacing: 0.06em; color: #94a3b8; }
+    /* Rasyo: trend grafiği kartı */
+    .snap-fit.fit-on .snap-ust .rakip-trend-panel { padding: 10px 14px 6px; }
+    /* Koyu tema */
+    body.dark.tek-ekran .main-panel { background: #0f1a24; }
+    body.dark .snap-fit.fit-on .panel { border-color: rgba(255,255,255,0.08); box-shadow: none; }
+    body.dark .snap-fit.fit-on .panel-header, body.dark .snap-fit.fit-on .bank-ranking-header { background: #1a2635; border-bottom-color: rgba(255,255,255,0.07); color: #e8eef1; }
+    body.dark .snap-fit.fit-on .bank-ranking-header > div { color: #e8eef1; }
+    body.dark .snap-fit.fit-on .ytd-period-select, body.dark .snap-fit.fit-on .ytd-ort-select, body.dark .snap-fit.fit-on .bank-ranking-delta-period-select { background: #223142; color: #c5d3dd; border-color: rgba(255,255,255,0.1) !important; }
+    body.dark .snap-fit.fit-on .bank-filter-tabs { background: #1a2635; border-bottom-color: rgba(255,255,255,0.07); }
+    body.dark .snap-fit.fit-on .bank-filter-tab { background: #223142; color: #b4c0cc; }
+    body.dark .snap-fit.fit-on .bank-filter-tab.active { background: #e8eef1; border-color: #e8eef1; color: #0f1f2f; }
+    body.dark .snap-fit.fit-on .bank-row, body.dark .snap-fit.fit-on .ytd-hlist.fit .ytd-hrow { border-bottom-color: rgba(255,255,255,0.05); }
+    body.dark .snap-fit.fit-on .bank-row.kt, body.dark .snap-fit.fit-on .ytd-hlist.fit .ytd-hrow.kt { background: rgba(var(--odak-rgb), 0.16); }
+    body.dark .snap-fit.fit-on .bank-row-sira { color: #64748b; }
+    body.dark.tek-ekran .snap-fit.fit-on .ranking-panel .bank-row-name, body.dark .snap-fit.fit-on .ytd-hlist.fit .ytd-hname { color: #c5d3dd; }
+    body.dark.tek-ekran .snap-fit.fit-on .ranking-panel .bank-row.kt .bank-row-name, body.dark .snap-fit.fit-on .ytd-hlist.fit .ytd-hrow.kt .ytd-hname { color: #fff; }
+    body.dark.tek-ekran .snap-fit.fit-on .ranking-panel .bank-value, body.dark .snap-fit.fit-on .ytd-hlist.fit .ytd-hval { color: #e8eef1; }
+    body.dark .snap-fit.fit-on .bank-delta-text { background: #223142; color: #94a3b8; }
+    body.dark .snap-fit.fit-on .bank-delta-text.pos { background: rgba(126,186,165,0.18); color: #7EBAA5; }
+    body.dark .snap-fit.fit-on .bank-delta-text.neg { background: rgba(252,165,165,0.16); color: #fca5a5; }
+    body.dark .snap-fit.fit-on .rank-badge-row { background: #1a2635; border-top-color: rgba(255,255,255,0.07); }
+    body.dark .snap-fit.fit-on .ytd-hlist.fit .ytd-hbar { background: #7f9cbd; }
+    body.dark .snap-fit.fit-on .group-cell { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08); }
+    body.dark .snap-fit.fit-on .group-cell.kt { background: rgba(var(--odak-rgb), 0.14); border-color: rgba(var(--odak-rgb), 0.4); }
+    body.dark .snap-fit.fit-on .group-cell-label { color: #94a3b8; }
+    body.dark .snap-fit.fit-on .competitor-card-mini { border-color: rgba(255,255,255,0.08); }
+    body.dark .snap-fit.fit-on .competitor-mini-title { color: #c5d3dd; }
+    /* ≤1200 px genişlikte üst şeritte başlık sağa yaslandığından Asistan düğmesi alt-sağa döner; alt boşluk ona ayrılır */
+    @media (max-width: 1200px) {
+      body.tek-ekran .chat-fab { top: auto; bottom: 12px; right: 12px; width: 42px; height: 42px; padding: 0; justify-content: center; font-size: 20px;
+        border: none; border-radius: 50%; background: var(--kt-green); box-shadow: 0 6px 18px rgba(20, 60, 20, 0.32); }
+      body.tek-ekran .chat-fab span { display: none; }   /* yalnız ikon; kartın köşesine biner, altta şerit ayrılmaz */
+      body.tek-ekran .chat-fab:hover { background: var(--kt-green-dark); }
+    }
+    /* Çok geniş ekran (≥2200 px): üç sütun — sıralama | YtD | üst üste iki KPI kartı; kutucuklar iki/üç sütunlu ızgarada kartı doldurur */
+    @media (min-width: 2200px) {
+      body.tek-ekran:not(.pdf-slide):not(.pdf-capture) .snap-fit.fit-on .dashboard-grid {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.8fr) !important;
+        grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "rank ust alt1" "rank ust alt2";
+      }
+      .snap-fit.fit-on .snap-alt1, .snap-fit.fit-on .snap-alt2 { min-height: 0; display: flex; flex-direction: column; }
+      .snap-fit.fit-on .snap-alt1 > .panel, .snap-fit.fit-on .snap-alt2 > .panel { flex: 1 1 auto; min-height: 0; }
+      .snap-fit.fit-on .group-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); align-content: stretch; }
+      .snap-fit.fit-on .competitor-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); align-content: stretch; }
+      .snap-fit.fit-on .group-cell-value { font-size: 30px; }
+      .snap-fit.fit-on .competitor-mini-cagr { font-size: 26px; }
+      .snap-fit.fit-on .competitor-mini-title { font-size: 12.5px; }
+      .snap-fit.fit-on .group-cell-label { font-size: 12px; }
+      .snap-fit.fit-on .competitor-mini-hint { font-size: 11px; }
+    }
+    /* Dar kutucukta banka adı kesilmek yerine iki satıra sarar */
+    .snap-fit.fit-on .competitor-mini-title > span { white-space: normal; line-height: 1.15; max-height: 2.3em; overflow: hidden; }
+  }
+  /* Tek ekran görsel dili — kısa ekranlarda KPI kutucukları sıkılaşır (liste satırlarına yer kalsın) */
+  @media (min-width: 901px) and (pointer: fine) and (max-height: 900px) {
+    .snap-fit.fit-on .group-grid { padding: 10px 12px 12px; gap: 8px; }
+    .snap-fit.fit-on .group-cell { padding: 8px 6px; }
+    .snap-fit.fit-on .group-cell-label { margin-bottom: 4px; }
+    .snap-fit.fit-on .group-cell-value { font-size: 22px; }
+    .snap-fit.fit-on .competitor-grid { padding: 10px 12px 12px; gap: 6px; }
+    .snap-fit.fit-on .competitor-card-mini { padding: 7px 3px 6px; gap: 3px; }
+    .snap-fit.fit-on .competitor-mini-cagr { font-size: 19px; }
+  }
+  @media (min-width: 901px) and (pointer: fine) and (max-height: 800px) {
+    .snap-fit.fit-on .group-grid { padding: 8px 10px 10px; gap: 6px; }
+    .snap-fit.fit-on .group-cell { padding: 6px 5px; }
+    .snap-fit.fit-on .group-cell-label { font-size: 11px; margin-bottom: 3px; }
+    .snap-fit.fit-on .group-cell-value { font-size: 20px; }
+    .snap-fit.fit-on .competitor-grid { padding: 8px 10px 10px; gap: 5px; }
+    .snap-fit.fit-on .competitor-card-mini { padding: 5px 3px 4px; gap: 2px; }
+    .snap-fit.fit-on .competitor-mini-cagr { font-size: 17px; }
+    .snap-fit.fit-on .competitor-mini-title { font-size: 10.5px; }
+    .snap-fit.fit-on .competitor-mini-hint { display: none; }
+    .snap-fit.fit-on .panel-header, .snap-fit.fit-on .bank-ranking-header { padding-top: 6px; padding-bottom: 6px; font-size: 13px; }
+    .snap-fit.fit-on .bank-filter-tabs { padding: 4px 12px; }
+    .snap-fit.fit-on .ytd-hlist.fit .ytd-hrow { font-size: 11.5px; }
+    .snap-fit.fit-on .ytd-hlist.fit .ytd-hval { font-size: 11.5px; }
+    .snap-fit.fit-on .rank-badge-row { padding: 4px 14px; }
   }
   /* Sol sıralama listesinde yatay barlar kaldırıldı (2026-10-12): ad, değer ve değişim; bar yalnız PDF çıktısında durur */
   body:not(.pdf-slide):not(.pdf-capture) .ranking-panel .bank-bar-track { display: none; }
@@ -1368,7 +1535,7 @@
   .ytd-value-cell {
     flex: 1;
     text-align: center;
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 700;
     color: #334155;
     white-space: nowrap;
@@ -3806,7 +3973,7 @@
   var DIL = (function() { try { return localStorage.getItem('kt_dil') === 'en' ? 'en' : 'tr'; } catch (e) { return 'tr'; } })();
   var EN = DIL === 'en';
   var I18N_ARAYUZ = /*I18N_ARAYUZ*/{"  (kısayol: Q)":"  (shortcut: Q)","  ·  Görünümden çıkarılan: ":"  ·  Removed from view: ","  ·  TÜFE: TCMB (2025=100)":"  ·  CPI: CBRT (2025=100)","  ·  USD/TRY: TCMB döviz alış":"  ·  USD/TRY: CBRT buying rate","  ·  yılsonu":"  ·  year-end"," (değiştir)":" (change)"," (grup toplamı)":" (group total)"," (grup)":" (group)"," + Rakip":" + Peers"," Anlık Görünüm":" Snapshot"," Büyüklükleri (":" — Size ("," Büyüme (":" Growth ("," Büyüme (%)":" Growth (%)"," banka":" banks"," banka arasında":" banks in total"," banka için.":" banks."," banka seçili":" banks selected"," banka · ":" banks · "," bankayı geri getir":" banks"," dönem":" periods"," dönem seçili":" periods selected"," dönem seçili (":" periods selected ("," döneminde veri yok.":"."," döneminde verisi olmayan ölçüler Anlık Görünüm'e eklenmez, Trend'de veri olmayan yıllar gösterilmez.":" are not added to Snapshot pages; years without data are hidden in Trend."," eşleşme, seçin —":" matches, select —"," fiyatlarına çevrilmiş tutar; büyümeler reel (enflasyondan arındırılmış) büyümedir":" prices; growth figures are real (inflation-adjusted)"," fiyatlarıyla":" prices"," grup":" groups"," hesaplanamadı (yetersiz baz dönem verisi).":" could not be calculated (insufficient base-period data)."," için ara":" — search"," için.":"."," kalem":" items"," kolon":" columns"," panel":" panels"," satır":" rows"," satır × ":" rows × "," satır) Excel/CSV indirmesinde mevcut.":" rows) are available in the Excel/CSV download."," sayfa)":" pages)"," sayfalık PDF indirildi.":"-page PDF downloaded."," seri":" series"," seviye)":" levels)"," seçili":" selected"," seçili)":" selected)"," sırası:":" rank:"," terim)":" terms)"," · Birim: ":" · Unit: "," · Kuveyt Türk Rakip Analizi":" · Kuveyt Türk Peer Analysis"," · Taslak — henüz kaydedilmedi":" · Draft — not saved yet"," · bilanço (dönem sonu)":" · balance sheet (period-end)"," · gelir tablosu (yılbaşından kümülatif)":" · income statement (year-to-date)"," · yılsonu":" · year-end"," ölçü olabilir":" measures"," ölçü seçili · ":" measures selected · "," ölçü)":" measures)"," — CSV olarak indirebilirsiniz.":" — you can download it as CSV."," — geri getirmek için tıklayın":" — click to restore"," — lütfen bekleyin":" — please wait"," — veri yok":" — no data"," — yapısal kırılma / düşük baz nedeniyle diğerleriyle ":" — due to a structural break / low base, not "," • veri yok":" • no data","\" için ölçü bulunamadı":"\" — no measure found","(Gelir Tablosu için TP/YP ayrımı yok)":"(No TL/FC split for Income Statement)","(Krediler + Menkul Kıymetler) / Toplam Aktifler ölçüsünü oluştur":"Create the measure (Loans + Securities) / Total Assets",") Excel olarak indir":") download as Excel",") son çeyrek NPL oranını katılım bankaları ve rakiplerle karşılaştır":") latest-quarter NPL ratio vs participation banks and peers",") — fark/toplam için aynı birimde iki ölçü seçin":") — choose two measures with the same unit for a difference/sum","+ Formüle ekle":"+ Add to formula","+ Rakip ekle…":"+ Add peer…","+ Yeni Görünüm":"+ New View","12 aylık ortalama bakiye":"12-month average balance",": veri yok":": no data","A ve B aynı ölçü olamaz":"A and B cannot be the same measure","A × sabit":"A × constant","Adet":"Count","Admin Panel":"Admin Panel","Alt Kategori":"Subcategory","Altın (kıymetli maden) hesabı yok — pay tanımsız":"No gold (precious metal) accounts — share is undefined","Ana kalem üzerinden TP/YP dağılımı":"TL/FC split based on the main line item","Anlık Görünüm":"Snapshot","Anlık Görünüm sıralaması ve YtD grafiği ile Trend çizgileri yalnız ":"Snapshot ranking, YtD chart and Trend lines only for ","Anlık Görünüm sıralaması, YtD grafiği ve Trend çizgileri tüm bankaları gösterir.":"Snapshot ranking, YtD chart and Trend lines show all banks.","Anlık Görünüm sıralaması, YtD grafiği ve Trend çizgileri yalnız aşağıda seçtiğiniz ":"Snapshot ranking, YtD chart and Trend lines only for the ","Anlık Görünümü kaydırmasız, tek ekrana sığacak şekilde yeniden düzenler (masaüstü)":"Rearranges the Snapshot view to fit a single screen without scrolling (desktop)","Anında Görünüm":"Snapshot","Aralık":"December","Araçlar":"Tools","Arka arkaya iki işlem işareti":"Two operators in a row","Asistan":"Assistant","Asistanı aç":"Open assistant","Ağ. ort. ":"Wtd. avg. ","Ağustos":"August","Ağırlıklı ort.":"Weighted avg.","Ağırlıklı ortalama":"Weighted average","Aşırı büyüme oranı (yapısal kırılma / küçük baz) — karşılaştırma anlamlı değil":"Extreme growth rate (structural break / small base) — comparison not meaningful","Banka":"Bank","Banka / Grup":"Bank / Group","Banka Grubu":"Bank Group","Banka Grupları":"Bank Groups","Banka Grupları Rasyo (":"Bank Groups — Ratio (","Banka Grupları Rasyo Çeyreklik Değişim (Bps)":"Bank Groups — Ratio, Quarterly Change (bps)","Banka Grupları Çeyreklik Değişim (":"Bank Groups — Quarterly Change (","Banka Grupları Çeyreklik Değişim (%)":"Bank Groups — Quarterly Change (%)","Banka grupları":"Bank groups","Banka sayısı":"Number of banks","Banka seç…":"Choose banks…","Banka sınıfları":"Bank classes","Banka sınıfı":"Bank class","Banka veya grup ara":"Search banks or groups","Banka veya grup ara…":"Search banks or groups…","Banka veya grup, dönem aralığı ve kalemleri seç; tabloyu Excel olarak indir.":"Choose banks or groups, the period range and items; download the table as Excel.","Banka ya da grup seç":"Select a bank or group","Banka, tarih ve kalem seçip \"Tabloyu Oluştur\"a basın.":"Choose banks, dates and items, then press \"Build Table\".","Banka/grup × tarih aralığı × kalem kombinasyonundaki tüm değerler tabloya gelir, Excel veya CSV olarak indirilebilir.":"All values for the bank/group × date range × item combination are tabulated and can be downloaded as Excel or CSV.","Bankalar":"Banks","Bankalar ve gruplar":"Banks and groups","Basit + Ağırlıklı":"Simple + Weighted","Basit ortalama":"Simple average","Basit ortalama: bankalar eşit sayılır. Ağırlıklı ortalama: baz dönem büyüklüğüne göre (= toplamın büyümesi). Anomali dışı, görünen bankalar.":"Simple average: banks count equally. Weighted average: weighted by base-period size (= growth of the total). Banks shown, excluding anomalies.","Başlangıç dönemi":"Start period","Başlangıç, bitişten sonra olamaz.":"Start cannot be after end.","Bilanço":"Balance Sheet","Bileşen Dağılımı":"Component Breakdown","Bilgi":"Info","Bilgi kartı":"Info card","Bilinmeyen ölçü: [":"Unknown measure: [","Bir görünüm seçin veya \"+ Yeni Görünüm\" ile oluşturun.":"Select a view or create one with \"+ New View\".","Bir hata oluştu":"An error occurred","Birim başına (bin TL)":"Per unit (TL thousand)","Birim: ":"Unit: ","Birimler uyuşmuyor (":"Units do not match (","Birleşik gruplar":"Combined groups","Bitiş dönemi":"End period","Boş bırakırsanız önerilen ad kullanılır.":"If left blank, the suggested name is used.","Bu ad hazır bir ölçüde kullanılıyor, farklı bir ad seçin":"This name is used by a built-in measure; choose another name","Bu adla bir özel ölçünüz zaten var":"You already have a custom measure with this name","Bu dönem için BDR verisi yüklenmedi":"No audited-report (BDR) data loaded for this period","Bu dönem için BDR verisi yüklenmedi (yalnız son 8 çeyrek yüklü)":"No audited-report (BDR) data loaded for this period (only the last 8 quarters are loaded)","Bu dönem için banka verisi yok (banka henüz faaliyette değildi ya da rapor yüklenmedi)":"No bank data for this period (the bank was not yet operating or the report was not loaded)","Bu dönem için veri yüklenmedi":"No data loaded for this period","Bu dönem personel sayısı yok":"No headcount for this period","Bu görünümü PDF olarak indir":"Download this view as PDF","Bu görünümü silmek istediğinize emin misiniz?":"Are you sure you want to delete this view?","Bu iki ölçünün oranı anlamlı değil (rasyo ile tutar ya da adet / TL)":"The ratio of these two measures is not meaningful (ratio vs amount, or count / TL)","Bu ölçü BDR dipnotundan alınır; bu bankanın bu dönemi için değer okunamadı / yüklenmedi":"This measure comes from the audited-report footnote; no value could be read or loaded for this bank and period","Bu ölçü için henüz bir bilgi kartı yok.":"There is no info card for this measure yet.","Bu ölçü zaten hazır ölçüler arasında var (“":"This measure already exists among built-in measures (“","Büyüklük":"Size","CAGR (Bileşik Yıllık Büyüme %)":"CAGR (Compound Annual Growth %)","CSV olarak indir (Türkçe Excel uyumlu)":"Download as CSV (Turkish Excel compatible)","Cari (nominal) TL — BDDK":"Current (nominal) TL — BRSA","Daha fazla bilgi":"More info","Dashboard'da göster":"Show on dashboard","Dashboard'da göster →":"Show on dashboard →","Değer":"Value","Değer Trend":"Value Trend","Değeri olmayan bankalar (":"Banks without a value (","Değişim":"Change","Değiştir":"Change","Diğer":"Other","Donuk alacak hareketi ya da payda sıfır — oran tanımsız":"No non-performing loan movement, or zero denominator — ratio is undefined","Dönem":"Period","Dönem aralığı":"Period range","Dönem aralığını belirle":"Set the period range","Dönem seçilmedi":"No period selected","Dönem sonu bakiye":"Period-end balance","Dönem: ":"Period: ","Dönemler":"Periods","Dönemler (":"Periods (","Döviz Dağılımı":"Currency Breakdown","Düzenle":"Edit","Düşük iyi":"Lower is better","Dışa Aktar":"Export","Dışa Aktarım":"Export","Dışa aktarım · Excel / CSV":"Export · Excel / CSV","Dışa aktarım · Önizleme":"Export · Preview","Ekim":"October","Ekle":"Add","En az 1 banka veya banka grubu seçin.":"Select at least 1 bank or bank group.","En az 1 dönem seçin.":"Select at least 1 period.","En az 1 ölçü seçin":"Select at least 1 measure","En az 8 karakterli yeni bir şifre belirleyin.":"Choose a new password of at least 8 characters.","En az bir banka seçin":"Select at least one bank","En az bir banka/grup seçin":"Select at least one bank/group","En az bir kalem seç":"Select at least one item","En az bir kalem seçin":"Select at least one item","En az bir rakip banka seçin.":"Select at least one peer bank.","Excel indir":"Download Excel","Excel için veri tablosu hazırla":"Prepare a data table for Excel","Excel kütüphanesi yüklenemedi":"Excel library could not be loaded","Eylül":"September","Eşleşen banka yok":"No matching banks","Fark":"Difference","Filtreler aşağıda — banka, tarih, kalem seçimi":"Filters below — choose banks, dates, items","Formül":"Formula","Formül boş":"Formula is empty","Formül eksik — bir ölçü ya da sayı bekleniyordu":"Formula incomplete — a measure or number was expected","Formül yazılmalı":"A formula is required","Formül çok iç içe (en fazla ":"Formula is nested too deeply (at most ","Formül çok uzun":"Formula is too long","Formülde en az bir ölçü olmalı":"The formula must contain at least one measure","Formülde en fazla ":"The formula may contain at most ","Formüle eklenecek ölçü":"Measure to add to formula","Gelir Tablosu":"Income Statement","Gelir Tablosu kalemleri için TP/YP ayrımı raporlanmıyor":"TL/FC split is not reported for Income Statement items","Gelir tablosu kalemi (yılbaşından kümülatif) ile bilanço kalemi (dönem sonu bakiye) toplanamaz/çıkarılamaz":"An income statement item (year-to-date) cannot be added to/subtracted from a balance sheet item (period-end balance)","Gerekli kalemler bu dönemde yok ya da payda sıfır — oran tanımsız":"Required items are missing for this period, or the denominator is zero — ratio is undefined","Geçersiz formül yapısı":"Invalid formula structure","Geçersiz işlem":"Invalid operation","Geçersiz tarih aralığı":"Invalid date range","Geçersiz ölçü düğümü":"Invalid measure node","Grafiği PNG olarak indir":"Download chart as PNG","Grup":"Group","Grup 2 (yakın izleme) kredisi yok ya da sıfır — karşılama oranı tanımsız":"No Stage 2 (watchlist) loans, or zero — coverage ratio is undefined","Grup değerleri (Banka Grupları kartları) değişmez.":"Group values (Bank Groups cards) do not change.","Grup sayısı":"Number of groups","Grup toplamı":"Group total","Gruplar":"Groups","Gruplar ve bankalar":"Groups and banks","Gönder":"Send","Görünen bankaların büyüme ortalaması (anomali dışı)":"Average growth of the banks shown (excluding anomalies)","Görünüm":"View","Görünüm Adı":"View Name","Görünüm adı boş olamaz":"View name cannot be empty","Görünüm bulunamadı":"View not found","Görünüm:":"View:","Görünümden çıkarılan:":"Removed from view:","Gösterim":"Display","Güncelle":"Update","Hariç":"excl.","Haziran":"June","Hazır dönem":"Preset period","Hazır ölçüleri birleştirerek kendi ölçünüzü oluşturun. Tüm bankalar, gruplar ve dönemler için otomatik hesaplanır; yalnızca sizin profilinizde saklanır.":"Combine built-in measures to create your own. It is calculated automatically for all banks, groups and periods, and stored only in your profile.","Hazırlanıyor…":"Preparing…","Henüz bir güncelleme notu yok.":"No release notes yet.","Henüz önceki ölçü yok":"No previous measure yet","Henüz özel ölçünüz yok. Kaydettikleriniz ölçü seçicide \"Özel Ölçülerim\" kategorisinde görünür.":"You have no custom measures yet. Saved ones appear under \"My Custom Measures\" in the measure picker.","Hepsini seç":"Select all","Hesap":"Account","Hiçbiri":"None","Hiçbirini seçme":"Deselect all","KT + Rakip":"KT + Peers","Kalem ara":"Search items","Kalem ara…":"Search items…","Kalem sayısı":"Number of items","Kalemler":"Items","Kapanmayan köşeli parantez: ":"Unclosed square bracket: ","Kapat":"Close","Kasım":"November","Kategori":"Category","Katılım":"Participation","Katılım Bankaları":"Participation Banks","Katılım bankaları":"Participation banks","Katılım bankalarını toplam aktife göre sırala, pazar paylarıyla":"Rank participation banks by total assets, with market shares","Kaydedilemedi":"Could not be saved","Kaydet":"Save","Kaydetmek için rolünüzde \"Ölçü Oluştur\" izni gerekir.":"Saving requires the \"Create Measure\" permission in your role.","Kaynak: BDDK":"Source: BRSA","Kaynak: BDDK solo finansal tablolar":"Source: BRSA solo financial statements","Kayıtlı gruplar":"Saved groups","Kayıtlı görünüm yok":"No saved views","Kayıtlı Özel Ölçülerim (":"My Saved Custom Measures (","Kompozisyon":"Composition","Kompozisyon için banka ve grup seçimi":"Bank and group selection for composition","Kompozisyonlar":"Compositions","Kullanıcı Tanımlı":"User-defined","Kuveyt Türk Rakip Analizi":"Kuveyt Türk Peer Analysis","Kuveyt Türk Rakip Analizi — Veri Dışa Aktarma":"Kuveyt Türk Peer Analysis — Data Export","Kütüphane yüklenemedi":"Library could not be loaded","Mart":"March","Mayıs":"May","Menü":"Menu","Mevcut Şifre":"Current Password","Mevduat":"Deposit","Mevduat Bankaları":"Deposit Banks","Mevduat bankaları":"Deposit banks","Milyon TL":"TL million","Milyon TL, ":"TL million, ","Milyon USD":"USD million","Net faiz marjını trend görünümünde aç":"Open net interest margin in trend view","Nisan":"April","Ocak":"January","Odak":"Focus","Odak banka görünümden çıkarılamaz.":"The focus bank cannot be removed from view.","Odak banka: ":"Focus bank: ","Odak bankanın (":"The focus bank's (","Oluştur":"Create","Oluşturulan slaytlar":"Generated slides","Oluşturulma":"Created","Oran":"Ratio","Ort. ":"Avg. ","Ortalama":"Average","Ortalama TCMB hesabı sıfır (banka yeni faaliyete başladı; 12 aylık ortalama için TCMB hesabı geçmişi yok) — örtük getiri tanımsız":"Average CBRT account is zero (the bank has just started operating; no CBRT account history for the 12-month average) — implied yield is undefined","Ortalama göstergesi":"Average indicator","Ortalama: yok":"Average: none","Ortalamayı gizle":"Hide average","Ortalamayı göster":"Show average","PDF kütüphanesi yüklenemedi":"PDF library could not be loaded","PDF oluştur":"Create PDF","PDF oluşturulamadı: ":"PDF could not be created: ","PDF'e girecek ölçüleri seç. Her ölçü (ve görünüm) tek sayfa olur; ":"Choose the measures for the PDF. Each measure (and view) is one page; measures without data for ","Pano seçtiğiniz bankanın gözünden açılır: vurgu rengi, sıra rozeti, \"… Hariç\" grubu ve rakip listesi ona göre kurulur. ":"The dashboard opens from the chosen bank's perspective: highlight colour, rank badge, the \"… excl.\" group and the peer list are built around it. ","Para bazı":"Currency basis","Pay ve payda: yılbaşından kümülatif (YtD)":"Numerator and denominator: year-to-date (YtD)","Pazar Payı":"Market Share","Personel sayısı yok":"No headcount","QoQ Büyüme":"QoQ Growth","Rakip Analizi":"Peer Analysis","Rakip Bankalar":"Peer Banks","Rakip Bankalar Trend (":"Peer Banks Trend (","Rakip Bankalar Yıllık Görünüm (Son 3 Dönem) ve ":"Peer Banks Annual View (Last 3 Periods) and ","Rakip ekle":"Add peer","Rapor":"Report","Rasyo":"Ratio","Rasyo ölçülerinde yalnız Değer trendi anlamlıdır":"For ratio measures only the Value trend is meaningful","Reel":"Real","Reel ":"Real ","Reel TL":"Real TL","STRATEJİ":"STRATEJİ","Sabit 0 olamaz (sonuç her zaman 0 olur)":"Constant cannot be 0 (the result would always be 0)","Sabit Sayı":"Constant","Sabit geçerli bir sayı olmalı":"The constant must be a valid number","Sabit sayı bir ölçüye bölünemez":"A constant cannot be divided by a measure","Sabit sayı yalnız çarpma ve bölmede kullanılabilir":"Constants can only be used in multiplication and division","Sabite bölmede sonuç biçimi seçilemez":"Result format cannot be chosen when dividing by a constant","Sayfa hazırlanıyor: ":"Preparing page: ","Sağdaki panelden en az 1 banka veya grup seçin.":"Select at least 1 bank or group from the panel on the right.","Serbest karşılık bakiyesi belirlenemedi":"General-provision balance could not be determined","Serbest karşılık ve TÜFEX verisi yok":"No general-provision and TUFEX data","Seriler":"Series","Seçili":"Selected","Seçili Banka":"Selected Banks","Seçili bankalar":"Selected banks","Seçili dönemde ":"In the selected period, ","Seçili dönemlerde TP/YP verisi yok":"No TL/FC data in the selected periods","Seçili dönemlerde veri yok":"No data in the selected periods","Seçili kriterlerde veri yok.":"No data for the selected criteria.","Seçim Tipi":"Selection Type","Seçim yalnız sizin hesabınızı etkiler. Varsayılan: ":"The selection affects only your account. Default: ","Seçimdeki ölçüler için ":"No data for the selected measures in ","Seçimi değiştir ↓":"Change selection ↓","Seçimi temizle":"Clear selection","Sil":"Delete","Silinemedi":"Could not be deleted","Sizin tanımladığınız, hazır ölçülerden türetilmiş ölçü.":"A measure you defined, derived from built-in measures.","Sohbeti temizle":"Clear chat","Soldaki adımları tamamla; banka/grup × dönem × kalem kombinasyonundaki tüm değerler tabloya gelir, Excel veya CSV olarak indirilir.":"Complete the steps on the left; all values for the bank/group × period × item combination are tabulated and can be downloaded as Excel or CSV.","Son 12Ç":"Last 12Q","Son 3 yıl":"Last 3 years","Son 4 çeyrek":"Last 4 quarters","Son 4Ç":"Last 4Q","Son 8 çeyrek":"Last 8 quarters","Son 8Ç":"Last 8Q","Sonuç Biçimi":"Result Format","Sonuç biçimi: ":"Result format: ","Sorunuzu yazın…":"Type your question…","Sunucu hatası (":"Server error (","Sunucuya ulaşılamadı":"Could not reach the server","Sıfıra bölünemez":"Cannot divide by zero","Sıralama Yönü":"Sort Direction","Tabloda ilk 1.000 satır görünüyor. Tamamı (":"The table shows the first 1,000 rows. All (","Tabloyu Oluştur":"Build Table","Tamam":"OK","Tanım":"Definition","Tanımsız":"Undefined","Tanımsız ":"Undefined ","Tarih":"Date","Tarih Aralığı":"Date Range","Tarih aralığı":"Date range","Tek ekran: Açık":"Single screen: On","Tek ekran: Kapalı":"Single screen: Off","Tema":"Theme","Tema değiştir":"Toggle theme","Temizle":"Clear","Temmuz":"July","Terimler":"Terms","Tip: ":"Type: ","Toplam":"Sum","Toplam fonlama sıfır (banka henüz fon toplamıyordu) — oran tanımsız":"Total funding is zero (the bank was not yet raising funds) — ratio is undefined","Toplam satır":"Total rows","Trend":"Trend","Trend görünümü":"Trend view","Trend serileri":"Trend series","Tutar ile rasyo toplanamaz/çıkarılamaz":"An amount and a ratio cannot be added/subtracted","TÜFE ile ":"Converted with CPI to ","TÜFE: TCMB, ":"CPI: CBRT, ","TÜFEX hesaplanamıyor: banka tahmini enflasyonla değerliyor ama varsayımı/duyarlılığı açıklamıyor":"TUFEX cannot be calculated: the bank values with estimated inflation but does not disclose the assumption or sensitivity","TÜFEX tamponu bilinmediği için kâr tamponu hesaplanamıyor (kısmi tampon gösterilmez)":"The profit buffer cannot be calculated because the TUFEX buffer is unknown (partial buffers are not shown)","Tüm BDR Raporları":"All Independent Audit Reports","Tüm Banka":"All Banks","Tüm Bankalar":"All Banks","Tüm Bankalar, Katılım, Mevduat, Rakip Bankalar ve İlk 20 Banka: panodaki banka sınıfı filtreleri":"All Banks, Participation, Deposit, Peer Banks and Top 20 Banks: the dashboard's bank-class filters","Tüm alanları doldurun":"Fill in all fields","Tüm satırları (":"All rows (","Tümü":"All","Tümünü geri getir":"Restore all","Tümünü seç":"Select all","Türk Parası":"Turkish Lira","Türk Parası (TP)":"Turkish Lira (TL)","USD bazında":"USD-based","USD bazında ":"USD-based ","USD/TRY döviz alış kuruyla":"at the USD/TRY buying rate","USD/TRY döviz alış kuruyla dolara çevrilmiş tutar; büyümeler dolar bazında büyümedir":"Converted to USD at the USD/TRY buying rate; growth figures are in USD terms","USD/TRY: TCMB":"USD/TRY: CBRT","Varsayılana dön":"Back to default","Vazgeç":"Cancel","Veri":"Data","Veri Tablosu":"Data Table","Veri Tablosu Oluştur":"Build Data Table","Veri Tablosu — ":"Data Table — ","Veri bulma ve ölçü oluşturma":"Finding data and creating measures","Veri olmadığı için atlanan: ":"Skipped for lack of data: ","Veri yok":"No data","Veri yok ":"No data ","Veriden benzerlik skoru (0-100): ölçek, segment ve iş modeli":"Data-based similarity score (0-100): scale, segment and business model","Veriye dayalı öneri":"Data-based suggestion","Veriyle ilgili soru sorun ya da oluşturmak istediğiniz ölçüyü tarif edin. Rakamlar doğrudan panodaki veriden okunur.":"Ask a question about the data or describe a measure you want to create. Figures are read directly from the dashboard data.","Yabancı Para":"Foreign Currency","Yabancı Para (YP)":"Foreign Currency (FC)","Yanıt alınamadı.":"No response received.","Yanıt hazırlanıyor…":"Preparing response…","Yanıtlar yapay zeka ile üretilir; önemli kararlarda panodaki değerleri kontrol edin.":"Answers are AI-generated; check the dashboard values for important decisions.","Yapay zeka asistanı":"AI assistant","Yapay zeka geçerli bir liste döndürmedi; veriye dayalı benzerlik önerisi gösteriliyor.":"The AI did not return a valid list; showing a data-based similarity suggestion.","Yapay zeka rakipleri seçiyor…":"AI is choosing peer banks…","Yapay zeka servisine ulaşılamadı; veriye dayalı benzerlik önerisi gösteriliyor.":"Could not reach the AI service; showing a data-based similarity suggestion.","Yapısal kırılma / düşük baz — ölçeğe dahil edilmedi":"Structural break / low base — excluded from scale","Yazdırma: ":"Printed: ","Yeni Şifre":"New Password","Yeni Şifre (Tekrar)":"New Password (Repeat)","Yeni şifre en az 8 karakter olmalı":"The new password must be at least 8 characters","Yeni şifreler eşleşmiyor":"The new passwords do not match","Yenile":"Refresh","Yenilikler":"What's New","YoY Büyüme":"YoY Growth","YtD Büyüme":"YtD Growth","Yükleniyor…":"Loading…","Yüksek iyi":"Higher is better","Yüzde (%)":"Percent (%)","Yıl":"Year","Yıl sonları":"Year-ends","Yılsonu":"Year-end","adet":"count","aktif büyüklüğüne göre":"by asset size","bileşen toplamı":"component total","bin TL":"thousand TL","bu dönemde veri yok":"no data in this period","dönem sonu bakiye":"period-end balance","grup":"group","güncellendi.":"updated.","kat":"x","kıyaslanabilir değil, grafik ölçeğine dahil edilmedi":"comparable with others; excluded from the chart scale","oluşturuldu.":"created.","reel TL":"real TL","son dönem":"latest period","toplam değerleri; bankalarla birlikte seçilebilir":"aggregate values; can be combined with banks","varsayılan":"default","veri yok":"no data","yılbaşından kümülatif (YtD)":"year-to-date (YtD)","Çeyrek":"Quarter","Çeyreklik":"Quarterly","Çıkarılan ":"Restore ","Çıkış":"Log out","Çıkış yap":"Log out","Ölçekle":"Scale","Ölçü":"Measure","Ölçü A":"Measure A","Ölçü A (pay)":"Measure A (numerator)","Ölçü A ve sabit sayı girilmeli":"Measure A and a constant must be entered","Ölçü A ve Ölçü B seçilmeli":"Measure A and Measure B must be selected","Ölçü Adı":"Measure Name","Ölçü Ara":"Search Measure","Ölçü B":"Measure B","Ölçü B (payda)":"Measure B (denominator)","Ölçü Ekle":"Add Measure","Ölçü Oluştur":"Create Measure","Ölçü adlarını [köşeli parantez] içinde yazın (ör. [Krediler])":"Write measure names in [square brackets] (e.g. [Loans])","Ölçü adı boş olamaz":"Measure name cannot be empty","Ölçü adı en fazla 60 karakter olabilir":"Measure name can be at most 60 characters","Ölçü ara…":"Search measures…","Ölçü değiştirdiğinizde burada önceki ölçünüz görünür":"Your previous measure appears here when you switch measures","Ölçü hakkında bilgi":"About this measure","Ölçü seçin":"Select a measure","Ölçüler (":"Measures (","Ölçüleri [köşeli parantez] içinde adıyla yazın ya da aşağıdan ekleyin. İşlemler: + − × / ve parantez; sabit sayılar yalnız çarpma/bölmede.":"Write measures by name in [square brackets] or add them below. Operations: + − × / and parentheses; constants only in multiplication/division.","Ölçüleri seçince otomatik önerilir":"Suggested automatically once measures are selected","Ölçülerin kendi dönemi":"The measures' own period","Önceki yıl net kâr verisi yok":"No prior-year net profit data","Önceki yıl net kârı sıfır ya da negatif — büyüme oranı tanımsız":"Prior-year net profit is zero or negative — growth rate is undefined","Önceki yıl personel verisi yok (banka o tarihte faaliyette değildi) — yıllık değişim tanımsız":"No prior-year headcount (the bank was not operating then) — annual change is undefined","Önceki yıl verisi yok":"No prior-year data","Önceki ölçü":"Previous measure","Önceki ölçü: ":"Previous measure: ","Önceki ölçüye dön (henüz önceki ölçü yok)":"Back to previous measure (no previous measure yet)","Önceki ölçüye dön: ":"Back to previous measure: ","Önceki:":"Previous:","Öneri alınamadı":"Could not get a suggestion","Önizleme":"Preview","Özel Ölçülerim":"My Custom Measures","Özel ölçü":"Custom measure","Özel ölçü oluştur / yönet":"Create / manage custom measures","ölçünün kendi dönemi":"the measure's own period","ör. ([Krediler] + [Menkul Kıymetler]) / [Toplam Aktifler]":"e.g. ([Loans] + [Securities]) / [Total Assets]","ör. 100 ya da 0,5":"e.g. 100 or 0.5","İki sabit sayı çarpılamaz — sonucu doğrudan yazın":"Two constants cannot be multiplied — write the result directly","İki terim arasında işlem işareti eksik":"Missing operator between two terms","İki ölçü çarpılamaz — çarpma yalnız bir sabit sayıyla yapılabilir":"Two measures cannot be multiplied — multiplication is only possible with a constant","İlk 20 Banka":"Top 20 Banks","İlk seçili döneme göre pay değişimi (puan)":"Change in share vs the first selected period (points)","İptal":"Cancel","İşlem":"Operation","Şifre":"Password","Şifre Değiştir":"Change Password","Şifre değiştir":"Change password","Şifreniz güncellendi.":"Your password has been updated.","Şubat":"February","Şube & Personel":"Branches & Staff","Şubesi yok (dijital banka) — şube başına oran tanımsız":"No branches (digital bank) — per-branch ratio is undefined","şu an":"current","— seçin —":"— select —","” silinsin mi? İçeren Görünümlerden de kaldırılır.":"” — delete? It will also be removed from views that contain it.","”) — ölçü seçiciden açabilirsiniz. Yine de oluşturmak için farklı bir ad yazın.":"”) — you can open it from the measure picker. To create it anyway, use a different name.","ℹ️ Gelir tablosu kalemi son 12 aya, bilanço kalemi 12 aylık ortalamaya çevrildi (ROAA/ROAE ile aynı yöntem) — çeyrekler birbiriyle kıyaslanabilir.":"ℹ️ The income statement item was converted to the last 12 months and the balance sheet item to a 12-month average (same method as ROAA/ROAE) — quarters are comparable.","ℹ️ TL tutarın adete bölümü: birim başına düşen tutar (ör. personel başına kredi).":"ℹ️ A TL amount divided by a count: amount per unit (e.g. loans per employee).","↩ Görünüme geri getir":"↩ Restore to view","↻ Yeniden öner":"↻ Suggest again","✏️ Ölçüyü Düzenle":"✏️ Edit Measure","✓ Kaydedildi — ölçü seçicide \"Özel Ölçülerim\" altında.":"✓ Saved — under \"My Custom Measures\" in the measure picker.","✨ Yapay zeka önerisi":"✨ AI suggestion","✨ Yapay zekadan öneri al":"✨ Get AI suggestion","🆕 Yenilikler":"🆕 What's New","🎯 Odak banka":"🎯 Focus bank","💬 Asistan":"💬 Assistant","📄 PDF oluştur":"📄 Create PDF","🔍 Listede ara (ör. mevduat, kredi, faiz)":"🔍 Search the list (e.g. deposits, loans, interest)","🗑 Sil":"🗑 Delete","🚫 Görünümden çıkar":"🚫 Remove from view","🧮 Ölçü Oluştur":"🧮 Create Measure"}/*/I18N_ARAYUZ*/;
-  var I18N_OLCU = /*I18N_OLCU*/{"bilesen":{"Alınan Krediler":"Borrowings","Diğer Aktifler":"Other Assets","Diğer Faaliyet Gelirleri":"Other Operating Income","Diğer Pasifler":"Other Liabilities","Dış Ticaret Kredileri":"Foreign Trade Loans","Leasing / Finansal Kiralama":"Leasing / Financial Leasing","Mali Kesim Kredileri":"Loans to Financial Sector","Menkul Kıymetler":"Securities","Nakit ve Nakit Benzerleri":"Cash and Cash Equivalents","Net Faiz / Kar Payı Geliri":"Net Interest / Profit Share Income","Net Krediler":"Net Loans","Net Ticari Kar/Zarar":"Net Trading Income/Loss","Net Ücret ve Komisyon Geliri":"Net Fee and Commission Income","Para Piyasalarına Borçlar":"Money Market Borrowings","Sermaye Benzeri Krediler":"Subordinated Debt","Toplam Mevduat":"Total Deposits","Tüketici Kredileri ve Bireysel Kartlar":"Consumer Loans and Retail Cards","Türk Parası":"Turkish Lira","Tüzel Krediler ve Kurumsal Kartlar":"Corporate Loans and Corporate Cards","Yabancı Para":"Foreign Currency","Özkaynaklar":"Shareholders' Equity","İhraç Edilen Menkul Kıymetler":"Issued Securities"},"kategori":{"Aktifler":"Assets","Bilanço":"Balance Sheet","Bilanço Dışı":"Off-Balance Sheet","Diğer":"Other","Donuk Alacak ve Karşılıklar":"NPLs and Provisions","Döviz, Altın ve Fonlama":"FX, Gold and Funding","Gelir Tablosu":"Income Statement","Genel":"General","Gider ve Verimlilik":"Expenses and Efficiency","Kompozisyon":"Composition","Kâr Tamponu":"Profit Buffer","Kârlılık Bileşimi":"Profitability Composition","Pasifler":"Liabilities","Rekabet Analizi":"Competitive Analysis","Sermaye ve Likidite":"Capital and Liquidity","Zorunlu Karşılık ve Marj":"Reserve Requirements and Margin","Özel Ölçülerim":"My Custom Measures","Şube & Personel":"Branches & Staff"},"kompozisyon":{"aktif":"Asset Composition","gelir":"Total Income Composition","kaynak":"Funding Source Composition","kredi":"Loan Composition","pasif":"Liability Composition"},"olcu":{"alinan_krediler_iemk_toplam_kaynak":"Borrowings and Issued Securities / Total Funding Sources","alinan_krediler_toplam_pasifler":"Borrowings / Total Liabilities","alinan_ucret_komisyonlar":"Fees and Commissions Received","altin_vadesiz_payi":"Demand Share of Gold Accounts","bankalar_toplam_aktifler":"Due from Banks / Total Assets","basel_kaldirac_orani":"Basel III Leverage Ratio","basit_kaldirac":"Simple Leverage (Equity / Total Assets)","bireysel_kredi_kartlari":"Retail Credit Cards","birikimli_vadeli_mevduat_toplam_vadeli":"Accumulating Time Deposits / Total Time Deposits","bkk_toplam":"Retail Credit Cards / Total Loans","brut_faaliyet_kari":"Gross Operating Profit / Loss","brut_krediler_ta":"Gross Loans / Total Assets","cekirdek_syr":"CET1 Capital Ratio","cost_of_risk":"Cost of Risk","diger_aktifler_ta":"Other Assets / Total Assets","diger_faaliyet_giderleri":"Other Operating Expenses (OPEX)","dis_ticaret_toplam":"Foreign Trade Loans / Total Loans","donuk_alacaklar":"Non-performing Loans","donuk_alacaklar_satis_terkin_oncesi":"Non-performing Loans (Before Sales and Write-offs)","donuk_intikal_ort_krediler":"NPL Inflows in Period / Average Loans","donuk_net_olusum":"Net NPL Formation (Inflows - Collections)","donuk_portfoy_temizligi":"NPL Portfolio Clean-up ((Write-off + Sales) / Opening NPL)","donuk_tahsilat_intikal":"NPL Collections / NPL Inflows","donuk_tahsilat_ort_krediler":"NPL Collections in Period / Average Loans","efektif_vergi_orani":"Effective Tax Rate","euro_yp_krediler":"EUR Loans / FC Loans","faaliyet_gelirleri":"Operating Income","faaliyet_gid_ort_aktif":"Operating Expenses / Average Assets","faiz_gelirleri":"Interest (Profit Share) Income","faiz_getirili_aktif_getirisi":"Yield on Interest (Profit Share) Earning Assets","faiz_getirili_maliyetli":"Interest (Profit Share) Earning Assets / Interest-bearing Liabilities","faiz_getirili_ozkaynak":"Average Interest (Profit Share) Earning Assets / Average Equity","faiz_getirili_ta":"Interest (Profit Share) Earning Assets / Total Assets","faiz_gideri_faiz_geliri":"Interest (Profit Share) Expense / Interest (Profit Share) Income","faiz_giderleri":"Interest (Profit Share) Expense","faiz_maliyetli_pasif_maliyeti":"Cost of Interest (Profit Share) Bearing Liabilities","finansal_varliklar_net_ta":"Financial Assets (Net) / Total Assets","gayrinakdi_komisyon_gayrinakdi":"Non-cash Loan Commissions / Non-cash Loans","gayrinakdi_krediler":"Non-cash Loans (Guarantees and Sureties)","gelir_yoy_buyumesi":"Operating Income Growth (YoY)","gnakdi_alinan_ucret_komisyonlar":"Fees and Commissions Received on Non-cash Loans","grup_1_krediler":"Stage 1 Loans","grup_1_krediler_toplam":"Stage 1 Loans / Total Loans","grup_2_karsilama":"Stage 2 Coverage Ratio of Group 2 Loans","grup_2_krediler":"Stage 2 Loans","grup_2_krediler_cekirdek_sermaye":"Stage 2 Loans / CET1 Capital","grup_2_krediler_toplam":"Stage 2 Loans / Total Loans","grup_2_tuketici_tuketici":"Stage 2 Consumer Loans / Consumer Loans","grup_2_tuzel_tuzel":"Stage 2 Corporate Loans / Corporate & Commercial Loans","ihtiyac_kredileri":"General Purpose Loans","ihtiyac_toplam":"General Purpose Loans / Total Loans","insan_sermayesi_yatirim_getirisi":"Human Capital Return on Investment","istirak_kari_vergi_oncesi_kar":"Equity-Method Investee Income / Profit Before Tax","kambiyo_kar_zarar":"Gains/Losses on FX Transactions","kar_tamponu_net_kar":"Profit Buffer (Free Provisions + TUFEX) / Net Profit","karsilik_giderleri":"Provision Expenses","kaynak_pacal_maliyet":"Blended Cost of Funding","kiymetli_maden_mevduati":"Precious Metal Deposits","kiymetli_maden_toplam_mevduat":"Precious Metal Deposits / Total Deposits","komisyon_gid_gel":"Commission Expense / Commission Income","konut_kredileri":"Housing Loans","konut_tp_pasifler":"Housing Loans / TL Liabilities","konut_tuketici":"Housing Loans / Consumer Loans","kredi_mevduat_spread":"Loan–Deposit Spread","kredi_pacal_getiri":"Blended Loan Yield","kredi_riski_toplam_risk":"Credit Risk / Total Risk Base","krediler":"Loans","krediler_altindisi_mevduat":"Loans / Deposits excl. Gold","krediler_mevduat":"Loans / Deposits","krediler_ta":"Loans / Total Assets","krediler_toplam_fonlama":"Total Gross Loans / Total Funding","krediler_toplam_kaynak":"Loans / Total Funding Sources","lcr":"Liquidity Coverage Ratio (LCR)","lcr_yp":"Liquidity Coverage Ratio (LCR, FX)","likidite_acigi_1_3ay_ta":"Liquidity Gap, 1–3 Months / Total Assets","likidite_acigi_1_5yil_ta":"Liquidity Gap, 1–5 Years / Total Assets","likidite_acigi_1ay_ta":"Liquidity Gap, up to 1 Month / Total Assets","likidite_acigi_3_12ay_ta":"Liquidity Gap, 3–12 Months / Total Assets","likidite_acigi_5yil_uzeri_ta":"Liquidity Gap, 5 Years and Over / Total Assets","likidite_acigi_dagitilamayan_ta":"Liquidity Gap, Unallocated / Total Assets","likidite_acigi_vadesiz_ta":"Liquidity Gap, Demand / Total Assets","mali_kesim_toplam":"Loans to Financial Sector / Total Loans","maliyet_gelir":"Cost / Income Ratio","maliyet_gelir_duzeltilmis":"Adjusted Cost / Income Ratio","maliyetli_pasifler_toplam_pasifler":"Interest (Profit Share) Bearing Liabilities / Total Liabilities","menkul_kiymetler_ta":"Securities / Total Assets","mevduat":"Deposits","nakit_degerler_ta":"Cash and Cash Equivalents / Total Assets","net_donem_kari":"Net Profit (Loss) for the Period","net_faiz_geliri":"Net Interest (Profit Share) Income (Expense)","net_faiz_ort_rav":"Net Interest (Profit Share) Income / Average RWA","net_kar_yoy_buyumesi":"Net Profit Growth (YoY)","net_ticari_kar":"Net Trading Income (Loss)","net_ucret_faaliyet_gelirleri":"Net Fees and Commissions / Operating Income","net_ucret_komisyonlar":"Net Fees and Commissions","net_ucret_operasyonel":"Net Fees and Commissions / Operating Expenses","net_ucret_ort_aktif":"Net Fees and Commissions / Average Assets","nim":"Net Interest (Profit Share) Margin (NIM)","nim_bzk_sonrasi":"Adjusted NIM after Expected Credit Losses","nim_duzeltilmis":"Adjusted Net Interest (Profit Share) Margin (NIM)","nim_getirili_aktif":"Net Interest (Profit Share) Margin (Earning Assets Basis)","nim_swap_duzeltilmis":"Swap-Adjusted Net Interest (Profit Share) Margin (Earning Assets Basis)","npl_3_asama_karsilama":"NPL Stage 3 Coverage Ratio","npl_formasyonu":"Net NPL Formation Ratio","npl_karsilama_orani":"NPL Coverage Ratio","npl_rasyosu":"NPLs / Total Loans (NPL Ratio)","npl_rasyosu_satis_terkin_oncesi":"NPL Ratio (Before Sales and Write-offs)","operasyonel_risk_toplam_risk":"Operational Risk / Total Risk Base","opex_gelir_makasi":"Jaws: Income Growth − OPEX Growth (pp)","opex_yoy_buyumesi":"OPEX Growth (YoY)","ort_rav_ort_ozkaynak":"Average RWA / Average Equity","ortaklik_yatirimlari_ta":"Equity Investments / Total Assets","ortuk_tcmb_getirisi":"Implied CBRT Yield (Reserve Income / Average CBRT Account)","ozkaynaklar":"Shareholders' Equity","personel_basina_krediler":"Loans per Employee","personel_basina_mevduat":"Deposits per Employee","personel_basina_net_kar":"Net Profit per Employee","personel_basina_opex":"OPEX per Employee","personel_basina_opex_yoy":"OPEX per Employee Growth (YoY)","personel_basina_personel_gideri":"Personnel Expense per Employee","personel_basina_personel_gideri_yoy":"Personnel Expense per Employee Growth (YoY)","personel_giderleri":"Personnel Expenses","personel_net_kar":"Personnel Expenses / Net Profit","personel_ort_aktif":"Personnel Expenses / Average Assets","personel_sayisi":"Number of Employees","personel_sayisi_yoy":"Headcount Change (YoY)","piyasa_riski_toplam_risk":"Market Risk / Total Risk Base","ppborclari_pasifler":"Money Market Borrowings / Total Liabilities","rav":"Total Risk-Weighted Assets (RWA)","rav_yogunlugu":"RWA Density (Total RWA / Total Assets)","reel_net_kar_buyumesi":"Real Net Profit Growth (vs CPI)","reel_opex_buyumesi":"Real OPEX Growth (CPI-adjusted)","reklam_giderleri":"Advertising Expenses","reklam_net_kar":"Advertising Expenses / Net Profit","reklam_ort_aktif":"Advertising Expenses / Average Assets","resmi_kurumlar_mevduat":"Official Institution Deposits","resmi_kurumlar_mevduat_toplam_mevduat":"Official Institution Deposits / Total Deposits","roaa":"Return on Average Assets (ROAA)","roae":"Return on Average Equity (ROAE)","rorwa":"RORWA","serbest_karsilik":"General Reserves Balance (Free Provisions)","serbest_sermaye_ta":"Free Capital / Total Assets","sermaye_benzeri_pasifler":"Subordinated Debt / Total Liabilities","spread":"Spread","sube_basina_krediler":"Loans per Branch","sube_basina_mevduat":"Deposits per Branch","sube_basina_net_kar":"Net Profit per Branch","sube_basina_opex":"OPEX per Branch","sube_basina_personel":"Employees per Branch","sube_sayisi":"Number of Branches","syr":"Capital Adequacy Ratio (CAR)","tasit_kredileri":"Auto Loans","tasit_tuketici":"Auto Loans / Consumer Loans","tcmb_hesabi_getirili_aktif":"Average CBRT Account / Average Interest (Profit Share) Earning Assets","toplam_aktifler":"Total Assets","toplam_brut_krediler":"Total Gross Loans","toplam_canli_krediler":"Total Performing Loans","toplam_fonlama":"Total Funding","toplam_fonlama_faiz_maliyetli_pasif":"Total Funding / Interest (Profit Share) Bearing Liabilities","toplam_kaynak":"Total Funding Sources","toplam_kaynak_toplam_pasifler":"Total Funding Sources / Total Liabilities","toplam_kredi_kartlari":"Total Credit Cards","toplam_mevduat_km_haric":"Total Deposits (excl. Precious Metals)","toplam_ozkaynaklar_regulasyon":"Total Regulatory Capital (Tier 1 + Tier 2)","toplam_pasifler":"Total Liabilities","toplam_pasifler_ozkaynak_haric":"Total Liabilities (excl. Equity)","toplam_risk_tabani":"Total Risk","tp_aktifler_ta":"TL Assets / Total Assets","tp_alinan_toplam_alinan":"TL Borrowings and Issued Securities / Total Borrowings and Issued Securities","tp_getirili_maliyetli_spread":"TL Earning Asset – Interest-bearing Liability Spread","tp_kaynak_toplam_kaynak":"TL Funding Sources / Total Funding Sources","tp_krediler_toplam":"TL Loans / Total Loans","tp_krediler_tp_kaynak":"TL Loans / TL Funding Sources","tp_mevduat_altindisi_mevduat":"TL Deposits / Deposits excl. Gold","tp_mevduat_toplam_mevduat":"TL Deposits / Total Deposits","tp_pasifler_toplam_pasifler_ozkaynak_haric":"TL Liabilities / Total Liabilities (excl. Equity)","tp_spread":"TL Loan–Deposit Spread","tp_vadeli_tp_mevduat":"TL Time Deposits / TL Deposits","tp_vadesiz_tp_mevduat":"TL Demand Deposits / TL Deposits","tufex_tamponu":"CPI-Linked Securities (TUFEX) Buffer","tuketici_kredileri":"Consumer Loans and Retail Credit Cards","tuketici_toplam":"Consumer Loans / Total Loans","turev_kar_zarar":"Gains/Losses on Derivative Transactions","tuzel_krediler":"Corporate & Commercial Loans","tuzel_krediler_tuzel_mevduat":"Corporate Loans / Corporate Deposits","tuzel_mevduat_toplam_mevduat":"Corporate Deposits / Total Deposits","tuzel_toplam":"Corporate & Commercial Loans / Total Loans","usd_yp_krediler":"USD Loans / FC Loans","vadeli_1_3ay_toplam_vadeli":"1–3 Month Time Deposits / Total Time Deposits","vadeli_1ay_toplam_vadeli":"Time Deposits up to 1 Month / Total Time Deposits","vadeli_3_6ay_toplam_vadeli":"3–6 Month Time Deposits / Total Time Deposits","vadeli_6_12ay_toplam_vadeli":"6–12 Month Time Deposits / Total Time Deposits","vadeli_mevduat":"Time Deposits","vadesiz_mevduat":"Demand Deposits","vadesiz_mevduat_toplam_kaynak":"Demand Deposits / Total Funding Sources","vadesiz_mevduat_toplam_mevduat":"Demand Deposits / Total Deposits","vergi_oncesi_kar":"Profit Before Tax (Continuing Operations)","verilen_ucret_komisyonlar":"Fees and Commissions Paid","yp_aktifler_toplam_pasifler":"FC Assets / FC Liabilities","yp_fonlama_fazlasi_aktif":"FX Funding Surplus / Total Assets","yp_getirili_maliyetli_spread":"FC Earning Asset – Interest-bearing Liability Spread","yp_krediler_toplam_krediler":"FC Loans / Total Loans","yp_krediler_yp_altindisi_kaynak":"FC Loans / FC Funding Sources excl. Gold","yp_mevduat_toplam_mevduat":"FC Deposits / Total Deposits","yp_net_pozisyon_ozkaynak":"Net FX Position / Total Equity","yp_spread":"FC Loan–Deposit Spread","yp_toplam_fonlama_payi":"FX Total Funding / Total Funding","yp_vadeli_yp_mevduat":"FC Time Deposits / FC Deposits (excl. Gold)","yp_vadesiz_yp_mevduat":"FC Demand Deposits / FC Deposits (excl. Gold)","zk_faiz_gelirleri_orani":"Reserve Requirement Income / Interest (Profit Share) Income","zk_haric_getirili_aktif_getirisi":"Yield on Interest (Profit Share) Earning Assets, Excluding Reserves","zk_surukleme":"Reserve Requirement Drag (pp)","zorunlu_karsilik_geliri":"Interest (Profit Share) Income from Reserve Requirements"}}/*/I18N_OLCU*/;
+  var I18N_OLCU = /*I18N_OLCU*/{"bilesen":{"Alınan Krediler":"Borrowings","Diğer Aktifler":"Other Assets","Diğer Faaliyet Gelirleri":"Other Operating Income","Diğer Pasifler":"Other Liabilities","Dış Ticaret Kredileri":"Foreign Trade Loans","Kıymetli Maden Mevduatı":"Precious Metal Deposits","Leasing / Finansal Kiralama":"Leasing / Financial Leasing","Mali Kesim Kredileri":"Loans to Financial Sector","Menkul Kıymetler":"Securities","Nakit ve Nakit Benzerleri":"Cash and Cash Equivalents","Net Faiz / Kar Payı Geliri":"Net Interest / Profit Share Income","Net Krediler":"Net Loans","Net Ticari Kar/Zarar":"Net Trading Income/Loss","Net Ücret ve Komisyon Geliri":"Net Fee and Commission Income","Para Piyasalarına Borçlar":"Money Market Borrowings","Sermaye Benzeri Krediler":"Subordinated Debt","TP Vadeli Mevduat":"TL Time Deposits","TP Vadesiz Mevduat":"TL Demand Deposits","Toplam Mevduat":"Total Deposits","Tüketici Kredileri ve Bireysel Kartlar":"Consumer Loans and Retail Cards","Türk Parası":"Turkish Lira","Tüzel Krediler ve Kurumsal Kartlar":"Corporate Loans and Corporate Cards","YP Vadeli Mevduat (KM Hariç)":"FC Time Deposits (excl. Gold)","YP Vadesiz Mevduat (KM Hariç)":"FC Demand Deposits (excl. Gold)","Yabancı Para":"Foreign Currency","Özkaynaklar":"Shareholders' Equity","İhraç Edilen Menkul Kıymetler":"Issued Securities"},"kategori":{"Aktifler":"Assets","Bilanço":"Balance Sheet","Bilanço Dışı":"Off-Balance Sheet","Diğer":"Other","Donuk Alacak ve Karşılıklar":"NPLs and Provisions","Döviz, Altın ve Fonlama":"FX, Gold and Funding","Gelir Tablosu":"Income Statement","Genel":"General","Gider ve Verimlilik":"Expenses and Efficiency","Kompozisyon":"Composition","Kâr Tamponu":"Profit Buffer","Kârlılık Bileşimi":"Profitability Composition","Pasifler":"Liabilities","Rekabet Analizi":"Competitive Analysis","Sermaye ve Likidite":"Capital and Liquidity","Zorunlu Karşılık ve Marj":"Reserve Requirements and Margin","Özel Ölçülerim":"My Custom Measures","Şube & Personel":"Branches & Staff"},"kompozisyon":{"aktif":"Asset Composition","gelir":"Total Income Composition","kaynak":"Funding Source Composition","kredi":"Loan Composition","mevduat":"Deposit Composition","pasif":"Liability Composition"},"olcu":{"alinan_krediler_iemk_toplam_kaynak":"Borrowings and Issued Securities / Total Funding Sources","alinan_krediler_toplam_pasifler":"Borrowings / Total Liabilities","alinan_ucret_komisyonlar":"Fees and Commissions Received","altin_vadesiz_payi":"Demand Share of Gold Accounts","bankalar_toplam_aktifler":"Due from Banks / Total Assets","basel_kaldirac_orani":"Basel III Leverage Ratio","basit_kaldirac":"Simple Leverage (Equity / Total Assets)","bireysel_kredi_kartlari":"Retail Credit Cards","birikimli_vadeli_mevduat_toplam_vadeli":"Accumulating Time Deposits / Total Time Deposits","bkk_toplam":"Retail Credit Cards / Total Loans","brut_faaliyet_kari":"Gross Operating Profit / Loss","brut_krediler_ta":"Gross Loans / Total Assets","cekirdek_syr":"CET1 Capital Ratio","cost_of_risk":"Cost of Risk","diger_aktifler_ta":"Other Assets / Total Assets","diger_faaliyet_giderleri":"Other Operating Expenses (OPEX)","dis_ticaret_toplam":"Foreign Trade Loans / Total Loans","donuk_alacaklar":"Non-performing Loans","donuk_alacaklar_satis_terkin_oncesi":"Non-performing Loans (Before Sales and Write-offs)","donuk_intikal_ort_krediler":"NPL Inflows in Period / Average Loans","donuk_net_olusum":"Net NPL Formation (Inflows - Collections)","donuk_portfoy_temizligi":"NPL Portfolio Clean-up ((Write-off + Sales) / Opening NPL)","donuk_tahsilat_intikal":"NPL Collections / NPL Inflows","donuk_tahsilat_ort_krediler":"NPL Collections in Period / Average Loans","efektif_vergi_orani":"Effective Tax Rate","euro_yp_krediler":"EUR Loans / FC Loans","faaliyet_gelirleri":"Operating Income","faaliyet_gid_ort_aktif":"Operating Expenses / Average Assets","faiz_gelirleri":"Interest (Profit Share) Income","faiz_getirili_aktif_getirisi":"Yield on Interest (Profit Share) Earning Assets","faiz_getirili_maliyetli":"Interest (Profit Share) Earning Assets / Interest-bearing Liabilities","faiz_getirili_ozkaynak":"Average Interest (Profit Share) Earning Assets / Average Equity","faiz_getirili_ta":"Interest (Profit Share) Earning Assets / Total Assets","faiz_gideri_faiz_geliri":"Interest (Profit Share) Expense / Interest (Profit Share) Income","faiz_giderleri":"Interest (Profit Share) Expense","faiz_maliyetli_pasif_maliyeti":"Cost of Interest (Profit Share) Bearing Liabilities","finansal_varliklar_net_ta":"Financial Assets (Net) / Total Assets","gayrinakdi_komisyon_gayrinakdi":"Non-cash Loan Commissions / Non-cash Loans","gayrinakdi_krediler":"Non-cash Loans (Guarantees and Sureties)","gelir_yoy_buyumesi":"Operating Income Growth (YoY)","gnakdi_alinan_ucret_komisyonlar":"Fees and Commissions Received on Non-cash Loans","grup_1_krediler":"Stage 1 Loans","grup_1_krediler_toplam":"Stage 1 Loans / Total Loans","grup_2_karsilama":"Stage 2 Coverage Ratio of Group 2 Loans","grup_2_krediler":"Stage 2 Loans","grup_2_krediler_cekirdek_sermaye":"Stage 2 Loans / CET1 Capital","grup_2_krediler_toplam":"Stage 2 Loans / Total Loans","grup_2_tuketici_tuketici":"Stage 2 Consumer Loans / Consumer Loans","grup_2_tuzel_tuzel":"Stage 2 Corporate Loans / Corporate & Commercial Loans","ihtiyac_kredileri":"General Purpose Loans","ihtiyac_toplam":"General Purpose Loans / Total Loans","insan_sermayesi_yatirim_getirisi":"Human Capital Return on Investment","istirak_kari_vergi_oncesi_kar":"Equity-Method Investee Income / Profit Before Tax","kambiyo_kar_zarar":"Gains/Losses on FX Transactions","kar_tamponu_net_kar":"Profit Buffer (Free Provisions + TUFEX) / Net Profit","karsilik_giderleri":"Provision Expenses","kaynak_pacal_maliyet":"Blended Cost of Funding","kiymetli_maden_mevduati":"Precious Metal Deposits","kiymetli_maden_toplam_mevduat":"Precious Metal Deposits / Total Deposits","komisyon_gid_gel":"Commission Expense / Commission Income","konut_kredileri":"Housing Loans","konut_tp_pasifler":"Housing Loans / TL Liabilities","konut_tuketici":"Housing Loans / Consumer Loans","kredi_mevduat_spread":"Loan–Deposit Spread","kredi_pacal_getiri":"Blended Loan Yield","kredi_riski_toplam_risk":"Credit Risk / Total Risk Base","krediler":"Loans","krediler_altindisi_mevduat":"Loans / Deposits excl. Gold","krediler_mevduat":"Loans / Deposits","krediler_ta":"Loans / Total Assets","krediler_toplam_fonlama":"Total Gross Loans / Total Funding","krediler_toplam_kaynak":"Loans / Total Funding Sources","lcr":"Liquidity Coverage Ratio (LCR)","lcr_yp":"Liquidity Coverage Ratio (LCR, FX)","likidite_acigi_1_3ay_ta":"Liquidity Gap, 1–3 Months / Total Assets","likidite_acigi_1_5yil_ta":"Liquidity Gap, 1–5 Years / Total Assets","likidite_acigi_1ay_ta":"Liquidity Gap, up to 1 Month / Total Assets","likidite_acigi_3_12ay_ta":"Liquidity Gap, 3–12 Months / Total Assets","likidite_acigi_5yil_uzeri_ta":"Liquidity Gap, 5 Years and Over / Total Assets","likidite_acigi_dagitilamayan_ta":"Liquidity Gap, Unallocated / Total Assets","likidite_acigi_vadesiz_ta":"Liquidity Gap, Demand / Total Assets","mali_kesim_toplam":"Loans to Financial Sector / Total Loans","maliyet_gelir":"Cost / Income Ratio","maliyet_gelir_duzeltilmis":"Adjusted Cost / Income Ratio","maliyetli_pasifler_toplam_pasifler":"Interest (Profit Share) Bearing Liabilities / Total Liabilities","menkul_kiymetler_ta":"Securities / Total Assets","mevduat":"Deposits","nakit_degerler_ta":"Cash and Cash Equivalents / Total Assets","net_donem_kari":"Net Profit (Loss) for the Period","net_faiz_geliri":"Net Interest (Profit Share) Income (Expense)","net_faiz_ort_rav":"Net Interest (Profit Share) Income / Average RWA","net_kar_yoy_buyumesi":"Net Profit Growth (YoY)","net_ticari_kar":"Net Trading Income (Loss)","net_ucret_faaliyet_gelirleri":"Net Fees and Commissions / Operating Income","net_ucret_komisyonlar":"Net Fees and Commissions","net_ucret_operasyonel":"Net Fees and Commissions / Operating Expenses","net_ucret_ort_aktif":"Net Fees and Commissions / Average Assets","nim":"Net Interest (Profit Share) Margin (NIM)","nim_bzk_sonrasi":"Adjusted NIM after Expected Credit Losses","nim_duzeltilmis":"Adjusted Net Interest (Profit Share) Margin (NIM)","nim_getirili_aktif":"Net Interest (Profit Share) Margin (Earning Assets Basis)","nim_swap_duzeltilmis":"Swap-Adjusted Net Interest (Profit Share) Margin (Earning Assets Basis)","npl_3_asama_karsilama":"NPL Stage 3 Coverage Ratio","npl_formasyonu":"Net NPL Formation Ratio","npl_karsilama_orani":"NPL Coverage Ratio","npl_rasyosu":"NPLs / Total Loans (NPL Ratio)","npl_rasyosu_satis_terkin_oncesi":"NPL Ratio (Before Sales and Write-offs)","operasyonel_risk_toplam_risk":"Operational Risk / Total Risk Base","opex_gelir_makasi":"Jaws: Income Growth − OPEX Growth (pp)","opex_yoy_buyumesi":"OPEX Growth (YoY)","ort_rav_ort_ozkaynak":"Average RWA / Average Equity","ortaklik_yatirimlari_ta":"Equity Investments / Total Assets","ortuk_tcmb_getirisi":"Implied CBRT Yield (Reserve Income / Average CBRT Account)","ozkaynaklar":"Shareholders' Equity","personel_basina_krediler":"Loans per Employee","personel_basina_mevduat":"Deposits per Employee","personel_basina_net_kar":"Net Profit per Employee","personel_basina_opex":"OPEX per Employee","personel_basina_opex_yoy":"OPEX per Employee Growth (YoY)","personel_basina_personel_gideri":"Personnel Expense per Employee","personel_basina_personel_gideri_yoy":"Personnel Expense per Employee Growth (YoY)","personel_giderleri":"Personnel Expenses","personel_net_kar":"Personnel Expenses / Net Profit","personel_ort_aktif":"Personnel Expenses / Average Assets","personel_sayisi":"Number of Employees","personel_sayisi_yoy":"Headcount Change (YoY)","piyasa_riski_toplam_risk":"Market Risk / Total Risk Base","ppborclari_pasifler":"Money Market Borrowings / Total Liabilities","rav":"Total Risk-Weighted Assets (RWA)","rav_yogunlugu":"RWA Density (Total RWA / Total Assets)","reel_net_kar_buyumesi":"Real Net Profit Growth (vs CPI)","reel_opex_buyumesi":"Real OPEX Growth (CPI-adjusted)","reklam_giderleri":"Advertising Expenses","reklam_net_kar":"Advertising Expenses / Net Profit","reklam_ort_aktif":"Advertising Expenses / Average Assets","resmi_kurumlar_mevduat":"Official Institution Deposits","resmi_kurumlar_mevduat_toplam_mevduat":"Official Institution Deposits / Total Deposits","roaa":"Return on Average Assets (ROAA)","roae":"Return on Average Equity (ROAE)","rorwa":"RORWA","serbest_karsilik":"General Reserves Balance (Free Provisions)","serbest_sermaye_ta":"Free Capital / Total Assets","sermaye_benzeri_pasifler":"Subordinated Debt / Total Liabilities","spread":"Spread","sube_basina_krediler":"Loans per Branch","sube_basina_mevduat":"Deposits per Branch","sube_basina_net_kar":"Net Profit per Branch","sube_basina_opex":"OPEX per Branch","sube_basina_personel":"Employees per Branch","sube_sayisi":"Number of Branches","syr":"Capital Adequacy Ratio (CAR)","tasit_kredileri":"Auto Loans","tasit_tuketici":"Auto Loans / Consumer Loans","tcmb_hesabi_getirili_aktif":"Average CBRT Account / Average Interest (Profit Share) Earning Assets","toplam_aktifler":"Total Assets","toplam_brut_krediler":"Total Gross Loans","toplam_canli_krediler":"Total Performing Loans","toplam_fonlama":"Total Funding","toplam_fonlama_faiz_maliyetli_pasif":"Total Funding / Interest (Profit Share) Bearing Liabilities","toplam_kaynak":"Total Funding Sources","toplam_kaynak_toplam_pasifler":"Total Funding Sources / Total Liabilities","toplam_kredi_kartlari":"Total Credit Cards","toplam_mevduat_km_haric":"Total Deposits (excl. Precious Metals)","toplam_ozkaynaklar_regulasyon":"Total Regulatory Capital (Tier 1 + Tier 2)","toplam_pasifler":"Total Liabilities","toplam_pasifler_ozkaynak_haric":"Total Liabilities (excl. Equity)","toplam_risk_tabani":"Total Risk","tp_aktifler_ta":"TL Assets / Total Assets","tp_alinan_toplam_alinan":"TL Borrowings and Issued Securities / Total Borrowings and Issued Securities","tp_getirili_maliyetli_spread":"TL Earning Asset – Interest-bearing Liability Spread","tp_kaynak_toplam_kaynak":"TL Funding Sources / Total Funding Sources","tp_krediler_toplam":"TL Loans / Total Loans","tp_krediler_tp_kaynak":"TL Loans / TL Funding Sources","tp_mevduat_altindisi_mevduat":"TL Deposits / Deposits excl. Gold","tp_mevduat_toplam_mevduat":"TL Deposits / Total Deposits","tp_pasifler_toplam_pasifler_ozkaynak_haric":"TL Liabilities / Total Liabilities (excl. Equity)","tp_spread":"TL Loan–Deposit Spread","tp_vadeli_tp_mevduat":"TL Time Deposits / TL Deposits","tp_vadesiz_tp_mevduat":"TL Demand Deposits / TL Deposits","tufex_tamponu":"CPI-Linked Securities (TUFEX) Buffer","tuketici_kredileri":"Consumer Loans and Retail Credit Cards","tuketici_toplam":"Consumer Loans / Total Loans","turev_kar_zarar":"Gains/Losses on Derivative Transactions","tuzel_krediler":"Corporate & Commercial Loans","tuzel_krediler_tuzel_mevduat":"Corporate Loans / Corporate Deposits","tuzel_mevduat_toplam_mevduat":"Corporate Deposits / Total Deposits","tuzel_toplam":"Corporate & Commercial Loans / Total Loans","usd_yp_krediler":"USD Loans / FC Loans","vadeli_1_3ay_toplam_vadeli":"1–3 Month Time Deposits / Total Time Deposits","vadeli_1ay_toplam_vadeli":"Time Deposits up to 1 Month / Total Time Deposits","vadeli_3_6ay_toplam_vadeli":"3–6 Month Time Deposits / Total Time Deposits","vadeli_6_12ay_toplam_vadeli":"6–12 Month Time Deposits / Total Time Deposits","vadeli_mevduat":"Time Deposits","vadesiz_mevduat":"Demand Deposits","vadesiz_mevduat_toplam_kaynak":"Demand Deposits / Total Funding Sources","vadesiz_mevduat_toplam_mevduat":"Demand Deposits / Total Deposits","vergi_oncesi_kar":"Profit Before Tax (Continuing Operations)","verilen_ucret_komisyonlar":"Fees and Commissions Paid","yp_aktifler_toplam_pasifler":"FC Assets / FC Liabilities","yp_fonlama_fazlasi_aktif":"FX Funding Surplus / Total Assets","yp_getirili_maliyetli_spread":"FC Earning Asset – Interest-bearing Liability Spread","yp_krediler_toplam_krediler":"FC Loans / Total Loans","yp_krediler_yp_altindisi_kaynak":"FC Loans / FC Funding Sources excl. Gold","yp_mevduat_toplam_mevduat":"FC Deposits / Total Deposits","yp_net_pozisyon_ozkaynak":"Net FX Position / Total Equity","yp_spread":"FC Loan–Deposit Spread","yp_toplam_fonlama_payi":"FX Total Funding / Total Funding","yp_vadeli_yp_mevduat":"FC Time Deposits / FC Deposits (excl. Gold)","yp_vadesiz_yp_mevduat":"FC Demand Deposits / FC Deposits (excl. Gold)","zk_faiz_gelirleri_orani":"Reserve Requirement Income / Interest (Profit Share) Income","zk_haric_getirili_aktif_getirisi":"Yield on Interest (Profit Share) Earning Assets, Excluding Reserves","zk_surukleme":"Reserve Requirement Drag (pp)","zorunlu_karsilik_geliri":"Interest (Profit Share) Income from Reserve Requirements"}}/*/I18N_OLCU*/;
   var _ce = React.createElement;
   // Çeviri dışı metin: Türkçe kalması gereken içerik (asistan yanıtı, sürüm notu, bilgi kartı).
   function ham(metin) { return _ce(React.Fragment, null, metin); }
@@ -5510,6 +5677,17 @@
     return result;
   }
   function bankTextColor(b) { return darkSafeColor(bankColor(b)); }
+  // Açık temada beyaz zemine yazılan marka rengi WCAG 4,5:1'i sağlayana kadar koyulaştırılır (KT yeşili 2,7:1 → ~#3f7a26).
+  var _readableCache = {};
+  function readableTextColor(hex) {
+    if (window.__KT_DARK__ || !/^#[0-9a-f]{3,6}$/i.test(hex || '')) return hex;
+    if (_readableCache[hex]) return _readableCache[hex];
+    var c = _hexToRgb(hex), k = 1.0;
+    while (k > 0.2 && (1.05) / (_relLum({ r: c.r * k, g: c.g * k, b: c.b * k }) + 0.05) < 4.5) k -= 0.05;
+    var out = '#' + [c.r, c.g, c.b].map(function(v){ return ('0' + Math.round(v * k).toString(16)).slice(-2); }).join('');
+    _readableCache[hex] = out;
+    return out;
+  }
 
   // Renkli bir zemin üzerine yazılacak metnin rengi (2026-09-08). Yeni banka
   // paletinde hem çok koyu (#0B2E63) hem çok açık (#FFB600, #5EEAD4) tonlar
@@ -7476,7 +7654,8 @@
     // PDF'te ad sütununda sıra numarası da yazar (bkz. .bank-row-sira): sütun genişler, bar daralır.
     var pdfMod = document.body.classList.contains('pdf-capture');
     var adSutun = pdfMod ? '158px' : '110px';
-    var gridCols = hasDelta ? adSutun + ' 1fr ' + (pdfMod ? '70px' : '82px') : adSutun + ' 1fr';
+    var gridCols = pdfMod ? (hasDelta ? adSutun + ' 1fr 70px' : adSutun + ' 1fr')
+                          : (hasDelta ? 'minmax(0,1fr) 120px 92px' : 'minmax(0,1fr) 120px');   // ekranda bar yok: ad esnek, değer 120px
     // Başlık satırı gövde satırlarından farklı bir grid kullanır: "Değer"
     // etiketi kaldırıldı, banka adı + bar sütunlarını tek bir geniş başlık
     // hücresi kaplıyor (isim sütununun sonuna değil, bar'ın bittiği yere
@@ -7609,7 +7788,7 @@
           )
         );
       })),
-      h('div', { className: 'rank-badge-row' },
+      ktRankFiltered && h('div', { className: 'rank-badge-row' },
         h('div', { className: 'rank-label' }, KT_NAME + ' sırası:',
           ktRankFiltered && h('span', { className: 'rank-label-alt' }, ktRankFiltered[1] + ' banka arasında')),
         ktRankFiltered && h('div', { className: 'rank-badge' },
@@ -7918,7 +8097,7 @@
     // genişlik garanti edilir; sığmadığında grafik alanı YATAY KAYAR
     // (üç satır — değer/bar/isim — aynı .ytd-chart-container içinde
     // birlikte kaydığı için hizalama bozulmaz).
-    var MIN_COL_PX = document.querySelector('.snap-fit.fit-on') ? 19 : 30;   // tek ekran düzeninde yatay kaydırma olmasın (2026-10-11)
+    var MIN_COL_PX = document.querySelector('.snap-fit.fit-on') ? 0 : 30;    // tek ekran düzeninde grafik kartın genişliğine sığar, yatay kaydırma yok (2026-10-11)
     // (eski) MIN_COL_PX = 30;   // döndürülmüş adlar yan yana sığdığı için 34 → 30 (2026-10-07); sol boşluk ölçülüp eklenir
     var chartMinWidth = displayBars.length * MIN_COL_PX;
 
@@ -7956,13 +8135,24 @@
       return kopya;
     }
     var AZ_BANKA = 12;
-    var yatayListe = isMobile || displayBars.length <= AZ_BANKA;
+    // Tek ekran düzeni (2026-10-13): döndürülmüş etiketli dikey sütunlar yerine her zaman yatay çubuk listesi;
+    // 14'ten çok satırda iki sütunlu grid (satırlar kartın yüksekliğini eşit paylaşır, iç kaydırma yok).
+    var fitMod = !!document.querySelector('.snap-fit.fit-on');
+    var yatayListe = isMobile || displayBars.length <= AZ_BANKA || fitMod;
+    var snapEl = fitMod && document.querySelector('.snap-fit.fit-on');
+    var fitListe = snapEl ? parseFloat(snapEl.style.getPropertyValue('--fit-liste')) || 0 : 0;
+    var hToplam = displayBars.length + ortSeri.length;
+    // Tek sütunda satır aralığı 24 px'in altına düşerse iki sütun (yatay liste yüksekliği ≈ liste + sekme/altlık payı)
+    var hKol = fitMod && hToplam > 14 && (fitListe + 50) / hToplam < 24 ? 2 : 1;
+    var hlistStil = fitMod ? { display: 'grid', gridTemplateColumns: 'repeat(' + hKol + ', minmax(0, 1fr))',
+                               gridTemplateRows: 'repeat(' + Math.max(1, Math.ceil(hToplam / hKol)) + ', minmax(0, 1fr))',
+                               gridAutoFlow: 'column', columnGap: '22px', rowGap: '0' } : undefined;
     if (yatayListe) {
       var negFrac = totalRange > 0 ? Math.abs(minNeg) / totalRange : 0;
       return h('div', { className: 'panel' },
         h('div', { className: 'panel-header' }, headerTitle()),
         filterTabsEl,
-        h('div', { className: 'ytd-hlist' + (isMobile ? '' : ' masaustu') },
+        h('div', { className: 'ytd-hlist' + (isMobile ? '' : ' masaustu') + (fitMod ? ' fit' : ''), style: hlistStil },
           ortYerlestir(displayBars.map(function(b) {
             var isKT = b.banka === KT_NAME;
             var ok = b.growth != null && !b.isAnomalous;
@@ -8000,7 +8190,7 @@
           // Satır 1: değer etiketleri
           // Dar sütunlarda (tek ekran düzeni) değer etiketleri üst üste binmesin diye dikey yazılır
           h('div', { className: 'ytd-values-row' + ((document.querySelector('.snap-fit.fit-on') && chartRef.current &&
-              chartRef.current.clientWidth / Math.max(1, displayBars.length) < 31) ? ' ytd-values-dar' : '') },
+              chartRef.current.clientWidth / Math.max(1, displayBars.length) < 34) ? ' ytd-values-dar' : '') },
             displayBars.map(function(b) {
               var isKT = b.banka === KT_NAME;
               var cls = 'ytd-value-cell';
@@ -8141,7 +8331,11 @@
 
     var cells = groupOrder.map(function(g) {
       var val;
-      if (isRasyo) val = groupVal(measure.id, g, tarih);
+      if (isRasyo) {
+        val = groupVal(measure.id, g, tarih);
+        // Gruplanmayan ölçülerde (ör. LCR, kaldıraç) odak banka kartı bankanın kendi değerini gösterir — Çeyreklik Değişim kartıyla tutarlı (2026-10-14)
+        if (val == null && g === KT_NAME) val = bankVal(measure.id, KT_NAME, tarih);
+      }
       else if (miktar) val = (g === KT_NAME ? growthMiktar(measure, KT_NAME, tarih)
                                             : growthMiktarGroup(measure, g, tarih));
       else if (g === KT_NAME) val = growthMetric(measure, KT_NAME, tarih);
@@ -8450,8 +8644,8 @@
               }
             }
           },
-            h('div', { className: 'competitor-mini-title' }, bankMono(b), h('span', null, b)),
-            h('div', { className: 'competitor-mini-cagr', style:{ color: textColor } },
+            h('div', { className: 'competitor-mini-title' }, bankMono(b), h('span', null, document.querySelector('.snap-fit.fit-on') ? bankShortName(b) : b)),
+            h('div', { className: 'competitor-mini-cagr', style:{ color: cagr == null ? '#94a3b8' : readableTextColor(textColor) } },
               cagr == null ? '—' : fmtPctPlain(cagr, 1)),
             h('div', { className: 'competitor-mini-hint' }, 'CAGR'),
             // PDF/sunum çıktısında hover kutusu görünmediği için 3 dönemlik çubuk grafik kartın içinde çizilir
@@ -8499,6 +8693,16 @@
     var isMobile = useIsMobileChart();
     var svgWrapRef = useRef(null);
     useTouchDismiss(!!(hoverIdx && hoverIdx.touch), svgWrapRef, function(){ setHoverIdx(null); });
+    // Tek ekran düzeninde üst karttaysa (rasyo ölçüsü) grafik kartı doldurur: viewBox oranı kutunun oranına eşitlenir (2026-10-13)
+    var fitOranSt = useState(0);
+    useEffect(function() {
+      var el = svgWrapRef.current, oran = 0;
+      if (el && !isMobile && el.closest('.snap-fit.fit-on .snap-ust')) {
+        var r = el.getBoundingClientRect();
+        if (r.width > 50 && r.height > 50) oran = r.height / r.width;
+      }
+      if (Math.abs(oran - fitOranSt[0]) > 0.01) fitOranSt[1](oran);
+    });
 
     var allDates = DATA.meta.dates;
     var curIdx = allDates.indexOf(tarih);
@@ -8528,7 +8732,7 @@
 
     // Sağ pay (2026-10-02): çizgi sonunda "Banka adı  değer" rozeti yazıldığı için geniş.
     // PDF slaytında (pdf-slide) kart daha yüksek olduğu için grafik de yükselir (boşluk kalmasın).
-    var W = 680, H = document.body.classList.contains('pdf-slide') ? 282 : 220;
+    var W = 680, H = document.body.classList.contains('pdf-slide') ? 282 : (fitOranSt[0] ? Math.max(160, Math.round(680 * fitOranSt[0])) : 220);
     var padL = 40, padR = 170, padT = 30, padB = 30;
     // Mobil: viewBox telefon genişliğinde (≈1 birim = 1 px) ve yükseklik
     // oranla büyüyor — 560 birim 330 px'e sıkışınca yazılar 6-7 px'e iniyor,
@@ -8598,7 +8802,7 @@
               setHoverIdx({ i: i, mouseX: cx - rect.left, mouseY: cy - rect.top, touch: isTouch });
             }
           }, function(){ setHoverIdx(null); })),
-        h('svg', { viewBox: '0 0 '+W+' '+H, style: isMobile ? {width:'100%', height:'auto', display:'block'} : {width:'100%', height: document.body.classList.contains('pdf-slide') ? 'auto' : '220px', display: 'block'}},
+        h('svg', { viewBox: '0 0 '+W+' '+H, style: isMobile ? {width:'100%', height:'auto', display:'block'} : {width:'100%', height: document.body.classList.contains('pdf-slide') ? 'auto' : (fitOranSt[0] ? '100%' : '220px'), display: 'block'}},
           [0, 0.25, 0.5, 0.75, 1].map(function(p, i) {
             return h('line', {
               key: i,
@@ -8739,7 +8943,7 @@
     });
     var nT = satirlar.filter(function(x){ return x.kod === 'tanimsiz'; }).length, nV = satirlar.length - nT;
     function etiket(kod) { return kod === 'tanimsiz' ? 'Tanımsız' : 'Veri yok'; }
-    return h('details', { className: 'bos-serit no-print' },
+    return h('details', { className: 'bos-serit no-print', onToggle: function(){ window.dispatchEvent(new Event('resize')); } },
       h('summary', null,
         h('span', null, 'Değeri olmayan bankalar (' + satirlar.length + ')'),
         nT > 0 && h('span', { className: 'bos-etiket tanimsiz' }, 'Tanımsız ' + nT),
@@ -8821,23 +9025,48 @@
     useEffect(function() {
       function tamEkranDuzenle() {
         var w = fitRef.current;
-        if (!w) return;
-        var kapsa = ['--fit-h', '--fit-cols', '--fit-row'];
+        if (!w) return false;
+        var kapsa = ['--fit-h', '--fit-cols', '--fit-row', '--fit-font', '--fit-val'];
         if (!tamEkranMi()) { w.classList.remove('fit-on'); w.removeAttribute('data-cols'); kapsa.forEach(function(k){ w.style.removeProperty(k); }); return false; }
         w.classList.add('fit-on');
         var top = w.getBoundingClientRect().top + (window.pageYOffset || 0);
-        var altBosluk = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;   // Asistan düğmesi için ayrılan alt boşluk
-        var fitH = Math.max(320, Math.floor(window.innerHeight - top - altBosluk - 14));
+        var serit = w.querySelector('.bos-serit');                 // Rekabet ölçülerinde grid altındaki "değeri olmayan bankalar" şeridi
+        var seritH = serit ? serit.offsetHeight + 10 : 0;
+        var altBosluk = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;   // ≤1200 px: Asistan düğmesi altta, payı ayrılır
+        var fitH = Math.max(320, Math.floor(window.innerHeight - top - seritH - altBosluk - 12));
         w.style.setProperty('--fit-h', fitH + 'px');
-        var panel = rankingRef.current, kutu = scrollBoxRef.current;
-        if (panel && kutu) {
+        var kutu = scrollBoxRef.current;
+        if (kutu) {
+          // Sol liste: boşluk kalmayacak şekilde 1–3 sütun; satır yüksekliği ve yazı boyutu kullanılabilir alana göre (2026-10-13)
           var n = Math.max(1, kutu.querySelectorAll('.bank-row').length);
-          var liste = Math.max(120, kutu.clientHeight);              // panel üst satırın kalan yüksekliğini alır (flex), liste içindeki alan
-          var KOLAY = 20, cols = 1;
-          while (cols < 3 && Math.floor(liste / Math.ceil(n / cols)) < KOLAY) cols++;
-          var satir = Math.max(18, Math.min(25, Math.floor(liste / Math.ceil(n / cols))));
+          var liste = Math.max(120, kutu.clientHeight);           // --fit-h yazıldı, okuma yeniden yerleşimi tetikler
+          var ROW_MAX = n <= 6 ? 76 : n <= 10 ? 52 : 40, RAHAT = 26, KABUL = 21, EN_AZ = 18;   // az satırda liste de kartı doldurur
+          // Çok geniş kutuda (≥1100 px) tek sütun ad–değer arasını boş bırakır: satırlar zaten rahat (≥32 px) değilse 2 sütun
+          var enAzSutun = kutu.clientWidth >= 1100 && (liste - 4) / n < 32 ? 2 : 1;
+          var genis3 = kutu.clientWidth / 3 >= 290;                     // 3 sütun yalnız adlar sığacak kadar genişse
+          var adaylar = [];
+          for (var c = 1; c <= 3; c++) {
+            adaylar.push({ c: c, r: Math.min(ROW_MAX, Math.floor((liste - 4) / Math.ceil(n / c))) });
+          }
+          var uygun = adaylar.filter(function(a){ return a.c >= enAzSutun && (a.c < 3 || genis3); });
+          // Önce rahat (≥26 px) en az sütunlu seçenek, yoksa kabul edilebilir (≥21 px), yoksa en yüksek satır
+          var secim = uygun.filter(function(a){ return a.r >= RAHAT; })[0]
+            || uygun.filter(function(a){ return a.r >= KABUL; })[0]
+            || uygun.reduce(function(x, y){ return y.r > x.r ? y : x; });
+          // Hiçbir uygun seçenek asgari satır yüksekliğini vermiyorsa: adlar sığacaksa 3 sütun, yoksa tek sütun + iç kaydırma (satır gizlenmez)
+          var tasma = false;
+          if (secim.r < EN_AZ) {
+            if (adaylar[2].r >= EN_AZ && kutu.clientWidth / 3 >= 230) secim = adaylar[2];
+            else { secim = { c: 1, r: EN_AZ }; tasma = true; }
+          }
+          w.classList.toggle('fit-tasma', tasma);
+          var cols = secim.c, satir = Math.max(EN_AZ, secim.r);
+          w.style.setProperty('--fit-liste', liste + 'px');
+          var font = Math.max(12, Math.min(cols === 3 ? 13 : 17, Math.round(satir * 0.44)));
           w.style.setProperty('--fit-cols', String(cols));
           w.style.setProperty('--fit-row', satir + 'px');
+          w.style.setProperty('--fit-font', font + 'px');
+          w.style.setProperty('--fit-val', Math.round(font * 6.6 + 6) + 'px');   // "9.076.507" gibi 9 karakterlik değer sütunu
           w.setAttribute('data-cols', String(cols));
         }
         var imza = fitH + '/' + w.style.getPropertyValue('--fit-cols') + '/' + w.style.getPropertyValue('--fit-row') + '/' + w.clientWidth;
@@ -8900,7 +9129,7 @@
     var rightColStyle = { display:'flex', flexDirection:'column', gap:'14px' };
     if (matchH) { rightColStyle.minHeight = matchH + 'px'; rightColStyle.justifyContent = 'space-between'; }
 
-    return h('div', { ref: fitRef, className: 'snap-fit' },
+    return h('div', { ref: fitRef, className: 'snap-fit' + (isRasyo ? ' rasyo' : '') },
       h('div', { className: 'dashboard-grid' },
         h('div', { style: can('kart_siralama') ? { alignSelf: 'start' } : { alignSelf: 'start', display: 'none' } },
           // Panel üstü hiç kaymaz (yukarıdaki not) — önce panelin kendi
@@ -8915,18 +9144,18 @@
           leftExtra > 0 && h('div', { style: { height: leftExtra + 'px' } })
         ),
         h('div', { style: rightColStyle },
-          h('div', { ref: rc1Ref, className: 'snap-rc1', style: can('kart_ytd') ? undefined : { display: 'none' } },
+          h('div', { ref: rc1Ref, className: 'snap-rc1 ' + (isRasyo ? 'snap-alt1' : 'snap-ust'), style: can('kart_ytd') ? undefined : { display: 'none' } },
             isRasyo
               ? h(GroupSummary, { measure: measure, tarih: tarih })
               : h(YtDGrowthChart, { measure: measure, tarih: tarih, headerMatchHeight: headerMatchH,
                                   filtreMod: ortakSuzgec[0], setFiltreMod: ortakSuzgec[1] })
           ),
-          h('div', { ref: rc2Ref, className: 'snap-rc2', style: can('kart_gruplar') ? undefined : { display: 'none' } },
+          h('div', { ref: rc2Ref, className: 'snap-rc2 ' + (isRasyo ? 'snap-alt2' : 'snap-alt1'), style: can('kart_gruplar') ? undefined : { display: 'none' } },
             isRasyo
               ? h(GroupBpsChange, { measure: measure, tarih: tarih })
               : h(GroupSummary, { measure: measure, tarih: tarih })
           ),
-          h('div', { ref: rc3Ref, className: 'snap-rc3', style: can('kart_rakipler') ? undefined : { display: 'none' } },
+          h('div', { ref: rc3Ref, className: 'snap-rc3 ' + (isRasyo ? 'snap-ust' : 'snap-alt2'), style: can('kart_rakipler') ? undefined : { display: 'none' } },
             isRasyo
               ? h(CompetitorTrendRatio, { measure: measure, tarih: tarih })
               : h(CompetitorCardsGrowth, { measure: measure, tarih: tarih })
@@ -9143,6 +9372,14 @@
       return selectedDates.map(function(d) {
         if (effectiveSubTab === 'doviz') {
           var cur = getCurrencyData(compId, entity.type, entity.name, d);
+          if (cur && cur.alt && compMeta && compMeta.currency_alt) {
+            // Mevduat: Döviz görünümünde TP ve YP, vadeli / vadesiz olarak da ayrışır (2026-10-13)
+            var am = {}; cur.alt.forEach(function(x){ am[x.id] = x; });
+            return { tarih: d, segs: compMeta.currency_alt.map(function(a) {
+              var x = am[a.id] || {};
+              return { id: a.id, ad: a.ad, color: a.color, pct: x.pct || 0, val: x.value || 0 };
+            }) };
+          }
           return { tarih: d, segs: cur ? [
             { id: 'tp', ad: 'Türk Parası', color: TP_COLOR, pct: cur.tp_pct, val: cur.tp_value },
             { id: 'yp', ad: 'Yabancı Para', color: YP_COLOR, pct: cur.yp_pct, val: cur.yp_value }] : null };
@@ -9158,7 +9395,9 @@
       });
     }
     var lejantTanim = effectiveSubTab === 'doviz'
-      ? [{ id: 'tp', ad: 'Türk Parası (TP)', color: TP_COLOR }, { id: 'yp', ad: 'Yabancı Para (YP)', color: YP_COLOR }]
+      ? (compMeta && compMeta.currency_alt
+          ? compMeta.currency_alt.map(function(a){ return { id: a.id, ad: a.ad, color: a.color }; })
+          : [{ id: 'tp', ad: 'Türk Parası (TP)', color: TP_COLOR }, { id: 'yp', ad: 'Yabancı Para (YP)', color: YP_COLOR }])
       : components.map(function(c){ return { id: c.id, ad: c.ad, color: c.color }; });
     // Görünüm değişince (Bileşen ↔ Döviz) eski bileşen kimliği yeni görünümde yoksa vurgu uygulanmaz
     var aktifVurgu = vurguAday && lejantTanim.some(function(c){ return c.id === vurguAday; }) ? vurguAday : null;

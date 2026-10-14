@@ -131,7 +131,44 @@ def _krediler_total(ctx, b, t):
     return krediler(ctx, b, t)
 
 
+def _tp_vadeli(ctx, b, t):
+    return float(ctx.vadeli_mevduat_bakiyesi(b, t, 'TP') or 0.0)
+
+
+def _tp_vadesiz(ctx, b, t):
+    return float(ctx.bilanco(b, t, 'Mevduat', 'TP') or 0.0) - _tp_vadeli(ctx, b, t)
+
+
+def _yp_km(ctx, b, t):
+    return float(ctx.kiymetli_maden(b, t) or 0.0)
+
+
+def _yp_vadeli(ctx, b, t):
+    return float(ctx.vadeli_mevduat_bakiyesi(b, t, 'YP') or 0.0)
+
+
+def _yp_vadesiz(ctx, b, t):
+    # YP Mevduat − Kıymetli Maden − YP Vadeli (KM hariç) — tp/yp_spread ve vade kompozisyonu ölçüleriyle aynı tanım
+    return float(ctx.bilanco(b, t, 'Mevduat', 'YP') or 0.0) - _yp_km(ctx, b, t) - _yp_vadeli(ctx, b, t)
+
+
+# Mevduat kompozisyonu bileşenleri; Döviz görünümünde de aynı 5 dilim (TP/YP × vadeli/vadesiz + kıymetli maden) kullanılır
+MEVDUAT_ALT = [
+    ('tp_vadesiz', _tp_vadesiz),
+    ('tp_vadeli',  _tp_vadeli),
+    ('yp_vadesiz', _yp_vadesiz),
+    ('yp_vadeli',  _yp_vadeli),
+    ('yp_km',      _yp_km),
+]
+
+
 COMPOSITION_SPECS: Dict[str, dict] = {
+    'mevduat': {
+        'total_fn': lambda c, b, t: c.bilanco(b, t, 'Mevduat'),
+        'currency_kalemler': ['Mevduat'],
+        'currency_alt': MEVDUAT_ALT,   # Döviz görünümü: TP ve YP, vadeli / vadesiz olarak da ayrışır
+        'components': list(MEVDUAT_ALT),
+    },
     'aktif': {
         'total_fn': _aktif_total,
         'currency_kalemler': ['Toplam Aktifler'],
@@ -204,6 +241,13 @@ COMPOSITION_SPECS: Dict[str, dict] = {
 }
 
 
+def _alt_gecerli(degerler, toplam: float) -> bool:
+    """Mevduat alt dilimleri (vadeli/vadesiz × TP/YP): ham tablolar eksik olan banka/dönemlerde (ör. fon tablosu olmayan eski katılım
+    dönemleri, çok yeni bankalar) farklardan negatif dilim çıkar; bu durumda o hücre GÖSTERİLMEZ (yanlış dağılım yerine boş)."""
+    tol = 0.005 * abs(toplam)
+    return all(v >= -tol for v in degerler)
+
+
 # --------------------------------------------------------------------------
 # Çekirdek hesaplama
 # --------------------------------------------------------------------------
@@ -234,6 +278,8 @@ def _component_values(ctx, banka, tarih, spec) -> Optional[Dict[str, float]]:
         return None
     if all(abs(v) < 1.0 for v in vals.values()):
         return None
+    if spec.get('currency_alt') and not _alt_gecerli(vals.values(), total):
+        return None
 
     # Residual component(ler)i
     for cid, fn in comps:
@@ -258,7 +304,12 @@ def _currency_values(ctx, banka, tarih, spec) -> Optional[Dict[str, float]]:
     total = tp + yp
     if abs(total) < 1.0:
         return None
-    return {'tp': tp, 'yp': yp, 'total': total}
+    out = {'tp': tp, 'yp': yp, 'total': total}
+    if spec.get('currency_alt'):
+        out['alt'] = {cid: float(fn(ctx, banka, tarih) or 0.0) for cid, fn in spec['currency_alt']}
+        if not _alt_gecerli(out['alt'].values(), total):
+            return None
+    return out
 
 
 def _to_comp_list(vals: Dict[str, float], spec) -> List[dict]:
@@ -314,6 +365,8 @@ def _agg_component_values(ctx, members, tarih, spec) -> Optional[Dict[str, float
 
     if not any_data or abs(total) < 1.0:
         return None
+    if spec.get('currency_alt') and not _alt_gecerli(agg.values(), total):
+        return None
 
     for cid, fn in comps:
         if fn is None:
@@ -335,16 +388,26 @@ def _agg_currency_values(ctx, members, tarih, spec) -> Optional[Dict[str, float]
     total = tp + yp
     if abs(total) < 1.0:
         return None
-    return {'tp': tp, 'yp': yp, 'total': total}
+    out = {'tp': tp, 'yp': yp, 'total': total}
+    if spec.get('currency_alt'):
+        out['alt'] = {cid: sum(float(fn(ctx, b, tarih) or 0.0) for b in members) for cid, fn in spec['currency_alt']}
+        if not _alt_gecerli(out['alt'].values(), total):
+            return None
+    return out
 
 
 def _currency_record(cv: Dict[str, float]) -> dict:
     total = cv['total']
-    return {
+    rec = {
         'tp_value': cv['tp'], 'yp_value': cv['yp'], 'total_value': total,
         'tp_pct': (cv['tp'] / total * 100.0) if total else 0.0,
         'yp_pct': (cv['yp'] / total * 100.0) if total else 0.0,
     }
+    if cv.get('alt'):
+        # alt dilimler (ör. mevduatta TP/YP × vadeli/vadesiz): yüzdeler dilimlerin toplamına göre, işaret korunur
+        tot = sum(abs(v) for v in cv['alt'].values())
+        rec['alt'] = [{'id': k, 'value': v, 'pct': (v / tot * 100.0) if tot else 0.0} for k, v in cv['alt'].items()]
+    return rec
 
 
 # --------------------------------------------------------------------------

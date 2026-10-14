@@ -1908,7 +1908,9 @@ def admin_delete_group(group_name: str, _: str = Depends(require_admin_perm('adm
 # Kartlar sütun sütun LİSTE olarak saklanır (her sütun kendi sırasını taşır) —
 # kartların üzerinde ayrı bir "sıra" alanı tutup her taşımada yeniden
 # numaralandırmaya gerek kalmıyor, taşıma = listeden çıkar + hedefe ekle.
-BOARD_COLUMNS = ['yapilacak', 'planlanan', 'yapildi']
+# Sütunlar: To Do ('yapilacak') → In Progress ('planlanan', veri uyumu için eski kimlik) → To Check ('kontrol') → Done ('yapildi').
+# Eski board.json'da 'kontrol' anahtarı yoksa boş sütun olarak yüklenir.
+BOARD_COLUMNS = ['yapilacak', 'planlanan', 'kontrol', 'yapildi']
 
 
 def _empty_board() -> dict:

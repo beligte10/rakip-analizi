@@ -239,7 +239,8 @@
     "kredi": "Loan Composition",
     "pasif": "Liability Composition",
     "kaynak": "Funding Source Composition",
-    "gelir": "Total Income Composition"
+    "gelir": "Total Income Composition",
+    "mevduat": "Deposit Composition"
   },
   "bilesen": {
     "Diğer Aktifler": "Other Assets",
@@ -263,6 +264,11 @@
     "Net Ticari Kar/Zarar": "Net Trading Income/Loss",
     "Diğer Faaliyet Gelirleri": "Other Operating Income",
     "Türk Parası": "Turkish Lira",
-    "Yabancı Para": "Foreign Currency"
+    "Yabancı Para": "Foreign Currency",
+    "TP Vadesiz Mevduat": "TL Demand Deposits",
+    "TP Vadeli Mevduat": "TL Time Deposits",
+    "YP Vadesiz Mevduat (KM Hariç)": "FC Demand Deposits (excl. Gold)",
+    "YP Vadeli Mevduat (KM Hariç)": "FC Time Deposits (excl. Gold)",
+    "Kıymetli Maden Mevduatı": "Precious Metal Deposits"
   }
 }

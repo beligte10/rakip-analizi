@@ -5,8 +5,9 @@
     "title": "Asistan, Odak banka, PDF sunumu ve tek ekran görünümü",
     "items": [
       "Kart ve ölçü başlıkları daha belirgin: büyük punto, yeşil vurgu çizgisi.",
-      "Anlık Görünüm için isteğe bağlı \"Tek ekran\" düzeni: menüdeki Görünüm bölümünden açıldığında kaydırma olmadan 27 bankanın tamamı tek ekranda görünür (masaüstü); varsayılan görünüm değişmedi.",
+      "Anlık Görünüm için yeni \"Tek ekran\" tasarımı (menü → Görünüm): kaydırma olmadan 27 bankanın tamamı tek ekranda; sıra numaralı sıralama tablosu, yatay çubuklu YtD listesi, pastil biçimli değişim rozetleri ve KPI kutucukları; yazılar ekrana göre büyür, kart içinde yana kaydırma yok.",
       "YtD Büyüme kartında ortalama seçici: basit ortalama, ağırlıklı ortalama (bankaların büyüklüğüne göre) ya da ikisi birlikte gösterilebiliyor.",
+      "Kompozisyon sekmesine \"Mevduat Kompozisyonu\" eklendi: Döviz Dağılımı'nda mevduat TP ve YP olarak, her biri de vadeli / vadesiz mevduat olarak ayrışıyor.",
       "Yeni Asistan (sağ alttaki 💬): sorularınızı yanıtlar, ölçü ve banka değerlerini getirir, TCMB verilerini (kur, faiz, enflasyon) kullanır.",
       "🎯 Odak: kendi odak bankanızı seçin; yapay zeka seçtiğiniz bankaya göre rakip bankaları gerekçeleriyle önerir.",
       "PDF: ekrandaki görünümü 16:9 sunum slaytları olarak indirin; ölçü, dönem ve banka sınıfı seçilebilir.",
